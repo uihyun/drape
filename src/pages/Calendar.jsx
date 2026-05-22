@@ -12,7 +12,7 @@ function ymd(d) {
   return `${y}-${m}-${da}`;
 }
 
-export function Calendar({ user, onSignIn }) {
+export function Calendar({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -54,7 +54,7 @@ export function Calendar({ user, onSignIn }) {
   const monthLabel = cursor.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
 
   return (
-    <div className="calendar">
+    <div className={`calendar${embedded ? ' calendar-embedded' : ''}`}>
       <div className="calendar-header">
         <button className="btn btn-secondary" onClick={() => setCursor(new Date(year, month0 - 1, 1))}>
           <i className="material-icons">chevron_left</i>

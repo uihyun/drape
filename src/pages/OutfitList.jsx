@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { OutfitService } from '../services/outfit-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-export function OutfitList({ user, onSignIn }) {
+export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
 
@@ -25,14 +25,16 @@ export function OutfitList({ user, onSignIn }) {
   }
 
   return (
-    <div className="outfit-list">
-      <div className="closet-header">
-        <h2 className="section-title">{t('navOutfits')}</h2>
-        <Link to="/outfits/new" className="btn btn-primary">
-          <i className="material-icons">add</i>
-          {t('newOutfit')}
-        </Link>
-      </div>
+    <div className={`outfit-list${embedded ? ' outfit-list-embedded' : ''}`}>
+      {!embedded && (
+        <div className="closet-header">
+          <h2 className="section-title">{t('navOutfits')}</h2>
+          <Link to="/outfits/new" className="btn btn-primary">
+            <i className="material-icons">add</i>
+            {t('newOutfit')}
+          </Link>
+        </div>
+      )}
 
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>

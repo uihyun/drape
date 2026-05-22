@@ -6,7 +6,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-export function Closet({ user, authReady, onSignIn }) {
+export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [items, setItems] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -43,14 +43,16 @@ export function Closet({ user, authReady, onSignIn }) {
   }
 
   return (
-    <div className="closet">
-      <div className="closet-header">
-        <h2 className="section-title">{t('navCloset')}</h2>
-        <Link to="/closet/add" className="btn btn-primary closet-add-btn">
-          <i className="material-icons">add</i>
-          {t('addItem')}
-        </Link>
-      </div>
+    <div className={`closet${embedded ? ' closet-embedded' : ''}`}>
+      {!embedded && (
+        <div className="closet-header">
+          <h2 className="section-title">{t('navCloset')}</h2>
+          <Link to="/closet/add" className="btn btn-primary closet-add-btn">
+            <i className="material-icons">add</i>
+            {t('addItem')}
+          </Link>
+        </div>
+      )}
 
       <div className="filter-chips" role="tablist">
         <button
