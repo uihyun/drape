@@ -2323,7 +2323,7 @@ textarea,
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .main {
-    padding: 1rem 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
   
   .upload-area {

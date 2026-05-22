@@ -9,10 +9,18 @@
 .header-inner {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
+}
+@media (max-width: 768px) {
+  .header-mobile.header {
+    background: var(--background);
+    border-bottom: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 .brand {
   display: inline-flex;

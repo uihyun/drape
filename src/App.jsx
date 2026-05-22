@@ -68,11 +68,7 @@ export default function App() {
           onSignOut={handleSignOut}
           onOpenCredits={() => setCreditModalOpen(true)}
         />
-        <MobileHeader
-          user={user}
-          credits={credits}
-          onOpenCredits={() => setCreditModalOpen(true)}
-        />
+        <MobileHeader />
 
         <main className="main">
           <Routes>
