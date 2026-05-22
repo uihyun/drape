@@ -113,6 +113,7 @@ export const ko = {
   calendarSignInTitle: 'OOTD 캘린더',
   calendarHint: '날짜를 눌러 그 날 입은 옷을 기록하세요.',
   weekdays: { sun: '일', mon: '월', tue: '화', wed: '수', thu: '목', fri: '금', sat: '토' },
+  weekdaysShort: { sun: '일', mon: '월', tue: '화', wed: '수', thu: '목', fri: '금', sat: '토' },
 
   // ── Feed ───────────────────────────────────────────────────────────
   feedEmpty: '아직 공개된 코디가 없어요. 첫 번째로 공유해 보세요.',

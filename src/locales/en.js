@@ -113,6 +113,7 @@ export const en = {
   calendarSignInTitle: 'OOTD calendar',
   calendarHint: 'Tap a day to log what you wore.',
   weekdays: { sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' },
+  weekdaysShort: { sun: 'S', mon: 'M', tue: 'T', wed: 'W', thu: 'T', fri: 'F', sat: 'S' },
 
   // ── Feed ───────────────────────────────────────────────────────────
   feedEmpty: 'No public outfits yet — be the first to post.',

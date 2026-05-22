@@ -531,47 +531,87 @@
 }
 .outfit-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ── Calendar ──────────────────────────────────────────────────────── */
+/* ── Calendar (Lekondo: photo-first month grid) ────────────────────── */
 .calendar-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  margin: 0.25rem 0 0.75rem;
 }
+.calendar-header h2 {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text-primary);
+}
+.calendar-header .btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.calendar-header .btn:hover { background: var(--surface-elevated); color: var(--text-primary); }
 .calendar-weekdays {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 0.25rem;
-  font-size: 0.75rem; color: var(--text-muted);
-  text-align: center; padding-bottom: 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0 0 0.4rem;
+  letter-spacing: 0.04em;
 }
+.calendar-weekday { padding-left: 4px; }
 .calendar-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* Lekondo cells share faint hairlines drawn by inset shadows on the
+     cells themselves — no gap between cells so photos sit edge to edge. */
+  gap: 0;
 }
 .calendar-cell {
-  aspect-ratio: 1 / 1;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  aspect-ratio: 4 / 5;
   background: var(--surface);
   position: relative;
   overflow: hidden;
+  box-shadow: inset -1px -1px 0 0 var(--border);
 }
-.calendar-cell.empty { background: transparent; border-color: transparent; }
-.calendar-cell.today { border-color: var(--accent); }
+.calendar-cell.empty { background: transparent; box-shadow: inset -1px -1px 0 0 var(--border); }
+.calendar-cell.today { box-shadow: inset 0 0 0 1.5px var(--text-primary); }
 .calendar-day-num {
-  position: absolute; top: 4px; left: 6px;
-  font-size: 0.75rem; color: var(--text-secondary);
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   z-index: 1;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
 }
 .calendar-thumb {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .calendar-pill {
-  position: absolute; bottom: 4px; right: 4px;
-  background: var(--accent);
-  color: #FAFAFA;
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: var(--text-primary);
+  color: #fff;
   border-radius: 999px;
   padding: 0.1rem 0.4rem;
   font-size: 0.6rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 /* ── Try-on ─────────────────────────────────────────────────────────── */

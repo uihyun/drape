@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -56,18 +57,18 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   return (
     <div className={`calendar${embedded ? ' calendar-embedded' : ''}`}>
       <div className="calendar-header">
-        <button className="btn btn-secondary" onClick={() => setCursor(new Date(year, month0 - 1, 1))}>
-          <i className="material-icons">chevron_left</i>
+        <button type="button" className="btn" aria-label="Previous month" onClick={() => setCursor(new Date(year, month0 - 1, 1))}>
+          <ChevronLeft size={20} strokeWidth={1.6} />
         </button>
         <h2>{monthLabel}</h2>
-        <button className="btn btn-secondary" onClick={() => setCursor(new Date(year, month0 + 1, 1))}>
-          <i className="material-icons">chevron_right</i>
+        <button type="button" className="btn" aria-label="Next month" onClick={() => setCursor(new Date(year, month0 + 1, 1))}>
+          <ChevronRight size={20} strokeWidth={1.6} />
         </button>
       </div>
 
       <div className="calendar-weekdays">
         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-          <div key={d} className="calendar-weekday">{t(`weekdays.${d.toLowerCase()}`)}</div>
+          <div key={d} className="calendar-weekday">{t(`weekdaysShort.${d.toLowerCase()}`)}</div>
         ))}
       </div>
 
@@ -91,9 +92,6 @@ export function Calendar({ user, onSignIn, embedded = false }) {
         })}
       </div>
 
-      <p className="muted" style={{ marginTop: '1rem' }}>
-        {t('calendarHint')}
-      </p>
     </div>
   );
 }
