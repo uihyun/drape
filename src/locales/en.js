@@ -40,6 +40,7 @@ export const en = {
   submit: 'Submit',
   submitting: 'Submitting…',
   uploading: 'Uploading…',
+  upload: 'Upload',
   processing: 'Processing',
   processFailed: 'Failed',
 

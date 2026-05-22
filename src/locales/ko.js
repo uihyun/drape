@@ -40,6 +40,7 @@ export const ko = {
   submit: '제출',
   submitting: '제출 중…',
   uploading: '업로드 중…',
+  upload: '업로드',
   processing: '처리 중',
   processFailed: '실패',
 
