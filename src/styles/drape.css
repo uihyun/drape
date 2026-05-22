@@ -249,36 +249,43 @@
 }
 .closet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.75rem;
+  /* Lekondo's closet is fixed 3-col on every viewport — items stay
+     legible and the rhythm of the page stays predictable. */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem 0.75rem;
 }
 .item-card {
   text-decoration: none;
   color: inherit;
   background: var(--surface);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
+  border: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  gap: 0.4rem;
+  transition: opacity 0.15s ease;
 }
-.item-card:hover { border-color: var(--border-hover); }
-.item-card.builder-pickable { cursor: pointer; background: var(--surface); border: 1px solid var(--border); }
-.item-card.builder-pickable.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.item-card:hover { opacity: 0.85; }
+.item-card.builder-pickable { cursor: pointer; }
+.item-card.builder-pickable.selected .item-card-image {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
 .item-card.processing { opacity: 0.9; }
 .item-card-image {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: var(--surface-elevated);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-radius: 6px;
 }
 .item-card-image img {
-  width: 100%; height: 100%; object-fit: cover;
+  /* Lekondo cutouts: clothing on white, contained (never cropped). */
+  width: 100%; height: 100%; object-fit: contain;
+  padding: 6px;
 }
 .item-card-skeleton {
   width: 100%; height: 100%;
@@ -309,16 +316,32 @@
   50% { opacity: 1; }
 }
 .item-card-meta {
-  padding: 0.5rem 0.6rem;
+  padding: 0 2px;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  min-width: 0;
 }
-.item-card-cat { color: var(--text-primary); font-weight: 500; }
-.item-card-color { color: var(--text-muted); }
+.item-card-cat {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.item-card-name {
+  color: var(--text-primary);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ── Filter chips ─────────────────────────────────────────────────── */
+/* Default chip = full pill (used by Outfit Builder, Try-on, etc).
+   Closet's filter row uses .filter-chips--text below for the Lekondo
+   underline-tab look. */
 .filter-chips {
   display: flex;
   gap: 0.4rem;
@@ -344,6 +367,37 @@
 }
 .chip.readonly { cursor: default; }
 .chip:disabled { opacity: 0.45; cursor: default; }
+
+/* Lekondo-style "text tab" variant: borderless chips with an underline
+   on the active item. Used by the Closet category filter. */
+.filter-chips--text {
+  gap: 1.1rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.filter-chips--text .chip {
+  border: none;
+  background: none;
+  padding: 0.2rem 0;
+  border-radius: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  position: relative;
+}
+.filter-chips--text .chip.active {
+  color: var(--text-primary);
+  background: none;
+  font-weight: 600;
+}
+.filter-chips--text .chip.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -0.62rem;
+  height: 2px;
+  background: var(--text-primary);
+}
 
 /* ── Buttons ───────────────────────────────────────────────────────── */
 .btn {

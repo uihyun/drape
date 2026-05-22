@@ -54,7 +54,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         </div>
       )}
 
-      <div className="filter-chips" role="tablist">
+      <div className="filter-chips filter-chips--text" role="tablist">
         <button
           className={`chip ${filter === 'all' ? 'active' : ''}`}
           onClick={() => setFilter('all')}
@@ -117,8 +117,8 @@ function ItemCard({ item, t }) {
         {item.tags?.category && (
           <span className="item-card-cat">{t(`taxonomy.categories.${item.tags.category}`)}</span>
         )}
-        {item.tags?.colors?.[0] && (
-          <span className="item-card-color">{t(`taxonomy.colors.${item.tags.colors[0]}`)}</span>
+        {item.name && (
+          <span className="item-card-name">{item.name}</span>
         )}
       </div>
     </Link>
