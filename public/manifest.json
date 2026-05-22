@@ -1,0 +1,74 @@
+{
+  "name": "Drape — Digital Closet & Virtual Try-On",
+  "short_name": "Drape",
+  "description": "Photograph your wardrobe, see clothes on yourself before wearing them, and log your daily outfits.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-48.webp",
+      "type": "image/webp",
+      "sizes": "48x48",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-72.webp",
+      "type": "image/webp",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96.webp",
+      "type": "image/webp",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128.webp",
+      "type": "image/webp",
+      "sizes": "128x128",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.webp",
+      "type": "image/webp",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-256.webp",
+      "type": "image/webp",
+      "sizes": "256x256",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.webp",
+      "type": "image/webp",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "lifestyle",
+    "photo",
+    "shopping"
+  ],
+  "lang": "en-US",
+  "shortcuts": [
+    {
+      "name": "Add Clothing",
+      "short_name": "Add",
+      "description": "Snap a new item for your closet",
+      "url": "/?action=add-item"
+    },
+    {
+      "name": "Today's OOTD",
+      "short_name": "OOTD",
+      "description": "Log today's outfit",
+      "url": "/calendar?today=1"
+    }
+  ]
+}

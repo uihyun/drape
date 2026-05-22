@@ -1,0 +1,68 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── items/{uid}/{itemId}/(original|cropped).<ext> ──────────────────
+    // Closet item images. Owner upload + read. Reads are owner-only since
+    // items themselves are private (only outfit cover images get public).
+    match /items/{userId}/{itemId}/{filename} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 12 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── identity/{uid}/{n}.jpg ─────────────────────────────────────────
+    // User's identity reference photos for virtual try-on. Private.
+    match /identity/{userId}/{filename} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 12 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── generations/{uid}/{generationId}/{idx}.png ─────────────────────
+    // Virtual try-on results. Server writes the variants via the
+    // virtualTryOn callable; client can still read.
+    match /generations/{userId}/{generationId}/{filename} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // server-only
+    }
+
+    // ── ootds/{uid}/<YYYY-MM-DD>.jpg ───────────────────────────────────
+    // Per-day OOTD selfies. Private to owner.
+    match /ootds/{userId}/{filename} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && (request.resource == null || (
+          request.resource.size < 8 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
+    }
+
+    // ── outfit covers (optional) ───────────────────────────────────────
+    // If an outfit picks a try-on result as cover, the URL points back to
+    // generations/... above (private-by-default). If the user uploads a
+    // separate cover/collage we land it here. Outfit is public when
+    // isListed=true, so the cover must be public-readable.
+    match /outfits/{userId}/{outfitId}/{filename} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 12 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── users/{uid}/profile/<filename> ─────────────────────────────────
+    // Profile avatar. Public read.
+    match /users/{userId}/profile/{filename} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

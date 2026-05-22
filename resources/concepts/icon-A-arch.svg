@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26221C"/>
+      <stop offset="1" stop-color="#1A1712"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgA)"/>
+
+  <!-- subtle blueprint grid -->
+  <g stroke="#F5EDE0" stroke-width="0.5" opacity="0.04">
+    <line x1="0" y1="256" x2="1024" y2="256"/>
+    <line x1="0" y1="512" x2="1024" y2="512"/>
+    <line x1="0" y1="768" x2="1024" y2="768"/>
+    <line x1="256" y1="0" x2="256" y2="1024"/>
+    <line x1="512" y1="0" x2="512" y2="1024"/>
+    <line x1="768" y1="0" x2="768" y2="1024"/>
+  </g>
+
+  <!-- Atelier window: Palladian-style, 320w x 500h, centered -->
+  <g transform="translate(352, 240)" stroke="#F5EDE0" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer arched frame -->
+    <path d="M 0 160 A 160 160 0 0 1 320 160 L 320 500 L 0 500 Z" stroke-width="14"/>
+    <!-- Vertical mullion -->
+    <line x1="160" y1="2" x2="160" y2="500" stroke-width="8"/>
+    <!-- Horizontal transom -->
+    <line x1="0" y1="290" x2="320" y2="290" stroke-width="8"/>
+    <!-- Inner concentric arch (subtle architectural depth) -->
+    <path d="M 30 160 A 130 130 0 0 1 290 160" stroke-width="2" opacity="0.35"/>
+  </g>
+
+  <!-- Gold architectural endmark -->
+  <g>
+    <line x1="436" y1="822" x2="588" y2="822" stroke="#C9A961" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="436" cy="822" r="5" fill="#C9A961"/>
+    <circle cx="588" cy="822" r="5" fill="#C9A961"/>
+  </g>
+</svg>

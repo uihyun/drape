@@ -1,0 +1,26 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- L — Soft Bloom (Claude-adjacent, architectural):
+       Warm radial bloom emerging from center of a dark space.
+       Symbolic = transformation, AI breathing life into a room. -->
+  <defs>
+    <radialGradient id="bloom" cx="50%" cy="55%" r="55%">
+      <stop offset="0" stop-color="#F2D2B8"/>
+      <stop offset="0.18" stop-color="#D88B6E"/>
+      <stop offset="0.45" stop-color="#8B4A3A" stop-opacity="0.55"/>
+      <stop offset="0.75" stop-color="#3A2A22" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#1F1B16" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bgL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#23201B"/>
+      <stop offset="1" stop-color="#15130F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgL)"/>
+
+  <!-- Main bloom -->
+  <circle cx="512" cy="560" r="500" fill="url(#bloom)"/>
+
+  <!-- Smaller hot core for ember warmth -->
+  <circle cx="512" cy="560" r="80" fill="#FBE5C9" opacity="0.45"/>
+  <circle cx="512" cy="560" r="30" fill="#FFF2DC" opacity="0.7"/>
+</svg>

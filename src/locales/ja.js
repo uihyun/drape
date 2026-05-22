@@ -1,0 +1,23 @@
+// Japanese locale — lean for v0. Missing keys fall back to en.
+export const ja = {
+  navCloset: 'クローゼット',
+  navOutfits: 'コーデ',
+  navCalendar: 'カレンダー',
+  navTryOn: '試着',
+  navFeed: 'フィード',
+  navMe: 'マイページ',
+  signIn: 'ログイン',
+  signInGoogle: 'Google でログイン',
+  signOut: 'ログアウト',
+  back: '戻る',
+  next: '次へ',
+  start: 'はじめる',
+  skip: 'スキップ',
+  save: '保存',
+  cancel: 'キャンセル',
+  delete: '削除',
+  close: '閉じる',
+  addItem: 'アイテム追加',
+  takePhoto: '撮影',
+  uploadPhoto: 'アップロード',
+};

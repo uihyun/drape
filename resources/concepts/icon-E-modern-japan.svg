@@ -1,0 +1,22 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- E — Modern Japan / Muji-adjacent: bone white paper, sumi-ink mark, single vermilion (朱) note. -->
+  <rect width="1024" height="1024" fill="#F4EFE6"/>
+
+  <!-- Subtle paper grain via faint horizontal lines (very low opacity) -->
+  <g stroke="#1A1817" opacity="0.025" stroke-width="0.5">
+    <line x1="0" y1="200" x2="1024" y2="200"/>
+    <line x1="0" y1="500" x2="1024" y2="500"/>
+    <line x1="0" y1="800" x2="1024" y2="800"/>
+  </g>
+
+  <!-- Mincho 'a' — paper ink feel, thin weight -->
+  <text x="500" y="760"
+        font-family="'Hiragino Mincho ProN', 'Yu Mincho', 'New York', 'Hoefler Text', 'Cormorant Garamond', serif"
+        font-size="800"
+        font-weight="300"
+        text-anchor="middle"
+        fill="#1A1817">a</text>
+
+  <!-- Single vermilion (朱色) hanko-like dot — the only color in the system -->
+  <circle cx="700" cy="740" r="22" fill="#C8412B"/>
+</svg>

@@ -1,0 +1,42 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- M — Plan Compass: architect's signature mark.
+       North arrow inside a circle — the symbol every floor plan starts with. -->
+  <rect width="1024" height="1024" fill="#EDE7DB"/>
+
+  <!-- Faint blueprint corner ticks (architect's drawing) -->
+  <g stroke="#1F1B16" opacity="0.10" stroke-width="2" stroke-linecap="round">
+    <line x1="120" y1="120" x2="170" y2="120"/>
+    <line x1="120" y1="120" x2="120" y2="170"/>
+    <line x1="904" y1="120" x2="854" y2="120"/>
+    <line x1="904" y1="120" x2="904" y2="170"/>
+    <line x1="120" y1="904" x2="170" y2="904"/>
+    <line x1="120" y1="904" x2="120" y2="854"/>
+    <line x1="904" y1="904" x2="854" y2="904"/>
+    <line x1="904" y1="904" x2="904" y2="854"/>
+  </g>
+
+  <!-- Outer compass circle -->
+  <circle cx="512" cy="512" r="280" fill="none" stroke="#1F1B16" stroke-width="6"/>
+
+  <!-- Inner cross-hair ticks -->
+  <g stroke="#1F1B16" stroke-width="3" stroke-linecap="round" opacity="0.4">
+    <line x1="512" y1="232" x2="512" y2="280"/>
+    <line x1="512" y1="744" x2="512" y2="792"/>
+    <line x1="232" y1="512" x2="280" y2="512"/>
+    <line x1="744" y1="512" x2="792" y2="512"/>
+  </g>
+
+  <!-- North arrow (filled triangle) — half black half outlined for classic plan compass look -->
+  <!-- Left half (filled) -->
+  <path d="M 512 232 L 512 720 L 440 660 Z" fill="#1F1B16"/>
+  <!-- Right half (outlined only) -->
+  <path d="M 512 232 L 512 720 L 584 660 Z" fill="none" stroke="#1F1B16" stroke-width="6" stroke-linejoin="miter"/>
+
+  <!-- Small N marker above -->
+  <text x="512" y="180"
+        font-family="'Helvetica Neue', 'SF Pro', sans-serif"
+        font-size="48"
+        font-weight="500"
+        text-anchor="middle"
+        fill="#1F1B16">N</text>
+</svg>

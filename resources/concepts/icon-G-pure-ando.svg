@@ -1,0 +1,26 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- G — Pure Ando: cool concrete gray bg, deep black mark, ZERO color accent.
+       The strictest monotone reading. Zen / brutalist / Tadao Ando. -->
+  <defs>
+    <linearGradient id="bgG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C5C2BC"/>
+      <stop offset="0.5" stop-color="#B8B5AE"/>
+      <stop offset="1" stop-color="#A8A59E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgG)"/>
+
+  <!-- Tadao Ando-style slot of light from one side (very subtle) -->
+  <rect x="0" y="0" width="1024" height="1024" fill="#FFFFFF" opacity="0.06"/>
+  <rect x="800" y="0" width="224" height="1024" fill="#1F1B16" opacity="0.05"/>
+
+  <!-- Roman 'a' — pure black, no italics -->
+  <text x="512" y="760"
+        font-family="'Hoefler Text', 'New York', 'Cochin', 'Cormorant Garamond', 'Garamond', serif"
+        font-size="800"
+        font-weight="400"
+        text-anchor="middle"
+        fill="#0F0E0D">a</text>
+
+  <!-- No accent. Single letter, single color. -->
+</svg>

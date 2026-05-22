@@ -1,0 +1,21 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26221C"/>
+      <stop offset="1" stop-color="#1A1712"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgB)"/>
+
+  <!-- Italic 'a' — stately Didot-style. Renders with Mac's Hoefler Text / Didot. -->
+  <text x="500" y="760"
+        font-family="'Hoefler Text', 'Didot', 'Cormorant Garamond', 'Garamond', 'Times New Roman', serif"
+        font-size="820"
+        font-weight="400"
+        font-style="italic"
+        text-anchor="middle"
+        fill="#F5EDE0">a</text>
+
+  <!-- Gold full-stop = "archelier." -->
+  <circle cx="708" cy="730" r="26" fill="#C9A961"/>
+</svg>

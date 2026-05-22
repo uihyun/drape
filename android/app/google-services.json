@@ -1,0 +1,78 @@
+{
+  "project_info": {
+    "project_number": "762268177686",
+    "project_id": "voda-7647c",
+    "storage_bucket": "voda-7647c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762268177686:android:0c4dce52d45ce47118ac37",
+        "android_client_info": {
+          "package_name": "com.voda.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762268177686-b5d92nu12ms6ud6ra9pnco5j0oc1fij0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.voda.app",
+            "certificate_hash": "0f4ee6005a8c86b18e993bb6f8b5635e5158b829"
+          }
+        },
+        {
+          "client_id": "762268177686-lpg5n9g9k8oe7l35q7sf2kgl5mjog54b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.voda.app",
+            "certificate_hash": "e665bf71b13d35db71f970548fcf6fbfaa57ca95"
+          }
+        },
+        {
+          "client_id": "762268177686-ou9ttst9b5r86dfjsj3tl41rmimv244s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.voda.app",
+            "certificate_hash": "4f27ae058d7d5c0d5320b3eed1691bad2f44f5de"
+          }
+        },
+        {
+          "client_id": "762268177686-s3eq6n5rls27bn9aiii30uabr74lko6f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.voda.app",
+            "certificate_hash": "5485876c29e5f882751f21640fef799bbe09f7d6"
+          }
+        },
+        {
+          "client_id": "762268177686-oroo25i8l8eg5uhs5cgg98tifqbtjb9l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlerwcMCe6STOLXfnS2-RvbxYICZka72I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762268177686-oroo25i8l8eg5uhs5cgg98tifqbtjb9l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "762268177686-8ohuut2th6uk2g74ekj3mmuf0fvqfjfj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.voda.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,48 @@
+<svg width="1080" height="2340" viewBox="0 0 1080 2340" xmlns="http://www.w3.org/2000/svg">
+  <!-- Splash D-1 — Fraunces 폰트 적용 + 'a' 위치 옴김. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E1D9C8"/>
+      <stop offset="0.6" stop-color="#D2C9B7"/>
+      <stop offset="1" stop-color="#BFB6A2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="2340" fill="url(#bg)"/>
+  <rect width="1080" height="2340" fill="#FFFFFF" opacity="0.05"/>
+
+  <!-- 'a' mark — moved up 80px from D's 1100 to 1020 for cleaner optical centering -->
+  <text x="540" y="1020"
+        font-family="Fraunces, 'Hoefler Text', 'Cochin', 'Cormorant Garamond', serif"
+        font-size="640"
+        font-weight="400"
+        text-anchor="middle"
+        fill="#1F1B16">a</text>
+
+  <circle cx="734" cy="1015" r="18" fill="#B5654A"/>
+
+  <!-- Wordmark -->
+  <text x="540" y="1280"
+        font-family="Fraunces, 'Hoefler Text', 'Cochin', 'Cormorant Garamond', serif"
+        font-size="92"
+        font-weight="400"
+        text-anchor="middle"
+        fill="#1F1B16"
+        letter-spacing="3">archelier</text>
+
+  <line x1="430" y1="1340" x2="650" y2="1340" stroke="#B5654A" stroke-width="2" stroke-linecap="round"/>
+
+  <text x="540" y="1410"
+        font-family="'Helvetica Neue', 'Avenir Next', 'Inter', sans-serif"
+        font-size="28"
+        font-weight="300"
+        text-anchor="middle"
+        fill="#1F1B16"
+        opacity="0.55"
+        letter-spacing="6">A T E L I E R   ·   A I</text>
+
+  <g opacity="0.35">
+    <circle cx="486" cy="2160" r="3" fill="#1F1B16"/>
+    <line x1="498" y1="2160" x2="582" y2="2160" stroke="#1F1B16" stroke-width="1" stroke-linecap="round"/>
+    <circle cx="594" cy="2160" r="3" fill="#1F1B16"/>
+  </g>
+</svg>

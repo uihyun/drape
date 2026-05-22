@@ -1,0 +1,25 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- J — Capital A: monumental architectural lintel feel.
+       Optima/Trajan-style caps reference Roman inscriptional letterforms. -->
+  <defs>
+    <linearGradient id="bgJ" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D4CCBA"/>
+      <stop offset="1" stop-color="#BFB6A2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgJ)"/>
+
+  <!-- Capital 'A' — humanist sans for monumental classical inscription feel -->
+  <text x="512" y="780"
+        font-family="'Optima', 'Avenir Next', 'New York', 'Hoefler Text', serif"
+        font-size="780"
+        font-weight="500"
+        text-anchor="middle"
+        fill="#1F1B16"
+        letter-spacing="0">A</text>
+
+  <!-- Architectural lintel detail — thin horizontal line above (column capital reference) -->
+  <line x1="340" y1="240" x2="684" y2="240" stroke="#1F1B16" stroke-width="3" opacity="0.45" stroke-linecap="round"/>
+  <!-- Base groundline -->
+  <line x1="340" y1="850" x2="684" y2="850" stroke="#1F1B16" stroke-width="3" opacity="0.45" stroke-linecap="round"/>
+</svg>

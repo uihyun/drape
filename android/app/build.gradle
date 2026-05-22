@@ -1,0 +1,74 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.voda.app"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.voda.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 3
+        versionName "1.0.2"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    // Release signing — reads from ~/.gradle/gradle.properties (user-global,
+    // never in the repo). Properties:
+    //   ARCHELIER_UPLOAD_STORE_FILE     (path to .keystore)
+    //   ARCHELIER_UPLOAD_STORE_PASSWORD
+    //   ARCHELIER_UPLOAD_KEY_ALIAS
+    //   ARCHELIER_UPLOAD_KEY_PASSWORD
+    // CI / contributors without the keystore get a graceful skip (release
+    // build will fail at the actual sign step with a clear error instead of
+    // a confusing Groovy NPE).
+    signingConfigs {
+        release {
+            if (project.hasProperty('ARCHELIER_UPLOAD_STORE_FILE')) {
+                storeFile file(ARCHELIER_UPLOAD_STORE_FILE)
+                storePassword ARCHELIER_UPLOAD_STORE_PASSWORD
+                keyAlias ARCHELIER_UPLOAD_KEY_ALIAS
+                keyPassword ARCHELIER_UPLOAD_KEY_PASSWORD
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

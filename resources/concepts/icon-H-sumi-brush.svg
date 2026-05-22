@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- H — Sumi Brush 'a': letter still 'a' but feels brushed (heavy italic + ink splatter). -->
+  <rect width="1024" height="1024" fill="#F4EFE6"/>
+
+  <!-- Heavy italic 'a' for brushy weight -->
+  <text x="500" y="780"
+        font-family="'Big Caslon', 'Hoefler Text', 'Didot', 'Cormorant Garamond', serif"
+        font-size="820"
+        font-weight="700"
+        font-style="italic"
+        text-anchor="middle"
+        fill="#1A1817">a</text>
+
+  <!-- Ink splatter detail — small irregular drop near baseline -->
+  <ellipse cx="708" cy="745" rx="20" ry="18" fill="#1A1817"/>
+  <circle cx="744" cy="772" r="5" fill="#1A1817"/>
+  <circle cx="694" cy="788" r="3" fill="#1A1817" opacity="0.7"/>
+</svg>

@@ -1,0 +1,173 @@
+// === ItemService =======================================================
+// CRUD + async processing pipeline for a single clothing item.
+//
+// Flow (see brief §6 — "등록 = 비동기 파이프라인"):
+//   1. createItem(blob)
+//        → uploads original image to Storage
+//        → writes Firestore doc with status='processing' (skeleton card)
+//        → invokes `processItem` Cloud Function (fire-and-forget)
+//   2. The Closet grid subscribes via onSnapshot — placeholder cards swap to
+//      `status='ready'` the moment the function writes the cropped image +
+//      tags back. User never waits on a single registration.
+
+import {
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  onSnapshot,
+  serverTimestamp,
+  deleteDoc,
+  updateDoc,
+} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { httpsCallable } from 'firebase/functions';
+import { db, storage, functions, auth } from '../firebase.js';
+
+const ITEMS = 'items';
+
+// === Storage paths =====================================================
+// items/{uid}/{itemId}/original.jpg  — raw upload (kept for re-processing)
+// items/{uid}/{itemId}/cropped.png   — background-removed crop (the "hero")
+// Identity refs live under identity/{uid}/{n}.jpg — see identity-service.js.
+
+function itemStorageRef(uid, itemId, filename) {
+  return ref(storage, `items/${uid}/${itemId}/${filename}`);
+}
+
+/**
+ * Create a new closet item. Returns { id } immediately — caller can render a
+ * skeleton card while `status='processing'`. The cropped image + tags are
+ * written by the `processItem` Cloud Function when it finishes.
+ */
+async function createItem({ blob, mime = 'image/jpeg' }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+
+  // 1. Reserve an id by creating the doc with status=uploading first. Lets us
+  //    upload to a path keyed on that id (instead of guessing client-side).
+  const itemsCol = collection(db, ITEMS);
+  const draft = await addDoc(itemsCol, {
+    userId: user.uid,
+    status: 'uploading',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  const itemId = draft.id;
+
+  // 2. Upload original.
+  const originalRef = itemStorageRef(user.uid, itemId, `original.${mime === 'image/png' ? 'png' : 'jpg'}`);
+  await uploadBytes(originalRef, blob, { contentType: mime });
+  const originalUrl = await getDownloadURL(originalRef);
+
+  // 3. Flip to processing + record the path. Listener UI shows skeleton.
+  await updateDoc(doc(db, ITEMS, itemId), {
+    status: 'processing',
+    originalUrl,
+    originalPath: originalRef.fullPath,
+    updatedAt: serverTimestamp(),
+  });
+
+  // 4. Fire-and-forget the worker. The function reads the doc by id, does
+  //    background-remove + auto-tag, and writes croppedUrl + tags back.
+  //    We don't await — registration UX is "drop it and keep shooting".
+  try {
+    const processItem = httpsCallable(functions, 'processItem');
+    processItem({ itemId }).catch(err => console.warn('processItem dispatch:', err?.message));
+  } catch (err) {
+    // Non-fatal — the user sees a 'processing' card; admin can re-run.
+    console.warn('processItem callable missing:', err?.message);
+  }
+
+  return { id: itemId };
+}
+
+/** Subscribe to the current user's closet in modified-time DESC. */
+function subscribeMyCloset(uid, onChange, { pageSize = 60 } = {}) {
+  const q = query(
+    collection(db, ITEMS),
+    where('userId', '==', uid),
+    orderBy('createdAt', 'desc'),
+    limit(pageSize),
+  );
+  return onSnapshot(q, snap => {
+    onChange(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+}
+
+/** One-shot paginated read for archives / older items. */
+async function loadMyCloset({ uid, pageSize = 60, cursor = null } = {}) {
+  const constraints = [
+    where('userId', '==', uid),
+    orderBy('createdAt', 'desc'),
+    limit(pageSize),
+  ];
+  if (cursor) constraints.push(startAfter(cursor));
+  const snap = await getDocs(query(collection(db, ITEMS), ...constraints));
+  return {
+    items: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
+}
+
+async function getItem(itemId) {
+  const snap = await getDoc(doc(db, ITEMS, itemId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+/** Owner-only edits — tag corrections, rename, archive toggle. */
+async function updateItem(itemId, patch) {
+  // The Firestore rule limits which keys may change; keep this list aligned.
+  const allowed = ['name', 'notes', 'tags', 'isArchived', 'isFavorite'];
+  const safe = Object.fromEntries(
+    Object.entries(patch).filter(([k]) => allowed.includes(k))
+  );
+  safe.updatedAt = serverTimestamp();
+  await updateDoc(doc(db, ITEMS, itemId), safe);
+}
+
+async function deleteItem(itemId) {
+  const it = await getItem(itemId);
+  if (!it) return;
+  // Storage cleanup — best effort. Firestore doc removal is the source of
+  // truth; orphan files are pruned by a scheduled function later.
+  for (const path of [it.originalPath, it.croppedPath]) {
+    if (!path) continue;
+    try { await deleteObject(ref(storage, path)); } catch { /* ignore */ }
+  }
+  await deleteDoc(doc(db, ITEMS, itemId));
+}
+
+/**
+ * Manually re-run the processing pipeline (e.g. user wasn't happy with the
+ * auto-crop or tags). Resets status back to 'processing' so the listener
+ * reverts to a skeleton card until the function writes results.
+ */
+async function reprocessItem(itemId) {
+  await updateDoc(doc(db, ITEMS, itemId), {
+    status: 'processing',
+    updatedAt: serverTimestamp(),
+  });
+  const processItem = httpsCallable(functions, 'processItem');
+  await processItem({ itemId });
+}
+
+export const ItemService = {
+  createItem,
+  subscribeMyCloset,
+  loadMyCloset,
+  getItem,
+  updateItem,
+  deleteItem,
+  reprocessItem,
+};
+
+export default ItemService;

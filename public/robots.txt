@@ -1,0 +1,8 @@
+# archelier robots.txt
+User-agent: *
+Allow: /
+
+# Auth handler / webhook endpoints — no crawl needed.
+Disallow: /__/
+
+Sitemap: https://archelier.co/sitemap.xml

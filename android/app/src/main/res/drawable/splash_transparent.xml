@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ 시스템 splash 의 icon 자리에 박는 빈 drawable.
+     OS 가 splash 자체 표시는 강제하지만 icon 을 transparent 로 두면
+     베이지 빈 배경만 1초 보이고 끝남. 그 뒤 Capacitor splash 가
+     우리 애니메이션 splash 를 표시 — 사용자 입장에선 우리 splash 만
+     본 것처럼 자연스럽게 이어짐. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>

@@ -1,0 +1,36 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- F — Architect's Drafting Notebook: tracing-paper bg, geometric sans mark, blueprint grid + small red plan-line. -->
+  <rect width="1024" height="1024" fill="#EDE7DB"/>
+
+  <!-- Faint blueprint grid -->
+  <g stroke="#3A4F6E" stroke-width="0.6" opacity="0.14">
+    <line x1="0" y1="128" x2="1024" y2="128"/>
+    <line x1="0" y1="256" x2="1024" y2="256"/>
+    <line x1="0" y1="384" x2="1024" y2="384"/>
+    <line x1="0" y1="512" x2="1024" y2="512"/>
+    <line x1="0" y1="640" x2="1024" y2="640"/>
+    <line x1="0" y1="768" x2="1024" y2="768"/>
+    <line x1="0" y1="896" x2="1024" y2="896"/>
+    <line x1="128" y1="0" x2="128" y2="1024"/>
+    <line x1="256" y1="0" x2="256" y2="1024"/>
+    <line x1="384" y1="0" x2="384" y2="1024"/>
+    <line x1="512" y1="0" x2="512" y2="1024"/>
+    <line x1="640" y1="0" x2="640" y2="1024"/>
+    <line x1="768" y1="0" x2="768" y2="1024"/>
+    <line x1="896" y1="0" x2="896" y2="1024"/>
+  </g>
+
+  <!-- Architectural sans 'a' — geometric, technical -->
+  <text x="500" y="740"
+        font-family="'Helvetica Neue', 'SF Pro Display', 'Avenir Next', 'Inter', sans-serif"
+        font-size="780"
+        font-weight="500"
+        text-anchor="middle"
+        fill="#1F2A3A">a</text>
+
+  <!-- Small red plan-line correction mark — tick + dot (architect's pencil) -->
+  <g stroke="#C8392E" stroke-linecap="round">
+    <line x1="660" y1="710" x2="710" y2="710" stroke-width="4"/>
+    <circle cx="722" cy="710" r="6" fill="#C8392E"/>
+  </g>
+</svg>

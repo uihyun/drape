@@ -1,0 +1,29 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- K — Light Cone (Ando oculus): single beam of light entering a dark concrete space.
+       Tadao Ando "Church of Light" reference. Symbolic = AI illuminating your space. -->
+  <defs>
+    <linearGradient id="bgK" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1A1817"/>
+      <stop offset="1" stop-color="#0E0D0C"/>
+    </linearGradient>
+    <!-- Light beam gradient (cream → transparent at edges) -->
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F5EDE0" stop-opacity="0"/>
+      <stop offset="0.15" stop-color="#F5EDE0" stop-opacity="0.92"/>
+      <stop offset="0.85" stop-color="#F5EDE0" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#F5EDE0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bgK)"/>
+
+  <!-- Diagonal beam of light entering from upper-left -->
+  <g transform="rotate(28 512 512)">
+    <rect x="-80" y="380" width="1280" height="180" fill="url(#beam)"/>
+  </g>
+
+  <!-- Aperture — small bright slit at upper-left where light originates -->
+  <rect x="160" y="180" width="120" height="14" fill="#F5EDE0" opacity="0.85"/>
+
+  <!-- Subtle floor/wall edge line (where the beam hits) -->
+  <line x1="0" y1="820" x2="1024" y2="820" stroke="#F5EDE0" stroke-width="1.5" opacity="0.18"/>
+</svg>

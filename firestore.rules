@@ -1,0 +1,268 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── users/{uid} ────────────────────────────────────────────────────
+    // Self-readable. Profile fields self-writable; credit / billing /
+    // counter fields are server-only. identityRefs is self-writable so the
+    // identity-service can manage the user's reference photos directly.
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && !request.resource.data.keys().hasAny(
+            ['credits', 'lifetimeCredits', 'lastDailyBonusAt',
+             'plan', 'subscriptionStatus', 'subscriptionRenewsAt',
+             'cancelAtPeriodEnd', 'stripeCustomerId', 'stripeSubscriptionId',
+             'referralCode', 'referredBy',
+             'followerCount', 'followingCount']
+           );
+
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['credits', 'lifetimeCredits', 'lastDailyBonusAt',
+                     'plan', 'subscriptionStatus', 'subscriptionRenewsAt',
+                     'cancelAtPeriodEnd', 'stripeCustomerId', 'stripeSubscriptionId',
+                     'referralCode', 'referredBy',
+                     'followerCount', 'followingCount']);
+
+      allow delete: if false;
+    }
+
+    // ── Billing ledger / referral / promo — server-only ─────────────────
+    match /billingInvoices/{invoiceId} {
+      allow read, write: if false;
+    }
+    match /referralCodes/{code} {
+      allow read, write: if false;
+    }
+    match /promoCodes/{code} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /promoCodeUses/{id} {
+      allow read, write: if false;
+    }
+
+    // ── Reports ────────────────────────────────────────────────────────
+    // Doc ID convention: `${uid}_${targetType}_${targetId}` (one report per
+    // user per target). Server-only read.
+    match /reports/{reportId} {
+      allow read: if false;
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.targetType in ['outfit', 'item']
+        && request.resource.data.targetId is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason in ['spam', 'nsfw', 'copyright', 'other']
+        && reportId == request.auth.uid + '_' + request.resource.data.targetType + '_' + request.resource.data.targetId;
+      allow update, delete: if false;
+    }
+
+    // ── Items (the closet) ─────────────────────────────────────────────
+    match /items/{itemId} {
+      // Items are always private to the owner. Outfits posted publicly
+      // surface the cropped item images independently via outfit doc fields.
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status is string;
+
+      // Owner edits: tag corrections, rename, favorite, archive toggle. The
+      // status / croppedUrl / tags fields land via the processItem function;
+      // the reprocess flow flips status back to 'processing' from the client.
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'notes', 'tags', 'isArchived', 'isFavorite',
+                      'status', 'updatedAt', 'originalUrl', 'originalPath']);
+
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Outfits ───────────────────────────────────────────────────────
+    // An outfit references item ids the user owns. Public if isListed=true.
+    match /outfits/{outfitId} {
+      allow read: if resource.data.isListed == true
+        || (request.auth != null && resource.data.userId == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.itemIds is list
+        && request.resource.data.itemIds.size() > 0;
+
+      allow update: if (
+        request.auth != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
+                      'isPublic', 'isListed', 'listedAt', 'updatedAt',
+                      'likeCount', 'likedBy'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['notes'])
+            || !('notes' in request.resource.data)
+            || request.resource.data.notes == null
+            || (request.resource.data.notes is string && request.resource.data.notes.size() <= 280))
+      ) || (
+        // Like / unlike — any signed-in user, only the likedBy + count keys.
+        request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['likeCount', 'likedBy'])
+        && (
+          (
+            request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) + 1
+          ) || (
+            !request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1
+          )
+        )
+      );
+
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text', 'updatedAt']);
+        allow delete: if request.auth != null
+          && (
+            resource.data.userId == request.auth.uid
+            || get(/databases/$(database)/documents/outfits/$(outfitId)).data.userId == request.auth.uid
+          );
+      }
+    }
+
+    // ── OOTDs (daily calendar) ─────────────────────────────────────────
+    // Doc id is `${uid}_${YYYY-MM-DD}`. Always owner-only.
+    match /ootds/{ootdId} {
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && ootdId == request.auth.uid + '_' + request.resource.data.date
+        && request.resource.data.date is string;
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Generations (virtual try-on + feedback loop) ───────────────────
+    match /generations/{generationId} {
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      allow create: if false; // only the virtualTryOn Cloud Function
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['rating', 'ratedAt']);
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Bookmarks (saved outfits) ──────────────────────────────────────
+    match /users/{userId}/bookmarks/{outfitId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // ── Lookbooks (collections of outfits) ─────────────────────────────
+    match /collections/{collectionId} {
+      allow read: if resource.data.isPublic == true
+        || (request.auth != null && resource.data.ownerId == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80;
+
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'description', 'isPublic']);
+
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+
+      match /items/{outfitId} {
+        allow read: if get(/databases/$(database)/documents/collections/$(collectionId)).data.isPublic == true
+          || (request.auth != null
+              && get(/databases/$(database)/documents/collections/$(collectionId)).data.ownerId == request.auth.uid);
+        allow create, delete: if request.auth != null
+          && get(/databases/$(database)/documents/collections/$(collectionId)).data.ownerId == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    // ── Public profile + handles ───────────────────────────────────────
+    match /profiles/{userId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /handles/{handle} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── Follows + blocks ───────────────────────────────────────────────
+    match /follows/{followId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && followId == request.auth.uid + '_' + request.resource.data.followingId
+        && request.resource.data.followerId == request.auth.uid
+        && request.resource.data.followingId is string
+        && request.resource.data.followingId != request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.followerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /blocks/{blockId} {
+      allow read: if request.auth != null
+        && resource.data.blockerId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && blockId == request.auth.uid + '_' + request.resource.data.blockedId
+        && request.resource.data.blockerId == request.auth.uid
+        && request.resource.data.blockedId is string
+        && request.resource.data.blockedId != request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.blockerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ── Error logs ─────────────────────────────────────────────────────
+    match /errorLogs/{logId} {
+      allow create: if true;
+      allow read: if request.auth != null
+        && request.auth.token.email in ['uihyunkei@gmail.com'];
+    }
+
+    // ── Rate limits + admin — backend only ─────────────────────────────
+    match /rateLimits/{identifier} {
+      allow read, write: if false;
+    }
+    match /admin/{document=**} {
+      allow read, write: if request.auth != null
+        && request.auth.token.email in ['uihyunkei@gmail.com'];
+    }
+  }
+}

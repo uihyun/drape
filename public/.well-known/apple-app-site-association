@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["WG75TG59NJ.com.voda.app"],
+        "components": [
+          { "/": "/s/*", "comment": "shared design" },
+          { "/": "/c/*", "comment": "collection" },
+          { "/": "/u/*", "comment": "designer profile" },
+          { "/": "/designs/*", "comment": "owned design detail" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["WG75TG59NJ.com.voda.app"]
+  }
+}
