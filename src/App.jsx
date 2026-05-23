@@ -20,6 +20,7 @@ import { OutfitDetail } from './pages/OutfitDetail.jsx';
 import { OutfitShare } from './pages/OutfitShare.jsx';
 import { Calendar } from './pages/Calendar.jsx';
 import { Profile } from './pages/Profile.jsx';
+import { PublicProfile } from './pages/PublicProfile.jsx';
 import { Welcome } from './pages/Welcome.jsx';
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
@@ -106,6 +107,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
+          <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />
           <Route path="/closet" element={<Closet user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/closet/add" element={<AddItem user={user} onSignIn={handleSignIn} />} />
           <Route path="/i/:itemId" element={<ItemDetail user={user} />} />

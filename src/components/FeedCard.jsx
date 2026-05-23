@@ -1,14 +1,23 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Outfit feed card. Cover image dominates; meta is a single thin row of
-// @handle + like/comment counts under the photo (Lekondo-style).
+// @handle + like/comment counts under the photo (Lekondo-style). Card
+// uses an onClick (not a wrapping <Link>) so the inner @handle and
+// like button stay independent click targets without invalid nested
+// anchors.
 export function FeedCard({ outfit, user, author, onLike, onSignInRequest }) {
   const { t } = useLocale();
+  const navigate = useNavigate();
   const liked = !!(user && Array.isArray(outfit.likedBy) && outfit.likedBy.includes(user.uid));
   const cover = outfit.coverUrl;
 
+  const openOutfit = () => navigate(`/o/${outfit.id}`);
+  const openAuthor = (e) => {
+    e.stopPropagation();
+    if (author?.handle) navigate(`/u/${author.handle}`);
+  };
   const handleLike = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -17,21 +26,32 @@ export function FeedCard({ outfit, user, author, onLike, onSignInRequest }) {
   };
 
   return (
-    <Link to={`/o/${outfit.id}`} className="feed-card">
+    <div
+      role="link"
+      tabIndex={0}
+      className="feed-card"
+      onClick={openOutfit}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') openOutfit(); }}
+    >
       <div className="feed-card-cover">
         {cover
           ? <img src={cover} alt={outfit.name || 'outfit'} loading="lazy" />
           : <div className="feed-card-cover-empty" />}
       </div>
       <div className="feed-card-meta">
-        <div className="feed-card-author">
+        <button
+          type="button"
+          className="feed-card-author"
+          onClick={openAuthor}
+          disabled={!author?.handle}
+        >
           {author?.photoURL
             ? <img src={author.photoURL} alt="" className="feed-card-avatar" />
             : <span className="feed-card-avatar feed-card-avatar-empty">
                 {(author?.handle || '?').slice(0, 1).toUpperCase()}
               </span>}
           <span className="feed-card-handle">@{author?.handle || '—'}</span>
-        </div>
+        </button>
         <div className="feed-card-actions">
           <button
             type="button"
@@ -48,7 +68,7 @@ export function FeedCard({ outfit, user, author, onLike, onSignInRequest }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
