@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle } from 'lucide-react';
+import { Avatar } from './Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Outfit feed card. Cover image dominates; meta is a single thin row of
@@ -45,11 +46,12 @@ export function FeedCard({ outfit, user, author, onLike, onSignInRequest }) {
           onClick={openAuthor}
           disabled={!author?.handle}
         >
-          {author?.photoURL
-            ? <img src={author.photoURL} alt="" className="feed-card-avatar" />
-            : <span className="feed-card-avatar feed-card-avatar-empty">
-                {(author?.handle || '?').slice(0, 1).toUpperCase()}
-              </span>}
+          <Avatar
+            src={author?.photoURL}
+            name={author?.handle}
+            size={22}
+            className="feed-card-avatar"
+          />
           <span className="feed-card-handle">@{author?.handle || '—'}</span>
         </button>
         <div className="feed-card-actions">

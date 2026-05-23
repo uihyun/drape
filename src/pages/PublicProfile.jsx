@@ -4,6 +4,7 @@ import { MapPin } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
+import { Avatar } from '../components/Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only profile for *other* users (route: /u/:handle). Same identity
@@ -82,11 +83,12 @@ export function PublicProfile({ user, onSignIn }) {
 
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
-          <div className="profile-avatar">
-            {photoURL
-              ? <img src={photoURL} alt="" />
-              : <div className="profile-avatar-fallback">{(displayName || profile.handle || '?').slice(0, 1).toUpperCase()}</div>}
-          </div>
+          <Avatar
+            src={photoURL}
+            name={displayName || profile.handle}
+            size={76}
+            className="profile-avatar"
+          />
           {outfitCount > 0 && (
             <span className="profile-avatar-badge" aria-label={`${outfitCount} outfits`}>
               {outfitCount}

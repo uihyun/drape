@@ -238,6 +238,20 @@ body.is-native {
 }
 .camera-flip:hover { background: rgba(255,255,255,0.2); }
 .camera-spacer { width: 44px; }
+
+/* Shared <Avatar> — image with letter / icon fallback. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-letter { font-size: 0.95em; font-weight: 600; color: var(--text-secondary); }
 .brand {
   display: inline-flex;
   align-items: center;
@@ -1910,6 +1924,71 @@ body.is-native {
   bottom: -1px;
   height: 2px;
   background: var(--text-primary);
+}
+
+/* ── Profile stats row (between bio and tabs) ──────────────────────── */
+.profile-stats {
+  margin: 0.5rem 0 0.85rem;
+}
+.profile-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.profile-stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.profile-stat-n {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-feature-settings: 'tnum' 1;
+}
+.profile-stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.profile-cat-row {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 0.85rem 0 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+.profile-cat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  min-width: 56px;
+}
+.profile-cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-cat-n {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.profile-cat-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
 
 /* Embedded mode: the inner pages drop their own page-level chrome and

@@ -6,6 +6,8 @@ import { Closet } from './Closet.jsx';
 import { Calendar } from './Calendar.jsx';
 import { OutfitList } from './OutfitList.jsx';
 import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
+import { Avatar } from '../components/Avatar.jsx';
+import { ProfileStats } from '../components/ProfileStats.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -88,11 +90,12 @@ export function Profile({ user, authReady, onSignIn }) {
 
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
-          <div className="profile-avatar">
-            {photoURL
-              ? <img src={photoURL} alt="" />
-              : <div className="profile-avatar-fallback">{(displayName || handle || '?').slice(0, 1).toUpperCase()}</div>}
-          </div>
+          <Avatar
+            src={photoURL}
+            name={displayName || handle.replace('@', '')}
+            size={76}
+            className="profile-avatar"
+          />
           {outfitCount > 0 && (
             <span className="profile-avatar-badge" aria-label={`${outfitCount} outfits`}>
               {outfitCount}
@@ -134,6 +137,8 @@ export function Profile({ user, authReady, onSignIn }) {
       </section>
 
       {bio && <p className="profile-bio">{bio}</p>}
+
+      <ProfileStats user={user} profile={profile} />
 
       <nav className="profile-tabs" role="tablist" aria-label="Profile sections">
         {TABS.map(name => (
