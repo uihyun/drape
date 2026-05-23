@@ -75,3 +75,73 @@ Copied `../voda` (achelier.co interior-design app) into `./drape` and substitute
 5. Reinstate the following-tab in /feed once the closet has enough seeded outfits to make following meaningful.
 6. iOS / Android native cleanup (bundle id, signing, Apple Sign-In Service ID swap).
 7. RevenueCat product + entitlement setup; restore Pricing/Account paywall.
+
+---
+
+## 2026-05-23 — Lekondo redesign + first social loop
+
+Multi-session arc reshaping drape's identity from voda-with-clothes into a Lekondo-style outfit journal with a real social side. All commits since `2b861ef first commit`; live at https://drape-9e532.web.app.
+
+### Done — design tokens & shell
+
+- Design tokens flipped from voda indigo (`#5B5BD6`) to Lekondo forest olive (`#3F5841`); Hanken Grotesk + Noto Sans KR; PWA `theme_color` and Capacitor splash bg both `#FFFFFF`.
+- Lucide icons (`lucide-react@1.16.0`) replace Material Icons across new/touched components. (Lucide dropped brand glyphs, so IG is inlined SVG.)
+- Safe-area pattern from voda: `--safe-top` = `env(safe-area-inset-top, 0px)` on web, `max(env, 50px) + 12px` on `body.is-native` (Capacitor often reports 0). Applied to `.profile`, `.welcome`, `.community-feed`, `.header-mobile`.
+
+### Done — app shell
+
+- `Welcome` (`/welcome`) — Lekondo capture 1 sign-in page: DRAPE wordmark, language picker, Continue with Google / Apple (functional via `AuthService.signInWith{Google,Apple}`) / Email (placeholder). Root `/` routes signed-in users to `/profile`, anonymous to `/welcome`.
+- `Profile` (`/profile`) — Lekondo profile shell: handle row + Invite + bell + settings ring, identity row (avatar with outfit-count badge, name + IG glyph, followers/following, location), bio, three segmented tabs (Outfits / Calendar / Closet) rendering the existing pages in `embedded` mode (no duplicate page chrome).
+- `PublicProfile` (`/u/:handle`) — read-only view of other users, Follow button replaces Invite, only public outfits surface.
+- `Feed` (`/feed`) — Discovery: Pinterest-style 2/3-col masonry over `OutfitService.getFeedOutfits`; Home tab on the floating nav routes here.
+- `Settings` — full Lekondo-tone rewrite: Profile (handle claim, displayName, bio, location, instagram), Identity refs, Account (language, credits, sign out), Legal links.
+- `MobileTabBar` — three separate white pills (Home / + / Profile); the `+` opens a create sheet (Add item / New outfit / Try-on).
+- `ClaimHandleModal` — appears on `/profile` for first-time users (empty handle); soft-dismissable but reappears until the handle is claimed.
+- `MobileHeader` — hides on `/`, `/profile*`, `/feed`, `/welcome`; back-button + page-title on every other route. Voda desktop Header retired.
+- `Onboarding` — gated behind `isLoggedIn && !isFullBleed` so the 3-slide intro no longer overlaps the Welcome page.
+
+### Done — content surfaces
+
+- `Calendar` — photo-first month grid (4:5 cells edge-to-edge, hairlines via inset shadow, day numbers tucked top-left, single-letter weekday header).
+- `Closet` — 3-col borderless cards (cutout contained on white), CATEGORY + name meta; top filter row All / Usage / Brands / Categories + search icon (Usage/Brands disabled — "Coming soon"). Items "rain in" via staggered CSS fade on grid mount.
+- `OutfitDetail` — editorial layout: hero, byline (avatar + @handle + Edit), uppercase date, large title, color palette swatches (3-up, hex bg, contrast-picked ink, %), aesthetic-composition continuous gradient bars (Amekaji / Workwear / Retro / Y2k style), notes, items strip, action row with Share.
+- `AddItem` — fullscreen black confirm step after Camera/Gallery: photo centered, X top-left, Cancel/Upload pill buttons (Upload is accent-green with cloud icon).
+- `ItemDetail` — fullscreen single-item viewer (Image 24 / Essembl style): photo dominates on white, tap toggles Before/After (`originalUrl` ↔ `croppedUrl`), right rail Try-on / Share / More menu, bottom CATEGORY + name strip, expandable tag editor.
+
+### Done — server side
+
+- `functions/profile.js` adds `location` field to `updateProfile` (60-char cap) and seeds `profiles/{uid}.location = ''` on create.
+- `ItemService.recordWear`: pushes `{ date, ootdId, outfitId }` onto each item's `wearLog` when an OOTD is saved (idempotent on date, capped at 60 entries). Maintains `lastWornAt` + `wornCount` denorms. Wired into `OotdService.upsertOotd`. Closet search now matches `wearLog` dates so `"2026-05"` filters items worn that month.
+- `firestore.rules` extended to allow `wearLog` / `lastWornAt` / `wornCount` on owner updates.
+- Cloud Functions already deployed from prior cycle: `processItem`, `updateProfile`, `claimHandle`, `onFollowCreated/Deleted`, `onOutfitListChange`, `onOutfitListed`, `onOutfitDeletedDecrement` — counters maintained server-side.
+
+### Live
+
+- `https://drape-9e532.web.app` — hosting redeployed after every commit set this cycle.
+- Firestore rules redeployed after the wear-log addition.
+- `updateProfile` function redeployed for the `location` field.
+
+### Known gaps (carried forward to next cycle)
+
+- **Sticker Board** (diary-style canvas to drag clothing stickers around + save board). Long-press item → context menu (Detail / Try-on / Wear history) is part of this.
+- **OOTD photo recognition + style analysis + buy links** — server-side Gemini call to identify clothes seen in a selfie or 3rd-party photo, return per-item info, save to closet on accept, generate Google-Lens links.
+- **Magic Upload** (Essembl-style) — accept selfies / multiple items / screenshots, AI detects each piece and registers separately. Big functions work.
+- **Item Before/After + Action toolbar** — Change Product / Edit / Animate / Save (Essembl). Before/After is in this cycle; Animate / Save are deferred.
+- **Profile stats header** — Wardrobe / Outfits / Posts counts + per-category circles with item counts (Essembl 153 / 92 / 18 layout).
+- **Comments UI restyling** — `Comments` component still carries voda tone.
+- **OutfitBuilder + TryOn + GenerationDetail** — function but still voda-tone.
+- **Recommendations** — weather / mood / travel / plan-driven suggestions.
+- **Email sign-in** — Welcome page button is a "coming soon" placeholder; need Firebase email-link auth wiring.
+- **Bookmark / Save** to a personal collection (voda had this; not ported).
+- **Lookbook / "Looks" comparison** — side-by-side outfit browse (Image 22/23).
+- **Server-side wear-log backfill** — past OOTDs don't populate existing items' wearLog. One-off script needed.
+- **outfitCount field on profile** is server-maintained but only for `isListed=true` outfits; private outfits don't bump it (intentional or rename "publicOutfitCount"?).
+
+### Suggested next cycle order
+
+1. **Comments + share polish** on OutfitDetail (already has ShareButton; comments need restyling).
+2. **OutfitBuilder + TryOn Lekondo-tone pass** so create flow looks consistent with the rest.
+3. **Sticker Board** as a separate `/boards` route + service.
+4. **OOTD photo recognition** — Gemini callable that returns item candidates + style label; UX confirms each before saving.
+5. **Magic Upload** — bigger AI batch flow.
+6. **Profile stats header + per-category circles** — purely client read against existing items.
