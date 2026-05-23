@@ -4,8 +4,9 @@ import { Plus } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// "My boards" — grid of sticker-board cover thumbnails.
-export function BoardList({ user, onSignIn }) {
+// "My boards" — grid of sticker-board cover thumbnails. Embedded in the
+// Profile shell's Boards tab, or standalone at /boards.
+export function BoardList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [boards, setBoards] = useState(null);
 
@@ -16,8 +17,8 @@ export function BoardList({ user, onSignIn }) {
 
   if (!user || user.isAnonymous) {
     return (
-      <div className="page">
-        <h1 className="page-h1">{t('boards')}</h1>
+      <div className={embedded ? '' : 'page'}>
+        {!embedded && <h1 className="page-h1">{t('boards')}</h1>}
         <div className="empty-state empty-state-card">
           <p>{t('boardSignInBody')}</p>
           <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
@@ -27,13 +28,15 @@ export function BoardList({ user, onSignIn }) {
   }
 
   return (
-    <div className="page">
-      <div className="closet-header">
-        <h1 className="page-h1" style={{ margin: 0 }}>{t('boards')}</h1>
-        <Link to="/boards/new" className="btn btn-primary">
-          <Plus size={14} strokeWidth={1.8} /> {t('boardNew')}
-        </Link>
-      </div>
+    <div className={embedded ? '' : 'page'}>
+      {!embedded && (
+        <div className="closet-header">
+          <h1 className="page-h1" style={{ margin: 0 }}>{t('boards')}</h1>
+          <Link to="/boards/new" className="btn btn-primary">
+            <Plus size={14} strokeWidth={1.8} /> {t('boardNew')}
+          </Link>
+        </div>
+      )}
 
       {boards === null ? (
         <div className="loading"><div className="spinner" /></div>

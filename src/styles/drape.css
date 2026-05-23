@@ -359,6 +359,54 @@ body.is-native {
   font-size: 0.9rem;
 }
 
+/* Try-on history page. */
+.tryon-history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+@media (min-width: 640px) { .tryon-history-grid { grid-template-columns: repeat(3, 1fr); } }
+.tryon-history-card {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.tryon-history-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.tryon-history-cover {
+  aspect-ratio: 3 / 4;
+  background: var(--surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tryon-history-cover img { width: 100%; height: 100%; object-fit: cover; }
+.tryon-history-empty {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.tryon-history-empty.status-pending { color: var(--text-secondary); }
+.tryon-history-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.tryon-history-tier {
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 /* ── Analyze photo ─────────────────────────────────────────────────── */
 .analyze-preview {
   width: 100%;
@@ -2155,7 +2203,33 @@ body.is-native {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.4rem 0.25rem;
+  border-radius: 8px;
+  transition: background 0.12s ease;
 }
+.profile-stat-col:hover { background: var(--surface-elevated); }
+.profile-quicklinks {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+  flex-wrap: wrap;
+}
+.profile-quicklink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+.profile-quicklink:hover { color: var(--text-primary); }
 .profile-stat-n {
   font-size: 1.05rem;
   font-weight: 700;
