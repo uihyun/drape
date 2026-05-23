@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, MapPin } from 'lucide-react';
+import { ProfileService } from '../services/profile-service.js';
+import { Closet } from './Closet.jsx';
+import { Calendar } from './Calendar.jsx';
+import { OutfitList } from './OutfitList.jsx';
+import { useLocale } from '../hooks/useLocale.jsx';
+
+// Lekondo-style profile shell — the app's main screen. Wraps Outfits /
+// Calendar / Closet as segmented tabs over the user's identity header.
+// Each tab body is the existing page component rendered with `embedded`
+// (no top h2 / Add button) so the chrome is provided here once.
+const TABS = ['outfits', 'calendar', 'closet'];
+const DEFAULT_TAB = 'calendar';
 
 // Lucide dropped brand icons over trademark concerns. Inline the IG glyph
 // so we don't take a 2nd icon dep just for one mark.
@@ -14,18 +26,6 @@ function InstagramGlyph(props) {
     </svg>
   );
 }
-import { ProfileService } from '../services/profile-service.js';
-import { Closet } from './Closet.jsx';
-import { Calendar } from './Calendar.jsx';
-import { OutfitList } from './OutfitList.jsx';
-import { useLocale } from '../hooks/useLocale.jsx';
-
-// Lekondo-style profile shell — the app's main screen. Wraps Outfits /
-// Calendar / Closet as segmented tabs over the user's identity header.
-// Each tab body is the existing page component rendered with `embedded`
-// (no top h2 / Add button) so the chrome is provided here once.
-const TABS = ['outfits', 'calendar', 'closet'];
-const DEFAULT_TAB = 'calendar';
 
 export function Profile({ user, authReady, onSignIn }) {
   const { t } = useLocale();
@@ -60,6 +60,12 @@ export function Profile({ user, authReady, onSignIn }) {
   const followers = profile?.followerCount ?? 0;
   const following = profile?.followingCount ?? 0;
   const bio = profile?.bio || '';
+  const location = profile?.location || '';
+  // Avatar badge: number of outfits this user has saved. Server-side
+  // counter trigger maintains profile.outfitCount; we render the small
+  // pill in the corner of the avatar like the "14" in the Lekondo
+  // capture. Hidden when 0 (would otherwise be visual noise).
+  const outfitCount = profile?.outfitCount ?? 0;
   const photoURL = user.photoURL || profile?.photoURL;
 
   return (
@@ -67,22 +73,27 @@ export function Profile({ user, authReady, onSignIn }) {
       <header className="profile-topbar">
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
-          <button type="button" className="btn-invite">{t('invite')}</button>
           <button type="button" className="icon-btn" aria-label={t('notifications')}>
-            <Bell size={20} strokeWidth={1.5} />
+            <Bell size={20} strokeWidth={1.6} />
           </button>
-          <Link to="/settings" className="icon-btn" aria-label={t('settings')}>
-            <SettingsIcon size={20} strokeWidth={1.5} />
-          </Link>
+          <button type="button" className="btn-invite">{t('invite')}</button>
         </div>
       </header>
 
       <section className="profile-identity">
-        <div className="profile-avatar">
-          {photoURL
-            ? <img src={photoURL} alt="" />
-            : <div className="profile-avatar-fallback">{(displayName || handle || '?').slice(0, 1).toUpperCase()}</div>}
+        <div className="profile-avatar-wrap">
+          <div className="profile-avatar">
+            {photoURL
+              ? <img src={photoURL} alt="" />
+              : <div className="profile-avatar-fallback">{(displayName || handle || '?').slice(0, 1).toUpperCase()}</div>}
+          </div>
+          {outfitCount > 0 && (
+            <span className="profile-avatar-badge" aria-label={`${outfitCount} outfits`}>
+              {outfitCount}
+            </span>
+          )}
         </div>
+
         <div className="profile-meta">
           <div className="profile-name-row">
             <span className="profile-name">{displayName}</span>
@@ -100,10 +111,20 @@ export function Profile({ user, authReady, onSignIn }) {
           </div>
           <div className="profile-stats">
             <span><strong>{followers}</strong> {t('followers')}</span>
-            <span className="profile-stat-sep">·</span>
+            <span className="profile-stats-sep">/</span>
             <span><strong>{following}</strong> {t('following')}</span>
           </div>
+          {location && (
+            <div className="profile-location">
+              <MapPin size={12} strokeWidth={1.6} />
+              <span>{location}</span>
+            </div>
+          )}
         </div>
+
+        <Link to="/settings" className="profile-settings-ring" aria-label={t('settings')}>
+          <SettingsIcon size={18} strokeWidth={1.6} />
+        </Link>
       </section>
 
       {bio && <p className="profile-bio">{bio}</p>}
