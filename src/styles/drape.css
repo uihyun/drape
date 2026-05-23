@@ -773,6 +773,188 @@ body.is-native {
   height: 2px;
   background: var(--text-primary);
 }
+
+/* ── Settings (Lekondo tone) ───────────────────────────────────────── */
+.settings {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
+}
+.settings-h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0.5rem 0 1.25rem;
+}
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.settings-h2 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.85rem 1rem 0.65rem;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--border);
+  min-height: 52px;
+}
+.settings-row:first-of-type { border-top: none; }
+.settings-row-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+.settings-row-action {
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.settings-row-action:hover { background: var(--surface-elevated); }
+.settings-row-label {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.settings-row-value {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.settings-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.settings-input-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  background: var(--surface-elevated);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+}
+.settings-input-prefix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.settings-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  min-width: 0;
+  resize: vertical;
+}
+.settings-input::placeholder { color: var(--text-muted); }
+.settings-save-btn {
+  background: var(--text-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.settings-save-btn:disabled {
+  background: var(--border-hover);
+  color: var(--text-muted);
+  cursor: default;
+}
+.settings-static {
+  font-size: 1rem;
+  color: var(--text-primary);
+  padding: 0.4rem 0;
+}
+.settings-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.settings-error {
+  color: var(--error);
+  font-size: 0.85rem;
+  margin: 0.5rem 1rem;
+}
+.settings-ok {
+  color: var(--accent);
+  font-size: 0.85rem;
+  margin: 0.5rem 1rem;
+}
+.settings-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.identity-refs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+.identity-ref {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+}
+.identity-ref img { width: 100%; height: 100%; object-fit: cover; }
+.identity-ref-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+.identity-ref-add:hover { color: var(--text-primary); border-color: var(--border-hover); }
+.slot-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 .feed-card-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--surface-elevated);
