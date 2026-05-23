@@ -1,5 +1,20 @@
 /* Drape-specific component styles — layered on top of main.css. */
 
+/* ── Safe-area pattern (voda parity) ───────────────────────────────── */
+/* iOS notch / Dynamic Island clearance. Native (Capacitor) wrappers
+   sometimes report env(safe-area-inset-top) as 0; we fall back to a
+   50pt floor (≈ Dynamic Island height) + 12px breathing room.
+   Anything that sits at the absolute top of a viewport (sticky
+   MobileHeader, Profile's own .profile-topbar, the Welcome page header)
+   uses --safe-top instead of a raw padding-top. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+body.is-native {
+  --safe-top: calc(max(env(safe-area-inset-top, 0px), 50px) + 12px);
+}
+
 /* ── Header / nav ──────────────────────────────────────────────────── */
 /* Lekondo's design is phone-first and stays that way on desktop: same
    centered narrow column, same floating nav. The voda desktop Header
@@ -22,6 +37,10 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+}
+/* Mobile back-button header sits at viewport top — clear the notch. */
+.header-mobile.header {
+  padding-top: var(--safe-top);
 }
 .brand {
   display: inline-flex;
@@ -409,6 +428,13 @@
      so the structure matches the Lekondo capture. */
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Discovery feed wrapper — topmost surface on /feed, needs the notch. */
+.community-feed {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
 }
 
 /* Closet filter row: tabs on the left, search icon pinned right. */
@@ -896,13 +922,15 @@
 .profile {
   max-width: 640px;
   margin: 0 auto;
-  padding: 0.25rem 1rem 1.25rem;
+  /* Profile is the topmost surface on /profile — no MobileHeader above
+     it — so the notch inset lives here. */
+  padding: calc(var(--safe-top) + 0.25rem) 1rem 1.25rem;
 }
 .profile-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 0 0.5rem;
+  padding: 0.5rem 0;
 }
 .profile-handle {
   font-size: 1.05rem;
@@ -1384,13 +1412,13 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  padding: env(safe-area-inset-top) 1.25rem calc(env(safe-area-inset-bottom) + 1.25rem);
+  padding: var(--safe-top) 1.25rem calc(var(--safe-bottom) + 1.25rem);
 }
 .welcome-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 0 0;
+  padding: 0.75rem 0 0;
 }
 .welcome-brand {
   font-weight: 700;
