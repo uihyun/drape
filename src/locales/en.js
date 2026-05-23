@@ -139,6 +139,9 @@ export const en = {
 
   // ── Feed ───────────────────────────────────────────────────────────
   feedEmpty: 'No public outfits yet — be the first to post.',
+  feedTitle: 'Discover',
+  feedEmptyTitle: 'Quiet here for now',
+  feedEmptyBody: 'When people publish their outfits, you’ll find them in this stream.',
   feedSortLatest: 'Latest',
   feedSortPopular: 'Popular',
   like: 'Like',

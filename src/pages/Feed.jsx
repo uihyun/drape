@@ -4,9 +4,10 @@ import { FeedCard } from '../components/FeedCard.jsx';
 import { ProfileService } from '../services/profile-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Discovery feed. Lekondo's marketing screenshots don't show a feed
-// surface, so we lean into the editorial-magazine tone: borderless text
-// tabs for sort, no large title block, a quiet empty state.
+// Discovery / "Home" feed — Pinterest-style masonry of other people's
+// outfits. Modeled on archelier's moodboard. Sort toggle on top right
+// (Latest / Popular), tiles below in 2-col (mobile) / 3-col (desktop)
+// column masonry so tall and wide covers both fit naturally.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
@@ -48,42 +49,46 @@ export function Feed({ user, onSignIn }) {
 
   return (
     <div className="community-feed">
-      <nav className="feed-sort-tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === 'latest'}
-          className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
-          onClick={() => setSort('latest')}
-        >
-          {t('feedSortLatest')}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sort === 'popular'}
-          className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
-          onClick={() => setSort('popular')}
-        >
-          {t('feedSortPopular')}
-        </button>
-      </nav>
+      <header className="feed-top">
+        <h1 className="feed-h1">{t('feedTitle')}</h1>
+        <nav className="feed-sort-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === 'latest'}
+            className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+            onClick={() => setSort('latest')}
+          >
+            {t('feedSortLatest')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === 'popular'}
+            className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+            onClick={() => setSort('popular')}
+          >
+            {t('feedSortPopular')}
+          </button>
+        </nav>
+      </header>
 
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (
         <FeedEmpty t={t} />
       ) : (
-        <div className="feed-grid">
+        <div className="moodboard-grid">
           {outfits.map(o => (
-            <FeedCard
-              key={o.id}
-              outfit={o}
-              user={user}
-              author={authorMap.get(o.userId)}
-              onLike={handleLike}
-              onSignInRequest={onSignIn}
-            />
+            <div key={o.id} className="moodboard-item">
+              <FeedCard
+                outfit={o}
+                user={user}
+                author={authorMap.get(o.userId)}
+                onLike={handleLike}
+                onSignInRequest={onSignIn}
+              />
+            </div>
           ))}
         </div>
       )}

@@ -15,20 +15,20 @@ export function MobileTabBar({ user }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const isLoggedIn = user && !user.isAnonymous;
-  const onHome = location.pathname === '/' || location.pathname === '/profile' || location.pathname === '/profile/calendar';
-  const onProfile = location.pathname.startsWith('/profile');
+  const onHome = location.pathname === '/' || location.pathname.startsWith('/feed');
+  const onProfile = location.pathname.startsWith('/profile') || location.pathname.startsWith('/u/');
 
   const go = (path) => () => {
     setSheetOpen(false);
-    navigate(isLoggedIn ? path : '/profile');
+    navigate(isLoggedIn ? path : '/welcome');
   };
 
   return (
     <>
       <nav className="floating-nav" aria-label="primary">
         <Link
-          to="/profile/calendar"
-          className={`floating-nav-btn${onHome && !onProfile ? ' active' : ''}`}
+          to="/feed"
+          className={`floating-nav-btn${onHome ? ' active' : ''}`}
           aria-label={t('navHome')}
         >
           <span className="floating-nav-icon">

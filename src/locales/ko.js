@@ -139,6 +139,9 @@ export const ko = {
 
   // ── Feed ───────────────────────────────────────────────────────────
   feedEmpty: '아직 공개된 코디가 없어요. 첫 번째로 공유해 보세요.',
+  feedTitle: '탐색',
+  feedEmptyTitle: '아직 조용해요',
+  feedEmptyBody: '사람들이 코디를 공개하면 여기에서 흐릅니다.',
   feedSortLatest: '최신',
   feedSortPopular: '인기',
   like: '좋아요',

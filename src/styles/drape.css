@@ -432,9 +432,102 @@ body.is-native {
 
 /* Discovery feed wrapper — topmost surface on /feed, needs the notch. */
 .community-feed {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
+}
+.feed-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.feed-h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+.feed-sort-tabs {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.feed-sort-tab {
+  background: none;
+  border: none;
+  padding: 0.2rem 0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+}
+.feed-sort-tab.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.feed-sort-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -0.35rem;
+  height: 2px;
+  background: var(--text-primary);
+}
+
+/* Pinterest-style masonry — varied tile heights so portrait / landscape
+   covers both fit naturally without uniform cropping. */
+.moodboard-grid {
+  column-count: 2;
+  column-gap: 0.6rem;
+}
+@media (min-width: 640px) { .moodboard-grid { column-count: 3; column-gap: 0.75rem; } }
+.moodboard-item {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 0.6rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.moodboard-item:hover {
+  box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.moodboard-item .feed-card { display: block; text-decoration: none; color: inherit; }
+.moodboard-item .feed-card-cover { aspect-ratio: auto; }
+.moodboard-item .feed-card-cover img { width: 100%; height: auto; display: block; }
+.moodboard-item .feed-card-cover-empty {
+  aspect-ratio: 3 / 4;
+  background: var(--surface-elevated);
+}
+
+.feed-empty {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+.feed-empty-mark {
+  font-size: 2rem;
+  color: var(--border-hover);
+  margin-bottom: 0.75rem;
+}
+.feed-empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+.feed-empty-body {
+  font-size: 0.9rem;
+  max-width: 320px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
 /* Closet filter row: tabs on the left, search icon pinned right. */
