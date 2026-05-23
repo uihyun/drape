@@ -6,8 +6,9 @@ import { useLocale } from '../hooks/useLocale.jsx';
 
 // All of the user's try-on results in one grid. Each cell shows the
 // first variant URL as a thumbnail and routes to /tryon/:id for the
-// full result + ratings.
-export function TryOnHistory({ user, onSignIn }) {
+// full result + ratings. Renders as a Profile tab when `embedded`,
+// or standalone at /tryons.
+export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
 
@@ -20,8 +21,8 @@ export function TryOnHistory({ user, onSignIn }) {
 
   if (!user || user.isAnonymous) {
     return (
-      <div className="page">
-        <h1 className="page-h1">{t('tryOnHistory')}</h1>
+      <div className={embedded ? '' : 'page'}>
+        {!embedded && <h1 className="page-h1">{t('tryOnHistory')}</h1>}
         <div className="empty-state empty-state-card">
           <p>{t('tryOnSignInTitle')}</p>
           <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
@@ -31,13 +32,15 @@ export function TryOnHistory({ user, onSignIn }) {
   }
 
   return (
-    <div className="page">
-      <div className="closet-header">
-        <h1 className="page-h1" style={{ margin: 0 }}>{t('tryOnHistory')}</h1>
-        <Link to="/tryon" className="btn btn-primary">
-          <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
-        </Link>
-      </div>
+    <div className={embedded ? '' : 'page'}>
+      {!embedded && (
+        <div className="closet-header">
+          <h1 className="page-h1" style={{ margin: 0 }}>{t('tryOnHistory')}</h1>
+          <Link to="/tryon" className="btn btn-primary">
+            <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
+          </Link>
+        </div>
+      )}
 
       {gens === null ? (
         <div className="loading"><div className="spinner" /></div>

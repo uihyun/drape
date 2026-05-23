@@ -35,6 +35,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         </div>
       )}
 
+
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (

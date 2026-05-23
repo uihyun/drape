@@ -91,7 +91,7 @@ export const ko = {
   settingsSignInBody: '로그인 하고 프로필과 피팅 사진을 관리하세요.',
   profileSignInTitle: '내 옷장, 내 폰 안에',
   profileSignInBody: '로그인 하고 매일의 코디를 기록해 보세요.',
-  profileTabs: { outfits: '코디', calendar: '캘린더', closet: '옷장' },
+  profileTabs: { outfits: '코디', calendar: '캘린더', closet: '옷장', boards: '보드', tryon: '피팅' },
   create: '만들기',
   createSheetTitle: '무엇을 추가할까요?',
   createAddItem: '옷 추가하기',

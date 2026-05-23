@@ -2157,20 +2157,24 @@ body.is-native {
 
 .profile-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* 5 tabs (Outfits / Calendar / Closet / Boards / Try-on) — auto
+     columns so adding/removing one doesn't break the row. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   border-bottom: 1px solid var(--border);
   margin: 0.5rem 0 1rem;
 }
 .profile-tab {
   background: none;
   border: none;
-  padding: 0.85rem 0;
+  padding: 0.85rem 0.25rem;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-muted);
   cursor: pointer;
   position: relative;
   transition: color 0.12s ease;
+  white-space: nowrap;
 }
 .profile-tab:hover { color: var(--text-secondary); }
 .profile-tab.active {

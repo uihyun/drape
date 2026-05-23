@@ -14,7 +14,7 @@ export const ja = {
   following: 'フォロー中',
   profileSignInTitle: 'あなたのクローゼットを手の中に',
   profileSignInBody: 'ログインして毎日のコーデを記録しましょう。',
-  profileTabs: { outfits: 'コーデ', calendar: 'カレンダー', closet: 'クローゼット' },
+  profileTabs: { outfits: 'コーデ', calendar: 'カレンダー', closet: 'クローゼット', boards: 'ボード', tryon: '試着' },
   create: '作成',
   createSheetTitle: '何を追加しますか？',
   createAddItem: 'アイテムを追加',

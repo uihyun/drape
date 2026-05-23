@@ -91,7 +91,7 @@ export const en = {
   settingsSignInBody: 'Sign in to edit your profile and try-on photos.',
   profileSignInTitle: 'Your closet, on your phone',
   profileSignInBody: 'Sign in to start logging outfits.',
-  profileTabs: { outfits: 'Outfits', calendar: 'Calendar', closet: 'Closet' },
+  profileTabs: { outfits: 'Outfits', calendar: 'Calendar', closet: 'Closet', boards: 'Boards', tryon: 'Try-on' },
   create: 'Create',
   createSheetTitle: 'Add something',
   createAddItem: 'Add item to closet',

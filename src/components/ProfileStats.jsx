@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Shirt, Sparkles } from 'lucide-react';
+import { Shirt } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
@@ -66,19 +65,6 @@ export function ProfileStats({ user, profile, onTabChange }) {
         <StatBtn n={outfitsN} label={t('navOutfits')} onClick={() => onTabChange?.('outfits')} />
         <StatBtn n={closetN}  label={t('navCloset')}  onClick={() => onTabChange?.('closet')} />
         <StatBtn n={boardsN}  label={t('boards')}     onClick={() => onTabChange?.('boards')} />
-      </div>
-
-      {/* Secondary quick-links — try-ons (history page) and Feed
-          (published outfits). Public outfit count = profile.outfitCount. */}
-      <div className="profile-quicklinks">
-        <Link to="/tryons" className="profile-quicklink">
-          <Sparkles size={13} strokeWidth={1.6} /> {t('tryOnHistory')}
-        </Link>
-        {(profile?.outfitCount ?? 0) > 0 && (
-          <Link to="/feed" className="profile-quicklink">
-            {t('navFeed')} · {profile.outfitCount}
-          </Link>
-        )}
       </div>
 
       {catCounts.length > 0 && (
