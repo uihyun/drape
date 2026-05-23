@@ -17,6 +17,7 @@ const BIO_MAX = 200;
 const DISPLAY_NAME_MAX = 30;
 const INSTAGRAM_MAX = 30;
 const INSTAGRAM_RE = /^[a-zA-Z0-9._]{1,30}$/;
+const LOCATION_MAX = 60;
 
 function normalizeHandle(input) {
     return String(input || '').trim().toLowerCase();
@@ -55,6 +56,7 @@ async function ensureProfile(uid, { displayName, photoURL }) {
                     displayName: displayName || '',
                     photoURL: photoURL || null,
                     bio: '',
+                    location: '',
                     followerCount: 0,
                     followingCount: 0,
                     outfitCount: 0,
@@ -123,6 +125,7 @@ exports.claimHandle = onRequest(async (req, res) => {
                     displayName: decoded.name || '',
                     photoURL: decoded.picture || null,
                     bio: '',
+                    location: '',
                     followerCount: 0,
                     followingCount: 0,
                     outfitCount: 0,
@@ -193,6 +196,11 @@ exports.updateProfile = onRequest(async (req, res) => {
             }
             update.instagram = raw;
             result.instagram = raw;
+        }
+        if (typeof data.location === 'string') {
+            const location = data.location.trim().slice(0, LOCATION_MAX);
+            update.location = location;
+            result.location = location;
         }
 
         if (Object.keys(update).length === 0) {

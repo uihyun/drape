@@ -15,6 +15,7 @@ export const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 export const BIO_MAX = 200;
 export const DISPLAY_NAME_MAX = 30;
 export const INSTAGRAM_MAX = 30;
+export const LOCATION_MAX = 60;
 
 // Generic default name created server-side on profile creation. We treat
 // it as "user hasn't picked a name" and fall back to @handle for display.
@@ -123,6 +124,10 @@ export const ProfileService = {
 
   async updateInstagram(instagram) {
     return authedFetch(UPDATE_FN_URL, { instagram });
+  },
+
+  async updateLocation(location) {
+    return authedFetch(UPDATE_FN_URL, { location });
   },
 
   // Persist displayName to profiles/{uid} (server) and mirror to the
