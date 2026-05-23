@@ -6,6 +6,7 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Comments } from '../components/Comments.jsx';
+import { ShareButton } from '../components/ShareButton.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
@@ -217,6 +218,12 @@ export function OutfitDetail({ user, onSignIn }) {
         <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="btn btn-primary">
           <Sparkles size={16} strokeWidth={1.6} /> {t('tryThisOn')}
         </Link>
+        <ShareButton
+          className="btn btn-secondary"
+          title={outfit.name || t('untitledOutfit')}
+          text={outfit.notes || ''}
+          url={`${window.location.origin}/s/${outfit.id}`}
+        />
         {isOwner && (
           <>
             <button type="button" className="btn btn-secondary" onClick={togglePublish} disabled={busy}>

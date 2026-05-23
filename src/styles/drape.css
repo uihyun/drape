@@ -1029,6 +1029,176 @@ body.is-native {
   justify-content: flex-end;
   margin-top: 1rem;
 }
+
+/* Reusable share button — adopts the .btn shape it's classed with. */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ── Item viewer (full-screen single-item, Image 24) ──────────────── */
+.item-viewer {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-top) 0 calc(var(--safe-bottom) + 0.5rem);
+}
+.item-viewer-close {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.5rem);
+  left: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  cursor: pointer;
+  z-index: 2;
+}
+.item-viewer-close:hover { background: #fff; }
+
+.item-viewer-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem 0;
+  position: relative;
+  min-height: 0;
+  user-select: none;
+}
+.item-viewer-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.item-viewer-toggle {
+  position: absolute;
+  top: calc(var(--safe-top) + 0.7rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.item-viewer-rail {
+  position: absolute;
+  top: 50%;
+  right: 0.6rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 2;
+}
+.item-rail-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+}
+.item-rail-btn:hover { background: #fff; }
+.item-rail-share { gap: 0; padding: 0; }
+.item-rail-share span { display: none; }
+.item-rail-menu {
+  position: absolute;
+  right: 52px;
+  top: 88px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.3rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 160px;
+  z-index: 3;
+}
+.item-rail-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.55rem 0.65rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+}
+.item-rail-menu button:hover { background: var(--surface-elevated); }
+.item-rail-menu .danger { color: var(--error); }
+
+.item-viewer-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem 1rem 0;
+}
+.item-viewer-meta { flex: 1; min-width: 0; }
+.item-viewer-cat {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.item-viewer-name {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 0.15rem;
+  letter-spacing: -0.01em;
+}
+.item-viewer-edit-toggle {
+  background: var(--surface-elevated);
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.item-viewer-edit {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.item-viewer-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
 .feed-card-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--surface-elevated);
