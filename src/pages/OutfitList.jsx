@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -17,7 +18,6 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   if (!user || user.isAnonymous) {
     return (
       <div className="empty-state">
-        <i className="material-icons">auto_awesome_motion</i>
         <h2>{t('outfitSignInTitle')}</h2>
         <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
       </div>
@@ -30,8 +30,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         <div className="closet-header">
           <h2 className="section-title">{t('navOutfits')}</h2>
           <Link to="/outfits/new" className="btn btn-primary">
-            <i className="material-icons">add</i>
-            {t('newOutfit')}
+            <Plus size={14} strokeWidth={1.8} /> {t('newOutfit')}
           </Link>
         </div>
       )}
@@ -39,9 +38,11 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state empty-state-card">
           <p>{t('noOutfitsYet')}</p>
-          <Link to="/outfits/new" className="btn btn-primary">{t('createOutfit')}</Link>
+          <Link to="/outfits/new" className="btn btn-primary">
+            <Plus size={14} strokeWidth={1.8} /> {t('createOutfit')}
+          </Link>
         </div>
       ) : (
         <div className="outfit-grid">
@@ -51,7 +52,6 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
                 {o.coverUrl
                   ? <img src={o.coverUrl} alt={o.name || ''} loading="lazy" />
                   : <div className="outfit-card-cover-empty">
-                      <i className="material-icons">checkroom</i>
                       <span>{o.itemIds?.length || 0} {t('itemsShort')}</span>
                     </div>}
               </div>

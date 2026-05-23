@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
+import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { useCredits } from '../services/credits-service.js';
 
@@ -49,7 +50,35 @@ export function Settings({ user, onSignIn, onSignOut }) {
         t={t}
       />
       <LegalSection t={t} />
+      <DangerSection t={t} />
     </div>
+  );
+}
+
+function DangerSection({ t }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="settings-card settings-danger">
+      <h2 className="settings-h2">{t('dangerZone')}</h2>
+      <button
+        type="button"
+        className="settings-row settings-row-action settings-row-danger"
+        onClick={() => setOpen(true)}
+      >
+        <span className="settings-row-label">
+          <AlertTriangle size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
+          {t('deleteAccount')}
+        </span>
+        <ChevronRight size={16} strokeWidth={1.5} className="muted" />
+      </button>
+      {open && (
+        <DeleteAccountModal
+          onClose={() => setOpen(false)}
+          onDeleted={() => navigate('/welcome', { replace: true })}
+        />
+      )}
+    </section>
   );
 }
 

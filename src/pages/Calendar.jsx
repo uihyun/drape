@@ -35,7 +35,6 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   if (!user || user.isAnonymous) {
     return (
       <div className="empty-state">
-        <i className="material-icons">calendar_month</i>
         <h2>{t('calendarSignInTitle')}</h2>
         <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
       </div>

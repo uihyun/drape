@@ -42,6 +42,113 @@ body.is-native {
 .header-mobile.header {
   padding-top: var(--safe-top);
 }
+
+/* Secondary-page back arrow. Floating in the safe-area corner — no
+   centered title, since the page renders its own h1 right below. */
+.page-back-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: var(--safe-top) 0 0;
+  pointer-events: none;
+}
+.page-back-btn {
+  pointer-events: auto;
+  margin: 0.5rem 0 0 0.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.page-back-btn:hover { background: #fff; }
+
+/* Generic secondary-page shell. Used by AddItem, OutfitBuilder,
+   TryOn, etc. — anything that's a sibling of /profile/:tab content. */
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 1rem 6.5rem;
+}
+.page-h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0.25rem 0 1.25rem;
+}
+.page-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+  margin-bottom: 1rem;
+}
+.page-input:focus { border-color: var(--border-hover); }
+.page-sub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: -0.5rem 0 1.25rem;
+}
+
+.empty-state-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.builder-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+.builder-cta {
+  position: sticky;
+  bottom: calc(var(--safe-bottom) + 1rem);
+  margin-top: 1.25rem;
+  padding: 0 0.25rem;
+  display: flex;
+  justify-content: center;
+}
+.builder-cta .btn {
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.item-card-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* Disabled label-as-button (used when AddItem's camera input is busy). */
+.btn.is-disabled { opacity: 0.5; pointer-events: none; }
 .brand {
   display: inline-flex;
   align-items: center;
@@ -805,13 +912,15 @@ body.is-native {
 .settings {
   max-width: 600px;
   margin: 0 auto;
-  padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
+  /* Back-bar sits sticky in safe-area; pad only enough to clear the
+     back-button cap, no safe-top needed here. */
+  padding: 0 1rem 1.5rem;
 }
 .settings-h1 {
   font-size: 1.6rem;
   font-weight: 600;
   letter-spacing: -0.015em;
-  margin: 0.5rem 0 1.25rem;
+  margin: 0.25rem 0 1.25rem;
 }
 .settings-card {
   background: var(--surface);
@@ -854,6 +963,49 @@ body.is-native {
   text-decoration: none;
 }
 .settings-row-action:hover { background: var(--surface-elevated); }
+.settings-row-danger .settings-row-label { color: var(--error); }
+.settings-danger { border-color: rgba(194, 69, 69, 0.25); }
+
+/* DeleteAccountModal styling (component uses .modal-backdrop / .modal /
+   .btn-danger / .report-actions / .report-error from its own component
+   markup; alias to our token palette so it fits). */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+.modal h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.6rem; }
+.delete-account-desc { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.6rem; }
+.delete-account-list { padding-left: 1.1rem; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.6rem; }
+.delete-account-billing { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.6rem; line-height: 1.5; }
+.delete-account-final { font-size: 0.85rem; color: var(--text-primary); margin-bottom: 1rem; }
+.report-error { color: var(--error); font-size: 0.85rem; margin-bottom: 0.5rem; }
+.report-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+.btn-danger {
+  background: var(--error);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-danger:hover { background: #a83838; }
+.btn-danger:disabled { opacity: 0.6; cursor: default; }
 .settings-row-label {
   font-size: 0.95rem;
   color: var(--text-primary);

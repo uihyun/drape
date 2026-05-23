@@ -83,7 +83,7 @@ export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
                   <img src={c.photoURL} alt="" className="comment-avatar" />
                 ) : (
                   <div className="comment-avatar comment-avatar-placeholder">
-                    <i className="material-icons">person</i>
+                    {(c.handle || c.displayName || '?').slice(0, 1).toUpperCase()}
                   </div>
                 )}
                 <div className="comment-body">
@@ -103,7 +103,7 @@ export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
                     <span className="comment-time">{timeAgo(c.createdAt)}</span>
                     {canDelete && (
                       <button className="comment-delete-btn" onClick={() => handleDelete(c)} aria-label={t('commentDelete')}>
-                        <i className="material-icons">close</i>
+                        ×
                       </button>
                     )}
                   </div>

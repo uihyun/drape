@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Check, Sparkles } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -33,10 +34,12 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
 
   if (!user || user.isAnonymous) {
     return (
-      <div className="empty-state">
-        <i className="material-icons">face_retouching_natural</i>
-        <h2>{t('tryOnSignInTitle')}</h2>
-        <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+      <div className="page">
+        <h1 className="page-h1">{t('navTryOn')}</h1>
+        <div className="empty-state empty-state-card">
+          <h2>{t('tryOnSignInTitle')}</h2>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+        </div>
       </div>
     );
   }
@@ -45,11 +48,13 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
 
   if (needRefs) {
     return (
-      <div className="empty-state">
-        <i className="material-icons">photo_camera</i>
-        <h2>{t('addIdentityRefsTitle')}</h2>
-        <p>{t('addIdentityRefsBody')}</p>
-        <Link to="/settings" className="btn btn-primary">{t('goToSettings')}</Link>
+      <div className="page">
+        <h1 className="page-h1">{t('navTryOn')}</h1>
+        <div className="empty-state empty-state-card">
+          <h2>{t('addIdentityRefsTitle')}</h2>
+          <p>{t('addIdentityRefsBody')}</p>
+          <Link to="/settings" className="btn btn-primary">{t('goToSettings')}</Link>
+        </div>
       </div>
     );
   }
@@ -78,48 +83,61 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
   };
 
   return (
-    <div className="tryon-entry">
-      <h2 className="section-title">{t('tryOnPick')}</h2>
+    <div className="page tryon-entry">
+      <h1 className="page-h1">{t('tryOnPick')}</h1>
 
       <div className="tier-toggle">
-        <button className={`chip ${tier === 'pro' ? 'active' : ''}`} onClick={() => setTier('pro')}>
+        <button type="button" className={`chip ${tier === 'pro' ? 'active' : ''}`} onClick={() => setTier('pro')}>
           {t('tierPro')} <span className="muted">· {t('tierProHint')}</span>
         </button>
-        <button className={`chip ${tier === 'flash' ? 'active' : ''}`} onClick={() => setTier('flash')}>
+        <button type="button" className={`chip ${tier === 'flash' ? 'active' : ''}`} onClick={() => setTier('flash')}>
           {t('tierFlash')} <span className="muted">· {t('tierFlashHint')}</span>
         </button>
       </div>
 
-      <div className="closet-grid">
-        {items.map(it => {
-          const isSel = selected.has(it.id);
-          return (
-            <button
-              key={it.id}
-              type="button"
-              className={`item-card builder-pickable ${isSel ? 'selected' : ''}`}
-              onClick={() => toggle(it.id)}
-            >
-              <div className="item-card-image">
-                {it.croppedUrl || it.originalUrl
-                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                  : <div className="item-card-skeleton" />}
-                {isSel && <span className="item-card-badge"><i className="material-icons">check</i></span>}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {items.length === 0 ? (
+        <div className="empty-state empty-state-card" style={{ marginTop: '1rem' }}>
+          <p>{t('tryOnEmptyCloset')}</p>
+          <Link to="/closet/add" className="btn btn-primary">{t('addItem')}</Link>
+        </div>
+      ) : (
+        <div className="closet-grid">
+          {items.map(it => {
+            const isSel = selected.has(it.id);
+            return (
+              <button
+                key={it.id}
+                type="button"
+                className={`item-card builder-pickable ${isSel ? 'selected' : ''}`}
+                onClick={() => toggle(it.id)}
+              >
+                <div className="item-card-image">
+                  {it.croppedUrl || it.originalUrl
+                    ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                    : <div className="item-card-skeleton" />}
+                  {isSel && (
+                    <span className="item-card-check">
+                      <Check size={14} strokeWidth={2.4} />
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {error && <p style={{ color: 'var(--error)' }}>{error}</p>}
 
-      <div className="controls controls-sticky">
+      <div className="builder-cta">
         <button
+          type="button"
           className="btn btn-primary"
           onClick={submit}
           disabled={submitting || selected.size === 0}
         >
-          {submitting ? t('generating') : t('startTryOn')}
+          <Sparkles size={16} strokeWidth={1.8} />
+          {submitting ? t('generating') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`}
         </button>
       </div>
     </div>

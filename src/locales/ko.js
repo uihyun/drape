@@ -43,6 +43,9 @@ export const ko = {
   showProcessed: '처리본 보기',
   lastWorn: '마지막 착용',
   wornN: '{n}번 입음',
+  outfitBuilderEmpty: '옷장이 비어있어요. 먼저 옷을 몇 개 추가하고 돌아와 주세요.',
+  outfitSignInBody: '로그인 하고 내 옷장으로 코디를 만들어 보세요.',
+  tryOnEmptyCloset: '옷장이 비어있어요. 입어볼 옷을 먼저 추가해 주세요.',
   settingsSignInBody: '로그인 하고 프로필과 피팅 사진을 관리하세요.',
   profileSignInTitle: '내 옷장, 내 폰 안에',
   profileSignInBody: '로그인 하고 매일의 코디를 기록해 보세요.',
@@ -213,7 +216,20 @@ export const ko = {
   reportNotePlaceholder: '자세한 내용 (선택)',
 
   // ── Account deletion modal ─────────────────────────────────────────
+  dangerZone: '위험 영역',
+  deleteAccount: '계정 삭제',
+  deleteAccountTitle: '정말 계정을 삭제할까요?',
+  deleteAccountWarn: 'drape 에서 모든 데이터가 영구 삭제돼요. 되돌릴 수 없어요.',
   deleteAccountItem_closet: '옷장·코디·OOTD·가상 피팅 결과',
+  deleteAccountItem_profile: '프로필·아이디·정체성 레퍼런스 사진',
+  deleteAccountItem_social: '팔로우·댓글·좋아요',
+  deleteAccountItem_credits: '남은 크레딧',
+  deleteAccountBilling_ios: 'Apple 구독은 자동 해지되지 않아요 — App Store 설정에서 해지하세요.',
+  deleteAccountBilling_web: '웹 구독은 자동 해지됩니다.',
+  deleteAccountFinal: '확인 후엔 되돌릴 수 없어요.',
+  deleteAccountSubmitting: '삭제 중…',
+  deleteAccountConfirm: '계정 삭제',
+  deleteAccountError: '계정을 삭제하지 못했어요. 다시 시도해 주세요.',
 
   // ── Errors / 404 ───────────────────────────────────────────────────
   notFoundTitle: '페이지를 찾을 수 없어요',

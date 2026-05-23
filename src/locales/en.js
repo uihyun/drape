@@ -43,6 +43,9 @@ export const en = {
   showProcessed: 'Show processed',
   lastWorn: 'Last worn',
   wornN: 'worn {n}×',
+  outfitBuilderEmpty: 'Your closet is empty. Add a few items first, then come back to build an outfit.',
+  outfitSignInBody: 'Sign in to build outfits from your closet.',
+  tryOnEmptyCloset: 'Your closet is empty. Add a few items to try on.',
   settingsSignInBody: 'Sign in to edit your profile and try-on photos.',
   profileSignInTitle: 'Your closet, on your phone',
   profileSignInBody: 'Sign in to start logging outfits.',
@@ -213,7 +216,20 @@ export const en = {
   reportNotePlaceholder: 'Optional detail',
 
   // ── Account deletion modal ─────────────────────────────────────────
+  dangerZone: 'Danger zone',
+  deleteAccount: 'Delete account',
+  deleteAccountTitle: 'Delete your account?',
+  deleteAccountWarn: 'This permanently removes your data from drape. This cannot be undone.',
   deleteAccountItem_closet: 'Your closet, outfits, OOTDs, and try-on results',
+  deleteAccountItem_profile: 'Your profile, handle, and identity reference photos',
+  deleteAccountItem_social: 'Your follows, comments, and likes',
+  deleteAccountItem_credits: 'Any remaining credits',
+  deleteAccountBilling_ios: 'Apple subscriptions are not cancelled automatically — manage in App Store settings.',
+  deleteAccountBilling_web: 'Your web subscription will be cancelled.',
+  deleteAccountFinal: 'Type-confirm not required, but this is final.',
+  deleteAccountSubmitting: 'Deleting…',
+  deleteAccountConfirm: 'Delete account',
+  deleteAccountError: 'Couldn’t delete the account. Please try again.',
 
   // ── Errors / 404 ───────────────────────────────────────────────────
   notFoundTitle: 'Page not found',

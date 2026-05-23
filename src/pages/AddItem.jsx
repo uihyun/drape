@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, UploadCloud, Camera as CameraIcon, Image as ImageIcon, Lock } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
+import { isNativeApp } from '../services/platform-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Add a clothing item. Two-step flow: pick (gallery or camera) → preview →
@@ -12,6 +13,7 @@ export function AddItem({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const fileInputRef = useRef();
+  const cameraInputRef = useRef();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [pendingBlob, setPendingBlob] = useState(null);
@@ -65,9 +67,9 @@ export function AddItem({ user, onSignIn }) {
 
   return (
     <>
-      <div className="add-item">
-        <h2 className="section-title">{t('addItem')}</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>{t('addItemHint')}</p>
+      <div className="page add-item">
+        <h1 className="page-h1">{t('addItem')}</h1>
+        <p className="page-sub">{t('addItemHint')}</p>
 
         <div className="add-item-actions">
           <button
@@ -86,21 +88,40 @@ export function AddItem({ user, onSignIn }) {
             onChange={e => stagePicked(e.target.files?.[0])}
           />
 
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={async () => {
-              try {
-                const blob = await CameraService.takePhoto();
-                if (blob) stagePicked(blob);
-              } catch (err) {
-                setError(err.message);
-              }
-            }}
-            disabled={uploading}
-          >
-            <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-          </button>
+          {/* On native we lean on Capacitor's @capacitor/camera; on
+              mobile web we use a direct <input capture="environment">
+              click — has to be a real user-gesture click on the input
+              itself, otherwise iOS Safari falls back to gallery. */}
+          {isNativeApp() ? (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  const blob = await CameraService.takePhoto();
+                  if (blob) stagePicked(blob);
+                } catch (err) {
+                  setError(err.message);
+                }
+              }}
+              disabled={uploading}
+            >
+              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+            </button>
+          ) : (
+            <label className={`btn btn-secondary ${uploading ? 'is-disabled' : ''}`}>
+              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={e => stagePicked(e.target.files?.[0])}
+                disabled={uploading}
+              />
+            </label>
+          )}
         </div>
 
         {error && <p style={{ color: 'var(--error)' }}>{error}</p>}
