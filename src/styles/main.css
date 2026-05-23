@@ -95,8 +95,10 @@ textarea,
 
 .main {
   flex: 1;
-  padding: 2rem 1rem;
-  max-width: 800px;
+  padding: 0.5rem 0.75rem;
+  /* Lekondo treats desktop as a wide phone: same narrow centered column,
+     same floating nav. Anything wider would just be empty side margins. */
+  max-width: 540px;
   margin: 0 auto;
   width: 100%;
 }

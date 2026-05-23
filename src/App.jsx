@@ -6,7 +6,6 @@ import { AuthService } from './services/auth-service.js';
 import { useCredits } from './services/credits-service.js';
 import { useLocale } from './hooks/useLocale.jsx';
 
-import { Header } from './components/Header.jsx';
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
 import { Onboarding } from './components/Onboarding.jsx';
@@ -88,18 +87,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
 
   return (
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}`}>
-      {!isFullBleed && (
-        <>
-          <Header
-            user={user}
-            credits={credits}
-            onSignIn={handleSignIn}
-            onSignOut={handleSignOut}
-            onOpenCredits={() => setCreditModalOpen(true)}
-          />
-          <MobileHeader />
-        </>
-      )}
+      {!isFullBleed && <MobileHeader />}
 
       <main className="main">
         <Routes>
