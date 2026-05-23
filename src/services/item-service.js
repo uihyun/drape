@@ -134,6 +134,40 @@ async function updateItem(itemId, patch) {
   await updateDoc(doc(db, ITEMS, itemId), safe);
 }
 
+/**
+ * Push a wear entry onto each item's wearLog. Called by OotdService after
+ * an OOTD is upserted with an outfitId. Idempotent: if the same date
+ * already exists in the log, we replace it instead of duplicating. Cap
+ * the log at 60 entries (most recent kept) so old items don't bloat
+ * forever — full history still derivable from the OOTDs collection.
+ */
+const WEAR_LOG_CAP = 60;
+async function recordWear({ itemIds, date, ootdId, outfitId }) {
+  if (!Array.isArray(itemIds) || itemIds.length === 0) return;
+  if (!date) return;
+  const updates = await Promise.allSettled(itemIds.map(async (itemId) => {
+    const ref_ = doc(db, ITEMS, itemId);
+    const snap = await getDoc(ref_);
+    if (!snap.exists()) return;
+    const prev = Array.isArray(snap.data().wearLog) ? snap.data().wearLog : [];
+    const filtered = prev.filter(e => e?.date !== date);
+    const nextLog = [{ date, ootdId, outfitId }, ...filtered].slice(0, WEAR_LOG_CAP);
+    const lastWornAt = nextLog[0]?.date || null;
+    const wornCount = nextLog.length;
+    await updateDoc(ref_, {
+      wearLog: nextLog,
+      lastWornAt,
+      wornCount,
+      updatedAt: serverTimestamp(),
+    });
+  }));
+  // Surface any failures in console but don't propagate — recording wear
+  // is best-effort; the OOTD itself is the source of truth.
+  for (const r of updates) {
+    if (r.status === 'rejected') console.warn('recordWear: item update failed', r.reason?.message);
+  }
+}
+
 async function deleteItem(itemId) {
   const it = await getItem(itemId);
   if (!it) return;
@@ -168,6 +202,7 @@ export const ItemService = {
   updateItem,
   deleteItem,
   reprocessItem,
+  recordWear,
 };
 
 export default ItemService;

@@ -64,6 +64,23 @@ async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '' }
     createdAt: serverTimestamp(),
   }, { merge: true });
 
+  // Wear history: stamp each item in the linked outfit with this date.
+  // Lazy-import to avoid circular dep (item-service → ootd-service path
+  // isn't currently in use but this keeps things safe).
+  if (outfitId) {
+    try {
+      const { OutfitService } = await import('./outfit-service.js');
+      const outfit = await OutfitService.getOutfit(outfitId);
+      const itemIds = outfit?.itemIds || [];
+      if (itemIds.length) {
+        const { ItemService } = await import('./item-service.js');
+        await ItemService.recordWear({ itemIds, date, ootdId: id, outfitId });
+      }
+    } catch (e) {
+      console.warn('wear log recording failed:', e?.message);
+    }
+  }
+
   return { id };
 }
 

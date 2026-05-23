@@ -42,7 +42,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
       live = live.filter(i =>
         (i.name || '').toLowerCase().includes(q) ||
         (i.tags?.category || '').toLowerCase().includes(q) ||
-        (i.tags?.brand || '').toLowerCase().includes(q)
+        (i.tags?.brand || '').toLowerCase().includes(q) ||
+        // Wear log dates ("2026-05" matches anything worn in May 2026)
+        (Array.isArray(i.wearLog) && i.wearLog.some(e => e.date?.includes(q)))
       );
     }
     return live;

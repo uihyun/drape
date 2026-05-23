@@ -41,6 +41,8 @@ export const en = {
   after: 'After',
   showOriginal: 'Show original',
   showProcessed: 'Show processed',
+  lastWorn: 'Last worn',
+  wornN: 'worn {n}×',
   settingsSignInBody: 'Sign in to edit your profile and try-on photos.',
   profileSignInTitle: 'Your closet, on your phone',
   profileSignInBody: 'Sign in to start logging outfits.',

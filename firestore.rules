@@ -80,7 +80,10 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'notes', 'tags', 'isArchived', 'isFavorite',
-                      'status', 'updatedAt', 'originalUrl', 'originalPath']);
+                      'status', 'updatedAt', 'originalUrl', 'originalPath',
+                      // Wear history maintained when an OOTD is recorded —
+                      // see ItemService.recordWear / OotdService.upsertOotd.
+                      'wearLog', 'lastWornAt', 'wornCount']);
 
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;

@@ -126,6 +126,17 @@ export function ItemDetail({ user }) {
         )}
       </aside>
 
+      {Array.isArray(item.wearLog) && item.wearLog.length > 0 && (
+        <div className="item-viewer-wear">
+          <span className="item-viewer-wear-label">
+            {t('lastWorn')}: {item.wearLog[0].date}
+          </span>
+          <span className="item-viewer-wear-count">
+            · {t('wornN', { n: item.wornCount || item.wearLog.length })}
+          </span>
+        </div>
+      )}
+
       <footer className="item-viewer-foot">
         {editing ? (
           <div className="item-viewer-edit">
