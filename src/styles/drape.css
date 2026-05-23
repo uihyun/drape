@@ -279,6 +279,33 @@ body.is-native {
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem 0.75rem;
 }
+
+/* Opening the closet replays a soft "items raining in" sequence: each
+   card drops a few pixels and fades in, staggered by index so 12+ items
+   feel like clothes spilling out of a wardrobe. Pure CSS — no JS state.
+   Honors prefers-reduced-motion. */
+.closet-grid .item-card {
+  animation: itemDrop 0.45s cubic-bezier(0.2, 0.85, 0.4, 1) both;
+}
+.closet-grid .item-card:nth-child(1)  { animation-delay: 0.00s; }
+.closet-grid .item-card:nth-child(2)  { animation-delay: 0.04s; }
+.closet-grid .item-card:nth-child(3)  { animation-delay: 0.08s; }
+.closet-grid .item-card:nth-child(4)  { animation-delay: 0.12s; }
+.closet-grid .item-card:nth-child(5)  { animation-delay: 0.16s; }
+.closet-grid .item-card:nth-child(6)  { animation-delay: 0.20s; }
+.closet-grid .item-card:nth-child(7)  { animation-delay: 0.24s; }
+.closet-grid .item-card:nth-child(8)  { animation-delay: 0.28s; }
+.closet-grid .item-card:nth-child(9)  { animation-delay: 0.32s; }
+.closet-grid .item-card:nth-child(10) { animation-delay: 0.36s; }
+.closet-grid .item-card:nth-child(11) { animation-delay: 0.40s; }
+.closet-grid .item-card:nth-child(12) { animation-delay: 0.44s; }
+@keyframes itemDrop {
+  from { opacity: 0; transform: translateY(-14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .closet-grid .item-card { animation: none; }
+}
 .item-card {
   text-decoration: none;
   color: inherit;
