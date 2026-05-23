@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { X, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers } from 'lucide-react';
+import { X, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
+import { CameraService } from '../services/camera.js';
 import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { ShareButton } from '../components/ShareButton.jsx';
+import { shareOrDownloadImage } from '../services/share-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Full-screen single-item viewer modeled on Image 24:
@@ -25,6 +27,7 @@ export function ItemDetail({ user }) {
   const [saving, setSaving] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const changeInputRef = useRef(null);
 
   useEffect(() => {
     if (!itemId) return;
@@ -63,6 +66,64 @@ export function ItemDetail({ user }) {
     if (!confirm(t('confirmDeleteItem'))) return;
     await ItemService.deleteItem(item.id);
     navigate('/profile/closet');
+  };
+
+  // Replace the source photo. Uploads through CameraService.compressImage
+  // → ItemService.createItem 's upload helper would be heavy; for now we
+  // surface a hidden file input that's processed by reprocessItem after
+  // the new bytes are written, so the cropping/tagging pipeline reruns.
+  const onChangeProduct = async (file) => {
+    if (!file) return;
+    try {
+      const blob = await CameraService.compressImage(file);
+      // The existing createItem flow always allocates a new doc; here we
+      // want to replace the *current* item's source. We do it directly:
+      // upload to items/{uid}/{itemId}/original.jpg, then reprocess.
+      const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      const { storage } = await import('../firebase.js');
+      const path = `items/${item.userId}/${item.id}/original.jpg`;
+      const r = ref(storage, path);
+      await uploadBytes(r, blob, { contentType: blob.type || 'image/jpeg' });
+      const url = await getDownloadURL(r);
+      await ItemService.updateItem(item.id, {});
+      // Manually re-trigger the pipeline; updateItem 's allowlist won't
+      // touch originalUrl/originalPath/status, so call reprocess after a
+      // direct doc patch from server side would be the clean way — for
+      // now we patch via the existing reprocessItem path which calls the
+      // processItem Cloud Function (it reads originalPath from the doc).
+      // First we need to update originalUrl/originalPath; rules allow.
+      const { updateDoc, serverTimestamp, doc: docFn } = await import('firebase/firestore');
+      const { db: dbRef } = await import('../firebase.js');
+      await updateDoc(docFn(dbRef, 'items', item.id), {
+        originalUrl: url,
+        originalPath: path,
+        status: 'processing',
+        updatedAt: serverTimestamp(),
+      });
+      await ItemService.reprocessItem(item.id);
+    } catch (e) {
+      console.warn('change product failed', e?.message);
+      alert(e?.message || 'change_failed');
+    }
+  };
+
+  const onSave = async () => {
+    const url = item.croppedUrl || item.originalUrl;
+    if (!url) return;
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      const blob = await res.blob();
+      const filename = `${(item.name || 'item').replace(/[^a-z0-9_\-]+/gi, '_')}.${blob.type === 'image/png' ? 'png' : 'jpg'}`;
+      await shareOrDownloadImage({
+        blob,
+        filename,
+        title: item.name || t('untitledItem'),
+        text: item.tags?.category ? t(`taxonomy.categories.${item.tags.category}`) : '',
+      });
+    } catch (e) {
+      console.warn('save failed', e?.message);
+      alert(t('saveFailed'));
+    }
   };
 
   return (
@@ -116,12 +177,25 @@ export function ItemDetail({ user }) {
             <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); }}>
               <Pencil size={14} strokeWidth={1.7} /> {t('editTags')}
             </button>
+            <button type="button" onClick={() => { setMenuOpen(false); changeInputRef.current?.click(); }}>
+              <ImageIcon size={14} strokeWidth={1.7} /> {t('changeProduct')}
+            </button>
+            <button type="button" onClick={() => { setMenuOpen(false); onSave(); }}>
+              <Download size={14} strokeWidth={1.7} /> {t('saveImage')}
+            </button>
             <button type="button" onClick={() => { setMenuOpen(false); ItemService.reprocessItem(item.id); }}>
               <RefreshCw size={14} strokeWidth={1.7} /> {t('reprocess')}
             </button>
             <button type="button" className="danger" onClick={() => { setMenuOpen(false); remove(); }}>
               <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
+            <input
+              ref={changeInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => onChangeProduct(e.target.files?.[0])}
+            />
           </div>
         )}
       </aside>
