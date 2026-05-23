@@ -145,7 +145,8 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
         />
       )}
 
-      <Onboarding />
+      {/* Onboarding only after sign-in — never on top of /welcome. */}
+      {isLoggedIn && !isFullBleed && <Onboarding />}
     </div>
   );
 }
