@@ -40,7 +40,7 @@ export function Header({ user, credits, onSignIn, onSignOut, onOpenCredits }) {
             <>
               <button className="credit-badge" onClick={onOpenCredits} title={t('credits')}>
                 <i className="material-icons" aria-hidden="true">bolt</i>
-                <span>{credits ?? '—'}</span>
+                <span>{credits?.credits ?? '—'}</span>
               </button>
               <button
                 className="avatar-btn"

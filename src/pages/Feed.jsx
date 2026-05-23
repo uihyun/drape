@@ -4,6 +4,9 @@ import { FeedCard } from '../components/FeedCard.jsx';
 import { ProfileService } from '../services/profile-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// Discovery feed. Lekondo's marketing screenshots don't show a feed
+// surface, so we lean into the editorial-magazine tone: borderless text
+// tabs for sort, no large title block, a quiet empty state.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
@@ -45,23 +48,31 @@ export function Feed({ user, onSignIn }) {
 
   return (
     <div className="community-feed">
-      <div className="feed-header">
-        <h2 className="feed-title">{t('navFeed')}</h2>
-      </div>
-
-      <div className="feed-sort-btns">
-        <button className={`feed-sort-btn ${sort === 'latest' ? 'active' : ''}`} onClick={() => setSort('latest')}>
+      <nav className="feed-sort-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={sort === 'latest'}
+          className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+          onClick={() => setSort('latest')}
+        >
           {t('feedSortLatest')}
         </button>
-        <button className={`feed-sort-btn ${sort === 'popular' ? 'active' : ''}`} onClick={() => setSort('popular')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={sort === 'popular'}
+          className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+          onClick={() => setSort('popular')}
+        >
           {t('feedSortPopular')}
         </button>
-      </div>
+      </nav>
 
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (
-        <p className="feed-empty">{t('feedEmpty')}</p>
+        <FeedEmpty t={t} />
       ) : (
         <div className="feed-grid">
           {outfits.map(o => (
@@ -76,6 +87,16 @@ export function Feed({ user, onSignIn }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function FeedEmpty({ t }) {
+  return (
+    <div className="feed-empty">
+      <div className="feed-empty-mark">◇</div>
+      <h2 className="feed-empty-title">{t('feedEmptyTitle')}</h2>
+      <p className="feed-empty-body">{t('feedEmptyBody')}</p>
     </div>
   );
 }
