@@ -1242,3 +1242,174 @@
   color: #fff;
 }
 .btn-pill--accent:hover:not(:disabled) { background: var(--accent-strong); }
+
+/* ── Welcome / sign-in (Lekondo capture 1) ─────────────────────────── */
+.app-full-bleed .main { padding: 0; max-width: none; }
+.welcome {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  padding: env(safe-area-inset-top) 1.25rem calc(env(safe-area-inset-bottom) + 1.25rem);
+}
+.welcome-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0 0;
+}
+.welcome-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
+}
+.welcome-lang { position: relative; }
+.welcome-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+}
+.welcome-lang-btn:hover { background: var(--surface-elevated); }
+.welcome-lang-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.3rem;
+  list-style: none;
+  padding: 0.3rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  min-width: 140px;
+  z-index: 10;
+}
+.welcome-lang-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+}
+.welcome-lang-menu button:hover { background: var(--surface-elevated); }
+.welcome-lang-menu button[aria-selected="true"] { font-weight: 600; }
+
+.welcome-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 0;
+  min-height: 0;
+}
+.welcome-hero-panel {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #F4F5F1 0%, #E8ECE5 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem;
+}
+.welcome-tagline {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+.signin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.95rem 1.25rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease, transform 0.12s ease;
+  border: 1px solid transparent;
+}
+.signin-btn:active:not(:disabled) { transform: scale(0.99); }
+.signin-btn:disabled { opacity: 0.55; cursor: default; }
+.signin-btn--google {
+  background: #fff;
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.signin-btn--google:hover:not(:disabled) { background: var(--surface-elevated); }
+.signin-btn--apple {
+  background: #000;
+  color: #fff;
+}
+.signin-btn--apple:hover:not(:disabled) { background: #1c1c1c; }
+.signin-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.4rem 0;
+}
+.signin-btn--email {
+  background: var(--accent);
+  color: #fff;
+}
+.signin-btn--email:hover:not(:disabled) { background: var(--accent-strong); }
+.welcome-error {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--error);
+  text-align: center;
+}
+
+.welcome-footer {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.welcome-footer a { color: var(--text-secondary); text-decoration: underline; }
+.welcome-footer a:hover { color: var(--text-primary); }
+.welcome-version { margin-top: 0.6rem; }
+
+@media (min-width: 769px) {
+  .welcome {
+    align-items: center;
+  }
+  .welcome-header,
+  .welcome-actions,
+  .welcome-footer {
+    max-width: 420px;
+    width: 100%;
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
@@ -21,6 +21,7 @@ import { OutfitDetail } from './pages/OutfitDetail.jsx';
 import { OutfitShare } from './pages/OutfitShare.jsx';
 import { Calendar } from './pages/Calendar.jsx';
 import { Profile } from './pages/Profile.jsx';
+import { Welcome } from './pages/Welcome.jsx';
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
 import { Feed } from './pages/Feed.jsx';
@@ -60,61 +61,91 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="app">
-        <Header
-          user={user}
-          credits={credits}
-          onSignIn={handleSignIn}
-          onSignOut={handleSignOut}
-          onOpenCredits={() => setCreditModalOpen(true)}
-        />
-        <MobileHeader />
+      <AppShell
+        user={user}
+        authReady={authReady}
+        credits={credits}
+        creditModalOpen={creditModalOpen}
+        setCreditModalOpen={setCreditModalOpen}
+        handleSignIn={handleSignIn}
+        handleSignOut={handleSignOut}
+      />
+    </BrowserRouter>
+  );
+}
 
-        <main className="main">
-          <Routes>
-            <Route path="/" element={<Navigate to="/profile" replace />} />
-            <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
-            <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
-            <Route path="/closet" element={<Closet user={user} authReady={authReady} onSignIn={handleSignIn} />} />
-            <Route path="/closet/add" element={<AddItem user={user} onSignIn={handleSignIn} />} />
-            <Route path="/i/:itemId" element={<ItemDetail user={user} />} />
+// Routes that render edge-to-edge with no global chrome (own header,
+// own background). The Welcome / sign-in page is the canonical example.
+const FULL_BLEED = [/^\/welcome$/];
 
-            <Route path="/outfits" element={<OutfitList user={user} onSignIn={handleSignIn} />} />
-            <Route path="/outfits/new" element={<OutfitBuilder user={user} onSignIn={handleSignIn} />} />
-            <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
-            <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
+function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpen, handleSignIn, handleSignOut }) {
+  const location = useLocation();
+  const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
+  // Pick the right "home" for `/` based on auth: signed-in users land on
+  // their profile; anonymous/new users see the welcome screen.
+  const isLoggedIn = user && !user.isAnonymous;
+  const rootTarget = isLoggedIn ? '/profile' : '/welcome';
 
-            <Route path="/calendar" element={<Calendar user={user} onSignIn={handleSignIn} />} />
-
-            <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} onOpenCredits={() => setCreditModalOpen(true)} />} />
-            <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
-
-            <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
-
-            <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
-
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/support" element={<Support />} />
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        <MobileTabBar user={user} />
-
-        {creditModalOpen && (
-          <CreditModal
+  return (
+    <div className={`app${isFullBleed ? ' app-full-bleed' : ''}`}>
+      {!isFullBleed && (
+        <>
+          <Header
             user={user}
             credits={credits}
-            onClose={() => setCreditModalOpen(false)}
             onSignIn={handleSignIn}
+            onSignOut={handleSignOut}
+            onOpenCredits={() => setCreditModalOpen(true)}
           />
-        )}
+          <MobileHeader />
+        </>
+      )}
 
-        <Onboarding />
-      </div>
-    </BrowserRouter>
+      <main className="main">
+        <Routes>
+          <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
+          <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
+          <Route path="/closet" element={<Closet user={user} authReady={authReady} onSignIn={handleSignIn} />} />
+          <Route path="/closet/add" element={<AddItem user={user} onSignIn={handleSignIn} />} />
+          <Route path="/i/:itemId" element={<ItemDetail user={user} />} />
+
+          <Route path="/outfits" element={<OutfitList user={user} onSignIn={handleSignIn} />} />
+          <Route path="/outfits/new" element={<OutfitBuilder user={user} onSignIn={handleSignIn} />} />
+          <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
+          <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
+
+          <Route path="/calendar" element={<Calendar user={user} onSignIn={handleSignIn} />} />
+
+          <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} onOpenCredits={() => setCreditModalOpen(true)} />} />
+          <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
+
+          <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
+
+          <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
+
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/support" element={<Support />} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      {!isFullBleed && <MobileTabBar user={user} />}
+
+      {creditModalOpen && (
+        <CreditModal
+          user={user}
+          credits={credits}
+          onClose={() => setCreditModalOpen(false)}
+          onSignIn={handleSignIn}
+        />
+      )}
+
+      <Onboarding />
+    </div>
   );
 }
 
