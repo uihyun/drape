@@ -51,6 +51,11 @@ export const en = {
   welcomeLegalAnd: 'and',
   termsOfService: 'Terms of Service',
   privacyPolicy: 'Privacy Policy',
+  comingSoon: 'Coming soon',
+  search: 'Search',
+  searchPlaceholder: 'Search your closet…',
+  clear: 'Clear',
+  closetView: { all: 'All', usage: 'Usage', brands: 'Brands', categories: 'Categories' },
   processing: 'Processing',
   processFailed: 'Failed',
 

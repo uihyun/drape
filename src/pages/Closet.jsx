@@ -1,15 +1,25 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CATEGORIES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
+const VIEWS = ['all', 'usage', 'brands', 'categories'];
+
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [items, setItems] = useState(null);
-  const [filter, setFilter] = useState('all');
+  // Top-row view (Lekondo: All / Usage / Brands / Categories). Picking
+  // "categories" reveals a second row of category chips that drive the
+  // actual filter; otherwise filter stays 'all'.
+  const [view, setView] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState(null);
+  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (!authReady) return;
@@ -17,12 +27,31 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
     return ItemService.subscribeMyCloset(user.uid, setItems);
   }, [user, authReady]);
 
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
+
   const filtered = useMemo(() => {
     if (!items) return null;
-    const live = items.filter(i => !i.isArchived);
-    if (filter === 'all') return live;
-    return live.filter(i => i?.tags?.category === filter);
-  }, [items, filter]);
+    let live = items.filter(i => !i.isArchived);
+    if (view === 'categories' && categoryFilter) {
+      live = live.filter(i => i?.tags?.category === categoryFilter);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      live = live.filter(i =>
+        (i.name || '').toLowerCase().includes(q) ||
+        (i.tags?.category || '').toLowerCase().includes(q) ||
+        (i.tags?.brand || '').toLowerCase().includes(q)
+      );
+    }
+    return live;
+  }, [items, view, categoryFilter, search]);
+
+  const onViewChange = (v) => {
+    setView(v);
+    if (v !== 'categories') setCategoryFilter(null);
+  };
 
   if (!authReady) {
     return <div className="loading"><div className="spinner" /></div>;
@@ -31,11 +60,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   if (!user || user.isAnonymous) {
     return (
       <div className="empty-state">
-        <i className="material-icons">checkroom</i>
         <h2>{t('closetSignInTitle')}</h2>
         <p>{t('closetSignInBody')}</p>
         <button className="btn btn-primary" onClick={onSignIn}>
-          <i className="material-icons">login</i>
           {t('signInGoogle')}
         </button>
       </div>
@@ -48,38 +75,88 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         <div className="closet-header">
           <h2 className="section-title">{t('navCloset')}</h2>
           <Link to="/closet/add" className="btn btn-primary closet-add-btn">
-            <i className="material-icons">add</i>
             {t('addItem')}
           </Link>
         </div>
       )}
 
-      <div className="filter-chips filter-chips--text" role="tablist">
+      <div className="closet-filter-row">
+        <nav className="filter-chips filter-chips--text" role="tablist">
+          {VIEWS.map(v => {
+            const disabled = v === 'usage' || v === 'brands';
+            return (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={view === v}
+                className={`chip${view === v ? ' active' : ''}${disabled ? ' chip-soon' : ''}`}
+                onClick={() => !disabled && onViewChange(v)}
+                disabled={disabled}
+                title={disabled ? t('comingSoon') : undefined}
+              >
+                {t(`closetView.${v}`)}
+              </button>
+            );
+          })}
+        </nav>
         <button
-          className={`chip ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
+          type="button"
+          className="closet-search-btn"
+          aria-label={t('search')}
+          onClick={() => setSearchOpen(o => !o)}
         >
-          {t('filterAll')}
+          {searchOpen ? <X size={18} strokeWidth={1.7} /> : <Search size={18} strokeWidth={1.7} />}
         </button>
-        {CATEGORIES.map(c => (
-          <button
-            key={c}
-            className={`chip ${filter === c ? 'active' : ''}`}
-            onClick={() => setFilter(c)}
-          >
-            {t(`taxonomy.categories.${c}`)}
-          </button>
-        ))}
       </div>
+
+      {searchOpen && (
+        <div className="closet-search-bar">
+          <Search size={16} strokeWidth={1.6} />
+          <input
+            ref={searchInputRef}
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('searchPlaceholder')}
+            className="closet-search-input"
+          />
+          {search && (
+            <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
+              <X size={16} strokeWidth={1.7} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {view === 'categories' && (
+        <div className="closet-cat-row">
+          <button
+            type="button"
+            className={`chip-pill${!categoryFilter ? ' active' : ''}`}
+            onClick={() => setCategoryFilter(null)}
+          >
+            {t('filterAll')}
+          </button>
+          {CATEGORIES.map(c => (
+            <button
+              key={c}
+              type="button"
+              className={`chip-pill${categoryFilter === c ? ' active' : ''}`}
+              onClick={() => setCategoryFilter(c)}
+            >
+              {t(`taxonomy.categories.${c}`)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {filtered === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <i className="material-icons">checkroom</i>
           <p>{t('closetEmpty')}</p>
           <Link to="/closet/add" className="btn btn-primary">
-            <i className="material-icons">add</i>
             {t('addFirstItem')}
           </Link>
         </div>

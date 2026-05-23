@@ -379,9 +379,9 @@
    on the active item. Used by the Closet category filter. */
 .filter-chips--text {
   gap: 1.1rem;
-  padding-bottom: 0.6rem;
-  margin-bottom: 1.1rem;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
 }
 .filter-chips--text .chip {
   border: none;
@@ -389,7 +389,7 @@
   padding: 0.2rem 0;
   border-radius: 0;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   position: relative;
 }
 .filter-chips--text .chip.active {
@@ -401,9 +401,87 @@
   content: '';
   position: absolute;
   left: 0; right: 0;
-  bottom: -0.62rem;
+  bottom: -0.4rem;
   height: 2px;
   background: var(--text-primary);
+}
+.filter-chips--text .chip-soon {
+  /* Disabled "coming soon" tabs render greyed-out but still in the row
+     so the structure matches the Lekondo capture. */
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Closet filter row: tabs on the left, search icon pinned right. */
+.closet-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.55rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.closet-search-btn {
+  background: none;
+  border: none;
+  padding: 0.4rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.closet-search-btn:hover { color: var(--text-primary); background: var(--surface-elevated); }
+.closet-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  margin: -0.4rem 0 0.9rem;
+  background: var(--surface-elevated);
+  border-radius: 10px;
+  color: var(--text-secondary);
+}
+.closet-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  min-width: 0;
+}
+.closet-search-input::placeholder { color: var(--text-muted); }
+
+/* Second-row category chips that appear when Categories tab is active.
+   Pill style (smaller than the .chip default) so the row stays calm. */
+.closet-cat-row {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.9rem;
+  margin: -0.5rem 0 0;
+  -webkit-overflow-scrolling: touch;
+}
+.chip-pill {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.chip-pill:hover { color: var(--text-primary); border-color: var(--border-hover); }
+.chip-pill.active {
+  background: var(--text-primary);
+  color: #fff;
+  border-color: var(--text-primary);
 }
 
 /* ── Buttons ───────────────────────────────────────────────────────── */

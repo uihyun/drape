@@ -51,6 +51,11 @@ export const ko = {
   welcomeLegalAnd: '및',
   termsOfService: '이용약관',
   privacyPolicy: '개인정보 처리방침',
+  comingSoon: '곧 추가됩니다',
+  search: '검색',
+  searchPlaceholder: '내 옷장에서 검색…',
+  clear: '지우기',
+  closetView: { all: '전체', usage: '사용도', brands: '브랜드', categories: '카테고리' },
   processing: '처리 중',
   processFailed: '실패',
 
