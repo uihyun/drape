@@ -168,17 +168,25 @@ export function OutfitDetail({ user, onSignIn }) {
             <span className="composition-sub">{t('aestheticCompositionSub')}</span>
           </header>
           <ul>
-            {composition.map((c, i) => (
-              <li key={i} className="composition-row">
-                <span className="composition-label">{c.label}</span>
-                <div className="composition-bar" aria-hidden="true">
-                  {[0,1,2,3,4].map(n => (
-                    <span key={n} className={`composition-bar-cell${n < (c.level || 0) ? ' filled' : ''}`} />
-                  ))}
-                </div>
-                <ChevronRight size={14} strokeWidth={1.5} className="composition-chev" />
-              </li>
-            ))}
+            {composition.map((c, i) => {
+              const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
+              return (
+                <li key={i} className="composition-row">
+                  <span className="composition-label">{c.label}</span>
+                  <div
+                    className="composition-bar"
+                    role="meter"
+                    aria-valuemin="0"
+                    aria-valuemax="5"
+                    aria-valuenow={c.level || 0}
+                    aria-label={c.label}
+                  >
+                    <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <ChevronRight size={14} strokeWidth={1.5} className="composition-chev" />
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

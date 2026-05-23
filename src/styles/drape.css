@@ -1258,16 +1258,20 @@
 .composition-row:last-child { border-bottom: none; }
 .composition-label { font-size: 0.95rem; color: var(--text-primary); }
 .composition-bar {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-}
-.composition-bar-cell {
-  height: 10px;
-  border-radius: 2px;
+  /* Lekondo capture 6: continuous bar (not discrete cells), filled
+     portion is a light → dark green gradient. Track stays light grey. */
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
   background: var(--surface-elevated);
+  overflow: hidden;
 }
-.composition-bar-cell.filled { background: var(--accent); }
+.composition-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C4D2C4 0%, var(--accent) 70%, var(--accent-strong) 100%);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
 .composition-chev { color: var(--text-muted); }
 
 .outfit-notes { padding: 0 1rem; margin-bottom: 1.5rem; }
