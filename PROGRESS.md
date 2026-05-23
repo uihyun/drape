@@ -145,3 +145,54 @@ Multi-session arc reshaping drape's identity from voda-with-clothes into a Lekon
 4. **OOTD photo recognition** — Gemini callable that returns item candidates + style label; UX confirms each before saving.
 5. **Magic Upload** — bigger AI batch flow.
 6. **Profile stats header + per-category circles** — purely client read against existing items.
+
+---
+
+## 2026-05-23 (later) — Audit pass + Boards + Photo analysis
+
+After a live mobile-testing pass surfaced duplicate titles, broken camera trigger, missing delete-account flow and ugly stat-less profile header, this batch closes those out and lands the first two big "next-cycle" features.
+
+### Done — audit / UX bugs
+
+- MobileHeader becomes a floating ChevronLeft pill only — pages keep their own `<h1>` so the visible duplication on Settings / AddItem / OutfitBuilder is gone.
+- Camera capture routes by platform: Capacitor → `@capacitor/camera`, mobile web → `<label>` wrapping `<input capture="environment">` (real user-gesture), desktop web → new `CameraCaptureModal` with `getUserMedia` (laptops have webcams; previously hidden, read as broken).
+- OutfitBuilder: empty-closet state explains what to do + links to `/closet/add`; selected count surfaces in Save button label; Lekondo-tone `.page` shell.
+- Settings: new Danger Zone card wires the existing `DeleteAccountModal` (voda's flow was orphaned). Full locale set added.
+- Avatar onError fallback centralized into shared `<Avatar>` (used by Profile / PublicProfile / FeedCard / MobileTabBar) — Google profile photos that 403 in third-party contexts now show a letter/glyph instead of broken-image.
+- `material-icons` swept out of Comments / OutfitList / Calendar / TryOn empty states.
+- PWA `theme_color` and Capacitor splash bg flipped from #FAFAFA → #FFFFFF to match the white surfaces.
+
+### Done — features
+
+- **Profile stats** (`<ProfileStats>`): Wardrobe / Outfits / Posts three-up + scrollable per-category chips (only categories the user has > 0 items in). Wardrobe + Outfits counted client-side from existing subscriptions; Posts reads from the server-maintained `profile.outfitCount`.
+- **Wear log** earlier this day: `ItemService.recordWear` writes `{date, ootdId, outfitId}` onto each item in an outfit when an OOTD is saved (idempotent on date, capped at 60 entries). ItemDetail shows "Last worn: YYYY-MM-DD · worn N×"; Closet search now matches wearLog dates so `"2026-05"` filters May 2026 items.
+- **Sticker Boards** (`/boards`, `/boards/new`, `/boards/:id`): diary-style canvas. Pick items from the closet, drop them on a portrait board, drag / scale / rotate (S + R sliders when a sticker is selected), long-press for context menu (View item / Try-on / Last worn / Remove). Cover thumbnail = topmost sticker's photo. New `/boards` collection with owner-only Firestore rules. Wired into the create sheet.
+- **Photo analysis** (`/analyze`): new `detectItems` Cloud Function (deployed) — Gemini Vision call against any uploaded photo, returns a short style label + per-piece category/colors/description/brand + a search query for each. UI lets the user save any detected piece into the closet (source photo as thumbnail) and follow a Google Images search link. Wired into the create sheet as "Analyze a photo".
+
+### Live
+
+- `https://drape-9e532.web.app` — hosting redeployed.
+- `firestore.rules` redeployed (boards collection).
+- `detectItems` Cloud Function created and deployed.
+
+### Known gaps (deferred to next cycle)
+
+- **[12] Magic Upload (multi-photo batch)** — `AnalyzePhoto` is a single-photo flow today. Extending it to accept `<input multiple>`, run `detectItems` per photo (sequentially to dodge timeouts), aggregate candidates, and dedupe is the next cycle's work.
+- **[13] Item Animate / Save (AI video)** — needs a video-gen model (Veo etc.); not feasible until that's wired. Item Before/After toggle on the viewer is already in.
+- **Per-detected-item cropping** — `detectItems` returns metadata only; the source photo is reused as the item's thumbnail. Gemini's bbox accuracy isn't good enough for clean cutouts yet without a second iterative prompt.
+- **Sticker board sharing** — `boards.isPublic` is allow-listed in the rules but no UI publishes a board to the feed yet.
+- **Wear log backfill** — past OOTDs don't populate existing items' wearLog. One-off script needed.
+- **Profile stats outfitCount** counts only `isListed=true` outfits (server denorm). Private outfits don't bump it; could rename or add a private counter.
+- **Email sign-in** — Welcome button still a placeholder; needs Firebase email-link auth wiring.
+- **Bookmark / Save** — voda had this; not ported.
+- **Looks comparison** — side-by-side outfit browse (Image 22/23).
+- **Comments restyling** — `Comments` now uses lucide-free fallback for delete-`×` and Avatar for placeholder, but the bubble layout is still voda-tone.
+
+### Suggested next cycle order
+
+1. Magic Upload batch (extends `/analyze` to multi-photo).
+2. Looks comparison view.
+3. Comments tone + bookmark.
+4. Per-detected-item cropping (second Gemini pass over the source photo with the picked bbox).
+5. Email link auth.
+6. Animate / Save — when video-gen access is sorted.
