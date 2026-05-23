@@ -192,6 +192,7 @@ exports.healthCheck = functions.https.onRequest((req, res) => {
 // ── Closet pipeline ────────────────────────────────────────────────────
 const itemFns = require('./items.js');
 exports.processItem = itemFns.processItem;
+exports.detectItems = itemFns.detectItems;
 
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');

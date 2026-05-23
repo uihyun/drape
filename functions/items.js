@@ -193,3 +193,94 @@ surrounding scene. Output a square crop with the garment occupying
     return { ok: true, tags, croppedUrl };
   }
 );
+
+// detectItems: vision-only analysis of an arbitrary photo (OOTD selfie,
+// stranger's photo, magazine shot). Returns a short style label plus a
+// list of clothing pieces visible in the image, each with category/
+// colors/description/brand-guess from the closed taxonomy. The client
+// builds "Add to closet" / "Find similar" affordances on top.
+//
+// No cropping per detected piece here — Gemini's bbox accuracy isn't
+// good enough for clean cutouts yet, and we don't want to ship visibly
+// bad crops. The source photo is reused as a thumbnail when a detected
+// piece is added to the closet.
+function detectPrompt() {
+  return `You are a fashion analyst looking at one photograph that may contain
+one or more clothing pieces (on a person, hanger, or laid out). Return
+ONLY valid JSON with this exact schema:
+
+{
+  "style": "short 5-8 word style label (e.g. 'amekaji streetwear', 'minimal monochrome', 'y2k retro')",
+  "notes": "one sentence describing the overall look",
+  "items": [
+    {
+      "category":    one of [${TAXONOMY.CATEGORIES.join(', ')}],
+      "subcategory": one of the subcategories valid for that category,
+      "colors":      array of 1-3 from [${TAXONOMY.COLORS.join(', ')}],
+      "description": 4-12 word english description of this specific piece,
+      "brand":       brand name if clearly visible (logo / hangtag), else null,
+      "searchQuery": 3-8 word search query that would find this piece online
+    }
+  ]
+}
+
+Rules: only describe garments and accessories that are clearly visible.
+Skip skin, body parts, and background. Max 8 items. Use null for any
+field you can't determine.`;
+}
+
+function sanitizeDetectItem(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const cat = TAXONOMY.CATEGORIES.includes(raw.category) ? raw.category : null;
+  const sub = (cat && TAXONOMY.SUBCATEGORIES[cat] || []).includes(raw.subcategory)
+    ? raw.subcategory
+    : null;
+  const colors = Array.isArray(raw.colors)
+    ? Array.from(new Set(raw.colors.filter(c => TAXONOMY.COLORS.includes(c)))).slice(0, 3)
+    : [];
+  return {
+    category: cat,
+    subcategory: sub,
+    colors,
+    description: typeof raw.description === 'string' ? raw.description.slice(0, 240) : '',
+    brand: typeof raw.brand === 'string' ? raw.brand.slice(0, 60) : null,
+    searchQuery: typeof raw.searchQuery === 'string' ? raw.searchQuery.slice(0, 160) : '',
+  };
+}
+
+exports.detectItems = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const { photoBase64, mime = 'image/jpeg' } = request.data || {};
+    if (!photoBase64 || typeof photoBase64 !== 'string') {
+      throw new HttpsError('invalid-argument', 'photoBase64 required');
+    }
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    const model = genAI.getGenerativeModel({ model: VISION });
+
+    try {
+      const res = await model.generateContent([
+        { inlineData: { data: photoBase64, mimeType: mime } },
+        { text: detectPrompt() },
+      ]);
+      const text = res?.response?.text() || '';
+      const parsed = safeParseJson(text);
+      if (!parsed) throw new HttpsError('internal', 'parse_failed');
+
+      const items = Array.isArray(parsed.items)
+        ? parsed.items.map(sanitizeDetectItem).filter(Boolean).slice(0, 8)
+        : [];
+
+      return {
+        style: typeof parsed.style === 'string' ? parsed.style.slice(0, 120) : '',
+        notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 400) : '',
+        items,
+      };
+    } catch (err) {
+      console.warn('detectItems failed:', err?.message);
+      throw new HttpsError('internal', err?.message || 'detect_failed');
+    }
+  }
+);

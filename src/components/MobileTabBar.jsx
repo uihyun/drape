@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Plus, X, Shirt, Sparkles, Layers, Grid3x3 } from 'lucide-react';
+import { Home, User, Plus, X, Shirt, Sparkles, Layers, Grid3x3, ScanEye } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Some Google profile photos throw CORS / 403 in third-party contexts.
@@ -98,6 +98,10 @@ export function MobileTabBar({ user }) {
             <button type="button" className="create-sheet-row" onClick={go('/boards/new')}>
               <span className="create-sheet-icon"><Grid3x3 size={20} strokeWidth={1.5} /></span>
               <span className="create-sheet-label">{t('createBoard')}</span>
+            </button>
+            <button type="button" className="create-sheet-row" onClick={go('/analyze')}>
+              <span className="create-sheet-icon"><ScanEye size={20} strokeWidth={1.5} /></span>
+              <span className="create-sheet-label">{t('createAnalyze')}</span>
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/tryon')}>
               <span className="create-sheet-icon"><Sparkles size={20} strokeWidth={1.5} /></span>

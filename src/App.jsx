@@ -24,6 +24,7 @@ import { PublicProfile } from './pages/PublicProfile.jsx';
 import { Welcome } from './pages/Welcome.jsx';
 import { BoardList } from './pages/BoardList.jsx';
 import { BoardEditor } from './pages/BoardEditor.jsx';
+import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
 import { Feed } from './pages/Feed.jsx';
@@ -127,6 +128,8 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
+
+          <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/boards" element={<BoardList user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />

@@ -194,6 +194,74 @@ async function reprocessItem(itemId) {
   await processItem({ itemId });
 }
 
+/**
+ * Run Gemini vision on an arbitrary photo (OOTD selfie, magazine shot,
+ * stranger on the street) and return a list of detected clothing items
+ * plus a style label. Drives the /analyze page (✦ from the create
+ * sheet); each detected item can then be saved into the closet with
+ * the source photo as its hero (no per-piece crop yet — see
+ * functions/items.js detectItems for why).
+ */
+async function analyzePhoto({ blob, mime = 'image/jpeg' }) {
+  const compressed = await import('./camera.js').then(m => m.CameraService.compressImage(blob));
+  const base64 = await new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const s = String(fr.result || '');
+      const comma = s.indexOf(',');
+      resolve(comma >= 0 ? s.slice(comma + 1) : s);
+    };
+    fr.onerror = reject;
+    fr.readAsDataURL(compressed);
+  });
+  const detectItemsFn = httpsCallable(functions, 'detectItems');
+  const { data } = await detectItemsFn({ photoBase64: base64, mime });
+  return data; // { style, notes, items: [...] }
+}
+
+/**
+ * Save a detected item into the closet directly from a source photo +
+ * the tags Gemini guessed. The photo isn't cropped per-piece — we use
+ * it as both originalUrl and croppedUrl placeholder so the closet card
+ * still has something to show. Future: a follow-up processItem pass
+ * could refine.
+ */
+async function createFromDetected({ blob, detected, sourceLabel = '' }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('AUTH_REQUIRED');
+  // Reuse createItem's upload pipeline but pass pre-computed tags so
+  // processItem can skip vision; here we bypass and write directly.
+  const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const path = `items/${user.uid}/${id}/original.jpg`;
+  const ref_ = ref(storage, path);
+  await uploadBytes(ref_, blob, { contentType: 'image/jpeg' });
+  const url = await getDownloadURL(ref_);
+  await setDoc(doc(db, ITEMS, id), {
+    userId: user.uid,
+    name: detected.description || sourceLabel || 'detected',
+    notes: sourceLabel ? `detected from: ${sourceLabel}` : '',
+    originalUrl: url,
+    originalPath: path,
+    croppedUrl: url,
+    croppedPath: path,
+    status: 'ready',
+    tags: {
+      category: detected.category || null,
+      subcategory: detected.subcategory || null,
+      colors: detected.colors || [],
+      seasons: [],
+      styles: [],
+      fit: null,
+      description: detected.description || '',
+      brand: detected.brand || null,
+    },
+    detectedSearchQuery: detected.searchQuery || '',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return { id };
+}
+
 export const ItemService = {
   createItem,
   subscribeMyCloset,
@@ -203,6 +271,8 @@ export const ItemService = {
   deleteItem,
   reprocessItem,
   recordWear,
+  analyzePhoto,
+  createFromDetected,
 };
 
 export default ItemService;
