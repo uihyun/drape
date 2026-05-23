@@ -33,6 +33,7 @@ export const ko = {
   instagramPlaceholder: 'your_handle',
   saved: '저장됨',
   signedInAs: '로그인 계정',
+  later: '나중에',
   settingsSignInBody: '로그인 하고 프로필과 피팅 사진을 관리하세요.',
   profileSignInTitle: '내 옷장, 내 폰 안에',
   profileSignInBody: '로그인 하고 매일의 코디를 기록해 보세요.',

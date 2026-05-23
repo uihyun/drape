@@ -955,6 +955,53 @@ body.is-native {
   justify-content: center;
   cursor: pointer;
 }
+
+/* ── Claim handle modal ────────────────────────────────────────────── */
+.claim-handle-modal {
+  max-width: 380px;
+  padding: 1.5rem;
+  position: relative;
+}
+.claim-handle-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  padding: 0.4rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 999px;
+}
+.claim-handle-close:hover { background: var(--surface-elevated); color: var(--text-primary); }
+.claim-handle-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.4rem;
+  padding-right: 1.5rem;
+}
+.claim-handle-body {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+.claim-handle-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-elevated);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.claim-handle-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
 .feed-card-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--surface-elevated);

@@ -5,6 +5,7 @@ import { ProfileService } from '../services/profile-service.js';
 import { Closet } from './Closet.jsx';
 import { Calendar } from './Calendar.jsx';
 import { OutfitList } from './OutfitList.jsx';
+import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -34,9 +35,14 @@ export function Profile({ user, authReady, onSignIn }) {
   const activeTab = TABS.includes(tabParam) ? tabParam : DEFAULT_TAB;
 
   const [profile, setProfile] = useState(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [skipClaim, setSkipClaim] = useState(false);
   useEffect(() => {
-    if (!user || user.isAnonymous) { setProfile(null); return; }
-    return ProfileService.subscribeByUid(user.uid, setProfile);
+    if (!user || user.isAnonymous) { setProfile(null); setProfileLoaded(false); return; }
+    return ProfileService.subscribeByUid(user.uid, p => {
+      setProfile(p);
+      setProfileLoaded(true);
+    });
   }, [user]);
 
   if (!authReady) {
@@ -149,6 +155,11 @@ export function Profile({ user, authReady, onSignIn }) {
         {activeTab === 'calendar' && <Calendar user={user} onSignIn={onSignIn} embedded />}
         {activeTab === 'closet' && <Closet user={user} authReady={authReady} onSignIn={onSignIn} embedded />}
       </div>
+
+      <ClaimHandleModal
+        open={profileLoaded && !profile?.handle && !skipClaim}
+        onClose={() => setSkipClaim(true)}
+      />
     </div>
   );
 }

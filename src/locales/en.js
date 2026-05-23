@@ -33,6 +33,7 @@ export const en = {
   instagramPlaceholder: 'your_handle',
   saved: 'Saved',
   signedInAs: 'Signed in as',
+  later: 'Later',
   settingsSignInBody: 'Sign in to edit your profile and try-on photos.',
   profileSignInTitle: 'Your closet, on your phone',
   profileSignInBody: 'Sign in to start logging outfits.',
