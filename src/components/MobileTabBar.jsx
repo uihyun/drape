@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Plus, X, Shirt, Sparkles, Layers } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Lekondo-style 3-slot tab bar: Home / floating + / Profile. The center
-// `+` opens a sheet with the three "create" entry points (Add item, New
-// outfit, Try-on) rather than living on the bar itself.
+// Lekondo-style bottom nav: three separate white circular pills floating
+// over the content (Home / + / Profile). Not a single bar — each button
+// is its own circle with its own shadow, so the page peeks through the
+// gaps between them. Home also routes to the profile (the app's main
+// surface) — Feed is kept as a route but isn't a primary destination.
 export function MobileTabBar({ user }) {
   const { t } = useLocale();
   const location = useLocation();
@@ -13,7 +15,7 @@ export function MobileTabBar({ user }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const isLoggedIn = user && !user.isAnonymous;
-  const onHome = location.pathname === '/' || location.pathname.startsWith('/feed');
+  const onHome = location.pathname === '/' || location.pathname === '/profile' || location.pathname === '/profile/calendar';
   const onProfile = location.pathname.startsWith('/profile');
 
   const go = (path) => () => {
@@ -23,26 +25,40 @@ export function MobileTabBar({ user }) {
 
   return (
     <>
-      <nav className="mobile-tabbar" aria-label="primary">
-        <Link to="/feed" className={`tab${onHome ? ' active' : ''}`}>
-          <Home size={22} strokeWidth={1.6} />
-          <span>{t('navHome')}</span>
+      <nav className="floating-nav" aria-label="primary">
+        <Link
+          to="/profile/calendar"
+          className={`floating-nav-btn${onHome && !onProfile ? ' active' : ''}`}
+          aria-label={t('navHome')}
+        >
+          <span className="floating-nav-icon">
+            <Home size={22} strokeWidth={1.6} />
+          </span>
+          <span className="floating-nav-label">{t('navHome')}</span>
         </Link>
 
         <button
           type="button"
-          className="tab tab-center"
+          className="floating-nav-btn floating-nav-btn--center"
           onClick={() => setSheetOpen(true)}
           aria-label={t('create')}
         >
-          <span className="tab-center-pill">
-            <Plus size={26} strokeWidth={2} />
+          <span className="floating-nav-icon floating-nav-icon--center">
+            <Plus size={28} strokeWidth={2.2} />
           </span>
         </button>
 
-        <Link to="/profile" className={`tab${onProfile ? ' active' : ''}`}>
-          <User size={22} strokeWidth={1.6} />
-          <span>{t('navProfile')}</span>
+        <Link
+          to="/profile"
+          className={`floating-nav-btn${onProfile ? ' active' : ''}`}
+          aria-label={t('navProfile')}
+        >
+          <span className="floating-nav-icon">
+            {user?.photoURL
+              ? <img src={user.photoURL} alt="" />
+              : <User size={22} strokeWidth={1.6} />}
+          </span>
+          <span className="floating-nav-label">{t('navProfile')}</span>
         </Link>
       </nav>
 

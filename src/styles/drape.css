@@ -97,63 +97,70 @@
   color: var(--text-primary); cursor: pointer;
 }
 
-/* ── Mobile tab bar (Lekondo: Home / + / Profile) ─────────────────── */
-.mobile-tabbar { display: none; }
+/* ── Floating nav (Lekondo: three separate white circles) ──────────── */
+/* Not a single bar — each button is its own circle with its own shadow,
+   so the page peeks through the gaps. The center "+" sits higher than
+   the side pills to visually claim the create action. */
+.floating-nav { display: none; }
 @media (max-width: 768px) {
-  .mobile-tabbar {
+  .floating-nav {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    bottom: calc(env(safe-area-inset-bottom) + 1rem);
-    display: grid;
-    grid-template-columns: 64px 72px 64px;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.35rem;
-    box-shadow: var(--shadow-lg);
-    z-index: 100;
-  }
-  .mobile-tabbar .tab {
+    bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
     display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .floating-nav-btn {
+    pointer-events: auto;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.1rem;
     background: none;
     border: none;
-    padding: 0.4rem 0;
-    font-size: 0.65rem;
-    font-family: inherit;
-    color: var(--text-muted);
-    text-decoration: none;
     cursor: pointer;
-    border-radius: 999px;
-  }
-  .mobile-tabbar .tab.active { color: var(--text-primary); }
-  .mobile-tabbar .tab.tab-center {
-    /* The center "+" pill is the only color on the bar — sits visually
-       above the rest. The button cell is taller; pill is the inner shape. */
+    text-decoration: none;
+    font-family: inherit;
+    color: var(--text-secondary);
     padding: 0;
   }
-  .tab-center-pill {
-    width: 56px;
-    height: 56px;
+  .floating-nav-icon {
+    width: 52px;
+    height: 52px;
     border-radius: 999px;
-    background: var(--text-primary);
-    color: #fff;
+    background: #fff;
+    color: var(--text-primary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-md);
-    transition: transform 0.12s ease, background 0.12s ease;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
-  .mobile-tabbar .tab.tab-center:active .tab-center-pill { transform: scale(0.96); }
-  .main { padding-bottom: 6rem; }
+  .floating-nav-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .floating-nav-btn:active .floating-nav-icon { transform: scale(0.94); }
+  .floating-nav-btn.active .floating-nav-icon {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 0 1.5px var(--text-primary);
+  }
+  .floating-nav-btn.active { color: var(--text-primary); font-weight: 600; }
+  .floating-nav-label {
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    letter-spacing: -0.01em;
+  }
+  /* Center "+" is bigger and sits a little higher so it reads as the
+     primary action. No label under it. */
+  .floating-nav-btn--center { margin-bottom: 0.55rem; }
+  .floating-nav-icon--center {
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+  .main { padding-bottom: 6.5rem; }
 }
 
 /* ── Create sheet (the floating + opens this) ──────────────────────── */
