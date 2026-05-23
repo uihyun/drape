@@ -4,6 +4,18 @@ import { X, UploadCloud, Camera as CameraIcon, Image as ImageIcon, Lock } from '
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
+
+// Camera capture only makes sense where there actually is one. Native
+// (Capacitor) always; mobile web by UA sniff. On desktop we hide the
+// button entirely — the input[capture] attribute is ignored there and
+// silently falls through to a regular file picker, which read as "I
+// clicked Take Photo but got the gallery again."
+function hasUsableCamera() {
+  if (isNativeApp()) return true;
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /iPhone|iPad|iPod|Android/.test(ua);
+}
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Add a clothing item. Two-step flow: pick (gallery or camera) → preview →
@@ -88,39 +100,41 @@ export function AddItem({ user, onSignIn }) {
             onChange={e => stagePicked(e.target.files?.[0])}
           />
 
-          {/* On native we lean on Capacitor's @capacitor/camera; on
-              mobile web we use a direct <input capture="environment">
-              click — has to be a real user-gesture click on the input
-              itself, otherwise iOS Safari falls back to gallery. */}
-          {isNativeApp() ? (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={async () => {
-                try {
-                  const blob = await CameraService.takePhoto();
-                  if (blob) stagePicked(blob);
-                } catch (err) {
-                  setError(err.message);
-                }
-              }}
-              disabled={uploading}
-            >
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-            </button>
-          ) : (
-            <label className={`btn btn-secondary ${uploading ? 'is-disabled' : ''}`}>
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={e => stagePicked(e.target.files?.[0])}
+          {/* Hide on desktop (no camera). On native, lean on Capacitor's
+              @capacitor/camera; on mobile web, use a direct <input
+              capture="environment"> click so the click stays inside the
+              user gesture and iOS Safari opens the real camera. */}
+          {hasUsableCamera() && (
+            isNativeApp() ? (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={async () => {
+                  try {
+                    const blob = await CameraService.takePhoto();
+                    if (blob) stagePicked(blob);
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
                 disabled={uploading}
-              />
-            </label>
+              >
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              </button>
+            ) : (
+              <label className={`btn btn-secondary ${uploading ? 'is-disabled' : ''}`}>
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={e => stagePicked(e.target.files?.[0])}
+                  disabled={uploading}
+                />
+              </label>
+            )
           )}
         </div>
 

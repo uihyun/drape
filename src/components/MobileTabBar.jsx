@@ -3,6 +3,25 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Plus, X, Shirt, Sparkles, Layers } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// Some Google profile photos throw CORS / 403 in third-party contexts.
+// When the avatar fails we want a clean User icon, not a broken-image
+// glyph. Track per-user so a transient failure doesn't permanently
+// strike out a working URL across the session.
+function Avatar({ user, size = 22 }) {
+  const [failed, setFailed] = useState(false);
+  if (user?.photoURL && !failed) {
+    return (
+      <img
+        src={user.photoURL}
+        alt=""
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return <User size={size} strokeWidth={1.6} />;
+}
+
 // Lekondo-style bottom nav: three separate white circular pills floating
 // over the content (Home / + / Profile). Not a single bar — each button
 // is its own circle with its own shadow, so the page peeks through the
@@ -54,9 +73,7 @@ export function MobileTabBar({ user }) {
           aria-label={t('navProfile')}
         >
           <span className="floating-nav-icon">
-            {user?.photoURL
-              ? <img src={user.photoURL} alt="" />
-              : <User size={22} strokeWidth={1.6} />}
+            <Avatar user={user} />
           </span>
           <span className="floating-nav-label">{t('navProfile')}</span>
         </Link>
