@@ -77,9 +77,20 @@ export default function App() {
 // own background). The Welcome / sign-in page is the canonical example.
 const FULL_BLEED = [/^\/welcome$/];
 
+// Routes where the floating bottom nav would overlap a page-level CTA
+// (Save outfit, Generate, Upload, etc.). MobileHeader stays so the user
+// can back out, but the floating pills are suppressed.
+const HIDE_NAV = [
+  /^\/outfits\/new$/,
+  /^\/closet\/add$/,
+  /^\/tryon$/,
+  /^\/tryon\//,
+];
+
 function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpen, handleSignIn, handleSignOut }) {
   const location = useLocation();
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
+  const hideNav = isFullBleed || HIDE_NAV.some(re => re.test(location.pathname));
   // Pick the right "home" for `/` based on auth: signed-in users land on
   // their profile; anonymous/new users see the welcome screen.
   const isLoggedIn = user && !user.isAnonymous;
@@ -121,7 +132,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
         </Routes>
       </main>
 
-      {!isFullBleed && <MobileTabBar user={user} />}
+      {!hideNav && <MobileTabBar user={user} />}
 
       {creditModalOpen && (
         <CreditModal
