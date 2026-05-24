@@ -196,3 +196,55 @@ After a live mobile-testing pass surfaced duplicate titles, broken camera trigge
 4. Per-detected-item cropping (second Gemini pass over the source photo with the picked bbox).
 5. Email link auth.
 6. Animate / Save — when video-gen access is sorted.
+
+---
+
+## 2026-05-24 — Magic Upload, item toolbar, IAM + Gemini model fix
+
+Follow-on to the Lekondo cycle: live testing surfaced two blockers (everything stuck in "Processing", virtualTryOn returning 400) and a long tail of UI consistency issues. Closed the remaining `[12]` Magic Upload and `[13]` Item Action toolbar tasks, plus a string of polish fixes.
+
+### Done — features
+
+- **Magic Upload (`[12]`)** — `AnalyzePhoto` now accepts multiple files via `<input multiple>`. Each picked photo lands in a thumbnail row with status (pending / analyzing / done / failed). Analysis runs sequentially through `detectItems` to dodge Gemini rate-limits on a shared key. Results panel renders one block per source photo (style label + source-photo thumbnail + per-item rows). Save-to-closet works per item across any batch; remove individual photos with the × on the thumbnail.
+- **Item action toolbar (`[13]`)** — ItemDetail "More" menu now exposes:
+  - **Change photo** — file input → upload to the existing `items/{uid}/{itemId}/original.jpg` path → flip `status='processing'` → re-invoke `processItem`. Crop + tag pipeline reruns against the new source.
+  - **Save image** — fetches the cropped URL and routes through `share-service.shareOrDownloadImage` (native share sheet on Capacitor, anchor download on web).
+  - Animate stays deferred (needs a video-gen model). Before/After toggle on the photo was already in.
+- **Profile shape unification** — Stats relabeled `Outfits · Closet · Boards` (no more `Wardrobe`); stat tiles are buttons that jump to the matching tab. Profile gets a Try-on tab (5 tabs total: Outfits / Calendar / Closet / Boards / Try-on). Quicklink chips removed from the stats row — the tab strip is the single source of truth. Tabs use `grid-auto-flow: column` so adding/removing one keeps a single row.
+- **Avatar fallback** — Single `<Avatar>` component swaps to a letter / lucide User icon when the photoURL fails (Google profile images sometimes 403 in third-party contexts). Replaces the repeated inline pattern across Profile / PublicProfile / FeedCard / MobileTabBar.
+
+### Done — fixes / polish
+
+- **iPhone safe-area** via `--safe-top` (web = `env(safe-area-inset-top, 0px)`; native = `max(env, 50px) + 12px`), applied on every topmost surface (`.profile`, `.welcome`, `.community-feed`, `.header-mobile`).
+- **MobileHeader** trimmed to a floating ChevronLeft pill — pages own their own `<h1>` so "설정 / 설정", "옷 추가 / 옷 추가" duplicates are gone.
+- **Camera** routes by platform: Capacitor → `@capacitor/camera`; mobile web → `<label>` + `<input capture="environment">` (real user gesture, opens system camera); desktop web → new `CameraCaptureModal` (`getUserMedia` → `<video>` → canvas → JPEG). Laptops with webcams get the same flow.
+- **Floating nav HIDE_NAV** extended to `/i/`, `/o/`, `/s/` (item viewer + outfit detail + share) — the pills were overlapping the dense edit / comments / chip rows.
+- **AddItem / Analyze buttons** centered as narrow pills (320px max) — previously they spanned full container width and read as left-aligned.
+- **Settings card titles** dropped the 0.12em uppercase tracking that was blowing out Korean syllables; section labels now use 0.02em (Latin opt-in keeps the small-caps look on `:lang(en)`).
+- **PWA manifest** + Capacitor splash flipped from `#FAFAFA` → `#FFFFFF` to match the new surfaces.
+- **Closet entrance** — items rain in with a 40ms staggered fade per index.
+
+### Server-side fixes (the actually-blocking ones)
+
+- **Cloud Run `allUsers` invoker** — all callable / https functions (`processItem`, `detectItems`, `claimHandle`, `deleteAccount`, `healthCheck`, `initializeUser`, `updateProfile`, `virtualTryOn`) were missing `roles/run.invoker` for `allUsers`, returning **401 at the Cloud Run gateway** before the function body ran. First deploy attempt had an org-policy build-permission warning; subsequent updates didn't re-establish the public IAM binding. Granted via `gcloud run services add-iam-policy-binding ... --member=allUsers --role=roles/run.invoker --region=us-central1` for each service.
+- **Gemini model id** — `gemini-3-flash-image-preview` was returning 404 from v1beta. Verified via `listModels` that the model was rebranded to `gemini-3.1-flash-image-preview`. `processItem` (crop) was silently leaving items at `status='processing'` with the original photo as `croppedUrl` fallback; `virtualTryOn` Flash tier was failing outright. Updated constants in `functions/items.js` and `functions/tryon.js`; redeployed both functions.
+- Pro model (`gemini-3-pro-image-preview`) and vision (`gemini-3-flash-preview`) kept their ids and were unaffected.
+- Existing stuck items: open in ItemDetail → More → Reprocess. New uploads now crop + tag end-to-end.
+
+### Live
+
+- `https://drape-9e532.web.app` — hosting redeployed.
+- `firestore.rules` redeployed (boards collection + wear-log fields earlier in the cycle).
+- Functions redeployed: `updateProfile` (location field, earlier), `processItem` + `virtualTryOn` (model id fix), `detectItems` (created).
+
+### Known gaps (next cycle)
+
+- **Apple Sign-In** — user reported "permission denied". Needs Apple Developer Service ID Return URL verification and Firebase Apple provider config check. Code path is intact.
+- **Item Animate** — AI video model wiring; defer until a video-gen API access is sorted.
+- **Sticker board sharing** — `boards.isPublic` is allow-listed in rules but no UI publishes a board to the feed yet.
+- **Wear-log backfill** — past OOTDs don't populate existing items' wearLog. A one-off script can scan.
+- **Email link auth** — Welcome's third button still a placeholder.
+- **Bookmark / Save** to a collection — voda pattern not yet ported.
+- **Looks comparison** (Image 22/23) — side-by-side outfit browse.
+- **Comments restyling** — Comments component uses Avatar fallback now but bubble layout is still voda-tone.
+- **Per-detected-item cropping** — `detectItems` returns metadata only; source photo is reused as the item thumbnail.
