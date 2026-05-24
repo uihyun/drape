@@ -21,7 +21,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
 const IMAGE_PRO   = 'gemini-3-pro-image-preview';
-const IMAGE_FLASH = 'gemini-3-flash-image-preview';
+const IMAGE_FLASH = 'gemini-3.1-flash-image-preview';
 
 function bucketUrl(bucket, path) {
   return `https://storage.googleapis.com/${bucket}/${path}`;

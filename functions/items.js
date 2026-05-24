@@ -20,8 +20,11 @@ const TAXONOMY = require('./taxonomy.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
+// Gemini model IDs as exposed by v1beta listModels (verified via curl).
+// The earlier `gemini-3-flash-image-preview` was renamed to `3.1` — the
+// old id 404s. Pro and the text-vision flash kept their names.
 const IMAGE_PRO   = 'gemini-3-pro-image-preview';
-const IMAGE_FLASH = 'gemini-3-flash-image-preview';
+const IMAGE_FLASH = 'gemini-3.1-flash-image-preview';
 const VISION      = 'gemini-3-flash-preview';
 
 // Reusable schema prompt for the auto-tag call. The model is told to pick

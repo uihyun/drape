@@ -1372,12 +1372,21 @@ body.is-native {
   overflow: hidden;
 }
 .settings-h2 {
-  font-size: 0.72rem;
+  /* 0.12em tracking blows out Korean syllables — they're already
+     visually airy without it. Pull the spacing back so the label
+     stays inside the card padding on every script. */
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--text-muted);
-  padding: 0.85rem 1rem 0.65rem;
+  padding: 0.9rem 1rem 0.55rem;
+}
+/* Latin-only locales still benefit from a small caps look; opt-in. */
+:lang(en) .settings-h2 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
 }
 .settings-row {
   display: flex;
