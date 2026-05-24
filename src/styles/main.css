@@ -96,11 +96,19 @@ textarea,
 .main {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  /* Lekondo treats desktop as a wide phone: same narrow centered column,
-     same floating nav. Anything wider would just be empty side margins. */
-  max-width: 540px;
   margin: 0 auto;
   width: 100%;
+  /* No max-width by default — phones get the full screen. The "wide
+     phone" cap below only kicks in once we have actual screen to spare. */
+}
+@media (min-width: 640px) {
+  .main {
+    /* Lekondo treats desktop as a wide phone: same narrow centered
+       column, same floating nav. The cap activates only past phone
+       widths so tablets/landscape don't waste the visible content
+       area on side margins. */
+    max-width: 540px;
+  }
 }
 
 .upload-area {
