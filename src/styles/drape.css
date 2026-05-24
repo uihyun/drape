@@ -1319,6 +1319,22 @@ body.is-native {
   background: var(--surface-elevated);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
+  position: relative;
+}
+/* Collage variant used by OutfitList when ≥2 item cutouts are available
+   — same arc layout as OutfitDetail hero, scaled down for the card. */
+.outfit-card-collage {
+  background: linear-gradient(180deg, #FAFBF7 0%, #F1F4ED 100%);
+}
+.outfit-card-collage img {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  max-width: 60%;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.1));
+  user-select: none;
+  pointer-events: none;
+  object-fit: contain;
 }
 .outfit-card-cover img, .feed-card-cover img { width: 100%; height: 100%; object-fit: cover; }
 .outfit-card-cover-empty, .feed-card-cover-empty {
