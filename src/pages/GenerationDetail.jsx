@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -44,6 +44,17 @@ export function GenerationDetail({ user }) {
     } catch (err) {
       console.warn('regen failed', err.message);
     } finally { setRegenerating(false); }
+  };
+
+  const remove = async () => {
+    if (!confirm(t('confirmDeleteGeneration'))) return;
+    try {
+      await GenerationService.deleteGeneration(gen.id);
+      navigate('/profile/tryon');
+    } catch (err) {
+      console.warn('delete generation failed', err.message);
+      alert(err.message || 'delete_failed');
+    }
   };
 
   return (
@@ -107,6 +118,13 @@ export function GenerationDetail({ user }) {
             >
               <RefreshCw size={14} strokeWidth={1.7} />
               {regenerating ? t('regenerating') : t('regenerate')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary danger-btn rate-delete"
+              onClick={remove}
+            >
+              <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
           </div>
         </>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
+import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function monthDays(year, month0) {
@@ -18,6 +19,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [byDate, setByDate] = useState({});
+  const [sheetDate, setSheetDate] = useState(null); // 'YYYY-MM-DD' or null
 
   const year = cursor.getFullYear();
   const month0 = cursor.getMonth();
@@ -25,12 +27,14 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const monthStart = `${year}-${String(month0 + 1).padStart(2, '0')}-01`;
   const monthEnd = `${year}-${String(month0 + 1).padStart(2, '0')}-${String(days).padStart(2, '0')}`;
 
-  useEffect(() => {
+  const refetch = () => {
     if (!user || user.isAnonymous) return;
     OotdService.listMonth({ uid: user.uid, monthStart, monthEnd })
       .then(setByDate)
       .catch(() => setByDate({}));
-  }, [user, monthStart, monthEnd]);
+  };
+
+  useEffect(() => { refetch(); }, [user, monthStart, monthEnd]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -78,7 +82,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           const entry = byDate[dateStr];
           const isToday = ymd(today) === dateStr;
           return (
-            <div key={i} className={`calendar-cell ${isToday ? 'today' : ''}`}>
+            <button
+              type="button"
+              key={i}
+              className={`calendar-cell ${isToday ? 'today' : ''}`}
+              onClick={() => setSheetDate(dateStr)}
+              aria-label={`${dateStr}${entry ? ' (logged)' : ''}`}
+            >
               <span className="calendar-day-num">{d}</span>
               {entry?.photoUrl && (
                 <img src={entry.photoUrl} alt="" className="calendar-thumb" loading="lazy" />
@@ -86,11 +96,19 @@ export function Calendar({ user, onSignIn, embedded = false }) {
               {entry?.outfitId && !entry.photoUrl && (
                 <span className="calendar-pill">OOTD</span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
 
+      <OotdSheet
+        open={!!sheetDate}
+        date={sheetDate}
+        user={user}
+        existing={sheetDate ? byDate[sheetDate] : null}
+        onClose={() => setSheetDate(null)}
+        onSaved={refetch}
+      />
     </div>
   );
 }
