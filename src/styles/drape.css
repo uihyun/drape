@@ -310,21 +310,36 @@ body.is-native {
   width: 90px;
 }
 
-.board-toolbar {
+/* Unified action stack for the board editor. Every button takes the
+   container's full width so the visual rhythm doesn't jump between
+   narrow / wide rows. */
+.board-actions {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 1.25rem 0 0;
 }
+.board-action-btn { width: 100%; justify-content: center; }
 
 .board-picker {
-  max-height: 70vh;
+  max-height: 80vh;
   overflow-y: auto;
+}
+.board-picker-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.25rem 0 0.85rem;
 }
 .board-picker-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
+}
+.board-picker-add {
+  width: 100%;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .sticker-menu .create-sheet-row { cursor: pointer; }

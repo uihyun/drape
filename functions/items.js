@@ -140,11 +140,18 @@ exports.processItem = onCall(
     // Nano Banana Pro is overkill for a clean catalog crop most of the
     // time; start with Flash and let admins re-run with Pro if needed.
     const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
-    const cropPrompt = `Extract ONLY the clothing item from this photo. Place
-it centered on a fully white background, preserving original colors,
-fabric texture, and proportions. Remove the wearer, hangers, and
-surrounding scene. Output a square crop with the garment occupying
-~80% of the frame. Do not redesign or restyle the item.`;
+    const cropPrompt = `Extract ONLY the clothing item from this photo.
+Output a PNG image with a FULLY TRANSPARENT background (alpha = 0
+everywhere except the garment itself). Do NOT fill the background
+with white, gray, or any other color — pure transparency only.
+
+Preserve the garment's original colors, fabric texture, proportions,
+and any prints / logos. Remove the wearer, hands, hangers, mannequin,
+furniture, and surrounding scene cleanly along the garment's silhouette.
+
+Frame: a square canvas with the garment centered and occupying about
+80% of the frame. Do not redesign, restyle, re-color, or reshape the
+item — this is a catalog cutout, not a redesign.`;
     const cropPromise = cropModel.generateContent([
       { inlineData: { data: originalB64, mimeType: mime } },
       { text: cropPrompt },

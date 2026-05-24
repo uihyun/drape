@@ -158,35 +158,40 @@ export function BoardEditor({ user, onSignIn }) {
         t={t}
       />
 
-      <div className="board-toolbar">
-        <button type="button" className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
+      <div className="board-actions">
+        <button
+          type="button"
+          className="btn btn-secondary board-action-btn"
+          onClick={() => setPickerOpen(true)}
+        >
           <Plus size={16} strokeWidth={1.8} /> {t('boardAddItems')}
         </button>
         {selectedSticker !== null && (
           <button
             type="button"
-            className="btn btn-secondary danger-btn"
+            className="btn btn-secondary danger-btn board-action-btn"
             onClick={() => removeSticker(selectedSticker)}
           >
-            <Trash2 size={16} strokeWidth={1.6} /> {t('remove')}
+            <Trash2 size={16} strokeWidth={1.6} /> {t('removeFromBoard')}
           </button>
         )}
-        {!isNew && (
-          <button type="button" className="btn btn-secondary danger-btn" onClick={remove}>
-            <Trash2 size={16} strokeWidth={1.6} /> {t('delete')}
-          </button>
-        )}
-      </div>
-
-      <div className="builder-cta">
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary board-action-btn"
           onClick={save}
           disabled={saving}
         >
           {saving ? t('saving') : t('boardSave')}
         </button>
+        {!isNew && (
+          <button
+            type="button"
+            className="btn btn-secondary danger-btn board-action-btn"
+            onClick={remove}
+          >
+            <Trash2 size={16} strokeWidth={1.6} /> {t('delete')}
+          </button>
+        )}
       </div>
 
       {pickerOpen && (
@@ -362,7 +367,7 @@ function ItemPickerSheet({ items, onPick, onClose, t }) {
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>
-        <h3 className="create-sheet-title">{t('boardAddItems')}</h3>
+        <h3 className="board-picker-title">{t('boardAddItems')}</h3>
 
         {items.length === 0 ? (
           <p className="muted" style={{ padding: '0.5rem 0' }}>{t('outfitBuilderEmpty')}</p>
@@ -396,12 +401,11 @@ function ItemPickerSheet({ items, onPick, onClose, t }) {
 
         <button
           type="button"
-          className="btn btn-primary"
-          style={{ marginTop: '0.75rem', width: '100%' }}
+          className="btn btn-primary board-picker-add"
           disabled={picked.size === 0}
           onClick={() => onPick(Array.from(picked))}
         >
-          {t('add')} {picked.size > 0 ? `· ${picked.size}` : ''}
+          {t('add')}{picked.size > 0 ? ` · ${picked.size}` : ''}
         </button>
       </div>
     </div>
