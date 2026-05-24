@@ -83,8 +83,11 @@ export default function App() {
 const FULL_BLEED = [/^\/welcome$/];
 
 // Routes where the floating bottom nav would overlap a page-level CTA
-// (Save outfit, Generate, Upload, etc.). MobileHeader stays so the user
-// can back out, but the floating pills are suppressed.
+// (Save outfit, Generate, Upload, etc.) or a full-screen viewer. The
+// MobileHeader stays so the user can back out, but the floating pills
+// are suppressed. ItemDetail and OutfitDetail are full-screen viewers
+// with their own close affordance + dense edit/comment content that
+// would be partially covered by the nav otherwise.
 const HIDE_NAV = [
   /^\/outfits\/new$/,
   /^\/closet\/add$/,
@@ -92,6 +95,9 @@ const HIDE_NAV = [
   /^\/tryon\//,
   /^\/boards\/new$/,
   /^\/boards\/[^/]+$/,
+  /^\/i\//,
+  /^\/o\//,
+  /^\/s\//,
 ];
 
 function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpen, handleSignIn, handleSignOut }) {
