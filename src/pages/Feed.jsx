@@ -1,28 +1,28 @@
 import { useEffect, useState } from 'react';
-import { OutfitService } from '../services/outfit-service.js';
-import { FeedCard } from '../components/FeedCard.jsx';
+import { Link } from 'react-router-dom';
+import { OotdService } from '../services/ootd-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { Avatar } from '../components/Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Discovery / "Home" feed — Pinterest-style masonry of other people's
-// outfits. Modeled on archelier's moodboard. Sort toggle on top right
-// (Latest / Popular), tiles below in 2-col (mobile) / 3-col (desktop)
-// column masonry so tall and wide covers both fit naturally.
+// Discovery — published OOTDs from every user, newest first. Each
+// card is a full-bleed OOTD photo with the author chip + title
+// overlay on the bottom (Lekondo capture 1 read). Tapping opens
+// /ootd/:id for the editorial breakdown.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
-  const [outfits, setOutfits] = useState(null);
+  const [ootds, setOotds] = useState(null);
   const [authorMap, setAuthorMap] = useState(new Map());
-  const [sort, setSort] = useState('latest');
 
   useEffect(() => {
-    OutfitService.getFeedOutfits({ sortBy: sort })
-      .then(({ outfits }) => setOutfits(outfits))
-      .catch(() => setOutfits([]));
-  }, [sort]);
+    OotdService.listPublicFeed({ pageSize: 24 })
+      .then(({ ootds }) => setOotds(ootds))
+      .catch(() => setOotds([]));
+  }, []);
 
   useEffect(() => {
-    if (!outfits?.length) return;
-    const missing = outfits.map(o => o.userId).filter(uid => uid && !authorMap.has(uid));
+    if (!ootds?.length) return;
+    const missing = ootds.map(o => o.userId).filter(uid => uid && !authorMap.has(uid));
     if (!missing.length) return;
     ProfileService.getProfilesByUids?.(missing).then(map => {
       if (!map || map.size === 0) return;
@@ -32,67 +32,48 @@ export function Feed({ user, onSignIn }) {
         return next;
       });
     }).catch(() => {});
-  }, [outfits, authorMap]);
-
-  const handleLike = async (outfitId, currentlyLiked) => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    setOutfits(prev => prev.map(o => {
-      if (o.id !== outfitId) return o;
-      const nextLiked = currentlyLiked
-        ? (o.likedBy || []).filter(u => u !== user.uid)
-        : [...(o.likedBy || []), user.uid];
-      return { ...o, likedBy: nextLiked, likeCount: Math.max(0, (o.likeCount || 0) + (currentlyLiked ? -1 : 1)) };
-    }));
-    try { await OutfitService.toggleLike(outfitId, user.uid, currentlyLiked); }
-    catch (err) { console.warn('like failed', err.message); }
-  };
+  }, [ootds, authorMap]);
 
   return (
     <div className="community-feed">
       <header className="feed-top">
         <h1 className="feed-h1">{t('feedTitle')}</h1>
-        <nav className="feed-sort-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={sort === 'latest'}
-            className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
-            onClick={() => setSort('latest')}
-          >
-            {t('feedSortLatest')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={sort === 'popular'}
-            className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
-            onClick={() => setSort('popular')}
-          >
-            {t('feedSortPopular')}
-          </button>
-        </nav>
       </header>
 
-      {outfits === null ? (
+      {ootds === null ? (
         <div className="loading"><div className="spinner" /></div>
-      ) : outfits.length === 0 ? (
+      ) : ootds.length === 0 ? (
         <FeedEmpty t={t} />
       ) : (
-        <div className="moodboard-grid">
-          {outfits.map(o => (
-            <div key={o.id} className="moodboard-item">
-              <FeedCard
-                outfit={o}
-                user={user}
-                author={authorMap.get(o.userId)}
-                onLike={handleLike}
-                onSignInRequest={onSignIn}
-              />
-            </div>
+        <div className="ootd-feed">
+          {ootds.map(o => (
+            <OotdCard key={o.id} ootd={o} author={authorMap.get(o.userId)} t={t} />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+function OotdCard({ ootd, author, t }) {
+  return (
+    <Link to={`/ootd/${ootd.id}`} className="ootd-card">
+      {ootd.photoUrl
+        ? <img src={ootd.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        : <div className="ootd-card-empty">◇</div>}
+      <div className="ootd-card-overlay">
+        <div className="ootd-card-author">
+          <Avatar
+            src={author?.photoURL}
+            name={author?.handle}
+            size={28}
+            className="ootd-card-avatar"
+          />
+          <span className="ootd-card-handle">@{author?.handle || '—'}</span>
+        </div>
+        {ootd.title && <h3 className="ootd-card-title">{ootd.title}</h3>}
+      </div>
+    </Link>
   );
 }
 

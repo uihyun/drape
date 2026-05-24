@@ -26,6 +26,7 @@ import { BoardList } from './pages/BoardList.jsx';
 import { BoardEditor } from './pages/BoardEditor.jsx';
 import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
 import { TryOnHistory } from './pages/TryOnHistory.jsx';
+import { OotdDetail } from './pages/OotdDetail.jsx';
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
 import { Feed } from './pages/Feed.jsx';
@@ -98,6 +99,7 @@ const HIDE_NAV = [
   /^\/i\//,
   /^\/o\//,
   /^\/s\//,
+  /^\/ootd\//,
 ];
 
 function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpen, handleSignIn, handleSignOut }) {
@@ -142,6 +144,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
+          <Route path="/ootd/:ootdId" element={<OotdDetail user={user} />} />
 
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 

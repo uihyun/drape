@@ -30,6 +30,7 @@ export const en = {
   ootdConfirmDelete: 'Delete this day’s OOTD?',
   ootdPublishLabel: 'Publish to Discover',
   ootdPublishHint: 'Others can see this OOTD in the public feed.',
+  ootdNotFound: 'This OOTD is unavailable.',
   confirmDeleteGeneration: 'Delete this try-on result?',
   notifications: 'Notifications',
   followers: 'Followers',

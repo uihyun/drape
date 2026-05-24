@@ -30,6 +30,7 @@ export const ko = {
   ootdConfirmDelete: '이 날 OOTD 를 삭제할까요?',
   ootdPublishLabel: 'Discover 에 공개',
   ootdPublishHint: '다른 사람들이 피드에서 볼 수 있어요.',
+  ootdNotFound: '이 OOTD 는 볼 수 없어요.',
   confirmDeleteGeneration: '이 가상 피팅 결과를 삭제할까요?',
   notifications: '알림',
   followers: '팔로워',

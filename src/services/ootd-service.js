@@ -19,6 +19,8 @@ import {
   query,
   where,
   orderBy,
+  limit,
+  startAfter,
   serverTimestamp,
   deleteDoc,
 } from 'firebase/firestore';
@@ -103,6 +105,29 @@ async function getOotd({ uid, date }) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+/** Fetch one OOTD by doc id ({uid}_{YYYY-MM-DD}). Used by /ootd/:id. */
+async function getOotdById(ootdId) {
+  const snap = await getDoc(doc(db, OOTDS, ootdId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+/** Discovery feed — every OOTD with isPublic=true, newest first. */
+async function listPublicFeed({ pageSize = 24, cursor = null } = {}) {
+  const constraints = [
+    where('isPublic', '==', true),
+    orderBy('updatedAt', 'desc'),
+    limit(pageSize),
+  ];
+  let q = query(collection(db, OOTDS), ...constraints);
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  return {
+    ootds: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
+}
+
 async function deleteOotd({ uid, date }) {
   await deleteDoc(doc(db, OOTDS, ootdDocId(uid, date)));
 }
@@ -133,8 +158,10 @@ async function listMonth({ uid, monthStart, monthEnd }) {
 export const OotdService = {
   upsertOotd,
   getOotd,
+  getOotdById,
   deleteOotd,
   listMonth,
+  listPublicFeed,
 };
 
 export default OotdService;
