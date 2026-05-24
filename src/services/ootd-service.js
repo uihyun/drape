@@ -23,7 +23,8 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage, auth } from '../firebase.js';
+import { httpsCallable } from 'firebase/functions';
+import { db, storage, auth, functions } from '../firebase.js';
 
 const OOTDS = 'ootds';
 
@@ -36,7 +37,7 @@ function isValidDate(s) {
 }
 
 /** Create or update today's (or any date's) OOTD entry. */
-async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '' }) {
+async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '', isPublic = undefined }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!isValidDate(date)) throw new Error('bad_date');
@@ -60,9 +61,22 @@ async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '' }
     outfitId,
     ...(photoUrl ? { photoUrl, photoPath } : {}),
     note,
+    ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),
     createdAt: serverTimestamp(),
   }, { merge: true });
+
+  // Trigger AI analysis when a new photo was uploaded — gives the
+  // OotdDetail page palette/composition/notes/title without a second
+  // user step. Best-effort; OOTD doc is source of truth either way.
+  if (photoBlob) {
+    try {
+      const fn = httpsCallable(functions, 'analyzeOotd');
+      await fn({ ootdId: id });
+    } catch (e) {
+      console.warn('analyzeOotd skipped:', e?.message);
+    }
+  }
 
   // Wear history: stamp each item in the linked outfit with this date.
   // Lazy-import to avoid circular dep (item-service → ootd-service path

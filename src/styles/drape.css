@@ -2113,6 +2113,24 @@ body.is-native {
   resize: vertical;
 }
 .ootd-sheet-note::placeholder { color: var(--text-muted); }
+.ootd-sheet-public {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ootd-sheet-public input { margin-top: 3px; cursor: pointer; }
+.ootd-sheet-public-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.ootd-sheet-public-label strong { font-size: 0.92rem; color: var(--text-primary); }
+.ootd-sheet-public-label small { font-size: 0.78rem; color: var(--text-muted); }
 .ootd-sheet-actions {
   display: flex;
   gap: 0.5rem;

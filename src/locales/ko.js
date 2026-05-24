@@ -28,6 +28,8 @@ export const ko = {
   ootdNoteLabel: '메모',
   ootdNotePlaceholder: '오늘 기억할 만한 한 줄.',
   ootdConfirmDelete: '이 날 OOTD 를 삭제할까요?',
+  ootdPublishLabel: 'Discover 에 공개',
+  ootdPublishHint: '다른 사람들이 피드에서 볼 수 있어요.',
   confirmDeleteGeneration: '이 가상 피팅 결과를 삭제할까요?',
   notifications: '알림',
   followers: '팔로워',

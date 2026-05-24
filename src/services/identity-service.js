@@ -8,12 +8,16 @@
 
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage, auth } from '../firebase.js';
+import { httpsCallable } from 'firebase/functions';
+import { db, storage, auth, functions } from '../firebase.js';
 
 const MAX_IDENTITY_REFS = 3;
 const MIN_IDENTITY_REFS = 1;
 
-/** Add one identity reference photo. Returns the updated refs array. */
+/** Add one identity reference photo. Uploads the raw shot, then asks
+ *  the processIdentityRef Cloud Function to background-remove the
+ *  person so downstream try-on calls see a clean cutout regardless of
+ *  the original room/wall/floor. Returns the updated refs array. */
 async function addRef(blob) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -28,9 +32,47 @@ async function addRef(blob) {
   const path = `identity/${user.uid}/${idx}.jpg`;
   const r = storageRef(storage, path);
   await uploadBytes(r, blob, { contentType: 'image/jpeg' });
-  const url = await getDownloadURL(r);
+  let url = await getDownloadURL(r);
+  let finalPath = path;
 
-  const next = [...existing, { url, path, addedAt: Date.now() }];
+  // Background-remove the person. Best-effort — if Gemini fails we keep
+  // the raw photo so the ref slot isn't empty.
+  try {
+    const processFn = httpsCallable(functions, 'processIdentityRef');
+    const { data } = await processFn({ storagePath: path });
+    if (data?.ok && data?.url) {
+      url = data.url;
+      finalPath = data.path || path;
+    }
+  } catch (err) {
+    console.warn('identity ref bg-removal skipped:', err?.message);
+  }
+
+  const next = [...existing, { url, path: finalPath, addedAt: Date.now() }];
+  await updateDoc(userRef, {
+    identityRefs: next,
+    identityRefUpdatedAt: serverTimestamp(),
+  });
+  return next;
+}
+
+/** Re-run background removal on an existing ref. For users who added
+ *  refs before this pipeline existed, or whose cutout came back wrong. */
+async function reprocessRef(idx) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  const userRef = doc(db, 'users', user.uid);
+  const snap = await getDoc(userRef);
+  const existing = (snap.exists() && snap.data().identityRefs) || [];
+  if (idx < 0 || idx >= existing.length) return existing;
+  const slot = existing[idx];
+  if (!slot?.path) return existing;
+  const processFn = httpsCallable(functions, 'processIdentityRef');
+  const { data } = await processFn({ storagePath: slot.path });
+  if (!data?.ok || !data?.url) return existing;
+  const next = existing.map((s, i) => i === idx
+    ? { ...s, url: data.url, path: data.path || s.path }
+    : s);
   await updateDoc(userRef, {
     identityRefs: next,
     identityRefUpdatedAt: serverTimestamp(),
@@ -70,6 +112,7 @@ async function getMyRefs() {
 export const IdentityService = {
   addRef,
   removeRef,
+  reprocessRef,
   getMyRefs,
   MIN_IDENTITY_REFS,
   MAX_IDENTITY_REFS,

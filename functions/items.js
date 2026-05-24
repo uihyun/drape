@@ -93,11 +93,93 @@ async function downloadStorageObject(bucket, path) {
   return buf;
 }
 
+/**
+ * If Gemini handed back an image with a uniform near-white background,
+ * key it out so the saved PNG has true transparency. The model usually
+ * complies with our "transparent PNG" prompt for new requests, but the
+ * fallback path catches cases where it returns a flat-bg JPEG/PNG.
+ *
+ * Approach: sample edge pixels to learn the bg color; if the center
+ * differs enough (i.e. the garment isn't itself near-white-on-white),
+ * walk the raster and convert pixels close to that bg color to alpha=0
+ * with a feathered band on the edge to avoid hard halos.
+ *
+ * Skipped when the whole frame is roughly one color — that's the
+ * white-shirt-on-white case where keying would punch a hole in the
+ * garment.
+ */
+async function chromaKeyToTransparent(buf) {
+  try {
+    const img = sharp(buf).ensureAlpha();
+    const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
+    const { width, height, channels } = info;
+    if (channels !== 4) return buf;
+
+    // Sample 12 edge points for bg color.
+    const ePts = [
+      [0, 0], [width - 1, 0], [0, height - 1], [width - 1, height - 1],
+      [Math.floor(width / 2), 0], [Math.floor(width / 2), height - 1],
+      [0, Math.floor(height / 2)], [width - 1, Math.floor(height / 2)],
+      [Math.floor(width / 4), 0], [Math.floor((3 * width) / 4), 0],
+      [Math.floor(width / 4), height - 1], [Math.floor((3 * width) / 4), height - 1],
+    ];
+    const avg = (pts) => {
+      let r = 0, g = 0, b = 0;
+      for (const [x, y] of pts) {
+        const i = (y * width + x) * 4;
+        r += data[i]; g += data[i + 1]; b += data[i + 2];
+      }
+      return [r / pts.length, g / pts.length, b / pts.length];
+    };
+    const [bgR, bgG, bgB] = avg(ePts);
+
+    // If bg isn't bright, the catalog crop didn't give us a clean
+    // backdrop — bail and keep the original.
+    if ((bgR + bgG + bgB) / 3 < 200) return buf;
+
+    // Sanity: if the center is also near the bg color, the garment is
+    // probably similar (white-on-white) — keying would damage it.
+    const cPts = [
+      [Math.floor(width / 2), Math.floor(height / 2)],
+      [Math.floor(width / 3), Math.floor(height / 2)],
+      [Math.floor((2 * width) / 3), Math.floor(height / 2)],
+      [Math.floor(width / 2), Math.floor(height / 3)],
+      [Math.floor(width / 2), Math.floor((2 * height) / 3)],
+    ];
+    const [cR, cG, cB] = avg(cPts);
+    const centerDist = Math.sqrt((cR - bgR) ** 2 + (cG - bgG) ** 2 + (cB - bgB) ** 2);
+    if (centerDist < 25) return buf;
+
+    const THRESH = 38; // hard transparent boundary
+    const FEATHER = 18; // soft fade band beyond the boundary
+
+    const out = Buffer.from(data);
+    for (let i = 0; i < out.length; i += 4) {
+      // Skip pixels Gemini already marked transparent.
+      if (out[i + 3] === 0) continue;
+      const dr = out[i] - bgR;
+      const dg = out[i + 1] - bgG;
+      const db = out[i + 2] - bgB;
+      const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+      if (dist < THRESH) {
+        out[i + 3] = 0;
+      } else if (dist < THRESH + FEATHER) {
+        out[i + 3] = Math.round(((dist - THRESH) / FEATHER) * 255);
+      }
+    }
+    return await sharp(out, { raw: { width, height, channels } }).png().toBuffer();
+  } catch (e) {
+    console.warn('chromaKey failed, returning original:', e?.message);
+    return buf;
+  }
+}
+
 async function uploadCropped(bucket, path, base64, mime) {
   const file = bucket.file(path);
-  const buf = Buffer.from(base64, 'base64');
-  // Normalize to PNG so transparency survives downstream try-on composites.
-  const png = await sharp(buf).png().toBuffer();
+  const raw = Buffer.from(base64, 'base64');
+  // Belt-and-suspenders: model is asked for transparent PNG, but if it
+  // returns flat-bg we chroma-key the bg color out ourselves.
+  const png = await chromaKeyToTransparent(await sharp(raw).png().toBuffer());
   await file.save(png, {
     metadata: {
       contentType: 'image/png',
@@ -257,6 +339,179 @@ function sanitizeDetectItem(raw) {
     searchQuery: typeof raw.searchQuery === 'string' ? raw.searchQuery.slice(0, 160) : '',
   };
 }
+
+// analyzeOotd: read a daily-outfit photo and return an editorial
+// breakdown — dominant color palette, "aesthetic composition" levels
+// across our STYLES taxonomy, a short notes-on-composition string,
+// and a poetic 3-7 word title. Called from OotdService.upsertOotd
+// right after the photo is saved so the OotdDetail page has rich
+// content to render without a second user step.
+function ootdAnalysisPrompt() {
+  return `You are a fashion editor reading one full-body outfit photo
+("OOTD" — what someone wore today). Return ONLY valid JSON with this
+exact schema:
+
+{
+  "title": "3-7 word poetic title for this look (English)",
+  "palette": [
+    { "hex": "#RRGGBB", "name": "lowercase color name", "percent": integer 0-100 },
+    ... up to 3 entries, sorted by dominance, percents sum to ~100
+  ],
+  "composition": [
+    { "label": one of [${TAXONOMY.STYLES.join(', ')}], "level": integer 0-5 },
+    ... 4 entries, pick the 4 most relevant style axes from the list,
+    levels reflect how strongly this look reads as that style
+  ],
+  "notes": "1-3 sentence English reading of the look — what anchors it,
+  how the pieces interact, the overall mood. Editorial tone, not
+  generic. Avoid clichés."
+}
+
+Rules: only describe what's visible. Skip the wearer's identity / face.
+Percentages of palette entries should sum close to 100. Composition
+must use exactly 4 entries from the enum.`;
+}
+
+function sanitizePalette(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const c of raw.slice(0, 3)) {
+    if (!c || typeof c !== 'object') continue;
+    const hex = typeof c.hex === 'string' && /^#[0-9A-Fa-f]{6}$/.test(c.hex.trim())
+      ? c.hex.trim().toUpperCase() : null;
+    if (!hex) continue;
+    out.push({
+      hex,
+      name: typeof c.name === 'string' ? c.name.toLowerCase().slice(0, 32) : '',
+      percent: Math.max(0, Math.min(100, Math.round(Number(c.percent) || 0))),
+    });
+  }
+  return out;
+}
+
+function sanitizeComposition(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const c of raw.slice(0, 6)) {
+    if (!c || typeof c !== 'object') continue;
+    if (!TAXONOMY.STYLES.includes(c.label)) continue;
+    out.push({
+      label: c.label,
+      level: Math.max(0, Math.min(5, Math.round(Number(c.level) || 0))),
+    });
+  }
+  return out;
+}
+
+exports.analyzeOotd = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const { ootdId } = request.data || {};
+    if (!ootdId || typeof ootdId !== 'string') {
+      throw new HttpsError('invalid-argument', 'ootdId required');
+    }
+
+    const ootdRef = admin.firestore().collection('ootds').doc(ootdId);
+    const snap = await ootdRef.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'ootd missing');
+    const ootd = snap.data();
+    if (ootd.userId !== uid) throw new HttpsError('permission-denied', 'not yours');
+    if (!ootd.photoPath) throw new HttpsError('failed-precondition', 'no photo');
+
+    const bucket = admin.storage().bucket();
+    const buf = await downloadStorageObject(bucket, ootd.photoPath);
+    const base64 = buf.toString('base64');
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    const model = genAI.getGenerativeModel({
+      model: VISION,
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+
+    try {
+      const res = await model.generateContent([
+        { inlineData: { data: base64, mimeType: 'image/jpeg' } },
+        { text: ootdAnalysisPrompt() },
+      ]);
+      const parsed = safeParseJson(res?.response?.text() || '');
+      if (!parsed) throw new HttpsError('internal', 'parse_failed');
+
+      const patch = {
+        title: typeof parsed.title === 'string' ? parsed.title.slice(0, 120) : '',
+        palette: sanitizePalette(parsed.palette),
+        composition: sanitizeComposition(parsed.composition),
+        notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
+        analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      await ootdRef.update(patch);
+      return { ok: true, ...patch, analyzedAt: undefined, updatedAt: undefined };
+    } catch (err) {
+      console.warn('analyzeOotd failed:', err?.message);
+      throw new HttpsError('internal', err?.message || 'analyze_failed');
+    }
+  }
+);
+
+// Identity reference background removal. Same crop pipeline pattern
+// as processItem but tuned for a person: isolate the human silhouette
+// (face, hair, body, hands), output transparent PNG. Try-on then
+// composites garments on a clean cutout without dragging the original
+// room/wall/floor along.
+exports.processIdentityRef = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 90, memory: '1GiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const { storagePath } = request.data || {};
+    if (!storagePath || typeof storagePath !== 'string') {
+      throw new HttpsError('invalid-argument', 'storagePath required');
+    }
+    if (!storagePath.startsWith(`identity/${uid}/`)) {
+      throw new HttpsError('permission-denied', 'not your ref');
+    }
+
+    const bucket = admin.storage().bucket();
+    const buf = await downloadStorageObject(bucket, storagePath);
+    const mime = storagePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const base64 = buf.toString('base64');
+
+    const genai = new GoogleGenerativeAI(geminiApiKey.value());
+    const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
+    const cropPrompt = `Extract ONLY the person from this photo — full body,
+including face, hair, clothing they're wearing, hands, and any small
+items they're holding. Output a PNG with a FULLY TRANSPARENT background
+(alpha = 0 everywhere except the person's silhouette). Do NOT fill the
+background with white, gray, or any color — pure transparency only.
+
+Preserve the person's appearance, pose, clothing, and proportions
+exactly. Do not retouch, restyle, or reshape. This is a clean cutout,
+not a redesign.`;
+
+    let croppedUrl = null;
+    let croppedPath = null;
+    try {
+      const res = await cropModel.generateContent([
+        { inlineData: { data: base64, mimeType: mime } },
+        { text: cropPrompt },
+      ]);
+      const img = extractImage(res?.response);
+      if (img) {
+        // Overwrite the same path with the cutout PNG so existing refs
+        // in identityRefs[] still point at the right blob.
+        croppedPath = storagePath.replace(/\.jpg$/i, '.png');
+        croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
+      }
+    } catch (err) {
+      console.warn('processIdentityRef crop failed:', err?.message);
+      // Caller falls back to original on null URL.
+    }
+
+    return { ok: !!croppedUrl, url: croppedUrl, path: croppedPath };
+  }
+);
 
 exports.detectItems = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },

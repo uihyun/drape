@@ -22,6 +22,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [outfitId, setOutfitId] = useState('');
   const [note, setNote] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -33,6 +34,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     setPhotoPreview(existing?.photoUrl || null);
     setOutfitId(existing?.outfitId || '');
     setNote(existing?.note || '');
+    setIsPublic(existing?.isPublic === true);
     setError(null);
   }, [open, existing?.id]);
 
@@ -73,6 +75,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
         outfitId: outfitId || null,
         photoBlob: blob, // only re-uploads if a new blob is staged
         note: note.trim(),
+        isPublic,
       });
       onSaved?.();
       onClose?.();
@@ -167,6 +170,19 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             rows={2}
             maxLength={200}
           />
+
+          {/* Publish toggle */}
+          <label className="ootd-sheet-public">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={e => setIsPublic(e.target.checked)}
+            />
+            <span className="ootd-sheet-public-label">
+              <strong>{t('ootdPublishLabel')}</strong>
+              <small>{t('ootdPublishHint')}</small>
+            </span>
+          </label>
 
           {error && <p className="settings-error" style={{ margin: '0.5rem 0' }}>{error}</p>}
 

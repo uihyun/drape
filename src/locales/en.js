@@ -28,6 +28,8 @@ export const en = {
   ootdNoteLabel: 'Note',
   ootdNotePlaceholder: 'Anything you want to remember about today.',
   ootdConfirmDelete: 'Delete this day’s OOTD?',
+  ootdPublishLabel: 'Publish to Discover',
+  ootdPublishHint: 'Others can see this OOTD in the public feed.',
   confirmDeleteGeneration: 'Delete this try-on result?',
   notifications: 'Notifications',
   followers: 'Followers',

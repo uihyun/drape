@@ -153,8 +153,10 @@ service cloud.firestore {
     // ── OOTDs (daily calendar) ─────────────────────────────────────────
     // Doc id is `${uid}_${YYYY-MM-DD}`. Always owner-only.
     match /ootds/{ootdId} {
-      allow read: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // Owner always reads; everyone reads when the OOTD is published
+      // (isPublic == true) — this is what powers the Discovery feed.
+      allow read: if (resource.data.isPublic == true)
+        || (request.auth != null && resource.data.userId == request.auth.uid);
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
         && ootdId == request.auth.uid + '_' + request.resource.data.date

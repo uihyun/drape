@@ -193,6 +193,8 @@ exports.healthCheck = functions.https.onRequest((req, res) => {
 const itemFns = require('./items.js');
 exports.processItem = itemFns.processItem;
 exports.detectItems = itemFns.detectItems;
+exports.processIdentityRef = itemFns.processIdentityRef;
+exports.analyzeOotd = itemFns.analyzeOotd;
 
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');
