@@ -1951,6 +1951,7 @@ body.is-native {
   border: 1px solid var(--border);
 }
 .variant img { width: 100%; display: block; }
+/* Legacy .rating-row kept for any consumer; new layout below. */
 .rating-row {
   display: flex;
   gap: 0.5rem;
@@ -1963,6 +1964,48 @@ body.is-native {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* Try-on result rating block. Two thumb buttons side-by-side, regenerate
+   full-width below. Tight column so it doesn't wrap awkwardly on phones. */
+.rate-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 420px;
+  margin: 1.25rem auto 0;
+}
+.rate-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-align: center;
+}
+.rate-thumbs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.rate-thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.rate-thumb:hover { border-color: var(--border-hover); }
+.rate-thumb.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rate-regen { justify-content: center; width: 100%; }
 
 /* ── Settings / identity refs ──────────────────────────────────────── */
 .settings-section {

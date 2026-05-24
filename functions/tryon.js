@@ -132,7 +132,10 @@ exports.virtualTryOn = onCall(
     parts.push({ text: tryOnPrompt(items, prompt) });
 
     const modelId = modelTier === 'flash' ? IMAGE_FLASH : IMAGE_PRO;
-    const n = variants ?? (modelTier === 'flash' ? 3 : 2);
+    // Default one variant — multi-variant grid felt cluttered and most
+    // users just want one result. Caller can still request more via
+    // `variants: N` if a "show me 3 options" UI ever lands.
+    const n = variants ?? 1;
 
     // ── Pre-write the generation doc so failures still leave a record ─
     const genRef = db.collection('generations').doc();
