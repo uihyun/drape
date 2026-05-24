@@ -9,7 +9,6 @@ import { BoardList } from './BoardList.jsx';
 import { TryOnHistory } from './TryOnHistory.jsx';
 import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { Avatar } from '../components/Avatar.jsx';
-import { ProfileStats } from '../components/ProfileStats.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -139,12 +138,6 @@ export function Profile({ user, authReady, onSignIn }) {
       </section>
 
       {bio && <p className="profile-bio">{bio}</p>}
-
-      <ProfileStats
-        user={user}
-        profile={profile}
-        onTabChange={(name) => navigate(`/profile/${name}`)}
-      />
 
       <nav className="profile-tabs" role="tablist" aria-label="Profile sections">
         {TABS.map(name => (
