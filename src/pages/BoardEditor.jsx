@@ -121,7 +121,7 @@ export function BoardEditor({ user, onSignIn }) {
         navigate(`/boards/${id}`, { replace: true });
       } else {
         await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl });
-        navigate(`/boards`);
+        navigate('/profile/boards');
       }
     } catch (e) {
       console.warn('save board failed', e?.message);
@@ -129,10 +129,10 @@ export function BoardEditor({ user, onSignIn }) {
   };
 
   const remove = async () => {
-    if (isNew) { navigate('/boards'); return; }
+    if (isNew) { navigate('/profile/boards'); return; }
     if (!confirm(t('confirmDeleteBoard'))) return;
     await BoardService.deleteBoard(boardId);
-    navigate('/boards');
+    navigate('/profile/boards');
   };
 
   return (

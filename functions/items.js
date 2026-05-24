@@ -219,9 +219,11 @@ exports.processItem = onCall(
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
 
     // ── Crop ───────────────────────────────────────────────────────────
-    // Nano Banana Pro is overkill for a clean catalog crop most of the
-    // time; start with Flash and let admins re-run with Pro if needed.
-    const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
+    // Pro model preserves the silhouette far better than Flash for this
+    // task. Flash kept reinterpreting long pants as shorts, cropping
+    // sleeves, etc. The cost trade-off is worth it for first-impression
+    // catalog quality.
+    const cropModel = genai.getGenerativeModel({ model: IMAGE_PRO });
     // IMPORTANT: do NOT ask the image model for a transparent background
     // directly — Nano Banana families re-generate the subject when given
     // "transparent PNG" instructions and sometimes change the garment's
@@ -259,7 +261,11 @@ silhouette. This is a faithful catalog cutout, not a redesign.`;
     if (cropRes?.response) {
       const img = extractImage(cropRes.response);
       if (img) {
-        croppedPath = `items/${uid}/${itemId}/cropped.png`;
+        // Versioned path: each reprocess writes a fresh file so the
+        // immutable cache header doesn't make browsers/CDN keep
+        // serving the old crop. Old versions stay in storage as
+        // orphans (cleaned up by a scheduled job later).
+        croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
         croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
       }
     } else if (cropRes?.__error) {
@@ -504,9 +510,9 @@ photo cutout, not a redesign.`;
       ]);
       const img = extractImage(res?.response);
       if (img) {
-        // Overwrite the same path with the cutout PNG so existing refs
-        // in identityRefs[] still point at the right blob.
-        croppedPath = storagePath.replace(/\.jpg$/i, '.png');
+        // Versioned suffix so reprocessing doesn't get blocked by the
+        // immutable cache header on the storage URL.
+        croppedPath = storagePath.replace(/\.(jpg|png)$/i, `-${Date.now()}.png`);
         croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
       }
     } catch (err) {

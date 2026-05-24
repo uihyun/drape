@@ -120,26 +120,31 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />
-          <Route path="/closet" element={<Closet user={user} authReady={authReady} onSignIn={handleSignIn} />} />
+
+          {/* Standalone /closet, /outfits, /calendar, /boards, /tryons
+              redirect into the Profile tab — there's no reason to have a
+              second home for the same list and the deep-link / back-nav
+              behavior gets confusing otherwise. */}
+          <Route path="/closet" element={<Navigate to="/profile/closet" replace />} />
+          <Route path="/outfits" element={<Navigate to="/profile/outfits" replace />} />
+          <Route path="/calendar" element={<Navigate to="/profile/calendar" replace />} />
+          <Route path="/boards" element={<Navigate to="/profile/boards" replace />} />
+          <Route path="/tryons" element={<Navigate to="/profile/tryon" replace />} />
+
           <Route path="/closet/add" element={<AddItem user={user} onSignIn={handleSignIn} />} />
           <Route path="/i/:itemId" element={<ItemDetail user={user} />} />
 
-          <Route path="/outfits" element={<OutfitList user={user} onSignIn={handleSignIn} />} />
           <Route path="/outfits/new" element={<OutfitBuilder user={user} onSignIn={handleSignIn} />} />
           <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
           <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
 
-          <Route path="/calendar" element={<Calendar user={user} onSignIn={handleSignIn} />} />
-
           <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} onOpenCredits={() => setCreditModalOpen(true)} />} />
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
-          <Route path="/tryons" element={<TryOnHistory user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 
-          <Route path="/boards" element={<BoardList user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/:boardId" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
 

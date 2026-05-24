@@ -61,7 +61,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const remove = async () => {
     if (!confirm(t('confirmDeleteOutfit'))) return;
     await OutfitService.deleteOutfit(outfit.id);
-    navigate('/outfits');
+    navigate('/profile/outfits');
   };
 
   const openEdit = () => {
