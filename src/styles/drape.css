@@ -1132,6 +1132,29 @@ body.is-native {
   font-size: 3rem;
   color: var(--border-hover);
 }
+.ootd-card-like {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ootd-card-like:hover { background: rgba(0, 0, 0, 0.6); }
+.ootd-card-like.active { color: #ff5a6e; }
+.btn.is-liked { color: #ff5a6e; border-color: #ff5a6e; }
 .ootd-card-overlay {
   position: absolute;
   left: 0;

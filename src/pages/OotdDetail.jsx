@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { ChevronRight, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff, Trash2, Heart } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -184,6 +184,7 @@ export function OotdDetail({ user }) {
       )}
 
       <div className="controls" style={{ padding: '0 1rem' }}>
+        <LikeButton ootd={ootd} user={user} />
         <ShareButton
           className="btn btn-secondary"
           title={title || t('ootdSheetTitle')}
@@ -197,6 +198,45 @@ export function OotdDetail({ user }) {
         )}
       </div>
     </div>
+  );
+}
+
+function LikeButton({ ootd, user }) {
+  const { t } = useLocale();
+  const [liked, setLiked] = useState(
+    !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid))
+  );
+  const [count, setCount] = useState(ootd.likeCount || 0);
+  // Re-sync from props when the live doc updates.
+  useEffect(() => {
+    setLiked(!!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid)));
+    setCount(ootd.likeCount || 0);
+  }, [ootd.likedBy, ootd.likeCount, user?.uid]);
+
+  const onClick = async () => {
+    if (!user || user.isAnonymous) return;
+    const next = !liked;
+    setLiked(next);
+    setCount(c => Math.max(0, c + (next ? 1 : -1)));
+    try {
+      await OotdService.toggleLike(ootd.id, user.uid, liked);
+    } catch (err) {
+      setLiked(!next);
+      setCount(c => Math.max(0, c + (next ? -1 : 1)));
+      console.warn('like failed', err.message);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={`btn btn-secondary${liked ? ' is-liked' : ''}`}
+      onClick={onClick}
+      aria-pressed={liked}
+    >
+      <Heart size={14} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
+      {count > 0 ? count : t('like')}
+    </button>
   );
 }
 

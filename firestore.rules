@@ -161,8 +161,24 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && ootdId == request.auth.uid + '_' + request.resource.data.date
         && request.resource.data.date is string;
-      allow update, delete: if request.auth != null
+      allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
+      // Owner can update anything on their own OOTD.
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      // Like / unlike — any signed-in user on a published OOTD, only
+      // the likedBy + likeCount keys, must include themselves +1 / -1.
+      allow update: if request.auth != null
+        && resource.data.isPublic == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['likeCount', 'likedBy'])
+        && (
+          (request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) + 1)
+          ||
+          (!request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1)
+        );
     }
 
     // ── Generations (virtual try-on + feedback loop) ───────────────────

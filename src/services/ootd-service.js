@@ -136,6 +136,22 @@ async function deleteOotd({ uid, date }) {
   await deleteDoc(doc(db, OOTDS, ootdDocId(uid, date)));
 }
 
+/** Like / unlike a published OOTD. Mirrors OutfitService.toggleLike. */
+async function toggleLike(ootdId, uid, currentlyLiked) {
+  const ref_ = doc(db, OOTDS, ootdId);
+  const snap = await getDoc(ref_);
+  if (!snap.exists()) throw new Error('not_found');
+  const data = snap.data();
+  const liked = Array.isArray(data.likedBy) ? data.likedBy : [];
+  const nextLiked = currentlyLiked
+    ? liked.filter(u => u !== uid)
+    : [...liked, uid];
+  await setDoc(ref_, {
+    likedBy: nextLiked,
+    likeCount: Math.max(0, (data.likeCount || 0) + (currentlyLiked ? -1 : 1)),
+  }, { merge: true });
+}
+
 /**
  * Load all OOTDs for a given month. Returns map keyed by 'YYYY-MM-DD' for
  * O(1) lookup from the calendar cell renderer.
@@ -166,6 +182,7 @@ export const OotdService = {
   deleteOotd,
   listMonth,
   listPublicFeed,
+  toggleLike,
 };
 
 export default OotdService;
