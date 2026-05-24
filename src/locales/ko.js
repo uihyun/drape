@@ -9,6 +9,8 @@ export const ko = {
   navHome: '홈',
   navProfile: '프로필',
   invite: '초대',
+  inviteShareTitle: 'drape 써봐',
+  inviteShareText: 'drape 에서 매일 코디 기록하고 있어 — 너도 와봐.',
   notifications: '알림',
   followers: '팔로워',
   following: '팔로잉',

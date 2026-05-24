@@ -9,6 +9,7 @@ import { BoardList } from './BoardList.jsx';
 import { TryOnHistory } from './TryOnHistory.jsx';
 import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { shareLink } from '../services/share-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -77,15 +78,37 @@ export function Profile({ user, authReady, onSignIn }) {
   const outfitCount = profile?.outfitCount ?? 0;
   const photoURL = user.photoURL || profile?.photoURL;
 
+  // "Invite" = friend invite. Shares a referral link back to the user's
+  // own public profile (so the recipient lands on their look first),
+  // else just the app URL if no handle yet.
+  const onInvite = async () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://drape-9e532.web.app';
+    const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
+    try {
+      await shareLink({
+        title: t('inviteShareTitle'),
+        text: t('inviteShareText'),
+        url,
+      });
+    } catch (err) {
+      console.warn('invite share failed', err?.message);
+    }
+  };
+
   return (
     <div className="profile">
       <header className="profile-topbar">
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
+          <button type="button" className="btn-invite" onClick={onInvite}>
+            {t('invite')}
+          </button>
           <button type="button" className="icon-btn" aria-label={t('notifications')}>
             <Bell size={20} strokeWidth={1.6} />
           </button>
-          <button type="button" className="btn-invite">{t('invite')}</button>
+          <Link to="/settings" className="icon-btn" aria-label={t('settings')}>
+            <SettingsIcon size={20} strokeWidth={1.6} />
+          </Link>
         </div>
       </header>
 
@@ -132,9 +155,6 @@ export function Profile({ user, authReady, onSignIn }) {
           )}
         </div>
 
-        <Link to="/settings" className="profile-settings-ring" aria-label={t('settings')}>
-          <SettingsIcon size={18} strokeWidth={1.6} />
-        </Link>
       </section>
 
       {bio && <p className="profile-bio">{bio}</p>}

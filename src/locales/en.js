@@ -9,6 +9,8 @@ export const en = {
   navHome: 'Home',
   navProfile: 'Profile',
   invite: 'Invite',
+  inviteShareTitle: 'Try drape',
+  inviteShareText: 'I’m tracking my outfits on drape — join me.',
   notifications: 'Notifications',
   followers: 'Followers',
   following: 'Following',

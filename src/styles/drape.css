@@ -2141,7 +2141,7 @@ body.is-native {
 
 .profile-identity {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.9rem;
   padding: 0.5rem 0 0.25rem;
