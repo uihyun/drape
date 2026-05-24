@@ -13,12 +13,14 @@ export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
   const [ootds, setOotds] = useState(null);
   const [authorMap, setAuthorMap] = useState(new Map());
+  const [sort, setSort] = useState('latest');
 
   useEffect(() => {
-    OotdService.listPublicFeed({ pageSize: 24 })
+    setOotds(null);
+    OotdService.listPublicFeed({ pageSize: 24, sortBy: sort })
       .then(({ ootds }) => setOotds(ootds))
       .catch(() => setOotds([]));
-  }, []);
+  }, [sort]);
 
   useEffect(() => {
     if (!ootds?.length) return;
@@ -38,6 +40,26 @@ export function Feed({ user, onSignIn }) {
     <div className="community-feed">
       <header className="feed-top">
         <h1 className="feed-h1">{t('feedTitle')}</h1>
+        <nav className="feed-sort-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === 'latest'}
+            className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+            onClick={() => setSort('latest')}
+          >
+            {t('feedSortLatest')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={sort === 'popular'}
+            className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+            onClick={() => setSort('popular')}
+          >
+            {t('feedSortPopular')}
+          </button>
+        </nav>
       </header>
 
       {ootds === null ? (

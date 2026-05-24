@@ -111,11 +111,15 @@ async function getOotdById(ootdId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-/** Discovery feed — every OOTD with isPublic=true, newest first. */
-async function listPublicFeed({ pageSize = 24, cursor = null } = {}) {
+/** Discovery feed — every OOTD with isPublic=true. sortBy = 'latest'
+ *  (newest published first via updatedAt) or 'popular' (by likeCount).
+ *  Like infra for OOTDs lands in a follow-up commit; until then 'popular'
+ *  silently sorts by a non-existent field and matches latest as fallback. */
+async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' } = {}) {
+  const orderField = sortBy === 'popular' ? 'likeCount' : 'updatedAt';
   const constraints = [
     where('isPublic', '==', true),
-    orderBy('updatedAt', 'desc'),
+    orderBy(orderField, 'desc'),
     limit(pageSize),
   ];
   let q = query(collection(db, OOTDS), ...constraints);
