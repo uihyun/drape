@@ -222,18 +222,20 @@ exports.processItem = onCall(
     // Nano Banana Pro is overkill for a clean catalog crop most of the
     // time; start with Flash and let admins re-run with Pro if needed.
     const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
-    const cropPrompt = `Extract ONLY the clothing item from this photo.
-Output a PNG image with a FULLY TRANSPARENT background (alpha = 0
-everywhere except the garment itself). Do NOT fill the background
-with white, gray, or any other color — pure transparency only.
-
-Preserve the garment's original colors, fabric texture, proportions,
-and any prints / logos. Remove the wearer, hands, hangers, mannequin,
-furniture, and surrounding scene cleanly along the garment's silhouette.
-
-Frame: a square canvas with the garment centered and occupying about
-80% of the frame. Do not redesign, restyle, re-color, or reshape the
-item — this is a catalog cutout, not a redesign.`;
+    // IMPORTANT: do NOT ask the image model for a transparent background
+    // directly — Nano Banana families re-generate the subject when given
+    // "transparent PNG" instructions and sometimes change the garment's
+    // shape (e.g. long pants → shorts). The original-quality crop works
+    // best on a flat white background; the alpha channel is added in
+    // post by chromaKeyToTransparent() below before the file is saved.
+    const cropPrompt = `Extract ONLY the clothing item from this photo. Place
+it centered on a fully white background, preserving original colors,
+fabric texture, proportions, prints, and length EXACTLY as in the
+input. Remove the wearer, hangers, mannequin, and surrounding scene.
+Output a square crop with the garment occupying ~80% of the frame.
+Do not redesign, restyle, re-color, re-fit, or reshape the item — do
+not turn pants into shorts, do not crop sleeves, do not change the
+silhouette. This is a faithful catalog cutout, not a redesign.`;
     const cropPromise = cropModel.generateContent([
       { inlineData: { data: originalB64, mimeType: mime } },
       { text: cropPrompt },
@@ -480,15 +482,18 @@ exports.processIdentityRef = onCall(
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
+    // Same trick as processItem — model crops on white bg, chroma-key
+    // does the alpha. Asking for "transparent PNG" directly causes the
+    // model to redraw the person and lose detail.
     const cropPrompt = `Extract ONLY the person from this photo — full body,
 including face, hair, clothing they're wearing, hands, and any small
-items they're holding. Output a PNG with a FULLY TRANSPARENT background
-(alpha = 0 everywhere except the person's silhouette). Do NOT fill the
-background with white, gray, or any color — pure transparency only.
+items they're holding. Place the person centered on a fully white
+background. Remove the wall, floor, furniture, and surrounding scene.
 
-Preserve the person's appearance, pose, clothing, and proportions
-exactly. Do not retouch, restyle, or reshape. This is a clean cutout,
-not a redesign.`;
+Preserve the person's appearance, pose, clothing, height, and body
+proportions EXACTLY as in the input. Do not retouch, restyle, reshape,
+re-fit, change clothing, or modify the body. This is a faithful
+photo cutout, not a redesign.`;
 
     let croppedUrl = null;
     let croppedPath = null;
