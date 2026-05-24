@@ -2443,9 +2443,25 @@ body.is-native {
   background: var(--surface-elevated);
   overflow: hidden;
   margin-bottom: 1rem;
+  position: relative;
 }
-.outfit-hero img {
+.outfit-hero-single img {
   width: 100%; height: 100%; object-fit: cover;
+}
+/* Collage hero: each item is a free-floating sticker, positioned via
+   inline style. Soft drop-shadow keeps the layered feel from getting
+   muddy on light backgrounds. */
+.outfit-hero-collage {
+  background: linear-gradient(180deg, #FAFBF7 0%, #F1F4ED 100%);
+}
+.outfit-hero-collage img {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  max-width: 50%;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.12));
+  user-select: none;
+  pointer-events: none;
 }
 .outfit-byline {
   display: flex;

@@ -86,13 +86,54 @@ export function OutfitDetail({ user, onSignIn }) {
   const composition = Array.isArray(outfit.composition) ? outfit.composition : [];
   const notes = outfit.notes || '';
 
+  // Hero collage: lay every item out as a sticker (offset / rotation
+   // varies per index). Reads as a moodboard of the look instead of one
+   // lone t-shirt. Falls back to coverUrl for the single-item case.
+  const heroItems = items.filter(it => it.croppedUrl || it.originalUrl);
+  const renderHero = () => {
+    if (heroItems.length === 0 && outfit.coverUrl) {
+      return <div className="outfit-hero outfit-hero-single"><img src={outfit.coverUrl} alt="" /></div>;
+    }
+    if (heroItems.length === 1) {
+      const it = heroItems[0];
+      return (
+        <div className="outfit-hero outfit-hero-single">
+          <img src={it.croppedUrl || it.originalUrl} alt="" />
+        </div>
+      );
+    }
+    return (
+      <div className="outfit-hero outfit-hero-collage" aria-label={outfit.name || ''}>
+        {heroItems.map((it, idx) => {
+          const cover = it.croppedUrl || it.originalUrl;
+          const total = heroItems.length;
+          // Spread items in an arc with slight rotation/scale variation.
+          const pct = total === 1 ? 0.5 : idx / (total - 1);
+          const x = 0.18 + pct * 0.64;
+          const y = 0.28 + (idx % 2 === 0 ? -0.05 : 0.06) + Math.abs(pct - 0.5) * 0.18;
+          const rot = (pct - 0.5) * 24;
+          const scale = 0.55 - Math.abs(pct - 0.5) * 0.12;
+          return (
+            <img
+              key={it.id}
+              src={cover}
+              alt=""
+              style={{
+                left: `${x * 100}%`,
+                top: `${y * 100}%`,
+                transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`,
+                zIndex: idx + 1,
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="outfit-detail">
-      {outfit.coverUrl && (
-        <div className="outfit-hero">
-          <img src={outfit.coverUrl} alt="" />
-        </div>
-      )}
+      {renderHero()}
 
       <header className="outfit-byline">
         <div className="outfit-byline-author">
