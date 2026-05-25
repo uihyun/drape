@@ -67,7 +67,12 @@ function subscribeMyBoards(cb) {
       limit(30),
     ),
     (snap) => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
-    () => cb([]),
+    (err) => {
+      // Surface index-missing / permission errors instead of pretending
+      // the user has zero boards — that's what hid the empty-list bug.
+      console.warn('subscribeMyBoards failed:', err?.code, err?.message);
+      cb([]);
+    },
   );
 }
 
