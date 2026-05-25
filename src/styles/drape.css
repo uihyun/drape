@@ -629,6 +629,193 @@ body.is-native {
   margin-bottom: 1rem;
 }
 .analyze-batch-block:first-of-type { border-top: none; padding-top: 0; }
+
+/* ── Analyze v2 — input mode + result mode ───────────────────────── */
+/* Staged photos: large enough that you can actually read what was picked. */
+.analyze-staged {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.analyze-staged-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+}
+.analyze-staged-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.analyze-staged-card.status-analyzing img { opacity: 0.55; }
+.analyze-staged-rm {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.analyze-staged-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--text-primary);
+}
+.analyze-staged-bad {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: var(--error);
+  color: #fff;
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.analyze-input-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 1rem 0 0.75rem;
+}
+.btn.analyze-input-btn {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+  justify-content: center;
+}
+
+/* Result mode: hero photo + style card + items list. Edge-to-edge to
+   beat the .page horizontal padding for the hero only. */
+.analyze-result-v2 { margin: 0 -1rem; }
+.analyze-result-batch + .analyze-result-batch {
+  border-top: 1px solid var(--border);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+.analyze-hero {
+  width: 100%;
+  background: var(--surface-elevated);
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.analyze-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.analyze-style-card {
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.analyze-style-eyebrow {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.analyze-style-name {
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.4rem;
+  color: var(--text-primary);
+}
+.analyze-style-notes {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 0.85rem;
+}
+.btn.analyze-style-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.analyze-items-v2 {
+  padding: 1rem 1rem 1.25rem;
+}
+.analyze-items-head {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: 0 0 0.8rem;
+}
+.analyze-item-v2 {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.analyze-item-v2:last-child { border-bottom: none; }
+.analyze-item-v2-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+.analyze-item-v2-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.analyze-item-v2-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0.15rem 0 0.35rem;
+}
+.analyze-item-v2-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 0.6rem;
+}
+.analyze-item-v2-meta strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.analyze-item-v2-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.analyze-result-v2 .analyze-footer {
+  padding: 0 1rem;
+}
 .analyze-style-sm {
   display: flex;
   align-items: center;

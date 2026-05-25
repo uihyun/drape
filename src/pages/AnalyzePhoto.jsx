@@ -159,140 +159,159 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
   return (
     <div className="page analyze-photo">
-      <h1 className="page-h1">{t('analyzeTitle')}</h1>
-      <p className="page-sub">{t('analyzeBody')}</p>
+      {!anyDone ? (
+        // ── INPUT MODE: pick photos + run analyze ────────────────────
+        <>
+          <h1 className="page-h1">{t('analyzeTitle')}</h1>
+          <p className="page-sub">{t('analyzeBody')}</p>
 
-      <div className="add-item-actions">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => fileRef.current?.click()}
-        >
-          <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
-        />
-        {isMobileUA && !isNativeApp() ? (
-          <label className="btn btn-secondary">
-            <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+          {/* Large preview hero — when one or more photos staged, show them
+              big enough to actually see what's being analyzed. */}
+          {batches.length > 0 && (
+            <div className="analyze-staged">
+              {batches.map((b, idx) => (
+                <div key={idx} className={`analyze-staged-card status-${b.status}`}>
+                  <img src={b.previewUrl} alt="" />
+                  <button
+                    type="button"
+                    className="analyze-staged-rm"
+                    onClick={() => removeBatch(idx)}
+                    aria-label={t('remove')}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                  {b.status === 'analyzing' && (
+                    <span className="analyze-staged-overlay">
+                      <RefreshCw size={20} strokeWidth={1.8} className="spin" />
+                    </span>
+                  )}
+                  {b.status === 'failed' && <span className="analyze-staged-bad">!</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="analyze-input-actions">
+            <button
+              type="button"
+              className="btn btn-primary analyze-input-btn"
+              onClick={() => fileRef.current?.click()}
+            >
+              <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
+            </button>
             <input
+              ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
+              multiple
               className="hidden"
               onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
             />
-          </label>
-        ) : (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setCameraOpen(true)}
-          >
-            <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-          </button>
-        )}
-      </div>
-
-      {batches.length > 0 && (
-        <div className="analyze-batch-row">
-          {batches.map((b, idx) => (
-            <div key={idx} className={`analyze-batch-tile status-${b.status}`}>
-              <img src={b.previewUrl} alt="" />
+            {isMobileUA && !isNativeApp() ? (
+              <label className="btn btn-secondary analyze-input-btn">
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
+                />
+              </label>
+            ) : (
               <button
                 type="button"
-                className="analyze-batch-rm"
-                onClick={() => removeBatch(idx)}
-                aria-label={t('remove')}
+                className="btn btn-secondary analyze-input-btn"
+                onClick={() => setCameraOpen(true)}
               >
-                <X size={12} strokeWidth={2} />
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
               </button>
-              {b.status === 'analyzing' && <span className="analyze-batch-spin"><RefreshCw size={14} strokeWidth={1.8} className="spin" /></span>}
-              {b.status === 'failed' && <span className="analyze-batch-bad">!</span>}
+            )}
+          </div>
+
+          {batches.length > 0 && (
+            <div className="analyze-actions">
+              <button className="btn btn-secondary" onClick={reset}>
+                {t('clear')}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={runAnalyzeAll}
+                disabled={pendingCount === 0 && !batches.some(b => b.status === 'failed')}
+              >
+                <Sparkles size={16} strokeWidth={1.7} />
+                {pendingCount > 0
+                  ? `${t('analyzeRun')}${batches.length > 1 ? ` · ${pendingCount}` : ''}`
+                  : t('analyzeRun')}
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {batches.length > 0 && (
-        <div className="analyze-actions">
-          <button className="btn btn-secondary" onClick={reset}>
-            {t('clear')}
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={runAnalyzeAll}
-            disabled={pendingCount === 0 && !batches.some(b => b.status === 'failed')}
-          >
-            <Sparkles size={16} strokeWidth={1.7} />
-            {pendingCount > 0
-              ? `${t('analyzeRun')}${batches.length > 1 ? ` · ${pendingCount}` : ''}`
-              : t('analyzeRun')}
-          </button>
-        </div>
-      )}
-
-      {error && <p className="settings-error" style={{ margin: '0.75rem 0' }}>{error}</p>}
-
-      {anyDone && (
-        <section className="analyze-result">
+          {error && <p className="settings-error" style={{ margin: '0.75rem 0' }}>{error}</p>}
+        </>
+      ) : (
+        // ── RESULT MODE: hero photo + scrollable details ────────────
+        <section className="analyze-result-v2">
+          {error && <p className="settings-error" style={{ margin: '0.5rem 1rem' }}>{error}</p>}
           {batches.map((b, batchIdx) => {
             if (b.status !== 'done') return null;
             const analysisSaved = savedBatchIds.has(batchIdx);
             return (
-              <div key={batchIdx} className="analyze-batch-block">
+              <article key={batchIdx} className="analyze-result-batch">
+                {/* Hero — big edge-to-edge photo so the user can actually
+                    see what was analyzed. */}
+                <div className="analyze-hero">
+                  <img src={b.previewUrl} alt="" />
+                </div>
+
+                {/* Style summary card sits right under the hero so the
+                    style + notes read like an editorial caption. */}
                 {b.style && (
-                  <div className="analyze-style analyze-style-sm">
-                    <img src={b.previewUrl} alt="" className="analyze-style-thumb" />
-                    <div>
-                      <span className="analyze-style-label">{t('styleLabel')}</span>
-                      <h3>{b.style}</h3>
-                      {b.notes && <p className="muted">{b.notes}</p>}
-                    </div>
+                  <div className="analyze-style-card">
+                    <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
+                    <h2 className="analyze-style-name">{b.style}</h2>
+                    {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
+                    <button
+                      type="button"
+                      className={`btn ${analysisSaved ? 'btn-secondary' : 'btn-primary'} analyze-style-save`}
+                      onClick={() => saveAnalysis(batchIdx)}
+                      disabled={analysisSaved || savingBatchIdx === batchIdx}
+                    >
+                      {analysisSaved
+                        ? <><Check size={14} strokeWidth={2} /> {t('analysisSaved')}</>
+                        : <><Bookmark size={14} strokeWidth={1.8} /> {t('saveAnalysis')}</>}
+                    </button>
                   </div>
                 )}
 
-                <div className="analyze-batch-actions">
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => saveAnalysis(batchIdx)}
-                    disabled={analysisSaved || savingBatchIdx === batchIdx}
-                  >
-                    {analysisSaved
-                      ? <><Check size={14} strokeWidth={2} /> {t('analysisSaved')}</>
-                      : <><Bookmark size={14} strokeWidth={1.8} /> {t('saveAnalysis')}</>}
-                  </button>
-                </div>
-
                 {b.items.length === 0 ? (
-                  <p className="muted" style={{ padding: '0.5rem 0 1rem' }}>{t('analyzeNoItems')}</p>
+                  <p className="muted" style={{ padding: '0.75rem 1rem 1rem' }}>{t('analyzeNoItems')}</p>
                 ) : (
-                  <div className="analyze-items">
+                  <div className="analyze-items-v2">
+                    <h3 className="analyze-items-head">{t('itemsInPhoto')}</h3>
                     {b.items.map((it, itemIdx) => {
                       const key = `${batchIdx}:${itemIdx}`;
                       const saved = savedKeys.has(key);
                       return (
-                        <div key={itemIdx} className="analyze-item">
-                          <div className="analyze-item-text">
+                        <div key={itemIdx} className="analyze-item-v2">
+                          <div className="analyze-item-v2-head">
                             {it.category && (
                               <span className="analyze-item-cat">
                                 {t(`taxonomy.categories.${it.category}`)}
                               </span>
                             )}
-                            <p className="analyze-item-desc">{it.description}</p>
-                            <p className="analyze-item-meta">
-                              {(it.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ')}
-                              {it.brand && <> · {it.brand}</>}
-                            </p>
+                            <h4 className="analyze-item-v2-name">
+                              {it.name || it.description || t('untitledItem')}
+                            </h4>
                           </div>
-                          <div className="analyze-item-actions">
+                          {(it.name && it.description) && (
+                            <p className="analyze-item-v2-desc">{it.description}</p>
+                          )}
+                          <p className="analyze-item-v2-meta">
+                            {(it.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ')}
+                            {it.brand && <> · <strong>{it.brand}</strong></>}
+                          </p>
+                          <div className="analyze-item-v2-actions">
                             <a
                               href={searchUrl(it.searchQuery || it.description)}
                               target="_blank"
@@ -308,7 +327,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
                               disabled={saved || savingKey === key}
                             >
                               {saved
-                                ? t('savedToCloset')
+                                ? <><Check size={13} strokeWidth={2} /> {t('savedToCloset')}</>
                                 : <><Plus size={13} strokeWidth={1.9} /> {t('saveToCloset')}</>}
                             </button>
                           </div>
@@ -317,7 +336,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
                     })}
                   </div>
                 )}
-              </div>
+              </article>
             );
           })}
 

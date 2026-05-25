@@ -111,6 +111,7 @@ export const en = {
   saveToCloset: 'Save',
   savedToCloset: 'Saved',
   saveAnalysis: 'Save analysis',
+  itemsInPhoto: 'Items in this photo',
   analysisSaved: 'Saved',
   outfitsMine: 'Mine',
   outfitsSaved: 'Saved',
