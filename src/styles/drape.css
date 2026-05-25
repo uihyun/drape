@@ -2114,7 +2114,9 @@ body.is-native {
    guard keeps the add-photo tile clickable and scroll-friendly. */
 .identity-ref:not(.identity-ref-add) {
   cursor: grab;
-  touch-action: none;
+  /* pan-y so the page still scrolls vertically when a finger lands on
+     a slot; we only intercept horizontal drag for reorder. */
+  touch-action: pan-y;
 }
 .identity-ref:not(.identity-ref-add):active { cursor: grabbing; }
 .identity-ref.is-dragging { opacity: 0.55; }
@@ -2122,22 +2124,6 @@ body.is-native {
   outline: 2px dashed var(--accent);
   outline-offset: 3px;
 }
-.slot-primary {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.slot-primary:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 .identity-ref-preview-btn {
   position: absolute;
   inset: 0;

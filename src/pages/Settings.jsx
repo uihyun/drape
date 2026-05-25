@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X, Star } from 'lucide-react';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -260,12 +260,17 @@ function IdentitySection({ user, t }) {
   const [refs, setRefs] = useState([]);
   const [adding, setAdding] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
-  // Pointer-drag reorder state. dragIdx = currently dragging slot index;
-  // overIdx = slot being hovered over (drop target). Works on touch +
-  // mouse via pointer events (no HTML5 DnD which is iffy on mobile).
+  // Pointer-drag reorder state. dragIdx = currently dragging slot;
+  // overIdx = hovered drop target. We separate "press start" (recorded
+  // in pressRef) from "drag active" so a tap can still trigger the
+  // photo preview — drag only kicks in once the pointer moves past a
+  // small threshold. Touch-action: pan-y on the slot lets the page
+  // scroll vertically even when the finger lands on a slot.
   const [dragIdx, setDragIdx] = useState(-1);
   const [overIdx, setOverIdx] = useState(-1);
+  const pressRef = useRef(null);
   const fileInput = useRef();
+  const DRAG_THRESHOLD = 6;
 
   useEffect(() => {
     IdentityService.getMyRefs().then(setRefs).catch(() => setRefs([]));
@@ -282,18 +287,28 @@ function IdentitySection({ user, t }) {
   };
   const onRemove = async (i) => setRefs(await IdentityService.removeRef(i));
 
-  const onSetPrimary = async (i) => {
-    if (i === 0 || i >= refs.length) return;
-    // Move slot i to position 0; keep the rest in their original relative
-    // order. So [A, B, C] with i=2 → [C, A, B].
-    const order = [i, ...refs.map((_, j) => j).filter(j => j !== i)];
-    setRefs(await IdentityService.reorderRefs(order));
+  const onSlotDown = (e, i) => {
+    if (e.target.closest('button')) return; // let buttons handle their own tap
+    pressRef.current = { idx: i, x: e.clientX, y: e.clientY };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   };
-
-  // Drag end: if we dragged from dragIdx onto overIdx, splice the array.
-  const finishDrag = async () => {
+  const onSlotMove = (e, i) => {
+    const p = pressRef.current;
+    if (!p) return;
+    if (dragIdx === -1) {
+      const dx = Math.abs(e.clientX - p.x);
+      const dy = Math.abs(e.clientY - p.y);
+      if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+        setDragIdx(p.idx);
+      }
+    } else if (i !== overIdx) {
+      setOverIdx(i);
+    }
+  };
+  const onSlotUp = async () => {
     const from = dragIdx;
     const to = overIdx;
+    pressRef.current = null;
     setDragIdx(-1);
     setOverIdx(-1);
     if (from < 0 || to < 0 || from === to) return;
@@ -301,6 +316,11 @@ function IdentitySection({ user, t }) {
     const [picked] = order.splice(from, 1);
     order.splice(to, 0, picked);
     setRefs(await IdentityService.reorderRefs(order));
+  };
+  const onSlotCancel = () => {
+    pressRef.current = null;
+    setDragIdx(-1);
+    setOverIdx(-1);
   };
 
   return (
@@ -317,16 +337,11 @@ function IdentitySection({ user, t }) {
           <div
             key={i}
             className={`identity-ref${i === 0 ? ' is-primary' : ''}${dragIdx === i ? ' is-dragging' : ''}${overIdx === i && dragIdx !== i ? ' is-drop-target' : ''}`}
-            onPointerDown={(e) => {
-              // Don't start a drag from the action buttons — they have
-              // their own pointer handlers and shouldn't initiate drag.
-              if (e.target.closest('button')) return;
-              setDragIdx(i);
-              try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
-            }}
-            onPointerEnter={() => { if (dragIdx !== -1) setOverIdx(i); }}
-            onPointerUp={finishDrag}
-            onPointerCancel={() => { setDragIdx(-1); setOverIdx(-1); }}
+            onPointerDown={(e) => onSlotDown(e, i)}
+            onPointerMove={(e) => onSlotMove(e, i)}
+            onPointerEnter={() => { if (dragIdx !== -1 && dragIdx !== i) setOverIdx(i); }}
+            onPointerUp={onSlotUp}
+            onPointerCancel={onSlotCancel}
           >
             <button
               type="button"
@@ -337,17 +352,6 @@ function IdentitySection({ user, t }) {
               <img src={r.url} alt="" />
             </button>
             {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
-            {i !== 0 && (
-              <button
-                type="button"
-                className="slot-primary"
-                onClick={() => onSetPrimary(i)}
-                aria-label={t('setAsPrimary')}
-                title={t('setAsPrimary')}
-              >
-                <Star size={13} strokeWidth={1.8} />
-              </button>
-            )}
             <button type="button" className="slot-remove" onClick={() => onRemove(i)} aria-label={t('remove')}>
               <Trash2 size={14} strokeWidth={1.8} />
             </button>
