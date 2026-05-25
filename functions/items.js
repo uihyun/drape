@@ -241,14 +241,28 @@ exports.processItem = onCall(
     // shape (e.g. long pants → shorts). The original-quality crop works
     // best on a flat white background; the alpha channel is added in
     // post by chromaKeyToTransparent() below before the file is saved.
-    const cropPrompt = `Extract ONLY the clothing item from this photo. Place
-it centered on a fully white background, preserving original colors,
-fabric texture, proportions, prints, and length EXACTLY as in the
-input. Remove the wearer, hangers, mannequin, and surrounding scene.
-Output a square crop with the garment occupying ~80% of the frame.
-Do not redesign, restyle, re-color, re-fit, or reshape the item — do
-not turn pants into shorts, do not crop sleeves, do not change the
-silhouette. This is a faithful catalog cutout, not a redesign.`;
+    const cropPrompt = `Extract ONLY the item from this photo and present it
+in the standard catalog product view for its category:
+- Clothing (tops, bottoms, dresses, outerwear): axis-vertical, front-on,
+  as if photographed from directly above on a flat surface or worn on
+  an invisible body. Top of the garment at the top of the frame, hem
+  at the bottom. Symmetric and centered.
+- Shoes: clean side profile (right shoe facing right). If a pair, show
+  the pair from the same angle.
+- Bags: upright, frontal, handles up.
+- Accessories (hats, jewelry, belts, glasses): centered, in the angle
+  that shows the design most clearly.
+
+You MAY rotate, flatten, and re-orient the item to achieve this view.
+You may NOT change length, silhouette, proportions, color, fabric
+texture, prints, or design — preserve all of those EXACTLY as in the
+input. Do not turn pants into shorts, do not crop sleeves, do not
+re-fit the garment.
+
+Place the item centered on a fully white background, occupying ~80%
+of a square frame. Remove the wearer, hangers, mannequin, bed sheets,
+floor, and surrounding scene. This is a faithful catalog cutout, not
+a redesign.`;
     const cropPromise = cropModel.generateContent([
       { inlineData: { data: originalB64, mimeType: mime } },
       { text: cropPrompt },

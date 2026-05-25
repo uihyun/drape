@@ -63,14 +63,15 @@ views of the SAME person for identity preservation (face, body, hair).`
 and framing.`;
 
   // Identity refs are pre-processed with the background already removed
-  // (see processIdentityRef). We can't tell the model "keep that
-  // background" — there isn't one. Default to a clean studio backdrop
-  // and let the caller override via backgroundDesc if they want a scene.
+  // (see processIdentityRef). Default output is a flat white catalog
+  // plate so the user only sees a real environment when they explicitly
+  // ask for one via backgroundDesc.
   const bgClause = backgroundDesc
     ? `Place the person against this background: ${backgroundDesc}.
 Render it photoreal and consistent with the lighting on the person.`
-    : `Place the person against a clean, neutral studio backdrop
-(soft off-white, gentle floor shadow). No props, no clutter.`;
+    : `Place the person against a flat, pure white background.
+No room, no floor, no props, no environment — just the person on
+white, like a fashion lookbook plate.`;
 
   return `You are dressing the person from the reference image(s) in the
 following clothing item(s): ${itemSummary}.
