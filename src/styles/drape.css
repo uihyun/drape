@@ -1748,25 +1748,6 @@ body.is-native {
   font-style: italic;
   opacity: 0.85;
 }
-.slot-reprocess {
-  position: absolute;
-  top: 6px;
-  right: 38px;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.slot-reprocess:disabled { opacity: 0.6; cursor: wait; }
-.slot-reprocess .spin { animation: spin 0.9s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
 .identity-ref-preview-btn {
   position: absolute;
   inset: 0;

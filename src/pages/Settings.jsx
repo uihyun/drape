@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, RefreshCw, X } from 'lucide-react';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -257,7 +257,6 @@ function FieldRow({ label, value, setValue, max, placeholder, prefix, textarea, 
 function IdentitySection({ user, t }) {
   const [refs, setRefs] = useState([]);
   const [adding, setAdding] = useState(false);
-  const [reprocessing, setReprocessing] = useState(-1);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInput = useRef();
 
@@ -275,12 +274,6 @@ function IdentitySection({ user, t }) {
     finally { setAdding(false); }
   };
   const onRemove = async (i) => setRefs(await IdentityService.removeRef(i));
-  const onReprocess = async (i) => {
-    setReprocessing(i);
-    try { setRefs(await IdentityService.reprocessRef(i)); }
-    catch (e) { alert(e.message); }
-    finally { setReprocessing(-1); }
-  };
 
   return (
     <section className="settings-card">
@@ -303,16 +296,6 @@ function IdentitySection({ user, t }) {
               <img src={r.url} alt="" />
             </button>
             {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
-            <button
-              type="button"
-              className="slot-reprocess"
-              onClick={() => onReprocess(i)}
-              disabled={reprocessing === i}
-              aria-label={t('identityRefsReprocess')}
-              title={t('identityRefsReprocess')}
-            >
-              <RefreshCw size={13} strokeWidth={1.8} className={reprocessing === i ? 'spin' : ''} />
-            </button>
             <button type="button" className="slot-remove" onClick={() => onRemove(i)} aria-label={t('remove')}>
               <Trash2 size={14} strokeWidth={1.8} />
             </button>
