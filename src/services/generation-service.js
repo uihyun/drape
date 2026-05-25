@@ -35,13 +35,13 @@ const GENERATIONS = 'generations';
  * Kick off a virtual try-on. The Cloud Function does the heavy lifting +
  * writes the Generation doc; this returns the id so the UI can subscribe.
  */
-async function startTryOn({ itemIds, modelTier = 'pro', prompt = '', regenerateOf = null }) {
+async function startTryOn({ itemIds, modelTier = 'pro', prompt = '', backgroundDesc = '', regenerateOf = null }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!Array.isArray(itemIds) || itemIds.length === 0) throw new Error('no_items');
 
   const callable = httpsCallable(functions, 'virtualTryOn');
-  const res = await callable({ itemIds, modelTier, prompt, regenerateOf });
+  const res = await callable({ itemIds, modelTier, prompt, backgroundDesc, regenerateOf });
   return res.data; // { generationId }
 }
 

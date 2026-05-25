@@ -254,7 +254,10 @@ export const ko = {
   // ── Settings ───────────────────────────────────────────────────────
   account: '계정',
   identityRefsTitle: '내 정체성 레퍼런스 사진',
-  identityRefsHint: '가상 피팅용 전신 사진을 최대 {max}장까지 등록.',
+  identityRefsHint: '가상 피팅용 전신 사진을 최대 {max}장까지 등록. 배경은 자동으로 제거됩니다.',
+  identityRefsPrimary: '첫 번째 사진이 피팅 결과의 포즈와 구도를 결정해요. 나머지는 얼굴과 몸을 다른 각도에서 더 정확히 보존하는 데 사용됩니다.',
+  identityRefsPrimaryBadge: '메인',
+  identityRefsReprocess: '배경 다시 잘라내기',
   addRef: '사진 추가',
   language: '언어',
   legal: '약관',

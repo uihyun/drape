@@ -254,7 +254,10 @@ export const en = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'Account',
   identityRefsTitle: 'Identity reference photos',
-  identityRefsHint: 'Add up to {max} full-body photos for virtual try-on.',
+  identityRefsHint: 'Add up to {max} full-body photos for virtual try-on. Backgrounds are removed automatically.',
+  identityRefsPrimary: 'The first photo sets the pose and framing for try-on results. Others help preserve your face and body from different angles.',
+  identityRefsPrimaryBadge: 'Primary',
+  identityRefsReprocess: 'Re-cut background',
   addRef: 'Add photo',
   language: 'Language',
   legal: 'Legal',

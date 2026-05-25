@@ -47,7 +47,7 @@ function extractImage(response) {
   return null;
 }
 
-function tryOnPrompt(items, customPrompt) {
+function tryOnPrompt(items, customPrompt, backgroundDesc, refCount) {
   const itemSummary = items.map((it, i) => {
     const t = it.tags || {};
     const parts = [t.subcategory || t.category || 'garment'];
@@ -55,19 +55,39 @@ function tryOnPrompt(items, customPrompt) {
     return `(${i + 1}) ${parts.join(' ')}`;
   }).join(', ');
 
-  return `You are dressing the person from the first reference image(s) in
-the following clothing item(s): ${itemSummary}.
+  const refClause = refCount > 1
+    ? `The FIRST reference image is the primary canvas — match its pose,
+camera angle, and framing. The other reference images are additional
+views of the SAME person for identity preservation (face, body, hair).`
+    : `The reference image is the canvas — match its pose, camera angle,
+and framing.`;
+
+  // Identity refs are pre-processed with the background already removed
+  // (see processIdentityRef). We can't tell the model "keep that
+  // background" — there isn't one. Default to a clean studio backdrop
+  // and let the caller override via backgroundDesc if they want a scene.
+  const bgClause = backgroundDesc
+    ? `Place the person against this background: ${backgroundDesc}.
+Render it photoreal and consistent with the lighting on the person.`
+    : `Place the person against a clean, neutral studio backdrop
+(soft off-white, gentle floor shadow). No props, no clutter.`;
+
+  return `You are dressing the person from the reference image(s) in the
+following clothing item(s): ${itemSummary}.
+
+${refClause}
 
 The image(s) AFTER the reference photos show the garments isolated on a
-white background. Composite them onto the person's body, replacing whatever
-they're currently wearing in that region, with realistic drape, fit,
-shadowing, and lighting that matches the reference photo.
+white background. Composite them onto the person's body, replacing
+whatever they're currently wearing in that region, with realistic drape,
+fit, shadowing, and lighting.
 
 CRITICAL — identity preservation:
 - Keep the person's face IDENTICAL (do not stylize, do not change features).
 - Keep the person's hair, skin tone, body proportions, and pose unchanged.
-- Keep the background of the FIRST reference photo (do not regenerate it).
-- ONLY the clothing should differ from the reference.
+- ONLY the clothing and the background should differ from the reference.
+
+${bgClause}
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
@@ -80,7 +100,14 @@ exports.virtualTryOn = onCall(
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
 
-    const { itemIds, modelTier = 'pro', prompt = '', variants = null, regenerateOf = null } = request.data || {};
+    const {
+      itemIds,
+      modelTier = 'pro',
+      prompt = '',
+      backgroundDesc = '',
+      variants = null,
+      regenerateOf = null,
+    } = request.data || {};
     if (!Array.isArray(itemIds) || itemIds.length === 0) {
       throw new HttpsError('invalid-argument', 'itemIds required');
     }
@@ -129,7 +156,7 @@ exports.virtualTryOn = onCall(
     for (const it of items) {
       parts.push(await downloadAsInlineData(bucket, it.croppedPath));
     }
-    parts.push({ text: tryOnPrompt(items, prompt) });
+    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, identityRefs.length) });
 
     const modelId = modelTier === 'flash' ? IMAGE_FLASH : IMAGE_PRO;
     // Default one variant — multi-variant grid felt cluttered and most

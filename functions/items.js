@@ -491,15 +491,27 @@ exports.processIdentityRef = onCall(
     // Same trick as processItem — model crops on white bg, chroma-key
     // does the alpha. Asking for "transparent PNG" directly causes the
     // model to redraw the person and lose detail.
-    const cropPrompt = `Extract ONLY the person from this photo — full body,
-including face, hair, clothing they're wearing, hands, and any small
-items they're holding. Place the person centered on a fully white
-background. Remove the wall, floor, furniture, and surrounding scene.
+    const cropPrompt = `Extract the ENTIRE person from this photo and place
+them centered on a fully white background.
 
-Preserve the person's appearance, pose, clothing, height, and body
-proportions EXACTLY as in the input. Do not retouch, restyle, reshape,
-re-fit, change clothing, or modify the body. This is a faithful
-photo cutout, not a redesign.`;
+CRITICAL FRAMING RULES:
+- Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
+- Do NOT crop the head, face, hair, hands, or feet under any circumstance.
+- If the input photo is full-body, the output must remain full-body.
+- If the input is a half-body shot, keep the same crop level — do NOT
+  zoom in further on the torso.
+- The person's silhouette must occupy the same vertical extent as in
+  the input; just remove the surrounding room/wall/floor/furniture.
+
+PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
+- Face (every feature, identical).
+- Hair (color, length, texture).
+- Skin tone.
+- Pose, height, body proportions.
+- Clothing they are currently wearing.
+- Any items they are holding.
+
+This is a faithful photo cutout for identity reference, not a redesign.`;
 
     let croppedUrl = null;
     let croppedPath = null;

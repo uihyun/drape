@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle } from 'lucide-react';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -257,6 +257,7 @@ function FieldRow({ label, value, setValue, max, placeholder, prefix, textarea, 
 function IdentitySection({ user, t }) {
   const [refs, setRefs] = useState([]);
   const [adding, setAdding] = useState(false);
+  const [reprocessing, setReprocessing] = useState(-1);
   const fileInput = useRef();
 
   useEffect(() => {
@@ -273,15 +274,37 @@ function IdentitySection({ user, t }) {
     finally { setAdding(false); }
   };
   const onRemove = async (i) => setRefs(await IdentityService.removeRef(i));
+  const onReprocess = async (i) => {
+    setReprocessing(i);
+    try { setRefs(await IdentityService.reprocessRef(i)); }
+    catch (e) { alert(e.message); }
+    finally { setReprocessing(-1); }
+  };
 
   return (
     <section className="settings-card">
       <h2 className="settings-h2">{t('identityRefsTitle')}</h2>
       <p className="settings-hint">{t('identityRefsHint', { max: IdentityService.MAX_IDENTITY_REFS })}</p>
+      {refs.length > 0 && (
+        <p className="settings-hint identity-refs-primary-hint">
+          {t('identityRefsPrimary')}
+        </p>
+      )}
       <div className="identity-refs">
         {refs.map((r, i) => (
-          <div key={i} className="identity-ref">
+          <div key={i} className={`identity-ref${i === 0 ? ' is-primary' : ''}`}>
             <img src={r.url} alt="" />
+            {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
+            <button
+              type="button"
+              className="slot-reprocess"
+              onClick={() => onReprocess(i)}
+              disabled={reprocessing === i}
+              aria-label={t('identityRefsReprocess')}
+              title={t('identityRefsReprocess')}
+            >
+              <RefreshCw size={13} strokeWidth={1.8} className={reprocessing === i ? 'spin' : ''} />
+            </button>
             <button type="button" className="slot-remove" onClick={() => onRemove(i)} aria-label={t('remove')}>
               <Trash2 size={14} strokeWidth={1.8} />
             </button>
