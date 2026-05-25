@@ -24,10 +24,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const [search, setSearch] = useSearchParams();
 
   // Deep-link entry: /profile/calendar?ootd=today (or ?ootd=YYYY-MM-DD)
-  // opens the OOTD sheet for that date on mount. Used by the create
-  // sheet's "Log OOTD" so the user doesn't have to first navigate to
-  // calendar and then tap today's cell. We strip the param after read
-  // so a back-navigation doesn't reopen it.
+  // opens the OOTD sheet for that date. Used by the create sheet's
+  // "New OOTD" so the user doesn't have to navigate to calendar and
+  // then tap today's cell. Depends on `search` (not []) so the effect
+  // re-fires when the user lands here via a same-route URL change —
+  // e.g. they're already on /profile/calendar and tap "New OOTD".
+  // The setSearch below strips the param and causes one extra no-op
+  // run that early-returns on `if (!o)`.
   useEffect(() => {
     const o = search.get('ootd');
     if (!o) return;
@@ -36,7 +39,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
     const next = new URLSearchParams(search);
     next.delete('ootd');
     setSearch(next, { replace: true });
-  }, []);
+  }, [search]);
 
   const year = cursor.getFullYear();
   const month0 = cursor.getMonth();
