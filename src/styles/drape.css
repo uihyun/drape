@@ -1689,6 +1689,10 @@ body.is-native {
   font-size: 0.78rem;
   color: var(--text-muted);
   line-height: 1.45;
+  /* Match the surrounding card padding so the hint doesn't run flush
+     to the card edge while the h2 above it is indented. */
+  padding: 0 1rem 0.75rem;
+  margin: 0;
 }
 .settings-error {
   color: var(--error);
