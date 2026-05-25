@@ -35,6 +35,7 @@ Return ONLY valid JSON matching this exact schema. Pick values strictly from
 the provided enums; if uncertain, use null (not a guess).
 
 {
+  "name":        short 2-4 word display title (e.g. "Cream linen trousers", "Black wool cardigan", "Navy bomber jacket"). Color + material/garment, no brand. Title case,
   "category":    one of [${TAXONOMY.CATEGORIES.join(', ')}],
   "subcategory": one of the subcategories valid for the chosen category,
   "colors":      array of 1-3 from [${TAXONOMY.COLORS.join(', ')}],
@@ -74,6 +75,9 @@ function sanitizeTags(raw) {
     fit:         inEnum(raw.fit,        TAXONOMY.FITS),
     description: typeof raw.description === 'string' ? raw.description.slice(0, 240) : '',
     brand:       typeof raw.brand === 'string' ? raw.brand.slice(0, 60) : null,
+    // Display title — surfaced on the item card and detail page. Auto-set
+    // only when the user hasn't typed their own; see processItem patch.
+    name:        typeof raw.name === 'string' ? raw.name.slice(0, 60) : null,
   };
 }
 
@@ -313,6 +317,9 @@ a redesign.`;
     };
     if (croppedUrl)  { patch.croppedUrl = croppedUrl; patch.croppedPath = croppedPath; }
     if (tags)        { patch.tags = tags; }
+    // Auto-populate the display name from Gemini only if the user
+    // hasn't already typed one — never clobber a manual edit.
+    if (tags?.name && !item.name) { patch.name = tags.name; }
     await docRef.update(patch);
 
     return { ok: true, tags, croppedUrl };

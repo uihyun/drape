@@ -900,6 +900,34 @@ body.is-native {
   gap: 1.25rem 0.75rem;
 }
 
+/* Usage / Brands views render a stack of grouped 3-col grids. Heading
+   sits flush-left above each section with a count chip on the right. */
+.closet-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.closet-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+}
+.closet-group-head h3 {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.closet-group-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-feature-settings: 'tnum' 1;
+}
+
 /* Opening the closet replays a soft "items raining in" sequence: each
    card drops a few pixels and fades in, staggered by index so 12+ items
    feel like clothes spilling out of a wardrobe. Pure CSS — no JS state.

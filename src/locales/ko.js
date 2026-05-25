@@ -159,6 +159,10 @@ export const ko = {
   searchPlaceholder: '내 옷장에서 검색…',
   clear: '지우기',
   closetView: { all: '전체', usage: '사용도', brands: '브랜드', categories: '카테고리' },
+  usageOften: '자주 입는',
+  usageSometimes: '가끔 입는',
+  usageNever: '안 입은',
+  brandUnbranded: '브랜드 없음',
   processing: '처리 중',
   processFailed: '실패',
 

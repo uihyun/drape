@@ -159,6 +159,10 @@ export const en = {
   searchPlaceholder: 'Search your closet…',
   clear: 'Clear',
   closetView: { all: 'All', usage: 'Usage', brands: 'Brands', categories: 'Categories' },
+  usageOften: 'Worn often',
+  usageSometimes: 'Worn sometimes',
+  usageNever: 'Never worn',
+  brandUnbranded: 'No brand',
   processing: 'Processing',
   processFailed: 'Failed',
 
