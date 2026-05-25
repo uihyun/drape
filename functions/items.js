@@ -656,28 +656,41 @@ exports.processOotdPhoto = onCall(
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
-    const cropPrompt = `Extract the person from this OOTD photo and place
-them centered on a fully white background. This is a small calendar
-thumbnail of what they wore today.
+    // Identical prompt shape to processIdentityRef — same tradeoff
+    // (Gemini Image re-draws pixels but tries hard to preserve every
+    // listed attribute). Worn accessories AND the OUTFIT itself stay
+    // since the photo IS the OOTD; held props go.
+    const cropPrompt = `Extract the ENTIRE person from this photo and place
+them centered on a fully white background. The output is a calendar
+thumbnail of what they wore today — a clean canvas of the person,
+NOT a snapshot of them in their environment.
 
 CRITICAL FRAMING RULES:
 - Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
-- Do NOT crop the head, face, or feet.
+- Do NOT crop the head, face, hair, hands, or feet under any circumstance.
+- If the input photo is full-body, the output must remain full-body.
+- If the input is a half-body shot, keep the same crop level — do NOT
+  zoom in further on the torso.
 - The person's silhouette must occupy the same vertical extent as in
-  the input; just remove the surrounding scene.
+  the input; just remove the surrounding room/wall/floor/furniture.
 
-PRESERVE EXACTLY:
-- Face, hair, skin, pose, body proportions.
-- ALL clothing they are wearing (this IS the OOTD).
-- Worn accessories: hats, glasses, jewelry, watches, belts, bags
-  strapped over the shoulder, scarves.
+PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
+- Face (every feature, identical).
+- Hair (color, length, texture).
+- Skin tone.
+- Pose, height, body proportions.
+- Clothing they are currently wearing (this IS the OOTD).
+- Worn accessories that sit ON the body: hats, glasses, earrings,
+  necklaces, watches, rings, belts, scarves, bags strapped over the
+  shoulder.
 
-REMOVE:
-- Anything HELD in the hand that is clearly a prop (phone, bottle,
-  drink, umbrella). Render an empty hand naturally.
-- Other people, pets, vehicles, furniture, background scene.
+REMOVE (do NOT include in the output):
+- Anything the person is HOLDING or CARRYING in their hand — phones,
+  bottles, drinks, umbrellas, shopping bags, cameras, leashes, etc.
+  Render an empty hand naturally in the same position.
+- Other people, pets, vehicles, furniture, or background props.
 
-This is a faithful person-only cutout for a calendar thumbnail.`;
+This is a faithful person-only cutout, not a redesign.`;
 
     let croppedUrl = null;
     let croppedPath = null;
