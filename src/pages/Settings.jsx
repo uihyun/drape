@@ -105,7 +105,11 @@ function ProfileSection({ profile, user, t }) {
   }, [profile?.handle, profile?.displayName, profile?.bio, profile?.instagram, profile?.location]);
 
   const claimedHandle = profile?.handle || '';
-  const canClaim = !claimedHandle && HANDLE_RE.test(handle);
+  // Backend claimHandle txn already supports re-claim (drops the old
+  // handle doc and writes the new one atomically), so the field is
+  // always editable. Disabled only when the input equals the current
+  // handle (nothing to save) or fails the regex.
+  const canClaim = HANDLE_RE.test(handle) && handle.trim().toLowerCase() !== claimedHandle;
 
   const flash = (msg) => {
     setOkMsg(msg);
@@ -138,33 +142,31 @@ function ProfileSection({ profile, user, t }) {
     <section className="settings-card">
       <h2 className="settings-h2">{t('profile')}</h2>
 
-      {/* Handle (one-time claim, immutable once set in v1) */}
+      {/* Handle — editable. The handles/<doc> collection is rewritten
+          atomically by the claimHandle Cloud Function (drops old, claims
+          new), so changing it is safe and the user's uid is unaffected. */}
       <div className="settings-row settings-row-col">
         <label className="settings-label">{t('handle')}</label>
-        {claimedHandle ? (
-          <p className="settings-static">@{claimedHandle} <span className="muted">· {t('handleImmutable')}</span></p>
-        ) : (
-          <div className="settings-input-row">
-            <span className="settings-input-prefix">@</span>
-            <input
-              className="settings-input"
-              value={handle}
-              onChange={e => setHandle(e.target.value.toLowerCase())}
-              placeholder={t('handlePlaceholder')}
-              maxLength={20}
-              autoCapitalize="none"
-              autoCorrect="off"
-            />
-            <button
-              type="button"
-              className="settings-save-btn"
-              disabled={!canClaim || busy === 'handle'}
-              onClick={onClaim}
-            >
-              {busy === 'handle' ? t('saving') : t('claim')}
-            </button>
-          </div>
-        )}
+        <div className="settings-input-row">
+          <span className="settings-input-prefix">@</span>
+          <input
+            className="settings-input"
+            value={handle}
+            onChange={e => setHandle(e.target.value.toLowerCase())}
+            placeholder={t('handlePlaceholder')}
+            maxLength={20}
+            autoCapitalize="none"
+            autoCorrect="off"
+          />
+          <button
+            type="button"
+            className="settings-save-btn"
+            disabled={!canClaim || busy === 'handle'}
+            onClick={onClaim}
+          >
+            {busy === 'handle' ? t('saving') : t('save')}
+          </button>
+        </div>
         <p className="settings-hint">{t('handleHint')}</p>
       </div>
 

@@ -98,12 +98,21 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (
-        <div className="empty-state empty-state-card">
-          <p>{t('noOutfitsYet')}</p>
-          <Link to="/outfits/new" className="btn btn-primary">
-            <Plus size={14} strokeWidth={1.8} /> {t('createOutfit')}
-          </Link>
-        </div>
+        tab === 'saved' ? (
+          <div className="empty-state empty-state-card">
+            <p>{t('savedEmpty')}</p>
+            <Link to="/analyze" className="btn btn-primary">
+              <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
+            </Link>
+          </div>
+        ) : (
+          <div className="empty-state empty-state-card">
+            <p>{t('noOutfitsYet')}</p>
+            <Link to="/outfits/new" className="btn btn-primary">
+              <Plus size={14} strokeWidth={1.8} /> {t('createOutfit')}
+            </Link>
+          </div>
+        )
       ) : (
         <div className="outfit-grid">
           {outfits.map(o => (
