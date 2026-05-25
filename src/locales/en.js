@@ -41,7 +41,7 @@ export const en = {
   profile: 'Profile',
   handle: 'Username',
   handlePlaceholder: 'pick a unique name',
-  handleHint: 'Letters, numbers, underscore. 3-20 characters. Cannot be changed later.',
+  handleHint: 'Letters, numbers, underscore. 3-20 characters.',
   handleImmutable: 'cannot be changed',
   handleTaken: 'That username is already taken.',
   claim: 'Claim',

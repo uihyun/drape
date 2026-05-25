@@ -88,13 +88,22 @@ function ProfileSection({ profile, user, t }) {
   const [bio, setBio] = useState('');
   const [instagram, setInstagram] = useState('');
   const [location, setLocation] = useState('');
-  const [busy, setBusy] = useState(null);
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [okMsg, setOkMsg] = useState(null);
 
+  // Server-truth snapshot for the dirty-check on the single Save button.
+  const original = {
+    handle: profile?.handle || '',
+    displayName: profile?.displayName || user.displayName || '',
+    bio: profile?.bio || '',
+    instagram: profile?.instagram || '',
+    location: profile?.location || '',
+  };
+
   // Sync inputs from server snapshot once available — but only if the
   // user hasn't started typing (otherwise their in-flight edits get
-  // clobbered). We compare against the controlled state.
+  // clobbered).
   useEffect(() => {
     if (!profile) return;
     setHandle(prev => prev || profile.handle || '');
@@ -104,81 +113,67 @@ function ProfileSection({ profile, user, t }) {
     setLocation(prev => prev || profile.location || '');
   }, [profile?.handle, profile?.displayName, profile?.bio, profile?.instagram, profile?.location]);
 
-  const claimedHandle = profile?.handle || '';
-  // Backend claimHandle txn already supports re-claim (drops the old
-  // handle doc and writes the new one atomically), so the field is
-  // always editable. Disabled only when the input equals the current
-  // handle (nothing to save) or fails the regex.
-  const canClaim = HANDLE_RE.test(handle) && handle.trim().toLowerCase() !== claimedHandle;
+  const handleNormalized = handle.trim().toLowerCase();
+  // Per-field dirty + validity flags drive the single Save button.
+  const handleChanged = handleNormalized !== original.handle;
+  const handleValid = handle === '' || HANDLE_RE.test(handle);
+  const displayNameChanged = displayName !== original.displayName;
+  const bioChanged = bio !== original.bio;
+  const locationChanged = location !== original.location;
+  const instagramChanged = instagram !== original.instagram;
+  const anyChanged = handleChanged || displayNameChanged || bioChanged || locationChanged || instagramChanged;
+  const canSave = anyChanged && (!handleChanged || (handleValid && handle !== ''));
 
   const flash = (msg) => {
     setOkMsg(msg);
     setTimeout(() => setOkMsg(null), 1800);
   };
 
-  const onClaim = async () => {
+  const onSaveAll = async () => {
+    if (!canSave || busy) return;
     setErr(null);
-    setBusy('handle');
+    setBusy(true);
     try {
-      await ProfileService.claimHandle(handle.trim().toLowerCase());
+      // claimHandle first — it owns the atomic swap of /handles/<doc> +
+      // /profiles/<uid>.handle. Running other updates in parallel after
+      // is fine since they touch separate fields.
+      if (handleChanged) {
+        await ProfileService.claimHandle(handleNormalized);
+      }
+      const updates = [];
+      if (displayNameChanged) updates.push(ProfileService.updateDisplayName(displayName));
+      if (bioChanged) updates.push(ProfileService.updateBio(bio));
+      if (locationChanged) updates.push(ProfileService.updateLocation(location));
+      if (instagramChanged) updates.push(ProfileService.updateInstagram(instagram));
+      await Promise.all(updates);
       flash(t('saved'));
     } catch (e) {
       setErr(e.code === 'HANDLE_TAKEN' ? t('handleTaken') : (e.message || 'Failed'));
-    } finally { setBusy(null); }
-  };
-
-  const onSave = async (field, value, updater) => {
-    setErr(null);
-    setBusy(field);
-    try {
-      await updater(value);
-      flash(t('saved'));
-    } catch (e) {
-      setErr(e.message || 'Failed');
-    } finally { setBusy(null); }
+    } finally { setBusy(false); }
   };
 
   return (
     <section className="settings-card">
       <h2 className="settings-h2">{t('profile')}</h2>
 
-      {/* Handle — editable. The handles/<doc> collection is rewritten
-          atomically by the claimHandle Cloud Function (drops old, claims
-          new), so changing it is safe and the user's uid is unaffected. */}
-      <div className="settings-row settings-row-col">
-        <label className="settings-label">{t('handle')}</label>
-        <div className="settings-input-row">
-          <span className="settings-input-prefix">@</span>
-          <input
-            className="settings-input"
-            value={handle}
-            onChange={e => setHandle(e.target.value.toLowerCase())}
-            placeholder={t('handlePlaceholder')}
-            maxLength={20}
-            autoCapitalize="none"
-            autoCorrect="off"
-          />
-          <button
-            type="button"
-            className="settings-save-btn"
-            disabled={!canClaim || busy === 'handle'}
-            onClick={onClaim}
-          >
-            {busy === 'handle' ? t('saving') : t('save')}
-          </button>
-        </div>
-        <p className="settings-hint">{t('handleHint')}</p>
-      </div>
-
+      <FieldRow
+        label={t('handle')}
+        value={handle}
+        setValue={(v) => setHandle(v.toLowerCase())}
+        prefix="@"
+        max={20}
+        placeholder={t('handlePlaceholder')}
+        hint={t('handleHint')}
+        error={handleChanged && !handleValid ? t('handleHint') : null}
+        autoCapitalize="none"
+        autoCorrect="off"
+      />
       <FieldRow
         label={t('displayName')}
         value={displayName}
         setValue={setDisplayName}
         max={DISPLAY_NAME_MAX}
         placeholder={t('displayNamePlaceholder')}
-        busy={busy === 'displayName'}
-        onSave={() => onSave('displayName', displayName, ProfileService.updateDisplayName)}
-        t={t}
       />
       <FieldRow
         label={t('bio')}
@@ -187,9 +182,6 @@ function ProfileSection({ profile, user, t }) {
         max={BIO_MAX}
         placeholder={t('bioPlaceholder')}
         textarea
-        busy={busy === 'bio'}
-        onSave={() => onSave('bio', bio, ProfileService.updateBio)}
-        t={t}
       />
       <FieldRow
         label={t('location')}
@@ -197,9 +189,6 @@ function ProfileSection({ profile, user, t }) {
         setValue={setLocation}
         max={LOCATION_MAX}
         placeholder={t('locationPlaceholder')}
-        busy={busy === 'location'}
-        onSave={() => onSave('location', location, ProfileService.updateLocation)}
-        t={t}
       />
       <FieldRow
         label={t('instagram')}
@@ -208,18 +197,26 @@ function ProfileSection({ profile, user, t }) {
         prefix="@"
         max={INSTAGRAM_MAX}
         placeholder={t('instagramPlaceholder')}
-        busy={busy === 'instagram'}
-        onSave={() => onSave('instagram', instagram, ProfileService.updateInstagram)}
-        t={t}
       />
 
       {err && <p className="settings-error">{err}</p>}
       {okMsg && <p className="settings-ok">{okMsg}</p>}
+
+      <div className="settings-card-footer">
+        <button
+          type="button"
+          className="btn btn-primary settings-save-all"
+          onClick={onSaveAll}
+          disabled={!canSave || busy}
+        >
+          {busy ? t('saving') : t('save')}
+        </button>
+      </div>
     </section>
   );
 }
 
-function FieldRow({ label, value, setValue, max, placeholder, prefix, textarea, busy, onSave, t }) {
+function FieldRow({ label, value, setValue, max, placeholder, prefix, textarea, hint, error, autoCapitalize, autoCorrect }) {
   return (
     <div className="settings-row settings-row-col">
       <label className="settings-label">{label}</label>
@@ -241,17 +238,14 @@ function FieldRow({ label, value, setValue, max, placeholder, prefix, textarea, 
             onChange={e => setValue(e.target.value)}
             placeholder={placeholder}
             maxLength={max}
+            autoCapitalize={autoCapitalize}
+            autoCorrect={autoCorrect}
           />
         )}
-        <button
-          type="button"
-          className="settings-save-btn"
-          onClick={onSave}
-          disabled={busy}
-        >
-          {busy ? t('saving') : t('save')}
-        </button>
       </div>
+      {error
+        ? <p className="settings-error">{error}</p>
+        : hint ? <p className="settings-hint">{hint}</p> : null}
     </div>
   );
 }

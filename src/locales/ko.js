@@ -41,7 +41,7 @@ export const ko = {
   profile: '프로필',
   handle: '아이디',
   handlePlaceholder: '고유한 이름을 골라주세요',
-  handleHint: '영문/숫자/언더스코어, 3-20자. 한 번 정하면 바꿀 수 없어요.',
+  handleHint: '영문/숫자/언더스코어, 3-20자.',
   handleImmutable: '변경 불가',
   handleTaken: '이미 사용 중인 아이디예요.',
   claim: '확정',
