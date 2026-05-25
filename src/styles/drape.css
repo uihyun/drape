@@ -319,7 +319,13 @@ body.is-native {
   gap: 0.55rem;
   margin: 1.25rem 0 0;
 }
-.board-action-btn { width: 100%; justify-content: center; }
+.board-action-btn {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+  justify-content: center;
+}
 
 .board-picker {
   max-height: 80vh;
@@ -2269,8 +2275,15 @@ body.is-native {
   border-color: var(--accent);
   color: var(--accent);
 }
-.rate-regen { justify-content: center; width: 100%; }
-.rate-delete { justify-content: center; width: 100%; margin-top: 0.4rem; }
+.rate-regen,
+.rate-delete {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-self: stretch;
+  justify-content: center;
+}
+.rate-delete { margin-top: 0.4rem; }
 
 /* OOTD log sheet — opened from a Calendar cell tap. */
 .ootd-sheet { max-height: 88vh; overflow-y: auto; }
