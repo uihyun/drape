@@ -227,7 +227,10 @@ function BoardCanvas({
   t,
 }) {
   const canvasRef = useRef(null);
+  // dragState handles MOVE (whole sticker body drag).
+  // handleState handles RESIZE / ROTATE (corner + top handles).
   const dragState = useRef(null);
+  const handleState = useRef(null);
 
   const onPointerDown = (e, idx) => {
     e.stopPropagation();
@@ -274,6 +277,65 @@ function BoardCanvas({
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
   };
 
+  // ── Corner-drag resize / top-handle rotate ─────────────────────────
+  // Both work in canvas-pixel space so the math is independent of the
+  // sticker's current scale / rotation transforms.
+  const onHandleDown = (e, idx, mode) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    if (!canvasRect) return;
+    const s = stickers[idx];
+    const centerPx = {
+      x: canvasRect.left + s.x * canvasRect.width,
+      y: canvasRect.top + s.y * canvasRect.height,
+    };
+    const initDx = e.clientX - centerPx.x;
+    const initDy = e.clientY - centerPx.y;
+    handleState.current = {
+      idx,
+      mode, // 'resize' | 'rotate'
+      centerPx,
+      initDist: Math.hypot(initDx, initDy),
+      initAngleDeg: (Math.atan2(initDy, initDx) * 180) / Math.PI,
+      initScale: s.scale,
+      initRotation: s.rotation || 0,
+    };
+    setSelectedSticker(idx);
+    onBringToFront(idx);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+  };
+
+  const onHandleMove = (e) => {
+    const hs = handleState.current;
+    if (!hs) return;
+    e.stopPropagation();
+    const dx = e.clientX - hs.centerPx.x;
+    const dy = e.clientY - hs.centerPx.y;
+    if (hs.mode === 'resize') {
+      const dist = Math.hypot(dx, dy);
+      const ratio = hs.initDist > 0 ? dist / hs.initDist : 1;
+      const next = Math.max(0.15, Math.min(1.4, hs.initScale * ratio));
+      onStickerChange(hs.idx, { scale: next });
+    } else if (hs.mode === 'rotate') {
+      const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+      let delta = angleDeg - hs.initAngleDeg;
+      // Keep [-180, 180]
+      while (delta > 180) delta -= 360;
+      while (delta < -180) delta += 360;
+      let next = hs.initRotation + delta;
+      while (next > 180) next -= 360;
+      while (next < -180) next += 360;
+      onStickerChange(hs.idx, { rotation: Math.round(next) });
+    }
+  };
+
+  const onHandleUp = (e) => {
+    if (!handleState.current) return;
+    handleState.current = null;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
+  };
+
   return (
     <div
       ref={canvasRef}
@@ -289,6 +351,9 @@ function BoardCanvas({
         if (!item) return null;
         const cover = item.croppedUrl || item.originalUrl;
         const isSelected = selectedSticker === idx;
+        // Inverse scale for handles so they stay a constant visual size
+        // regardless of how big the sticker has been resized.
+        const inv = s.scale > 0 ? 1 / s.scale : 1;
         return (
           <div
             key={`${s.itemId}-${idx}`}
@@ -312,41 +377,32 @@ function BoardCanvas({
                 referrerPolicy="no-referrer"
               />
             )}
+            {isSelected && (
+              <>
+                {['tl', 'tr', 'bl', 'br'].map(corner => (
+                  <span
+                    key={corner}
+                    className={`sticker-handle sticker-handle-${corner}`}
+                    style={{ transform: `scale(${inv})` }}
+                    onPointerDown={(e) => onHandleDown(e, idx, 'resize')}
+                    onPointerMove={onHandleMove}
+                    onPointerUp={onHandleUp}
+                    onPointerCancel={onHandleUp}
+                  />
+                ))}
+                <span
+                  className="sticker-handle sticker-handle-rot"
+                  style={{ transform: `translateX(-50%) scale(${inv})` }}
+                  onPointerDown={(e) => onHandleDown(e, idx, 'rotate')}
+                  onPointerMove={onHandleMove}
+                  onPointerUp={onHandleUp}
+                  onPointerCancel={onHandleUp}
+                />
+              </>
+            )}
           </div>
         );
       })}
-
-      {selectedSticker !== null && stickers[selectedSticker] && (
-        <StickerControls
-          sticker={stickers[selectedSticker]}
-          onChange={(patch) => onStickerChange(selectedSticker, patch)}
-        />
-      )}
-    </div>
-  );
-}
-
-function StickerControls({ sticker, onChange }) {
-  return (
-    <div className="board-sticker-ctl" onClick={e => e.stopPropagation()}>
-      <label>
-        <span>S</span>
-        <input
-          type="range"
-          min={0.15} max={1.2} step={0.01}
-          value={sticker.scale}
-          onChange={e => onChange({ scale: parseFloat(e.target.value) })}
-        />
-      </label>
-      <label>
-        <span>R</span>
-        <input
-          type="range"
-          min={-180} max={180} step={1}
-          value={sticker.rotation || 0}
-          onChange={e => onChange({ rotation: parseInt(e.target.value, 10) })}
-        />
-      </label>
     </div>
   );
 }

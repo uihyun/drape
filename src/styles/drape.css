@@ -285,30 +285,36 @@ body.is-native {
   pointer-events: none;
 }
 
-.board-sticker-ctl {
+/* On-canvas resize / rotate handles. Each handle is positioned at a
+   corner (or above the top, for rotate) of the .board-sticker. Parent
+   has scale + rotate; handle compensates with inverse scale via inline
+   style so its visual size stays constant. */
+.sticker-handle {
   position: absolute;
-  left: 50%;
-  bottom: 0.5rem;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.75rem;
-  background: rgba(255,255,255,0.96);
-  border: 1px solid var(--border);
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 1.5px solid var(--accent);
   border-radius: 999px;
-  padding: 0.4rem 0.75rem;
-  box-shadow: var(--shadow-md);
-  z-index: 9999;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  cursor: nwse-resize;
+  z-index: 10;
+  touch-action: none;
 }
-.board-sticker-ctl label {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
+.sticker-handle-tl { top: -8px; left: -8px; cursor: nwse-resize; }
+.sticker-handle-tr { top: -8px; right: -8px; cursor: nesw-resize; }
+.sticker-handle-bl { bottom: -8px; left: -8px; cursor: nesw-resize; }
+.sticker-handle-br { bottom: -8px; right: -8px; cursor: nwse-resize; }
+/* Rotation handle: a circle floating above the top edge, with the
+   inline transform doing both the position centering and inverse-scale. */
+.sticker-handle-rot {
+  top: -32px;
+  left: 50%;
+  cursor: grab;
+  background: var(--accent);
+  border-color: var(--accent);
 }
-.board-sticker-ctl input[type="range"] {
-  width: 90px;
-}
+.sticker-handle-rot:active { cursor: grabbing; }
 
 /* Unified action stack for the board editor. Every button takes the
    container's full width so the visual rhythm doesn't jump between
@@ -319,7 +325,11 @@ body.is-native {
   gap: 0.55rem;
   margin: 1.25rem 0 0;
 }
-.board-action-btn {
+/* Two-class compound (.btn.board-action-btn) so the rule beats the
+   generic .btn declaration regardless of source order — earlier .btn
+   was winning the display property because it came later in the
+   file, and inline-flex inside our flex column didn't stretch. */
+.btn.board-action-btn {
   display: flex;
   width: 100%;
   box-sizing: border-box;
@@ -2275,15 +2285,15 @@ body.is-native {
   border-color: var(--accent);
   color: var(--accent);
 }
-.rate-regen,
-.rate-delete {
+.btn.rate-regen,
+.btn.rate-delete {
   display: flex;
   width: 100%;
   box-sizing: border-box;
   align-self: stretch;
   justify-content: center;
 }
-.rate-delete { margin-top: 0.4rem; }
+.btn.rate-delete { margin-top: 0.4rem; }
 
 /* OOTD log sheet — opened from a Calendar cell tap. */
 .ootd-sheet { max-height: 88vh; overflow-y: auto; }
