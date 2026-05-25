@@ -2630,10 +2630,11 @@ body.is-native {
 .calendar-cell:hover { background: var(--surface-elevated); }
 .calendar-cell:disabled { cursor: default; }
 .calendar-cell.empty { background: transparent; }
-/* Today: a light olive tint on the cell + accent-colored day number.
-   Reads as "current" without slamming a black frame over the photo. */
-.calendar-cell.today {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+/* Today: a thin accent (olive) hairline on the cell + accent-colored
+   day number. The ::after below draws it so it stays visible on top
+   of the photo. */
+.calendar-cell.today::after {
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 .calendar-cell.today .calendar-day-num {
   color: var(--accent-strong);
