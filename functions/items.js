@@ -179,7 +179,18 @@ async function uploadCropped(bucket, path, base64, mime) {
   const raw = Buffer.from(base64, 'base64');
   // Belt-and-suspenders: model is asked for transparent PNG, but if it
   // returns flat-bg we chroma-key the bg color out ourselves.
-  const png = await chromaKeyToTransparent(await sharp(raw).png().toBuffer());
+  const keyed = await chromaKeyToTransparent(await sharp(raw).png().toBuffer());
+  // Trim transparent (and uniform-color) edges so the stored PNG is a
+  // tight bbox of the actual subject. This makes thumbnails render at
+  // a consistent size regardless of how much whitespace the source
+  // photo had around the person / garment, and shrinks the file too.
+  let png;
+  try {
+    png = await sharp(keyed).trim({ threshold: 10 }).png().toBuffer();
+  } catch (e) {
+    console.warn('trim failed, using untrimmed:', e?.message);
+    png = keyed;
+  }
   await file.save(png, {
     metadata: {
       contentType: 'image/png',
