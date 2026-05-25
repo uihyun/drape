@@ -290,20 +290,29 @@ function IdentitySection({ user, t }) {
   const onSlotDown = (e, i) => {
     if (e.target.closest('button')) return; // let buttons handle their own tap
     pressRef.current = { idx: i, x: e.clientX, y: e.clientY };
+    // Capture pointer on the source slot — guarantees we get pointermove
+    // + pointerup even if the finger moves off the element. Drop target
+    // is found via document.elementFromPoint below (pointer capture
+    // suppresses other slots' onPointerEnter, so we can't rely on that).
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   };
-  const onSlotMove = (e, i) => {
+  const onSlotMove = (e) => {
     const p = pressRef.current;
     if (!p) return;
+    const dx = Math.abs(e.clientX - p.x);
+    const dy = Math.abs(e.clientY - p.y);
     if (dragIdx === -1) {
-      const dx = Math.abs(e.clientX - p.x);
-      const dy = Math.abs(e.clientY - p.y);
       if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
         setDragIdx(p.idx);
       }
-    } else if (i !== overIdx) {
-      setOverIdx(i);
+      return;
     }
+    // Drag active: find the slot under the pointer via hit-testing.
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const slot = el?.closest?.('.identity-ref:not(.identity-ref-add)');
+    const idxStr = slot?.getAttribute('data-ref-idx');
+    const targetIdx = idxStr === null || idxStr === undefined ? -1 : Number(idxStr);
+    if (targetIdx !== overIdx) setOverIdx(targetIdx);
   };
   const onSlotUp = async () => {
     const from = dragIdx;
@@ -336,10 +345,10 @@ function IdentitySection({ user, t }) {
         {refs.map((r, i) => (
           <div
             key={i}
+            data-ref-idx={i}
             className={`identity-ref${i === 0 ? ' is-primary' : ''}${dragIdx === i ? ' is-dragging' : ''}${overIdx === i && dragIdx !== i ? ' is-drop-target' : ''}`}
             onPointerDown={(e) => onSlotDown(e, i)}
-            onPointerMove={(e) => onSlotMove(e, i)}
-            onPointerEnter={() => { if (dragIdx !== -1 && dragIdx !== i) setOverIdx(i); }}
+            onPointerMove={onSlotMove}
             onPointerUp={onSlotUp}
             onPointerCancel={onSlotCancel}
           >
