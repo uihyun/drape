@@ -532,7 +532,10 @@ exports.analyzeOotd = onCall(
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
-      await ootdRef.update(patch);
+      // set(merge:true) tolerates a transient "doc not yet visible" race
+      // — admin update() throws NOT_FOUND in that window even though the
+      // client's setDoc resolved (eventual consistency between regions).
+      await ootdRef.set(patch, { merge: true });
       return { ok: true, ...patch, analyzedAt: undefined, updatedAt: undefined };
     } catch (err) {
       console.warn('analyzeOotd failed:', err?.message);
@@ -703,11 +706,11 @@ This is a faithful person-only cutout, not a redesign.`;
       if (img) {
         croppedPath = ootd.photoPath.replace(/\.(jpg|png)$/i, `-cut-${Date.now()}.png`);
         croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
-        await ootdRef.update({
+        await ootdRef.set({
           photoCutUrl: croppedUrl,
           photoCutPath: croppedPath,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        }, { merge: true });
       }
     } catch (err) {
       console.warn('processOotdPhoto failed:', err?.message);

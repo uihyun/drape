@@ -2587,18 +2587,25 @@ body.is-native {
   letter-spacing: 0.04em;
 }
 .calendar-weekday { padding-left: 4px; }
+/* Calendar grid escapes the .profile container's 1rem horizontal
+   padding so it sits flush to the viewport edge — gives more pixel
+   budget per cell on phone, matches the Lekondo full-bleed look. */
+.calendar-embedded { margin: 0 -1rem; }
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   /* Lekondo cells share faint hairlines drawn by inset shadows on the
-     cells themselves — no gap between cells so photos sit edge to edge. */
+     cells themselves — no gap between cells so photos sit edge to edge.
+     The grid wrapper adds the missing left + top borders so the
+     leftmost cells (Sun) and the first row don't sit on a bare edge
+     while Sat-right / bottom-row-bottom do. */
   gap: 0;
+  box-shadow: inset 1px 1px 0 var(--border);
 }
 .calendar-cell {
-  /* Tall portrait so a person-cutout thumbnail reads as a figure (not a
-     squished square). 1:2 matches the Lekondo reference; on a 360px
-     viewport with 7 cols that's ~51 × 102px per cell. */
-  aspect-ratio: 1 / 2;
+  /* Tall portrait so a person-cutout thumbnail reads as a figure (not
+     a squished square). 2:5 (1 : 2.5) matches the Lekondo reference. */
+  aspect-ratio: 2 / 5;
   background: var(--surface);
   position: relative;
   overflow: hidden;
