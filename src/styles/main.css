@@ -32,6 +32,14 @@
   --shadow-lg: 0 10px 20px -4px rgb(0 0 0 / 0.08), 0 4px 8px -4px rgb(0 0 0 / 0.04);
 }
 
+html, body {
+  /* Hard-stop horizontal scrolling on phones — any future stray element
+     wider than the viewport stays visually clipped instead of letting
+     the whole page slide right. Grid items still get min-width:0 below
+     so they shrink properly; this is the safety net. */
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 body {
   font-family: var(--font-body);
   font-weight: 400;

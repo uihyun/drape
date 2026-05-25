@@ -1083,9 +1083,15 @@ body.is-native {
   display: grid;
   /* Lekondo's closet is fixed 3-col on every viewport — items stay
      legible and the rhythm of the page stays predictable. */
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem 0.75rem;
 }
+/* Grid items default to min-width:auto (== min-content), which on a
+   narrow phone viewport lets a long item name (or large image) push
+   the 3-col track wider than the screen. Explicit min-width:0 lets
+   each card shrink to its fr share and the overflowing text gets the
+   ellipsis treatment from .item-card-name. */
+.closet-grid > .item-card { min-width: 0; }
 
 /* Usage / Brands views render a stack of grouped 3-col grids. Heading
    sits flush-left above each section with a count chip on the right. */
@@ -1707,9 +1713,14 @@ body.is-native {
 /* ── Outfits / feed ────────────────────────────────────────────────── */
 .outfit-grid, .feed-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  /* On a phone viewport narrower than 220px*2 + gap the auto-fill rule
+     would still try to fit a 220px column even when only one fits
+     comfortably — clamp minmax to the smaller of 220 and 100% so the
+     card scales down instead of forcing horizontal scroll. */
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: 1rem;
 }
+.outfit-grid > .outfit-card, .feed-grid > .feed-card { min-width: 0; }
 .outfit-card, .feed-card {
   text-decoration: none;
   color: inherit;
@@ -2905,9 +2916,18 @@ body.is-native {
   /* 5 tabs (Outfits / Calendar / Closet / Boards / Try-on) — auto
      columns so adding/removing one doesn't break the row. */
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(0, 1fr);
   border-bottom: 1px solid var(--border);
   margin: 0.5rem 0 1rem;
+}
+/* Phone viewports: shrink the tab font + tighten padding so 5 nowrap
+   labels (Outfits / Calendar / Closet / Boards / Try-on) actually fit
+   without pushing the row past the screen. */
+@media (max-width: 480px) {
+  .profile-tab {
+    font-size: 0.82rem;
+    padding: 0.85rem 0.1rem;
+  }
 }
 .profile-tab {
   background: none;
