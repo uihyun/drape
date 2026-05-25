@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, RefreshCw, X } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -258,6 +258,7 @@ function IdentitySection({ user, t }) {
   const [refs, setRefs] = useState([]);
   const [adding, setAdding] = useState(false);
   const [reprocessing, setReprocessing] = useState(-1);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const fileInput = useRef();
 
   useEffect(() => {
@@ -293,7 +294,14 @@ function IdentitySection({ user, t }) {
       <div className="identity-refs">
         {refs.map((r, i) => (
           <div key={i} className={`identity-ref${i === 0 ? ' is-primary' : ''}`}>
-            <img src={r.url} alt="" />
+            <button
+              type="button"
+              className="identity-ref-preview-btn"
+              onClick={() => setPreviewUrl(r.url)}
+              aria-label={t('view')}
+            >
+              <img src={r.url} alt="" />
+            </button>
             {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
             <button
               type="button"
@@ -329,6 +337,14 @@ function IdentitySection({ user, t }) {
           </button>
         )}
       </div>
+      {previewUrl && (
+        <div className="lightbox" onClick={() => setPreviewUrl(null)} role="dialog">
+          <button type="button" className="lightbox-close" onClick={() => setPreviewUrl(null)} aria-label={t('close')}>
+            <X size={22} strokeWidth={1.8} />
+          </button>
+          <img src={previewUrl} alt="" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
     </section>
   );
 }
