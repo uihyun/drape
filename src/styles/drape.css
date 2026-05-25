@@ -2630,12 +2630,13 @@ body.is-native {
 .calendar-cell:hover { background: var(--surface-elevated); }
 .calendar-cell:disabled { cursor: default; }
 .calendar-cell.empty { background: transparent; }
-/* Today: a barely-there warm tint on the cell + the day-number gets
-   the accent color so it reads as "current" without slamming a black
-   frame over the photo. */
-.calendar-cell.today { background: var(--accent-soft); }
+/* Today: a light olive tint on the cell + accent-colored day number.
+   Reads as "current" without slamming a black frame over the photo. */
+.calendar-cell.today {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+}
 .calendar-cell.today .calendar-day-num {
-  color: var(--accent);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 .calendar-day-num {

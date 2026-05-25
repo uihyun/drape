@@ -572,17 +572,19 @@ exports.processIdentityRef = onCall(
     // Same trick as processItem — model crops on white bg, chroma-key
     // does the alpha. Asking for "transparent PNG" directly causes the
     // model to redraw the person and lose detail.
-    const cropPrompt = `Extract the ENTIRE person from this photo and place
-them centered on a fully white background. The output is an identity
+    const cropPrompt = `Extract the person from this photo and place them
+centered on a fully white background. The output is an identity
 reference — a clean canvas of the person, NOT a snapshot of them with
 their props.
 
-CRITICAL FRAMING RULES:
-- Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
-- Do NOT crop the head, face, hair, hands, or feet under any circumstance.
-- If the input photo is full-body, the output must remain full-body.
-- If the input is a half-body shot, keep the same crop level — do NOT
-  zoom in further on the torso.
+CRITICAL FRAMING RULES — match the SOURCE crop exactly:
+- Output ONLY the portion of the body that is visible in the input.
+  If the source shows full body, output full body. If the source shows
+  half body / waist-up / head-and-shoulders, output the same.
+- Do NOT invent or extrapolate body parts that are not in the source —
+  no imagined feet, legs, or shoes if the source cuts off at the waist.
+- Within whatever IS in frame, do not crop further. Don't chop the
+  head, feet, or hands that ARE visible.
 - The person's silhouette must occupy the same vertical extent as in
   the input; just remove the surrounding room/wall/floor/furniture.
 
@@ -602,8 +604,8 @@ REMOVE (do NOT include in the output):
   in the same position. Do NOT invent a held object.
 - Other people, pets, vehicles, furniture, or background props.
 
-This is a faithful person-only cutout for identity reference, not a
-lifestyle photo.`;
+This is a faithful person-only cutout — never hallucinate body parts
+or props that are not in the source photo.`;
 
     let croppedUrl = null;
     let croppedPath = null;
@@ -663,19 +665,21 @@ exports.processOotdPhoto = onCall(
     // (Gemini Image re-draws pixels but tries hard to preserve every
     // listed attribute). Worn accessories AND the OUTFIT itself stay
     // since the photo IS the OOTD; held props go.
-    const cropPrompt = `Extract the ENTIRE person from this photo and place
-them centered on a fully white background. The output is a calendar
+    const cropPrompt = `Extract the person from this photo and place them
+centered on a fully white background. The output is a calendar
 thumbnail of what they wore today — a clean canvas of the person,
 NOT a snapshot of them in their environment.
 
-CRITICAL FRAMING RULES:
-- Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
-- Do NOT crop the head, face, hair, hands, or feet under any circumstance.
-- If the input photo is full-body, the output must remain full-body.
-- If the input is a half-body shot, keep the same crop level — do NOT
-  zoom in further on the torso.
+CRITICAL FRAMING RULES — match the SOURCE crop exactly:
+- Output ONLY the portion of the body that is visible in the input.
+  If the source shows full body, output full body. If the source shows
+  half body / waist-up / head-and-shoulders, output the same.
+- Do NOT invent or extrapolate body parts that are not in the source —
+  no imagined feet, legs, or shoes if the source cuts off at the waist.
+- Within whatever IS in frame, do not crop further. Don't chop the
+  head, feet, or hands that ARE visible.
 - The person's silhouette must occupy the same vertical extent as in
-  the input; just remove the surrounding room/wall/floor/furniture.
+  the input; just remove the surrounding scene.
 
 PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
 - Face (every feature, identical).
@@ -693,7 +697,8 @@ REMOVE (do NOT include in the output):
   Render an empty hand naturally in the same position.
 - Other people, pets, vehicles, furniture, or background props.
 
-This is a faithful person-only cutout, not a redesign.`;
+This is a faithful person-only cutout — never hallucinate body parts
+or props that are not in the source photo.`;
 
     let croppedUrl = null;
     let croppedPath = null;
