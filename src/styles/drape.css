@@ -1773,16 +1773,22 @@ body.is-native {
   width: 100%;
   height: 100%;
   border: none;
-  padding: 0;
+  /* Padding gives every thumbnail uniform breathing room, including
+     source files where the person is cropped tight to the frame edge
+     (otherwise those fill the slot while padded sources look tiny). */
+  padding: 14px;
+  box-sizing: border-box;
   background: transparent;
   cursor: zoom-in;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .identity-ref-preview-btn img {
-  width: 100%;
-  height: 100%;
-  /* contain (not cover) so a tall full-body photo isn't cropped to
-     torso in the 3:4 slot. The slot background fills any letterbox. */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
   display: block;
 }
