@@ -287,14 +287,24 @@ a redesign.`;
     ]).catch(err => ({ __error: err }));
 
     // ── Auto-tag (parallel) ────────────────────────────────────────────
-    const visionModel = genai.getGenerativeModel({
-      model: VISION,
-      generationConfig: { responseMimeType: 'application/json' },
-    });
-    const tagPromise = visionModel.generateContent([
-      { inlineData: { data: originalB64, mimeType: mime } },
-      { text: tagPrompt() },
-    ]).catch(err => ({ __error: err }));
+    // CRITICAL: when this call came from the detect-add path (i.e. focus
+    // is set), the user already picked a specific item from a MULTI-item
+    // photo and the detect step gave us correct tags for that item. The
+    // source `originalPath` here is the WHOLE photo (sneakers + shorts +
+    // top etc.) — re-running tagPrompt on that returns whichever piece
+    // dominates the frame and OVERWRITES the user's intended tags. We
+    // skip the tag step entirely in that case and trust detect's tags.
+    let tagPromise = Promise.resolve(null);
+    if (!focus) {
+      const visionModel = genai.getGenerativeModel({
+        model: VISION,
+        generationConfig: { responseMimeType: 'application/json' },
+      });
+      tagPromise = visionModel.generateContent([
+        { inlineData: { data: originalB64, mimeType: mime } },
+        { text: tagPrompt() },
+      ]).catch(err => ({ __error: err }));
+    }
 
     const [cropRes, tagRes] = await Promise.all([cropPromise, tagPromise]);
 
@@ -325,7 +335,11 @@ a redesign.`;
     }
 
     const patch = {
-      status: croppedUrl || tags ? 'ready' : 'failed',
+      // Detect-add path (focus) already has authoritative tags + name +
+      // a usable original photo, so the item is 'ready' even if our
+      // best-effort crop fails. Single-item add still needs at least
+      // one of crop or tag to succeed.
+      status: (croppedUrl || tags || focus) ? 'ready' : 'failed',
       processedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
@@ -556,7 +570,9 @@ exports.processIdentityRef = onCall(
     // does the alpha. Asking for "transparent PNG" directly causes the
     // model to redraw the person and lose detail.
     const cropPrompt = `Extract the ENTIRE person from this photo and place
-them centered on a fully white background.
+them centered on a fully white background. The output is an identity
+reference — a clean canvas of the person, NOT a snapshot of them with
+their props.
 
 CRITICAL FRAMING RULES:
 - Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
@@ -573,9 +589,18 @@ PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
 - Skin tone.
 - Pose, height, body proportions.
 - Clothing they are currently wearing.
-- Any items they are holding.
+- Worn accessories that sit ON the body: hats, glasses, earrings,
+  necklaces, watches, rings, belts.
 
-This is a faithful photo cutout for identity reference, not a redesign.`;
+REMOVE (do NOT include in the output):
+- Anything the person is HOLDING or CARRYING — bags, totes, backpacks,
+  phones, bottles, umbrellas, drinks, cameras, shopping bags, leashes,
+  etc. If a hand is holding an object, render an empty hand naturally
+  in the same position. Do NOT invent a held object.
+- Other people, pets, vehicles, furniture, or background props.
+
+This is a faithful person-only cutout for identity reference, not a
+lifestyle photo.`;
 
     let croppedUrl = null;
     let croppedPath = null;

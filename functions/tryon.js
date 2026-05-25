@@ -127,67 +127,42 @@ place, at the same moment, just wearing the supplied garment(s) instead.
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
-Output a single photoreal image matching the first image's resolution
-and aspect.`;
+OUTPUT FORMAT — strict: a SINGLE photorealistic image at the same
+resolution and aspect as the first reference photo. Do NOT produce a
+grid, collage, contact sheet, side-by-side comparison, before/after
+split, or multiple variations. One image, one frame, one person.`;
   }
 
   // ── identity-refs: full strip-and-redress on a studio plate ──────
-  // The reference photos are the person's identity references (usually
-  // a full outfit they have on). For this mode we IGNORE what they were
-  // wearing on the ref and dress them in the supplied outfit. Any
-  // category the user didn't supply must be filled with neutral basics
-  // — never render the person nude or partially undressed.
-  const refClause = refCount > 1
-    ? `The FIRST reference image is the primary canvas — match its pose,
-camera angle, and framing. The other reference images are additional
-views of the SAME person for identity preservation only.`
-    : `The reference image is the canvas — match its pose, camera angle,
-and framing.`;
-
+  // The reference photos are the person's identity references. We ignore
+  // what they were wearing and dress them in the supplied outfit. The
+  // prompt is kept short and direct — earlier verbose if/then variants
+  // triggered Gemini to return a 6-tile contact sheet inside a single
+  // PNG.
   const bgClause = backgroundDesc
-    ? `Background: ${backgroundDesc}. Render photoreal and consistent
-with the lighting on the person.`
-    : `Background: flat pure white, like a fashion lookbook plate.
-No room, no floor, no props.`;
+    ? `Place them against this background: ${backgroundDesc}.`
+    : `Place them against a plain white fashion lookbook background.`;
 
-  return `Dress the person from the reference image(s) in the clothing
-shown in the remaining images: ${itemSummary}.
+  return `Dress the person from the reference photos in the supplied
+clothing (${itemSummary}). Remove whatever they were originally wearing
+and have them wear the supplied garments instead. Match the FIRST
+reference photo's pose and framing exactly.
 
-${refClause}
+Render fabric texture, drape, fold, and shadow naturally on the person's
+body. Keep the person's face, hair, skin, and body proportions IDENTICAL
+to the reference photos. Full-body shot, head to feet, do not crop.
 
-The remaining images are the new garments, each isolated on a white
-background. Treat them as the complete outfit. The reference person was
-photographed wearing other clothing — REMOVE that clothing entirely and
-dress them in the supplied garments instead. Nothing the reference person
-was originally wearing should remain visible.
-
-FILL MISSING CATEGORIES WITH NEUTRAL BASICS (this is required — never
-output a nude or partially-undressed person):
-- If no top is supplied, add a plain neutral t-shirt or sweater that
-  matches the supplied pieces tonally.
-- If no bottom is supplied, add neutral straight-leg trousers in a
-  matching neutral tone (off-white, beige, charcoal, or black).
-- If no footwear is supplied, add simple low-profile shoes in a neutral
-  tone (white sneakers or black low-profile leather shoes).
-- These fill pieces should be visually quiet — the supplied items are
-  the focus.
-
-Transfer the supplied clothing design, fit, fabric texture, colors,
-folds, wrinkles, shadows, and material details onto the person
-naturally. Maintain realistic fabric draping, body tension, perspective,
-lighting, and folds based on the person's pose and body shape.
-
-Identity preservation is absolute: face IDENTICAL, hair / skin / body
-proportions / pose unchanged. Only the clothing (and the background,
-per the next line) should differ from the reference. Do not crop, zoom,
-or cut off the head — full-body framing.
+If a category isn't supplied (e.g. no bottom given), fill with quiet,
+neutral basics in matching tones so the person is fully dressed.
 
 ${bgClause}
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
-Output a single photorealistic full-body image — naturally worn, not
-pasted on, indistinguishable from a real photo.`;
+OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person in
+ONE outfit. Do NOT produce a grid, collage, contact sheet, side-by-side
+comparison, before/after split, or multiple poses. One image, one frame,
+one person, no panels.`;
 }
 
 exports.virtualTryOn = onCall(

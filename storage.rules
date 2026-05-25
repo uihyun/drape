@@ -2,6 +2,13 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
+    // Storage rules quirk: `allow write` covers create + update + delete.
+    // On DELETE, request.resource is NULL (no incoming bytes). If a rule
+    // requires request.resource.size / contentType for write, deletes
+    // 403. Every owner-writable path below uses the same pattern:
+    //   request.resource == null  OR  (size && contentType valid)
+    // so deletes pass while uploads still get validated.
+
     // ── items/{uid}/{itemId}/(original|cropped).<ext> ──────────────────
     // Closet item images. Owner upload + read. Reads are owner-only since
     // items themselves are private (only outfit cover images get public).
@@ -9,8 +16,10 @@ service firebase.storage {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 12 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 12 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
 
     // ── identity/{uid}/{n}.jpg ─────────────────────────────────────────
@@ -19,8 +28,10 @@ service firebase.storage {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 12 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 12 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
 
     // ── tryon-input/{uid}/{tempId}.jpg ─────────────────────────────────
@@ -32,16 +43,20 @@ service firebase.storage {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 12 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 12 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
 
     // ── generations/{uid}/{generationId}/{idx}.png ─────────────────────
     // Virtual try-on results. Server writes the variants via the
-    // virtualTryOn callable; client can still read.
+    // virtualTryOn callable; client can delete its own results.
     match /generations/{userId}/{generationId}/{filename} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if false; // server-only
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource == null; // delete only — uploads are server-only
     }
 
     // ── analyzed/{uid}/<id>.jpg ───────────────────────────────────────
@@ -52,8 +67,10 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 12 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 12 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
 
     // ── ootds/{uid}/<YYYY-MM-DD>.jpg ───────────────────────────────────
@@ -76,8 +93,10 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 12 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 12 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
 
     // ── users/{uid}/profile/<filename> ─────────────────────────────────
@@ -86,8 +105,10 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+          request.resource.size < 5 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
     }
   }
 }

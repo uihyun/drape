@@ -102,6 +102,35 @@ async function removeRef(idx) {
   return next;
 }
 
+/** Reorder identity refs by index permutation. The first item in the
+ *  resulting array becomes the primary (used as the canvas in
+ *  identity-refs try-on). Server doesn't care about the order — it
+ *  just walks the array — so this is a client-only patch. */
+async function reorderRefs(newOrderIndices) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  const userRef = doc(db, 'users', user.uid);
+  const snap = await getDoc(userRef);
+  const existing = (snap.exists() && snap.data().identityRefs) || [];
+  if (!Array.isArray(newOrderIndices) || newOrderIndices.length !== existing.length) {
+    return existing;
+  }
+  const seen = new Set();
+  const next = [];
+  for (const i of newOrderIndices) {
+    if (typeof i !== 'number' || i < 0 || i >= existing.length || seen.has(i)) {
+      return existing; // reject any malformed permutation
+    }
+    seen.add(i);
+    next.push(existing[i]);
+  }
+  await updateDoc(userRef, {
+    identityRefs: next,
+    identityRefUpdatedAt: serverTimestamp(),
+  });
+  return next;
+}
+
 async function getMyRefs() {
   const user = auth.currentUser;
   if (!user) return [];
@@ -113,6 +142,7 @@ export const IdentityService = {
   addRef,
   removeRef,
   reprocessRef,
+  reorderRefs,
   getMyRefs,
   MIN_IDENTITY_REFS,
   MAX_IDENTITY_REFS,

@@ -283,6 +283,8 @@ export const en = {
   identityRefsTitle: 'Identity reference photos',
   identityRefsHint: 'Add up to {max} full-body photos for virtual try-on. Backgrounds are removed automatically.',
   identityRefsPrimary: 'The first photo sets the pose and framing for try-on results. Others help preserve your face and body from different angles.',
+  identityRefsPrimaryDragHint: 'The first photo is the primary — it sets the pose and framing. Tap the star on any other photo to make it primary, or drag to reorder.',
+  setAsPrimary: 'Set as primary',
   identityRefsPrimaryBadge: 'Primary',
   identityRefsReprocess: 'Re-cut background',
   addRef: 'Add photo',

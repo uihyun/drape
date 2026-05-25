@@ -313,3 +313,68 @@ Follow-on to the Lekondo cycle: live testing surfaced two blockers (everything s
 ### Routing
 - **`/u/:handle/:tab` alias** — handle-prefixed share URLs reserved for future public surfaces (boards, calendar). My-profile stays at `/profile/<tab>` per the explicit decision not to redirect (owner vs viewer have different perms and tabs).
 
+
+---
+
+## Cycle: 2026-05-25 — try-on root-cause sweep
+
+Three real bugs surfaced during try-on testing and got tracked to their
+actual roots after several wrong guesses. Notes here so we don't repeat
+the mis-diagnoses next time.
+
+### Bug 1 — "try-on result shows 6 identical tiles"
+- Initial wrong theory: variantUrls had 6 entries (multiple runs / N
+  default leaked / extractImage saving multiple images).
+- Actual cause: variantUrls had ONE entry. Gemini Image returned a
+  SINGLE PNG that contained a 6-up contact-sheet of the same
+  composition. The if/then list structure in the identity-refs prompt
+  ("If no top supplied, add ...; If no bottom supplied, add ...") read
+  to the model as "show me options" and it laid them out as a grid.
+- Fix: shortened the identity-refs prompt, dropped the listed
+  if/then fallbacks (one neutral-fill sentence instead), and added
+  an explicit OUTPUT FORMAT clause forbidding grid / collage /
+  contact-sheet / side-by-side / before-after / multi-pose. Same
+  guard added to the custom-photo prompt as a precaution.
+
+### Bug 2 — "sneakers from a detect-add show up as 'Navy Athletic Shorts / Patagonia / bottom'"
+- Initial wrong theory: detectItems prompt was returning bad
+  categories; or sneakers were genuinely getting mis-classified.
+- Actual cause: createFromDetected was writing correct tags from the
+  detect step, then processItem ran tagPrompt on the FULL multi-item
+  source photo (because that's the item's originalPath) and clobbered
+  tags with whichever piece dominated the frame. The user picked
+  sneakers, the source photo also had shorts and a top, Gemini Vision
+  re-tagged the dominant garment.
+- Fix: processItem now SKIPS the tag step when `focus` is provided
+  (= detect-add path) and trusts the detect tags. status='ready'
+  when focus is set even if crop fails, since the original photo +
+  detect tags are already a usable item.
+
+### Bug 3 — "custom-photo try-on swaps regions you didn't pick"
+- Earlier rewrites (b5e1ebd) added a region-by-region itemized prompt
+  intending to be more assertive, but ended up over-prescribing — the
+  jacket got removed and trousers became shorts when the user only
+  picked a top + footwear.
+- Fix: restored the custom-photo prompt verbatim from commit 1bbfdbb
+  ("REPLACE only the specific clothing region(s) that the supplied
+  garments cover" + ABSOLUTE PRESERVATION RULES). identity-refs mode
+  stays on the latest strip-and-redress shape with the neutral-fill
+  sentence + anti-grid guard.
+
+### Identity refs — held-item rule flip
+- Old cropPrompt explicitly preserved "any items they are holding".
+  Result: a bag in the ref photo showed up in every single try-on.
+- New cropPrompt removes held / carried items (bags, phones, bottles,
+  umbrellas, drinks, cameras, leashes), renders an empty hand in the
+  same position, and explicitly KEEPS worn accessories (hats, glasses,
+  earrings, necklaces, watches, belts). Reference = canvas of the
+  person; props belong in the closet as separate items the user picks
+  for a specific try-on.
+- Existing refs were processed under the old prompt — user can delete
+  & re-upload the ones with held items to pick up the new behavior.
+
+### extractImage fix (kept)
+- Gemini Image echoes input photos back in `candidates[0].content.parts`
+  and appends the actual generation at the end. Returning the FIRST
+  inline image saved an input echo. Now walks every part and keeps
+  the LAST. Same fix in functions/items.js for the item crop pipeline.
