@@ -74,9 +74,14 @@ service firebase.storage {
     }
 
     // ── ootds/{uid}/<YYYY-MM-DD>.jpg ───────────────────────────────────
-    // Per-day OOTD selfies. Private to owner.
+    // Per-day OOTD selfies. Public read so the photo loads on the
+    // Discover feed (OOTDs published via isPublic=true are shared there);
+    // owner-only write. Combining read+write into one rule with a
+    // request.resource check broke download-URL reads — split for
+    // clarity (matches every other path's pattern).
     match /ootds/{userId}/{filename} {
-      allow read, write: if request.auth != null
+      allow read: if true;
+      allow write: if request.auth != null
         && request.auth.uid == userId
         && (request.resource == null || (
           request.resource.size < 8 * 1024 * 1024
