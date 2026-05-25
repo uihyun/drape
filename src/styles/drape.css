@@ -1778,7 +1778,14 @@ body.is-native {
   cursor: zoom-in;
   display: block;
 }
-.identity-ref-preview-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.identity-ref-preview-btn img {
+  width: 100%;
+  height: 100%;
+  /* contain (not cover) so a tall full-body photo isn't cropped to
+     torso in the 3:4 slot. The slot background fills any letterbox. */
+  object-fit: contain;
+  display: block;
+}
 
 /* Generic full-screen lightbox: tap the image to enlarge, tap anywhere
    off it to dismiss. Used by identity refs; can be reused elsewhere. */
