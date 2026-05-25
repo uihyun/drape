@@ -2348,10 +2348,9 @@ textarea,
     align-items: center;
   }
 
-  .btn {
-    width: 100%;
-    max-width: 300px;
-  }
+  /* (removed) legacy .btn { width: 100%; max-width: 300px } from voda
+     was clamping every .btn to 300px on phone viewports. Buttons that
+     want full-width opt in via their own modifier class. */
 
   .color-palette {
     justify-content: flex-start;

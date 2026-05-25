@@ -66,7 +66,8 @@ export function BoardList({ user, onSignIn, embedded = false }) {
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
               <BoardThumb board={b} itemsById={itemsById} />
               <div className="board-card-meta">
-                <span>{b.name || t('untitledBoard')}</span>
+                <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
+                <span className="card-meta-date">{formatCardDate(b.createdAt || b.updatedAt)}</span>
               </div>
             </Link>
           ))}
@@ -74,6 +75,11 @@ export function BoardList({ user, onSignIn, embedded = false }) {
       )}
     </div>
   );
+}
+
+function formatCardDate(ts) {
+  const d = ts?.toDate?.() || (ts instanceof Date ? ts : null);
+  return d ? d.toLocaleDateString() : '';
 }
 
 // Mini-canvas thumbnail: replays the stickers at their stored 0..1

@@ -6,6 +6,11 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+function formatCardDate(ts) {
+  const d = ts?.toDate?.() || (ts instanceof Date ? ts : null);
+  return d ? d.toLocaleDateString() : '';
+}
+
 export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
@@ -79,7 +84,8 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
             <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
               <OutfitCover outfit={o} itemsById={itemsById} t={t} />
               <div className="outfit-card-meta">
-                <span>{o.name || t('untitledOutfit')}</span>
+                <span className="card-meta-name">{o.name || t('untitledOutfit')}</span>
+                <span className="card-meta-date">{formatCardDate(o.createdAt || o.updatedAt)}</span>
               </div>
             </Link>
           ))}
