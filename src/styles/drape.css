@@ -2609,7 +2609,6 @@ body.is-native {
   background: var(--surface);
   position: relative;
   overflow: hidden;
-  box-shadow: inset -1px -1px 0 0 var(--border);
   /* Now a real <button> so the cell can open the OOTD sheet. Reset the
      default button chrome. */
   border: none;
@@ -2618,10 +2617,23 @@ body.is-native {
   font-family: inherit;
   text-align: left;
 }
+/* Cell border drawn by a pseudo-element so it sits on top of the
+   thumbnail img (otherwise an inset box-shadow on .calendar-cell gets
+   covered by the img element painting its background over the edge). */
+.calendar-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset -1px -1px 0 0 var(--border);
+}
 .calendar-cell:hover { background: var(--surface-elevated); }
 .calendar-cell:disabled { cursor: default; }
-.calendar-cell.empty { background: transparent; box-shadow: inset -1px -1px 0 0 var(--border); }
-.calendar-cell.today { box-shadow: inset 0 0 0 1.5px var(--text-primary); }
+.calendar-cell.empty { background: transparent; }
+.calendar-cell.today::after {
+  /* Today gets a 1.5px frame on all four sides, drawn over the photo. */
+  box-shadow: inset 0 0 0 1.5px var(--text-primary);
+}
 .calendar-day-num {
   position: absolute;
   top: 4px;
