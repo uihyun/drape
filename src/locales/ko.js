@@ -201,6 +201,9 @@ export const ko = {
   tagSeasons: '계절',
   tagStyles: '스타일',
   tagFit: '핏',
+  tagBrand: '브랜드',
+  tagBrandPlaceholder: '예: 미우미우, 아크네, 스투시',
+  tagBrandNone: '브랜드 없음',
   notFound: '찾을 수 없습니다.',
 
   // ── Outfits ────────────────────────────────────────────────────────

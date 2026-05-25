@@ -299,6 +299,22 @@ function TagsBlock({ tags, editing, onChange, t }) {
           </Chip>
         ))}
       </Row>
+      <Row label={t('tagBrand')}>
+        {editing ? (
+          <input
+            type="text"
+            className="tag-brand-input"
+            value={tags?.brand || ''}
+            onChange={e => set('brand', e.target.value.slice(0, 60))}
+            placeholder={t('tagBrandPlaceholder')}
+            maxLength={60}
+          />
+        ) : (
+          <span className="tag-brand-display">
+            {tags?.brand || <em className="muted">{t('tagBrandNone')}</em>}
+          </span>
+        )}
+      </Row>
     </div>
   );
 }

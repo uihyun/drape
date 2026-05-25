@@ -1672,6 +1672,26 @@ body.is-native {
 .chips {
   display: flex; gap: 0.35rem; flex-wrap: wrap; flex: 1;
 }
+
+.tag-brand-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+.tag-brand-input:focus { border-color: var(--border-hover); }
+.tag-brand-display {
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.tag-brand-display .muted { color: var(--text-muted); font-style: italic; }
 .rename-input {
   width: 100%;
   border: 1px solid var(--border);

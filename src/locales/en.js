@@ -201,6 +201,9 @@ export const en = {
   tagSeasons: 'Seasons',
   tagStyles: 'Styles',
   tagFit: 'Fit',
+  tagBrand: 'Brand',
+  tagBrandPlaceholder: 'e.g. Miu Miu, Acne Studios, Stüssy',
+  tagBrandNone: 'No brand',
   notFound: 'Not found.',
 
   // ── Outfits ────────────────────────────────────────────────────────
