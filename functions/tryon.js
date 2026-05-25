@@ -47,13 +47,47 @@ function extractImage(response) {
   return null;
 }
 
-function tryOnPrompt(items, customPrompt, backgroundDesc, refCount) {
+function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
   const itemSummary = items.map((it, i) => {
     const t = it.tags || {};
     const parts = [t.subcategory || t.category || 'garment'];
     if (t.colors?.length) parts.push(`(${t.colors.join('/')})`);
     return `(${i + 1}) ${parts.join(' ')}`;
   }).join(', ');
+
+  // mode === 'custom-photo': the user uploaded a fresh, in-the-wild photo
+  // for this single try-on. Preserve EVERYTHING about it (pose, background,
+  // lighting, identity) and only swap the clothing region.
+  if (mode === 'custom-photo') {
+    return `You are dressing the person from the FIRST reference image in
+the following clothing item(s): ${itemSummary}.
+
+The images AFTER the first one are the garments isolated on white
+backgrounds. Composite ONLY those garments onto the person's body,
+replacing whatever they're currently wearing in that region.
+
+ABSOLUTE PRESERVATION RULES — the first image is the source of truth:
+- KEEP the original background EXACTLY (do NOT remove, regenerate, blur,
+  brighten, or restyle it). Same room, same wall, same floor, same props.
+- KEEP the person's face IDENTICAL (every feature, expression, gaze).
+- KEEP the person's hair, skin tone, body proportions, height, and pose.
+- KEEP the original camera angle, framing, lens distortion, and crop.
+- KEEP the original lighting direction, color temperature, and shadows on
+  the person and background.
+- KEEP any objects the person is holding, jewelry, glasses, hats,
+  tattoos, and visible accessories that ARE NOT being replaced.
+
+REPLACE only the specific clothing region(s) that the supplied garments
+cover. Render fabric drape, fold, wrinkle, and shadow naturally and
+consistently with the existing lighting and pose. The output should be
+indistinguishable from a real photo of the same person, in the same
+place, at the same moment, just wearing the supplied garment(s) instead.
+
+${customPrompt ? `Additional direction: ${customPrompt}` : ''}
+
+Output a single photoreal image matching the first image's resolution
+and aspect.`;
+  }
 
   const refClause = refCount > 1
     ? `The FIRST reference image is the primary canvas — match its pose,
@@ -108,6 +142,10 @@ exports.virtualTryOn = onCall(
       backgroundDesc = '',
       variants = null,
       regenerateOf = null,
+      // One-shot custom photo: when set, used as the FIRST (and only)
+      // reference image instead of the user's saved identityRefs. The
+      // prompt switches to preserve-everything-except-clothing mode.
+      customPhotoPath = null,
     } = request.data || {};
     if (!Array.isArray(itemIds) || itemIds.length === 0) {
       throw new HttpsError('invalid-argument', 'itemIds required');
@@ -122,14 +160,32 @@ exports.virtualTryOn = onCall(
     const db = admin.firestore();
     const bucket = admin.storage().bucket();
 
-    // ── Load identity refs ─────────────────────────────────────────────
-    const userSnap = await db.collection('users').doc(uid).get();
-    const identityRefs = (userSnap.exists && userSnap.data().identityRefs) || [];
-    if (identityRefs.length === 0) {
-      throw new HttpsError(
-        'failed-precondition',
-        'no identity reference photos — add 2-3 full-body photos in Settings first'
-      );
+    // ── Load reference image(s) ────────────────────────────────────────
+    // Two modes: custom one-shot photo OR saved identityRefs.
+    let referenceParts = [];
+    let referenceCount = 0;
+    if (customPhotoPath) {
+      // Path safety: the custom photo MUST live under the user's own
+      // tryon-input/ prefix. Refuse anything else so a request can't
+      // exfiltrate someone else's image into a prompt.
+      if (!customPhotoPath.startsWith(`tryon-input/${uid}/`)) {
+        throw new HttpsError('permission-denied', 'bad customPhotoPath');
+      }
+      referenceParts = [await downloadAsInlineData(bucket, customPhotoPath)];
+      referenceCount = 1;
+    } else {
+      const userSnap = await db.collection('users').doc(uid).get();
+      const identityRefs = (userSnap.exists && userSnap.data().identityRefs) || [];
+      if (identityRefs.length === 0) {
+        throw new HttpsError(
+          'failed-precondition',
+          'no identity reference photos — add 2-3 full-body photos in Settings first'
+        );
+      }
+      for (const ref of identityRefs) {
+        referenceParts.push(await downloadAsInlineData(bucket, ref.path));
+      }
+      referenceCount = identityRefs.length;
     }
 
     // ── Load items + verify ownership ──────────────────────────────────
@@ -148,16 +204,14 @@ exports.virtualTryOn = onCall(
     }
 
     // ── Build prompt parts ─────────────────────────────────────────────
-    // Identity refs first, then each item crop. The prompt references "the
+    // Reference(s) first, then each item crop. The prompt references "the
     // first reference image(s)" so the model knows which is the canvas.
-    const parts = [];
-    for (const ref of identityRefs) {
-      parts.push(await downloadAsInlineData(bucket, ref.path));
-    }
+    const parts = [...referenceParts];
     for (const it of items) {
       parts.push(await downloadAsInlineData(bucket, it.croppedPath));
     }
-    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, identityRefs.length) });
+    const promptMode = customPhotoPath ? 'custom-photo' : 'identity-refs';
+    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) });
 
     const modelId = modelTier === 'flash' ? IMAGE_FLASH : IMAGE_PRO;
     // Default one variant — multi-variant grid felt cluttered and most
@@ -170,7 +224,8 @@ exports.virtualTryOn = onCall(
     await genRef.set({
       userId: uid,
       itemIds,
-      identityRefCount: identityRefs.length,
+      identityRefCount: referenceCount,
+      customPhotoPath: customPhotoPath || null,
       modelTier,
       modelId,
       prompt: prompt || null,

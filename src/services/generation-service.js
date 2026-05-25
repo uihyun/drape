@@ -27,7 +27,8 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions, auth } from '../firebase.js';
+import { ref as storageRef, uploadBytes } from 'firebase/storage';
+import { db, functions, auth, storage } from '../firebase.js';
 
 const GENERATIONS = 'generations';
 
@@ -35,13 +36,38 @@ const GENERATIONS = 'generations';
  * Kick off a virtual try-on. The Cloud Function does the heavy lifting +
  * writes the Generation doc; this returns the id so the UI can subscribe.
  */
-async function startTryOn({ itemIds, modelTier = 'pro', prompt = '', backgroundDesc = '', regenerateOf = null }) {
+async function startTryOn({
+  itemIds,
+  modelTier = 'pro',
+  prompt = '',
+  backgroundDesc = '',
+  regenerateOf = null,
+  // Optional one-shot custom photo (Blob) — uploaded to
+  // tryon-input/<uid>/<id>.jpg and passed to the function. When set, the
+  // user's saved identityRefs are bypassed for this single call.
+  customPhotoBlob = null,
+}) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!Array.isArray(itemIds) || itemIds.length === 0) throw new Error('no_items');
 
+  let customPhotoPath = null;
+  if (customPhotoBlob) {
+    const id = `ci_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    customPhotoPath = `tryon-input/${user.uid}/${id}.jpg`;
+    const r = storageRef(storage, customPhotoPath);
+    await uploadBytes(r, customPhotoBlob, { contentType: 'image/jpeg' });
+  }
+
   const callable = httpsCallable(functions, 'virtualTryOn');
-  const res = await callable({ itemIds, modelTier, prompt, backgroundDesc, regenerateOf });
+  const res = await callable({
+    itemIds,
+    modelTier,
+    prompt,
+    backgroundDesc,
+    regenerateOf,
+    customPhotoPath,
+  });
   return res.data; // { generationId }
 }
 

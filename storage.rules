@@ -23,6 +23,19 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // ── tryon-input/{uid}/{tempId}.jpg ─────────────────────────────────
+    // One-shot custom photo a user uploads for a single try-on (instead of
+    // their permanent identity refs). Owner-only read/write. Cleaned up
+    // by a TTL job later — for now the user can delete via /admin if they
+    // really care. 12 MB cap so we don't accept multi-MB raws.
+    match /tryon-input/{userId}/{filename} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 12 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // ── generations/{uid}/{generationId}/{idx}.png ─────────────────────
     // Virtual try-on results. Server writes the variants via the
     // virtualTryOn callable; client can still read.
