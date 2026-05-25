@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Plus, X, Shirt, Sparkles, Layers, Grid3x3, ScanEye } from 'lucide-react';
+import { Home, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Some Google profile photos throw CORS / 403 in third-party contexts.
@@ -91,9 +91,9 @@ export function MobileTabBar({ user }) {
               <span className="create-sheet-icon"><Shirt size={20} strokeWidth={1.5} /></span>
               <span className="create-sheet-label">{t('createAddItem')}</span>
             </button>
-            <button type="button" className="create-sheet-row" onClick={go('/outfits/new')}>
-              <span className="create-sheet-icon"><Layers size={20} strokeWidth={1.5} /></span>
-              <span className="create-sheet-label">{t('createNewOutfit')}</span>
+            <button type="button" className="create-sheet-row" onClick={go('/profile/calendar?ootd=today')}>
+              <span className="create-sheet-icon"><CalendarIcon size={20} strokeWidth={1.5} /></span>
+              <span className="create-sheet-label">{t('createLogOotd')}</span>
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/boards/new')}>
               <span className="create-sheet-icon"><Grid3x3 size={20} strokeWidth={1.5} /></span>

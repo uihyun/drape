@@ -149,6 +149,7 @@ export const ja = {
   createSheetTitle: '何を追加しますか?',
   createAddItem: 'アイテムを追加',
   createNewOutfit: '新しいコーデ',
+  createLogOotd: '今日の OOTD を記録',
   createTryOn: 'バーチャル試着',
   langLabel: '言語',
   credits: 'クレジット',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
@@ -20,6 +21,22 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [byDate, setByDate] = useState({});
   const [sheetDate, setSheetDate] = useState(null); // 'YYYY-MM-DD' or null
+  const [search, setSearch] = useSearchParams();
+
+  // Deep-link entry: /profile/calendar?ootd=today (or ?ootd=YYYY-MM-DD)
+  // opens the OOTD sheet for that date on mount. Used by the create
+  // sheet's "Log OOTD" so the user doesn't have to first navigate to
+  // calendar and then tap today's cell. We strip the param after read
+  // so a back-navigation doesn't reopen it.
+  useEffect(() => {
+    const o = search.get('ootd');
+    if (!o) return;
+    const date = o === 'today' ? ymd(new Date()) : o;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) setSheetDate(date);
+    const next = new URLSearchParams(search);
+    next.delete('ootd');
+    setSearch(next, { replace: true });
+  }, []);
 
   const year = cursor.getFullYear();
   const month0 = cursor.getMonth();

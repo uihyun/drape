@@ -147,6 +147,7 @@ export const ko = {
   createSheetTitle: '무엇을 추가할까요?',
   createAddItem: '옷 추가하기',
   createNewOutfit: '새 코디',
+  createLogOotd: '오늘의 OOTD 기록',
   createTryOn: '가상 피팅',
   langLabel: '언어',
   credits: '크레딧',

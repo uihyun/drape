@@ -147,6 +147,7 @@ export const en = {
   createSheetTitle: 'Add something',
   createAddItem: 'Add item to closet',
   createNewOutfit: 'New outfit',
+  createLogOotd: 'Log today\'s OOTD',
   createTryOn: 'Virtual try-on',
   langLabel: 'Language',
   credits: 'Credits',
