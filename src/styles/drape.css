@@ -369,6 +369,28 @@ body.is-native {
 }
 .board-card-cover img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
 .board-card-cover-empty { font-size: 2rem; color: var(--border-hover); }
+
+/* Mini sticker-canvas replay inside a board card. Sticker positions
+   are stored in 0..1 space and re-applied here so the card matches
+   what the editor canvas shows. */
+.board-card-canvas { position: relative; overflow: hidden; }
+.board-card-sticker {
+  position: absolute;
+  /* Match the editor's .board-sticker base width so positions and
+     sizes look identical to what the user arranged. */
+  width: 60%;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.1));
+  pointer-events: none;
+}
+.board-card-sticker img {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  display: block;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 .board-card-meta {
   padding: 0.6rem 0.75rem;
   font-size: 0.9rem;
