@@ -66,7 +66,17 @@ async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, t
  * are in their own closet. Lives in the same `outfits` collection under
  * kind='analyzed'; surfaced in the "Saved" sub-tab.
  */
-async function createAnalyzedOutfit({ photoBlob, style = '', notes = '', detectedItems = [], itemIds = [] }) {
+async function createAnalyzedOutfit({
+  photoBlob,
+  style = '',
+  mood = '',
+  notes = '',
+  stylingTips = [],
+  palette = [],
+  composition = [],
+  detectedItems = [],
+  itemIds = [],
+}) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   let photoUrl = null;
@@ -85,7 +95,11 @@ async function createAnalyzedOutfit({ photoBlob, style = '', notes = '', detecte
     itemIds, // any pieces user already pulled into their closet
     detectedItems, // raw detect output for the rest
     name: style || '',
+    mood,
     notes,
+    stylingTips,
+    palette,
+    composition,
     sourcePhotoUrl: photoUrl,
     sourcePhotoPath: photoPath,
     coverUrl: photoUrl, // the source photo doubles as the card cover

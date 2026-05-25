@@ -113,7 +113,8 @@ service cloud.firestore {
             .hasOnly(['name', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
                       'isPublic', 'isListed', 'listedAt', 'updatedAt',
                       'likeCount', 'likedBy',
-                      'kind', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath'])
+                      'kind', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath',
+                      'mood', 'stylingTips', 'palette', 'composition'])
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['notes'])
             || !('notes' in request.resource.data)
             || request.resource.data.notes == null

@@ -220,6 +220,8 @@ export const en = {
   notesPlaceholder: 'Notes on this outfit…',
   aestheticComposition: 'Aesthetic composition',
   aestheticCompositionSub: '(subjective, contextual)',
+  palette: 'Color palette',
+  stylingTips: 'Styling notes',
   notesOnComposition: 'Notes on composition',
   itemsInOutfit: 'Items in this outfit',
   itemsShort: 'items',

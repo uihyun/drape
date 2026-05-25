@@ -136,7 +136,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
       const { id } = await OutfitService.createAnalyzedOutfit({
         photoBlob: batch.blob,
         style: batch.style || '',
+        mood: batch.mood || '',
         notes: batch.notes || '',
+        stylingTips: batch.stylingTips || [],
+        palette: batch.palette || [],
+        composition: batch.composition || [],
         detectedItems: batch.items || [],
         itemIds: [],
       });
@@ -266,10 +270,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
                 {/* Style summary card sits right under the hero so the
                     style + notes read like an editorial caption. */}
-                {b.style && (
+                {(b.style || b.notes) && (
                   <div className="analyze-style-card">
                     <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
-                    <h2 className="analyze-style-name">{b.style}</h2>
+                    {b.style && <h2 className="analyze-style-name">{b.style}</h2>}
+                    {b.mood && <p className="analyze-mood">{b.mood}</p>}
                     {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
                     <button
                       type="button"
@@ -282,6 +287,58 @@ export function AnalyzePhoto({ user, onSignIn }) {
                         : <><Bookmark size={14} strokeWidth={1.8} /> {t('saveAnalysis')}</>}
                     </button>
                   </div>
+                )}
+
+                {/* Palette — dominant color swatches with % share. */}
+                {Array.isArray(b.palette) && b.palette.length > 0 && (
+                  <section className="analyze-palette">
+                    <h3 className="analyze-section-head">{t('palette')}</h3>
+                    <div className="analyze-palette-row">
+                      {b.palette.map((c, i) => (
+                        <div key={i} className="palette-card" style={{ background: c.hex }}>
+                          <span className="palette-pct">{Math.round(c.percent || 0)}%</span>
+                          <div className="palette-meta">
+                            <div className="palette-name">{c.name || ''}</div>
+                            <div className="palette-hex">{c.hex}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Composition — 4 style axes with 0-5 level bars. */}
+                {Array.isArray(b.composition) && b.composition.length > 0 && (
+                  <section className="analyze-composition">
+                    <h3 className="analyze-section-head">{t('aestheticComposition')}</h3>
+                    <ul className="analyze-composition-list">
+                      {b.composition.map((c, i) => {
+                        const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
+                        return (
+                          <li key={i} className="composition-row">
+                            <span className="composition-label">
+                              {t(`taxonomy.styles.${c.label}`) || c.label}
+                            </span>
+                            <div className="composition-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0}>
+                              <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                )}
+
+                {/* Styling tips — short actionable suggestions. */}
+                {Array.isArray(b.stylingTips) && b.stylingTips.length > 0 && (
+                  <section className="analyze-tips">
+                    <h3 className="analyze-section-head">{t('stylingTips')}</h3>
+                    <ul className="analyze-tips-list">
+                      {b.stylingTips.map((tip, i) => (
+                        <li key={i} className="analyze-tip">{tip}</li>
+                      ))}
+                    </ul>
+                  </section>
                 )}
 
                 {b.items.length === 0 ? (

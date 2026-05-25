@@ -220,6 +220,8 @@ export const ko = {
   notesPlaceholder: '이 코디에 대한 메모…',
   aestheticComposition: '미학 구성',
   aestheticCompositionSub: '(주관적, 맥락적)',
+  palette: '컬러 팔레트',
+  stylingTips: '스타일링 노트',
   notesOnComposition: '구성 노트',
   itemsInOutfit: '이 코디의 아이템',
   itemsShort: '개',

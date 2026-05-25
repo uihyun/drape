@@ -823,6 +823,75 @@ body.is-native {
 .analyze-result-v2 .analyze-footer {
   padding: 0 1rem;
 }
+
+/* Editorial sections under the style card — palette, composition, tips. */
+.analyze-mood {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+}
+.analyze-section-head {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: 0 0 0.7rem;
+}
+.analyze-palette,
+.analyze-composition,
+.analyze-tips {
+  padding: 1rem 1rem 0;
+}
+.analyze-palette + .analyze-composition,
+.analyze-composition + .analyze-tips,
+.analyze-palette + .analyze-tips {
+  margin-top: 0.25rem;
+}
+.analyze-palette-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  gap: 0.6rem;
+}
+.analyze-composition-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.analyze-tips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.analyze-tip {
+  position: relative;
+  padding: 0.6rem 0.85rem 0.6rem 1.6rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+.analyze-tip::before {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  top: 0.95rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
 .analyze-style-sm {
   display: flex;
   align-items: center;

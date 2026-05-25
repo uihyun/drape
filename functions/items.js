@@ -346,13 +346,26 @@ a redesign.`;
 // bad crops. The source photo is reused as a thumbnail when a detected
 // piece is added to the closet.
 function detectPrompt() {
-  return `You are a fashion analyst looking at one photograph that may contain
+  return `You are a fashion editor reading one photograph that may contain
 one or more clothing pieces (on a person, hanger, or laid out). Return
 ONLY valid JSON with this exact schema:
 
 {
-  "style": "short 5-8 word style label (e.g. 'amekaji streetwear', 'minimal monochrome', 'y2k retro')",
-  "notes": "one sentence describing the overall look",
+  "style":  "short 5-8 word style label (e.g. 'amekaji streetwear', 'minimal monochrome', 'y2k retro')",
+  "mood":   "1-3 word vibe descriptor (e.g. 'relaxed weekend', 'sharp & polished', 'experimental layering')",
+  "notes":  "2-4 sentence editorial reading of the look — what anchors it, how the pieces interact, the silhouette and proportions, what makes it feel cohesive (or deliberately not). Specific and observational, not generic.",
+  "stylingTips": [
+    "3 short actionable tips a viewer could use to recreate or reinterpret this look — e.g. 'swap the loafers for runner sneakers to soften the formality', 'try a longer overshirt to extend the line'. One tip per array entry, each 6-14 words"
+  ],
+  "palette": [
+    { "hex": "#RRGGBB", "name": "lowercase color name", "percent": integer 0-100 },
+    ... up to 3 entries, sorted by dominance, percents sum to ~100
+  ],
+  "composition": [
+    { "label": one of [${TAXONOMY.STYLES.join(', ')}], "level": integer 0-5 },
+    ... exactly 4 entries, the 4 most relevant style axes from the enum,
+    level reflects how strongly the look reads as that style
+  ],
   "items": [
     {
       "name":        short 2-4 word title (e.g. "Cream linen trousers", "Black wool cardigan", "Navy bomber jacket"). Color + material/garment, title case, no brand,
@@ -367,8 +380,11 @@ ONLY valid JSON with this exact schema:
 }
 
 Rules: only describe garments and accessories that are clearly visible.
-Skip skin, body parts, and background. Max 8 items. Use null for any
-field you can't determine.`;
+Skip skin, body parts, and identifying features of the wearer. Max 8
+items. Palette percents should sum close to 100. Composition must use
+exactly 4 entries from the enum. Use null/[] for any field you can't
+determine. Avoid generic phrasing like 'effortlessly cool' or 'timeless
+classic'.`;
 }
 
 function sanitizeDetectItem(raw) {
@@ -603,10 +619,20 @@ exports.detectItems = onCall(
       const items = Array.isArray(parsed.items)
         ? parsed.items.map(sanitizeDetectItem).filter(Boolean).slice(0, 8)
         : [];
+      const stylingTips = Array.isArray(parsed.stylingTips)
+        ? parsed.stylingTips
+            .filter(s => typeof s === 'string' && s.trim())
+            .slice(0, 3)
+            .map(s => s.slice(0, 160))
+        : [];
 
       return {
         style: typeof parsed.style === 'string' ? parsed.style.slice(0, 120) : '',
-        notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 400) : '',
+        mood:  typeof parsed.mood  === 'string' ? parsed.mood.slice(0, 80)   : '',
+        notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 800) : '',
+        stylingTips,
+        palette: sanitizePalette(parsed.palette),
+        composition: sanitizeComposition(parsed.composition),
         items,
       };
     } catch (err) {
