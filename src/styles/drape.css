@@ -2630,9 +2630,13 @@ body.is-native {
 .calendar-cell:hover { background: var(--surface-elevated); }
 .calendar-cell:disabled { cursor: default; }
 .calendar-cell.empty { background: transparent; }
-.calendar-cell.today::after {
-  /* Today gets a 1.5px frame on all four sides, drawn over the photo. */
-  box-shadow: inset 0 0 0 1.5px var(--text-primary);
+/* Today: a barely-there warm tint on the cell + the day-number gets
+   the accent color so it reads as "current" without slamming a black
+   frame over the photo. */
+.calendar-cell.today { background: var(--accent-soft); }
+.calendar-cell.today .calendar-day-num {
+  color: var(--accent);
+  font-weight: 600;
 }
 .calendar-day-num {
   position: absolute;
