@@ -71,13 +71,14 @@ async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '', 
   // Trigger AI analysis when a new photo was uploaded — gives the
   // OotdDetail page palette/composition/notes/title without a second
   // user step. Best-effort; OOTD doc is source of truth either way.
+  // Also kick off background-removal so the Calendar can render a
+  // clean person-cutout thumbnail (writes photoCutUrl back on the doc
+  // when done). Both run fire-and-forget so upsertOotd returns fast.
   if (photoBlob) {
-    try {
-      const fn = httpsCallable(functions, 'analyzeOotd');
-      await fn({ ootdId: id });
-    } catch (e) {
-      console.warn('analyzeOotd skipped:', e?.message);
-    }
+    httpsCallable(functions, 'analyzeOotd')({ ootdId: id })
+      .catch(e => console.warn('analyzeOotd skipped:', e?.message));
+    httpsCallable(functions, 'processOotdPhoto')({ ootdId: id })
+      .catch(e => console.warn('processOotdPhoto skipped:', e?.message));
   }
 
   // Wear history: stamp each item in the linked outfit with this date.

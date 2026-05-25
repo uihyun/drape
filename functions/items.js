@@ -625,6 +625,84 @@ lifestyle photo.`;
   }
 );
 
+// Same person-cutout pipeline as processIdentityRef, but for OOTD
+// photos. Output stored alongside the original at ootds/<uid>/<date>-
+// cut-<timestamp>.png and the URL written back to the ootd doc as
+// photoCutUrl / photoCutPath. The Calendar grid uses photoCutUrl when
+// available so the figure stands out clean on the day cell instead of
+// dragging the room/wall into the calendar.
+exports.processOotdPhoto = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 90, memory: '1GiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const { ootdId } = request.data || {};
+    if (!ootdId || typeof ootdId !== 'string') {
+      throw new HttpsError('invalid-argument', 'ootdId required');
+    }
+
+    const db = admin.firestore();
+    const ootdRef = db.collection('ootds').doc(ootdId);
+    const snap = await ootdRef.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'ootd missing');
+    const ootd = snap.data();
+    if (ootd.userId !== uid) throw new HttpsError('permission-denied', 'not yours');
+    if (!ootd.photoPath) throw new HttpsError('failed-precondition', 'no photo');
+
+    const bucket = admin.storage().bucket();
+    const buf = await downloadStorageObject(bucket, ootd.photoPath);
+    const base64 = buf.toString('base64');
+    const mime = ootd.photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+    const genai = new GoogleGenerativeAI(geminiApiKey.value());
+    const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
+    const cropPrompt = `Extract the person from this OOTD photo and place
+them centered on a fully white background. This is a small calendar
+thumbnail of what they wore today.
+
+CRITICAL FRAMING RULES:
+- Include EVERYTHING from the TOP OF THE HEAD to the SOLES OF THE FEET.
+- Do NOT crop the head, face, or feet.
+- The person's silhouette must occupy the same vertical extent as in
+  the input; just remove the surrounding scene.
+
+PRESERVE EXACTLY:
+- Face, hair, skin, pose, body proportions.
+- ALL clothing they are wearing (this IS the OOTD).
+- Worn accessories: hats, glasses, jewelry, watches, belts, bags
+  strapped over the shoulder, scarves.
+
+REMOVE:
+- Anything HELD in the hand that is clearly a prop (phone, bottle,
+  drink, umbrella). Render an empty hand naturally.
+- Other people, pets, vehicles, furniture, background scene.
+
+This is a faithful person-only cutout for a calendar thumbnail.`;
+
+    let croppedUrl = null;
+    let croppedPath = null;
+    try {
+      const res = await cropModel.generateContent([
+        { inlineData: { data: base64, mimeType: mime } },
+        { text: cropPrompt },
+      ]);
+      const img = extractImage(res?.response);
+      if (img) {
+        croppedPath = ootd.photoPath.replace(/\.(jpg|png)$/i, `-cut-${Date.now()}.png`);
+        croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
+        await ootdRef.update({
+          photoCutUrl: croppedUrl,
+          photoCutPath: croppedPath,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (err) {
+      console.warn('processOotdPhoto failed:', err?.message);
+    }
+    return { ok: !!croppedUrl, url: croppedUrl, path: croppedPath };
+  }
+);
+
 exports.detectItems = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
   async (request) => {

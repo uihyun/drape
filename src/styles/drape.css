@@ -2595,7 +2595,10 @@ body.is-native {
   gap: 0;
 }
 .calendar-cell {
-  aspect-ratio: 4 / 5;
+  /* Tall portrait so a person-cutout thumbnail reads as a figure (not a
+     squished square). 1:2 matches the Lekondo reference; on a 360px
+     viewport with 7 cols that's ~51 × 102px per cell. */
+  aspect-ratio: 1 / 2;
   background: var(--surface);
   position: relative;
   overflow: hidden;
@@ -2627,6 +2630,16 @@ body.is-native {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+/* When the OOTD has a server-side person cutout (photoCutUrl), render
+   it 'contain' so the full figure shows top-to-bottom inside the cell
+   instead of being cropped, and inset a hair of padding so the head
+   doesn't kiss the cell border. */
+.calendar-thumb.is-cut {
+  object-fit: contain;
+  padding: 4px 2px 0;
+  box-sizing: border-box;
+  background: var(--surface);
 }
 .calendar-pill {
   position: absolute;

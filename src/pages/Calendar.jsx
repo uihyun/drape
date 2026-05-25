@@ -107,8 +107,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
               aria-label={`${dateStr}${entry ? ' (logged)' : ''}`}
             >
               <span className="calendar-day-num">{d}</span>
-              {entry?.photoUrl && (
-                <img src={entry.photoUrl} alt="" className="calendar-thumb" loading="lazy" />
+              {(entry?.photoCutUrl || entry?.photoUrl) && (
+                <img
+                  src={entry.photoCutUrl || entry.photoUrl}
+                  alt=""
+                  className={`calendar-thumb${entry.photoCutUrl ? ' is-cut' : ''}`}
+                  loading="lazy"
+                />
               )}
               {entry?.outfitId && !entry.photoUrl && (
                 <span className="calendar-pill">OOTD</span>
