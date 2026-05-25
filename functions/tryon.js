@@ -47,6 +47,44 @@ function extractImage(response) {
   return null;
 }
 
+// Plain-English region per item category, used in the prompt so the
+// model knows exactly what to clear out and replace. Subcategory hints
+// (e.g. boots vs sneakers) tighten the height descriptor.
+function categoryRegion(category, subcategory) {
+  const sub = (subcategory || '').toLowerCase();
+  // Sub-word overrides for the common mis-tag case (e.g. boots auto-tagged
+  // as 'outerwear' instead of 'footwear'). Keep these narrow so a
+  // legitimate top called "boot-cut shirt" doesn't get hijacked.
+  if (/\b(boot|sneaker|loafer|sandal|heel|mule|oxford)\b/.test(sub)) {
+    category = 'footwear';
+  } else if (/\b(jean|trouser|pant|short|skirt|legging)\b/.test(sub)) {
+    category = 'bottom';
+  }
+  switch (category) {
+    case 'top':
+      return 'upper-body garment (any shirt / tee / blouse / sweater currently worn between the shoulders and the waist; remove existing tops in that region)';
+    case 'outerwear':
+      return 'outer layer (jacket / coat / blazer worn over the top; remove any existing outerwear so this becomes the visible outer piece)';
+    case 'bottom':
+      return 'lower-body garment from the waist down (pants / jeans / shorts / skirt currently worn; replace fully)';
+    case 'dress':
+      return 'one-piece covering the torso AND the lower body (remove both the current top and the current bottom in that region)';
+    case 'footwear': {
+      if (sub.includes('boot')) return 'footwear AND the visible lower leg up to the boot\'s natural shaft height (remove sneakers / sandals AND cover any bare skin the boots would naturally cover)';
+      if (sub.includes('sandal') || sub.includes('flip')) return 'footwear (remove the existing shoes; show the foot strap pattern of the supplied sandal)';
+      return 'footwear (remove sneakers / boots / sandals currently worn and replace with the supplied pair)';
+    }
+    case 'bag':
+      return 'bag carried in hand or over the shoulder (replace any existing bag; if none present, place naturally in the hand or on the shoulder appropriate to the supplied bag\'s style)';
+    case 'accessory':
+      return 'small accessory region (hat / belt / scarf / jewelry — place where it naturally sits)';
+    case 'innerwear':
+      return 'innerwear / base layer (visible only if the supplied piece is meant to show)';
+    default:
+      return 'corresponding clothing region';
+  }
+}
+
 function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
   const itemSummary = items.map((it, i) => {
     const t = it.tags || {};
@@ -59,29 +97,52 @@ function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
   // for this single try-on. Preserve EVERYTHING about it (pose, background,
   // lighting, identity) and only swap the clothing region.
   if (mode === 'custom-photo') {
+    const itemRegionLines = items.map((it, i) => {
+      const cat = it.tags?.category || 'item';
+      const sub = it.tags?.subcategory || '';
+      const region = categoryRegion(cat, sub);
+      return `(${i + 1}) ${sub || cat} → replace the current ${region}.`;
+    }).join('\n');
+
     return `You are dressing the person from the FIRST reference image in
 the following clothing item(s): ${itemSummary}.
 
 The images AFTER the first one are the garments isolated on white
-backgrounds. Composite ONLY those garments onto the person's body,
-replacing whatever they're currently wearing in that region.
+backgrounds. Composite ONLY those garments onto the person's body.
 
-ABSOLUTE PRESERVATION RULES — the first image is the source of truth:
+REPLACEMENT — be assertive, not additive:
+For each supplied garment, REMOVE whatever the person is currently
+wearing in that garment's body region and put the supplied garment in
+its place. Do NOT layer the new piece under or over the existing one
+unless explicitly told to. Specifically:
+
+${itemRegionLines}
+
+Match the supplied garment's silhouette exactly — if it is long boots,
+the visible leg should be covered up the boot's natural height even if
+the original photo showed bare leg or sneakers. If it is a short-sleeve
+tee, the existing long-sleeve shirt must go (do not leave sleeves
+sticking out). If it is an outerwear piece, hide the original outer
+layer entirely.
+
+ABSOLUTE PRESERVATION RULES — the first image is the source of truth
+for everything else:
 - KEEP the original background EXACTLY (do NOT remove, regenerate, blur,
   brighten, or restyle it). Same room, same wall, same floor, same props.
 - KEEP the person's face IDENTICAL (every feature, expression, gaze).
 - KEEP the person's hair, skin tone, body proportions, height, and pose.
 - KEEP the original camera angle, framing, lens distortion, and crop.
-- KEEP the original lighting direction, color temperature, and shadows on
-  the person and background.
+- KEEP the original lighting direction, color temperature, and shadows
+  on the person and background.
 - KEEP any objects the person is holding, jewelry, glasses, hats,
-  tattoos, and visible accessories that ARE NOT being replaced.
+  tattoos, and other accessories that are NOT in a replaced region.
+- KEEP any region of clothing for which no replacement was supplied
+  (e.g. if only a top was given, leave the bottoms exactly as they are).
 
-REPLACE only the specific clothing region(s) that the supplied garments
-cover. Render fabric drape, fold, wrinkle, and shadow naturally and
-consistently with the existing lighting and pose. The output should be
-indistinguishable from a real photo of the same person, in the same
-place, at the same moment, just wearing the supplied garment(s) instead.
+Render fabric drape, fold, wrinkle, and shadow naturally and consistently
+with the existing lighting and pose. The output should be indistinguishable
+from a real photo of the same person, in the same place, at the same
+moment, wearing the supplied garment(s) instead of what they had on.
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
@@ -107,6 +168,13 @@ Render it photoreal and consistent with the lighting on the person.`
 No room, no floor, no props, no environment — just the person on
 white, like a fashion lookbook plate.`;
 
+  const itemRegionLines = items.map((it, i) => {
+    const cat = it.tags?.category || 'item';
+    const sub = it.tags?.subcategory || '';
+    const region = categoryRegion(cat, sub);
+    return `(${i + 1}) ${sub || cat} → covers the ${region}.`;
+  }).join('\n');
+
   return `You are dressing the person from the reference image(s) in the
 following clothing item(s): ${itemSummary}.
 
@@ -117,10 +185,21 @@ white background. Composite them onto the person's body, replacing
 whatever they're currently wearing in that region, with realistic drape,
 fit, shadowing, and lighting.
 
+REPLACEMENT — be assertive, not additive. Remove whatever the reference
+person was wearing in each supplied garment's region and put the
+supplied garment in its place. Match the supplied garment's silhouette
+exactly (long boots cover the leg up to the shaft even if the original
+showed sneakers; a short-sleeve tee replaces a long-sleeve shirt with
+no sleeves sticking out; outerwear hides the original outer layer).
+
+${itemRegionLines}
+
 CRITICAL — identity preservation:
 - Keep the person's face IDENTICAL (do not stylize, do not change features).
 - Keep the person's hair, skin tone, body proportions, and pose unchanged.
 - ONLY the clothing and the background should differ from the reference.
+- For any body region with no supplied garment, fall back to neutral
+  basics consistent with the rest of the look (do not invent loud pieces).
 
 ${bgClause}
 
