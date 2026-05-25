@@ -215,7 +215,7 @@ exports.processItem = onCall(
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
-    const { itemId } = request.data || {};
+    const { itemId, focus = null } = request.data || {};
     if (!itemId) throw new HttpsError('invalid-argument', 'itemId required');
 
     const db = admin.firestore();
@@ -245,6 +245,15 @@ exports.processItem = onCall(
     // shape (e.g. long pants → shorts). The original-quality crop works
     // best on a flat white background; the alpha channel is added in
     // post by chromaKeyToTransparent() below before the file is saved.
+    // When the caller knows specifically which piece to crop (e.g. detect-
+    // flow add: source photo has a top + bottom + shoes and the user picked
+    // the top), pass focus so the prompt can disambiguate. Otherwise the
+    // model picks the most prominent garment.
+    const focusClause = focus?.category || focus?.description
+      ? `\n\nIMPORTANT — this photo contains MULTIPLE clothing items. Extract \
+ONLY the ${focus.category || 'item'}${focus.description ? ` ("${focus.description}")` : ''}. \
+Ignore all other clothing the person is wearing.\n`
+      : '';
     const cropPrompt = `Extract ONLY the item from this photo and present it
 in the standard catalog product view for its category:
 - Clothing (tops, bottoms, dresses, outerwear): axis-vertical, front-on,
@@ -269,7 +278,7 @@ floor, and surrounding scene. This is a faithful catalog cutout, not
 a redesign.`;
     const cropPromise = cropModel.generateContent([
       { inlineData: { data: originalB64, mimeType: mime } },
-      { text: cropPrompt },
+      { text: cropPrompt + focusClause },
     ]).catch(err => ({ __error: err }));
 
     // ── Auto-tag (parallel) ────────────────────────────────────────────
@@ -346,6 +355,7 @@ ONLY valid JSON with this exact schema:
   "notes": "one sentence describing the overall look",
   "items": [
     {
+      "name":        short 2-4 word title (e.g. "Cream linen trousers", "Black wool cardigan", "Navy bomber jacket"). Color + material/garment, title case, no brand,
       "category":    one of [${TAXONOMY.CATEGORIES.join(', ')}],
       "subcategory": one of the subcategories valid for that category,
       "colors":      array of 1-3 from [${TAXONOMY.COLORS.join(', ')}],
@@ -374,6 +384,7 @@ function sanitizeDetectItem(raw) {
     category: cat,
     subcategory: sub,
     colors,
+    name: typeof raw.name === 'string' ? raw.name.slice(0, 60) : null,
     description: typeof raw.description === 'string' ? raw.description.slice(0, 240) : '',
     brand: typeof raw.brand === 'string' ? raw.brand.slice(0, 60) : null,
     searchQuery: typeof raw.searchQuery === 'string' ? raw.searchQuery.slice(0, 160) : '',

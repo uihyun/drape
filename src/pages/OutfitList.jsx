@@ -15,13 +15,18 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
   const [itemsById, setItemsById] = useState({});
+  const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setOutfits([]); return; }
-    OutfitService.listMyOutfits({ uid: user.uid })
+    setOutfits(null);
+    OutfitService.listMyOutfits({
+      uid: user.uid,
+      kind: tab === 'saved' ? 'analyzed' : 'mine',
+    })
       .then(({ outfits }) => setOutfits(outfits))
       .catch(() => setOutfits([]));
-  }, [user]);
+  }, [user, tab]);
 
   // Once we have outfits, batch-fetch every referenced item just once
   // (de-duped) so the cards can render a moodboard-style collage cover
@@ -68,6 +73,27 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
           </Link>
         </div>
       )}
+
+      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '0.75rem' }}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'mine'}
+          className={`chip${tab === 'mine' ? ' active' : ''}`}
+          onClick={() => setTab('mine')}
+        >
+          {t('outfitsMine')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'saved'}
+          className={`chip${tab === 'saved' ? ' active' : ''}`}
+          onClick={() => setTab('saved')}
+        >
+          {t('outfitsSaved')}
+        </button>
+      </nav>
 
       {outfits === null ? (
         <div className="loading"><div className="spinner" /></div>

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X } from 'lucide-react';
+import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -25,6 +26,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [cameraOpen, setCameraOpen] = useState(false);
   // savedKey is `"${batchIdx}:${itemIdx}"` for items that have been added
   const [savedKeys, setSavedKeys] = useState(new Set());
+  // Per-batch "Save analysis" state — kind='analyzed' outfit doc id once saved.
+  const [savedBatchIds, setSavedBatchIds] = useState(new Map());
+  const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
 
@@ -121,6 +125,25 @@ export function AnalyzePhoto({ user, onSignIn }) {
     } catch (e) {
       setError(e.message || 'save_failed');
     } finally { setSavingKey(null); }
+  };
+
+  const saveAnalysis = async (batchIdx) => {
+    if (savingBatchIdx !== -1 || savedBatchIds.has(batchIdx)) return;
+    const batch = batches[batchIdx];
+    if (!batch || batch.status !== 'done') return;
+    setSavingBatchIdx(batchIdx);
+    try {
+      const { id } = await OutfitService.createAnalyzedOutfit({
+        photoBlob: batch.blob,
+        style: batch.style || '',
+        notes: batch.notes || '',
+        detectedItems: batch.items || [],
+        itemIds: [],
+      });
+      setSavedBatchIds(prev => new Map(prev).set(batchIdx, id));
+    } catch (e) {
+      setError(e.message || 'save_failed');
+    } finally { setSavingBatchIdx(-1); }
   };
 
   const reset = () => {
@@ -221,6 +244,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
         <section className="analyze-result">
           {batches.map((b, batchIdx) => {
             if (b.status !== 'done') return null;
+            const analysisSaved = savedBatchIds.has(batchIdx);
             return (
               <div key={batchIdx} className="analyze-batch-block">
                 {b.style && (
@@ -233,6 +257,19 @@ export function AnalyzePhoto({ user, onSignIn }) {
                     </div>
                   </div>
                 )}
+
+                <div className="analyze-batch-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => saveAnalysis(batchIdx)}
+                    disabled={analysisSaved || savingBatchIdx === batchIdx}
+                  >
+                    {analysisSaved
+                      ? <><Check size={14} strokeWidth={2} /> {t('analysisSaved')}</>
+                      : <><Bookmark size={14} strokeWidth={1.8} /> {t('saveAnalysis')}</>}
+                  </button>
+                </div>
 
                 {b.items.length === 0 ? (
                   <p className="muted" style={{ padding: '0.5rem 0 1rem' }}>{t('analyzeNoItems')}</p>

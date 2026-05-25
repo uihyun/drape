@@ -98,7 +98,13 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.itemIds is list
-        && request.resource.data.itemIds.size() > 0;
+        // Analyzed outfits (kind='analyzed') save the source photo +
+        // detected pieces and may legitimately have 0 itemIds when none
+        // of the detected pieces are in the user's closet yet.
+        && (
+          request.resource.data.itemIds.size() > 0
+          || ('kind' in request.resource.data && request.resource.data.kind == 'analyzed')
+        );
 
       allow update: if (
         request.auth != null
@@ -106,7 +112,8 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
                       'isPublic', 'isListed', 'listedAt', 'updatedAt',
-                      'likeCount', 'likedBy'])
+                      'likeCount', 'likedBy',
+                      'kind', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath'])
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['notes'])
             || !('notes' in request.resource.data)
             || request.resource.data.notes == null

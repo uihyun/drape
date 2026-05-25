@@ -7,7 +7,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-const VIEWS = ['all', 'usage', 'brands', 'categories'];
+const VIEWS = ['all', 'categories', 'brands', 'usage'];
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
@@ -170,25 +170,23 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   );
 }
 
-// Group items by wear frequency. Section labels are static buckets so the
-// view stays useful even when very few items have wear logs yet.
+// Two simple sections: items the user has actually worn (sorted by how
+// many times, heavy hitters first) and a "Never worn" pile so the unused
+// pieces remain easy to spot. Kept simple per user request — the earlier
+// 3-bucket split (Often / Sometimes / Never) was too granular when most
+// users have only a few wear logs.
 function groupByUsage(items, t) {
-  const buckets = {
-    often: { label: t('usageOften'), items: [] },     // wornCount >= 3
-    sometimes: { label: t('usageSometimes'), items: [] }, // 1-2
-    never: { label: t('usageNever'), items: [] },     // 0
-  };
+  const worn = [];
+  const never = [];
   for (const it of items) {
-    const n = it.wornCount || 0;
-    if (n >= 3) buckets.often.items.push(it);
-    else if (n >= 1) buckets.sometimes.items.push(it);
-    else buckets.never.items.push(it);
+    if ((it.wornCount || 0) >= 1) worn.push(it);
+    else never.push(it);
   }
-  // Most-worn first within each bucket so the heavy hitters lead the row.
-  for (const k of Object.keys(buckets)) {
-    buckets[k].items.sort((a, b) => (b.wornCount || 0) - (a.wornCount || 0));
-  }
-  return Object.values(buckets).filter(g => g.items.length > 0);
+  worn.sort((a, b) => (b.wornCount || 0) - (a.wornCount || 0));
+  const groups = [];
+  if (worn.length) groups.push({ label: t('usageWorn'), items: worn });
+  if (never.length) groups.push({ label: t('usageNever'), items: never });
+  return groups;
 }
 
 // Group by brand (case-insensitive key, original casing for the label).

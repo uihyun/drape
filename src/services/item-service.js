@@ -229,22 +229,24 @@ async function analyzePhoto({ blob, mime = 'image/jpeg' }) {
 async function createFromDetected({ blob, detected, sourceLabel = '' }) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
-  // Reuse createItem's upload pipeline but pass pre-computed tags so
-  // processItem can skip vision; here we bypass and write directly.
   const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const path = `items/${user.uid}/${id}/original.jpg`;
   const ref_ = ref(storage, path);
   await uploadBytes(ref_, blob, { contentType: 'image/jpeg' });
   const url = await getDownloadURL(ref_);
+  // Status starts as 'processing' so the card shows a skeleton until the
+  // server isolates the specific piece. processItem (called below with a
+  // focus hint) replaces croppedUrl with a clean cutout of just the
+  // detected category — without focus it would crop whatever piece was
+  // most prominent in the multi-item source photo.
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
-    name: detected.description || sourceLabel || 'detected',
+    name: detected.name || detected.description || sourceLabel || 'detected',
     notes: sourceLabel ? `detected from: ${sourceLabel}` : '',
     originalUrl: url,
     originalPath: path,
-    croppedUrl: url,
-    croppedPath: path,
-    status: 'ready',
+    // No croppedUrl yet — the card falls back to originalUrl meanwhile.
+    status: 'processing',
     tags: {
       category: detected.category || null,
       subcategory: detected.subcategory || null,
@@ -259,6 +261,16 @@ async function createFromDetected({ blob, detected, sourceLabel = '' }) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  // Fire-and-forget so the UI doesn't block; the live closet subscription
+  // flips the card from processing → cropped when this returns.
+  const processFn = httpsCallable(functions, 'processItem');
+  processFn({
+    itemId: id,
+    focus: {
+      category: detected.category || null,
+      description: detected.description || '',
+    },
+  }).catch(err => console.warn('processItem (detected) failed:', err?.message));
   return { id };
 }
 

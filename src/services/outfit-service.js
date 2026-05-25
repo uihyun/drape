@@ -22,9 +22,14 @@ import {
   deleteDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase.js';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../firebase.js';
 
 const OUTFITS = 'outfits';
+// kind: 'mine' = user composed from their closet items,
+//       'analyzed' = AnalyzePhoto save (source photo + detected pieces, may
+//                    not all be in the user's closet),
+//       'saved' = bookmark of someone else's listed outfit (future).
 
 /**
  * Create a new outfit. itemIds is required (must reference items owned by
@@ -37,11 +42,54 @@ async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, t
 
   const ref = await addDoc(collection(db, OUTFITS), {
     userId: user.uid,
+    kind: 'mine',
     itemIds,
     name,
     notes,
     coverUrl,
     tags,
+    isPublic: false,
+    isListed: false,
+    likeCount: 0,
+    likedBy: [],
+    commentCount: 0,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return { id: ref.id };
+}
+
+/**
+ * Save the result of an AnalyzePhoto session as a reviewable outfit
+ * snapshot — uploads the source photo + stores the detected style/items
+ * inline so the user can revisit even when none of the detected pieces
+ * are in their own closet. Lives in the same `outfits` collection under
+ * kind='analyzed'; surfaced in the "Saved" sub-tab.
+ */
+async function createAnalyzedOutfit({ photoBlob, style = '', notes = '', detectedItems = [], itemIds = [] }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  let photoUrl = null;
+  let photoPath = null;
+  if (photoBlob) {
+    const id = `an_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const path = `analyzed/${user.uid}/${id}.jpg`;
+    const r = storageRef(storage, path);
+    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
+    photoUrl = await getDownloadURL(r);
+    photoPath = path;
+  }
+  const ref = await addDoc(collection(db, OUTFITS), {
+    userId: user.uid,
+    kind: 'analyzed',
+    itemIds, // any pieces user already pulled into their closet
+    detectedItems, // raw detect output for the rest
+    name: style || '',
+    notes,
+    sourcePhotoUrl: photoUrl,
+    sourcePhotoPath: photoPath,
+    coverUrl: photoUrl, // the source photo doubles as the card cover
+    tags: [],
     isPublic: false,
     isListed: false,
     likeCount: 0,
@@ -73,7 +121,7 @@ async function deleteOutfit(outfitId) {
   await deleteDoc(doc(db, OUTFITS, outfitId));
 }
 
-async function listMyOutfits({ uid, pageSize = 30, cursor = null } = {}) {
+async function listMyOutfits({ uid, pageSize = 30, cursor = null, kind = null } = {}) {
   const constraints = [
     where('userId', '==', uid),
     orderBy('createdAt', 'desc'),
@@ -81,8 +129,14 @@ async function listMyOutfits({ uid, pageSize = 30, cursor = null } = {}) {
   ];
   if (cursor) constraints.push(startAfter(cursor));
   const snap = await getDocs(query(collection(db, OUTFITS), ...constraints));
+  let outfits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Client-side kind filter so adding the field doesn't require a new
+  // composite index. Legacy outfits without a kind field default to 'mine'.
+  if (kind) {
+    outfits = outfits.filter(o => (o.kind || 'mine') === kind);
+  }
   return {
-    outfits: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    outfits,
     lastVisible: snap.docs[snap.docs.length - 1] || null,
     hasMore: snap.docs.length === pageSize,
   };
@@ -131,6 +185,7 @@ async function toggleLike(outfitId, uid, currentlyLiked) {
 }
 
 export const OutfitService = {
+  createAnalyzedOutfit,
   createOutfit,
   getOutfit,
   updateOutfit,
