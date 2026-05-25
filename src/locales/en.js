@@ -117,6 +117,7 @@ export const en = {
   outfitsSaved: 'Saved',
   savedEmpty: 'Nothing saved yet. Save analyses from the Analyze flow, or bookmark outfits from the feed.',
   analyzeAPhoto: 'Analyze a photo',
+  browseFeed: 'Browse feed',
   goToCloset: 'Go to closet',
   changeProduct: 'Change photo',
   saveImage: 'Save image',

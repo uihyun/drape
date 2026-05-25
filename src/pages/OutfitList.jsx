@@ -101,9 +101,14 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         tab === 'saved' ? (
           <div className="empty-state empty-state-card">
             <p>{t('savedEmpty')}</p>
-            <Link to="/analyze" className="btn btn-primary">
-              <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
-            </Link>
+            <div className="empty-state-actions">
+              <Link to="/analyze" className="btn btn-primary">
+                <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
+              </Link>
+              <Link to="/feed" className="btn btn-secondary">
+                {t('browseFeed')}
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="empty-state empty-state-card">

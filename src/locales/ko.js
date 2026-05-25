@@ -117,6 +117,7 @@ export const ko = {
   outfitsSaved: '저장한 것',
   savedEmpty: '저장된 게 없어요. 사진을 분석해서 저장하거나, 피드에서 마음에 드는 코디를 북마크해보세요.',
   analyzeAPhoto: '사진 분석하기',
+  browseFeed: '피드 보러 가기',
   goToCloset: '옷장으로',
   changeProduct: '사진 교체',
   saveImage: '이미지 저장',

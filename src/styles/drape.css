@@ -101,6 +101,13 @@ body.is-native {
   margin: -0.5rem 0 1.25rem;
 }
 
+.empty-state-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
 .empty-state-card {
   background: var(--surface);
   border: 1px solid var(--border);
