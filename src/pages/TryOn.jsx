@@ -125,13 +125,34 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
     if (selected.size === 0) return;
     setSubmitting(true);
     setError(null);
+    // Kick off in the background so the user can browse other tabs while
+    // the model runs. The cloud function writes a 'pending' generation
+    // doc early, then TryOnHistory's live subscription shows it as a
+    // pending card and flips to ready when done. We only await long
+    // enough to surface pre-flight errors (credits, missing identity
+    // refs, etc.) — otherwise we navigate to the tryon tab immediately.
     try {
-      const { generationId } = await GenerationService.startTryOn({
+      const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
         modelTier: tier,
         customPhotoBlob: customBlob,
       });
-      navigate(`/tryon/${generationId}`);
+      // Race the request against a short timeout — long enough to catch
+      // synchronous validation errors, short enough that we don't make
+      // the user wait for the actual Gemini call.
+      const result = await Promise.race([
+        promise.then(r => ({ kind: 'ok', r })),
+        new Promise(resolve => setTimeout(() => resolve({ kind: 'timeout' }), 1500)),
+      ]);
+      if (result.kind === 'ok') {
+        // Fast path: tiny refs / Flash tier — finished within 1.5s
+        navigate(`/tryon/${result.r.generationId}`);
+      } else {
+        // Slow path: still running. Let it continue in the background;
+        // log any eventual failure but don't block the user.
+        promise.catch(err => console.warn('background tryon failed:', err?.message));
+        navigate('/profile/tryon');
+      }
     } catch (err) {
       setError(err.message);
       if (/credit|quota/i.test(err.message || '')) onOpenCredits?.();
@@ -145,6 +166,9 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
       {/* ── Reference: identity refs OR custom one-shot photo ─────── */}
       <section className="tryon-source">
         <h3 className="tryon-section-head">{t('tryOnSource')}</h3>
+        <p className="tryon-source-hint">
+          {customBlob ? t('tryOnHintCustom') : t('tryOnHintRefs')}
+        </p>
         {customBlob ? (
           <div className="tryon-custom-card">
             <img src={customPreview} alt="" />

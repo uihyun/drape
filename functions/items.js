@@ -81,14 +81,19 @@ function sanitizeTags(raw) {
   };
 }
 
+// Take the LAST inline image returned, not the first — Gemini Image
+// echoes the input photos back in the response parts and the actual
+// generated output is appended at the end. See identical fix in
+// functions/tryon.js for the full backstory.
 function extractImage(response) {
   const parts = response?.candidates?.[0]?.content?.parts || [];
+  let last = null;
   for (const p of parts) {
     if (p.inlineData?.data) {
-      return { data: p.inlineData.data, mimeType: p.inlineData.mimeType || 'image/png' };
+      last = { data: p.inlineData.data, mimeType: p.inlineData.mimeType || 'image/png' };
     }
   }
-  return null;
+  return last;
 }
 
 async function downloadStorageObject(bucket, path) {

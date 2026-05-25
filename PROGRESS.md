@@ -248,3 +248,68 @@ Follow-on to the Lekondo cycle: live testing surfaced two blockers (everything s
 - **Looks comparison** (Image 22/23) — side-by-side outfit browse.
 - **Comments restyling** — Comments component uses Avatar fallback now but bubble layout is still voda-tone.
 - **Per-detected-item cropping** — `detectItems` returns metadata only; source photo is reused as the item thumbnail.
+
+
+---
+
+## Cycle: 2026-05-25 — try-on polish, analyze depth, mobile, brand UX
+
+### Try-on
+- **Outfit-as-set picker** — TryOn page now has Items / Outfits sub-tabs. Picking an outfit pre-selects all ready items as a single set.
+- **Bring-your-own photo (one-shot)** — `tryon-input/<uid>/<id>.jpg` storage path, `GenerationService.startTryOn({customPhotoBlob})`, `virtualTryOn(customPhotoPath)`. Prompt switches to surgical region-only swap; refs are bypassed.
+- **Mode-split prompts** —
+  - *custom-photo*: precise region replacement only; preserve background / pose / face / framing / unselected clothing exactly. Restored verbatim from 1bbfdbb after a region-by-region rewrite over-prescribed and broke results.
+  - *identity-refs*: full strip-and-redress on a studio plate. Missing categories filled with neutral basics (explicitly forbids nude output).
+- **`extractImage` bug fix** — Gemini Image echoes the input photos back in `candidates[0].content.parts` and appends the actual generation last. Taking the first inline image saved an input echo instead of the result. Walk all parts; keep last. Same fix applied to `functions/items.js` (item crop pipeline).
+- **Async navigation** — TryOn submit + Regenerate fire-and-forget the callable, 1.5s race for fast results, navigate to `/profile/tryon` if it's still pending. TryOnHistory switched to a live `subscribeMyGenerations` so the pending card pops in within ~500ms (function pre-writes the pending doc before downloads).
+- **Try-on reference thumbs** — uniform chip layout (object-fit:contain + 2px padding) so any source ratio shows at the same person-size; wrapped in a Link to `/settings` so tapping any thumb edits identity refs.
+- **`identityRefs` empty state** — offers "Use a custom photo" alongside "Go to Settings" so first try-on doesn't require completing onboarding.
+
+### Analyze
+- **`AnalyzePhoto` redesign** — input mode (3:4 staged photo cards) and result mode (edge-to-edge hero photo, scrollable editorial breakdown). Storage permission rule added for `analyzed/{uid}/...`.
+- **Detect prompt depth** — mirrors `analyzeOotd`: `mood`, 2-4 sentence editorial `notes`, 3 `stylingTips`, `palette` (3 swatches), `composition` (4 style axes × 0-5). `createAnalyzedOutfit` persists all fields.
+- **Auto-name detected items** — `detectPrompt` returns a 2-4 word `name` per item; `createFromDetected` uses it first.
+- **Detect-add crop** — `createFromDetected` writes `status='processing'` and triggers `processItem` with a `focus: {category, description}` hint so the model isolates the specific item from the multi-item source photo (instead of saving the raw photo as the closet item).
+- **Saved-outfit flow** — analyses save into `outfits` with `kind='analyzed'`, source photo + `detectedItems[]` inline. OutfitList has Mine / Saved sub-tabs. Saved empty state gets two CTAs: Analyze a photo + Browse feed.
+
+### Closet
+- **Auto-name items** — `tagPrompt` returns a 2-4 word `name`; `processItem` patches `item.name` only if user hasn't set one.
+- **Brands view + Usage view** — closet tabs are All / Categories / Brands / Usage. Brands grouped by `tags.brand` (case-insensitive); Usage = Worn (sorted by `wornCount`) + Never worn.
+- **Editable brand** — ItemDetail tag editor has a free-text Brand row (60 chars).
+- **Search** — already case-insensitive on name / category / brand (Closet.jsx:41-49).
+
+### Identity refs
+- **Head-crop fix** — `processIdentityRef` crop prompt explicitly demands TOP-OF-HEAD-to-FEET; stored PNG is `sharp.trim()`-ed after chroma-key so thumbnails render at uniform person-size regardless of source whitespace.
+- **Settings thumbnail** — tap to lightbox-preview the full image; primary slot has accent border + "Primary" badge.
+
+### Boards
+- **Card thumbnail** — board cards now replay the sticker canvas (mini collage) at the stored x/y/scale/rotation instead of stretching the top sticker edge-to-edge.
+- **Corner-drag resize + rotation handle** — sticker has 4 corner dots (resize by distance ratio) + 1 rotation dot above the top edge (angle delta from sticker center). Inverse-scale on handles so they stay constant visual size. Slider controls removed.
+- **Missing composite index fix** — `boards (userId ASC, updatedAt DESC)` was missing from `firestore.indexes.json`; `subscribeMyBoards` failed silently and showed an empty list even when boards existed.
+
+### OOTD likes
+- `OotdService.toggleLike` mirrors `OutfitService.toggleLike`.
+- Heart pill on OotdCard in Feed (optimistic + rollback).
+- `LikeButton` inline component on OotdDetail.
+- `firestore.rules` ootds update split into owner path + signed-in-user `likedBy/likeCount`-only path with strict ±1 validation.
+
+### Handle
+- **Editable** — Settings handle field unlocked (backend `claimHandle` already supported swap atomically).
+
+### Mobile layout
+- **No more horizontal overflow** — `closet-grid` / `outfit-grid` / `feed-grid` / `profile-tabs` use `minmax(0, 1fr)` so long item names don't push grid tracks past viewport; grid items get explicit `min-width: 0`; `outfit-grid` uses `minmax(min(220px, 100%), 1fr)`. `html, body { overflow-x: hidden; max-width: 100vw }` as safety net.
+- **Profile tab font shrink** — @media (max-width: 480px) reduces `.profile-tab` font/padding so all 5 labels fit narrow phones.
+- **Button stretch fix** — `.btn.board-action-btn` / `.btn.rate-regen` / `.btn.rate-delete` two-class compound selectors so they win specificity over `.btn { display:inline-flex }`. Removed legacy `main.css` mobile rule `.btn { max-width:300px }` that was clamping every button on phones.
+
+### Feed
+- **Sort tabs** (Latest / Popular) restored on Discover; Popular sorts by `likeCount` (single-field index).
+- **OOTD-first feed** — Discover stream is `OotdService.listPublicFeed`.
+- **Outfit / Board / OOTD card dates** — all card metas now include a `card-meta-date` next to the title (same pattern as try-on history).
+
+### Items
+- **Try-on outfit-missing-item tolerance** — TryOn filters out item ids the user no longer has when picking an outfit; backend rejects gracefully.
+- **Crop prompt orientation** — `processItem` lets the model rotate/normalize the garment to a standard catalog product view per category (clothing axis-vertical, shoes side profile, bags upright, accessories centered). Length / silhouette / color / texture stay locked.
+
+### Routing
+- **`/u/:handle/:tab` alias** — handle-prefixed share URLs reserved for future public surfaces (boards, calendar). My-profile stays at `/profile/<tab>` per the explicit decision not to redirect (owner vs viewer have different perms and tabs).
+

@@ -17,6 +17,7 @@ import {
   addDoc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   where,
   orderBy,
@@ -85,6 +86,28 @@ async function rateGeneration(generationId, rating) {
   });
 }
 
+/**
+ * Live subscription to the user's generations. Used by TryOnHistory so a
+ * just-kicked-off run pops in as a 'pending' card without a page refresh
+ * and flips to 'ready' / 'failed' when the Cloud Function updates it.
+ */
+function subscribeMyGenerations(uid, cb, { pageSize = 60 } = {}) {
+  if (!uid) { cb([]); return () => {}; }
+  return onSnapshot(
+    query(
+      collection(db, GENERATIONS),
+      where('userId', '==', uid),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize),
+    ),
+    snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+    err => {
+      console.warn('subscribeMyGenerations failed:', err?.code, err?.message);
+      cb([]);
+    },
+  );
+}
+
 async function listMyGenerations({ uid, pageSize = 30, cursor = null } = {}) {
   const constraints = [
     where('userId', '==', uid),
@@ -109,6 +132,7 @@ export const GenerationService = {
   getGeneration,
   rateGeneration,
   listMyGenerations,
+  subscribeMyGenerations,
   deleteGeneration,
 };
 

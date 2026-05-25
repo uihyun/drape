@@ -2575,6 +2575,12 @@ body.is-native {
   border-radius: 12px;
   background: var(--surface-elevated);
 }
+.tryon-source-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0 0 0.6rem;
+}
 .tryon-source-row {
   display: flex;
   align-items: center;

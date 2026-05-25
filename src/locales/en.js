@@ -127,6 +127,8 @@ export const en = {
   tryOnItems: 'Items',
   tryOnOutfits: 'Outfits',
   tryOnEmptyOutfits: 'No saved outfits yet — create one to try it as a set.',
+  tryOnHintRefs: 'Your saved reference photos. The selected clothes replace what you were wearing; any category you don\'t pick gets filled with neutral basics.',
+  tryOnHintCustom: 'Only the selected clothes replace what\'s in your photo. Everything else — background, pose, other clothing — stays exactly the same.',
   goToCloset: 'Go to closet',
   changeProduct: 'Change photo',
   saveImage: 'Save image',

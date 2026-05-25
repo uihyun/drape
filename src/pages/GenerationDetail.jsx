@@ -32,15 +32,28 @@ export function GenerationDetail({ user }) {
     await GenerationService.rateGeneration(gen.id, gen.rating === v ? 0 : v);
   };
 
+  // Same async pattern as the initial try-on: kick off in the background,
+  // race a 1.5s timeout — if the function returns fast, navigate to the
+  // new detail page; otherwise drop the user onto /profile/tryon where
+  // the pending card shows up via the live subscription.
   const regen = async () => {
     setRegenerating(true);
     try {
-      const { generationId: newId } = await GenerationService.startTryOn({
+      const promise = GenerationService.startTryOn({
         itemIds: gen.itemIds,
         modelTier: gen.modelTier,
         regenerateOf: gen.id,
       });
-      navigate(`/tryon/${newId}`);
+      const result = await Promise.race([
+        promise.then(r => ({ kind: 'ok', r })),
+        new Promise(resolve => setTimeout(() => resolve({ kind: 'timeout' }), 1500)),
+      ]);
+      if (result.kind === 'ok') {
+        navigate(`/tryon/${result.r.generationId}`);
+      } else {
+        promise.catch(err => console.warn('background regen failed:', err?.message));
+        navigate('/profile/tryon');
+      }
     } catch (err) {
       console.warn('regen failed', err.message);
     } finally { setRegenerating(false); }

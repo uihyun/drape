@@ -14,9 +14,10 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
-    GenerationService.listMyGenerations({ uid: user.uid, pageSize: 60 })
-      .then(({ generations }) => setGens(generations))
-      .catch(() => setGens([]));
+    // Live subscription so a just-started 'pending' run appears here
+    // immediately while the user browses other tabs, and flips to
+    // 'ready' (cover thumb) when the Cloud Function finishes.
+    return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
   }, [user]);
 
   if (!user || user.isAnonymous) {
