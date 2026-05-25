@@ -269,6 +269,12 @@ function IdentitySection({ user, t }) {
   const [dragIdx, setDragIdx] = useState(-1);
   const [overIdx, setOverIdx] = useState(-1);
   const pressRef = useRef(null);
+  // Set when a pointerdown turned into a drag; checked by the preview
+  // button's onClick to suppress the lightbox open that would otherwise
+  // fire right after a drag (since the photo IS the preview button —
+  // the click event fires regardless of how we handled the pointer
+  // sequence).
+  const justDraggedRef = useRef(false);
   const fileInput = useRef();
   const DRAG_THRESHOLD = 6;
 
@@ -288,12 +294,14 @@ function IdentitySection({ user, t }) {
   const onRemove = async (i) => setRefs(await IdentityService.removeRef(i));
 
   const onSlotDown = (e, i) => {
-    if (e.target.closest('button')) return; // let buttons handle their own tap
+    // Only the trash icon must NOT start a drag — the preview button
+    // wraps the whole photo so excluding all buttons here was killing
+    // every drag attempt before it started.
+    if (e.target.closest('.slot-remove')) return;
     pressRef.current = { idx: i, x: e.clientX, y: e.clientY };
     // Capture pointer on the source slot — guarantees we get pointermove
     // + pointerup even if the finger moves off the element. Drop target
-    // is found via document.elementFromPoint below (pointer capture
-    // suppresses other slots' onPointerEnter, so we can't rely on that).
+    // is found via document.elementFromPoint below.
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
   };
   const onSlotMove = (e) => {
@@ -317,9 +325,17 @@ function IdentitySection({ user, t }) {
   const onSlotUp = async () => {
     const from = dragIdx;
     const to = overIdx;
+    const wasDragging = from !== -1;
     pressRef.current = null;
     setDragIdx(-1);
     setOverIdx(-1);
+    if (wasDragging) {
+      // Suppress the click that fires immediately after pointerup on the
+      // preview button. Reset on the next tick after the click handler
+      // has had a chance to bail.
+      justDraggedRef.current = true;
+      setTimeout(() => { justDraggedRef.current = false; }, 0);
+    }
     if (from < 0 || to < 0 || from === to) return;
     const order = refs.map((_, i) => i);
     const [picked] = order.splice(from, 1);
@@ -355,7 +371,10 @@ function IdentitySection({ user, t }) {
             <button
               type="button"
               className="identity-ref-preview-btn"
-              onClick={() => dragIdx === -1 && setPreviewUrl(r.url)}
+              onClick={() => {
+                if (justDraggedRef.current) return;
+                setPreviewUrl(r.url);
+              }}
               aria-label={t('view')}
             >
               <img src={r.url} alt="" />
