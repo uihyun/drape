@@ -120,6 +120,7 @@ export const ko = {
   browseFeed: '피드 보러 가기',
   tryOnSource: '입혀줄 사진',
   savedRefs: '저장된 레퍼런스',
+  editRefs: '레퍼런스 사진 편집',
   useCustomPhoto: '사진 직접 올리기',
   customPhotoActive: '이 사진에 입혀줄게요',
   customPhotoHint: '배경, 포즈, 본인 모습은 그대로 유지되고 선택한 옷 부분만 교체됩니다.',

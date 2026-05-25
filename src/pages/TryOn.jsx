@@ -163,14 +163,20 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
           </div>
         ) : (
           <div className="tryon-source-row">
-            <div className="tryon-source-refs">
+            {/* Whole refs cluster is a link to /settings so the user can
+                change their identity photos in one tap. Hint label sits
+                next to it. Uniform thumb size regardless of source ratio
+                — padding inside the chip + object-fit:contain. */}
+            <Link to="/settings" className="tryon-source-refs" aria-label={t('editRefs')}>
               {(refs || []).slice(0, 3).map((r, i) => (
-                <img key={i} src={r.url} alt="" className="tryon-source-thumb" />
+                <span key={i} className="tryon-source-thumb">
+                  <img src={r.url} alt="" referrerPolicy="no-referrer" />
+                </span>
               ))}
               <span className="tryon-source-label">
                 {refs?.length || 0} {t('savedRefs')}
               </span>
-            </div>
+            </Link>
             <label className="btn btn-secondary btn-sm">
               <Upload size={13} strokeWidth={1.8} /> {t('useCustomPhoto')}
               <input

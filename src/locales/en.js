@@ -120,6 +120,7 @@ export const en = {
   browseFeed: 'Browse feed',
   tryOnSource: 'Photo to dress',
   savedRefs: 'saved references',
+  editRefs: 'Edit identity references',
   useCustomPhoto: 'Use a custom photo',
   customPhotoActive: 'Custom photo active',
   customPhotoHint: 'Background, pose, identity will be preserved; only the selected clothing region is replaced.',

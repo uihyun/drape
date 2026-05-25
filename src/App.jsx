@@ -122,6 +122,11 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />
+          {/* Handle-prefixed tab path so links like /u/uhz/boards are
+              shareable and survive copy/paste. PublicProfile only renders
+              the public outfits grid today; the tab segment is reserved
+              for future expansion (public boards, calendar). */}
+          <Route path="/u/:handle/:tab" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />
 
           {/* Standalone /closet, /outfits, /calendar, /boards, /tryons
               redirect into the Profile tab — there's no reason to have a
