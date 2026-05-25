@@ -323,6 +323,60 @@ body.is-native {
 }
 .sticker-handle-rot:active { cursor: grabbing; }
 
+/* "Items on this board" panel — de-duplicated item picker sitting
+   between the canvas and the action stack. Tap to toggle inclusion in
+   the next try-on; warns on category overlap. */
+.board-items {
+  margin: 1rem 0 0;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+}
+.board-items-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.board-items-head h3 {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin: 0;
+}
+.board-items-select-all {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+}
+.board-items-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 0.6rem;
+}
+.board-items-grid > .item-card { min-width: 0; }
+.board-items-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  margin: 0.75rem 0 0;
+  line-height: 1.35;
+}
+.btn.board-tryon-btn {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
 /* Unified action stack for the board editor. Every button takes the
    container's full width so the visual rhythm doesn't jump between
    narrow / wide rows. */

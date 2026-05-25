@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Plus, Trash2, Sparkles, Eye, Calendar as CalIcon, Check, X } from 'lucide-react';
+import { Plus, Trash2, Sparkles, Eye, Calendar as CalIcon, Check, X, AlertTriangle } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -29,12 +29,57 @@ export function BoardEditor({ user, onSignIn }) {
   const [menuFor, setMenuFor] = useState(null); // index for long-press menu
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(isNew);
+  // Per-item selection (separate from "selected sticker on canvas" which
+  // is only for drag/edit). Drives the Try-on action below.
+  const [tryonSelected, setTryonSelected] = useState(new Set());
 
   // Closet items keyed by id for fast lookup while rendering stickers.
   const itemsById = useMemo(
     () => Object.fromEntries(items.map(i => [i.id, i])),
     [items],
   );
+
+  // De-duplicated list of items used on this board (in sticker z-order
+  // so the visual on the canvas matches the list order).
+  const boardItems = useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    const sorted = [...stickers].sort((a, b) => (a.z || 0) - (b.z || 0));
+    for (const s of sorted) {
+      const it = itemsById[s.itemId];
+      if (!it || seen.has(it.id)) continue;
+      seen.add(it.id);
+      out.push(it);
+    }
+    return out;
+  }, [stickers, itemsById]);
+
+  // Categories with >1 item selected — these are the conflicting picks
+  // we warn about (e.g. user selected two tops; try-on would layer them
+  // weird). User can still proceed; warning is informational.
+  const overlapCats = useMemo(() => {
+    const counts = {};
+    for (const id of tryonSelected) {
+      const cat = itemsById[id]?.tags?.category || '_';
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
+    return Object.entries(counts).filter(([, n]) => n > 1).map(([c]) => c);
+  }, [tryonSelected, itemsById]);
+
+  const toggleTryon = (id) => {
+    setTryonSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const selectAllForTryon = () => setTryonSelected(new Set(boardItems.map(i => i.id)));
+  const clearTryonSelection = () => setTryonSelected(new Set());
+
+  const goTryOn = () => {
+    if (tryonSelected.size === 0) return;
+    navigate(`/tryon?items=${Array.from(tryonSelected).join(',')}`);
+  };
 
   useEffect(() => {
     if (!user || user.isAnonymous) return;
@@ -157,6 +202,65 @@ export function BoardEditor({ user, onSignIn }) {
         onBringToFront={bringToFront}
         t={t}
       />
+
+      {boardItems.length > 0 && (
+        <section className="board-items">
+          <header className="board-items-head">
+            <h3>{t('boardItemsHead')}</h3>
+            <button
+              type="button"
+              className="board-items-select-all"
+              onClick={tryonSelected.size === boardItems.length ? clearTryonSelection : selectAllForTryon}
+            >
+              {tryonSelected.size === boardItems.length ? t('clear') : t('selectAll')}
+            </button>
+          </header>
+          <div className="board-items-grid">
+            {boardItems.map(it => {
+              const sel = tryonSelected.has(it.id);
+              const cover = it.croppedUrl || it.originalUrl;
+              return (
+                <button
+                  key={it.id}
+                  type="button"
+                  className={`item-card builder-pickable${sel ? ' selected' : ''}`}
+                  onClick={() => toggleTryon(it.id)}
+                >
+                  <div className="item-card-image">
+                    {cover
+                      ? <img src={cover} alt="" loading="lazy" />
+                      : <div className="item-card-skeleton" />}
+                    {sel && (
+                      <span className="item-card-check"><Check size={14} strokeWidth={2.4} /></span>
+                    )}
+                  </div>
+                  <div className="item-card-meta">
+                    {it.tags?.category && (
+                      <span className="item-card-cat">{t(`taxonomy.categories.${it.tags.category}`)}</span>
+                    )}
+                    {it.name && <span className="item-card-name">{it.name}</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {overlapCats.length > 0 && (
+            <p className="board-items-warn">
+              <AlertTriangle size={14} strokeWidth={1.8} />
+              {t('boardOverlapWarn', { cats: overlapCats.map(c => t(`taxonomy.categories.${c}`) || c).join(', ') })}
+            </p>
+          )}
+          <button
+            type="button"
+            className="btn btn-primary board-tryon-btn"
+            onClick={goTryOn}
+            disabled={tryonSelected.size === 0}
+          >
+            <Sparkles size={14} strokeWidth={1.8} />
+            {t('boardTryOnSelected')}{tryonSelected.size > 0 ? ` · ${tryonSelected.size}` : ''}
+          </button>
+        </section>
+      )}
 
       <div className="board-actions">
         <button

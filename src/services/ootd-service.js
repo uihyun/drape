@@ -159,6 +159,23 @@ async function toggleLike(ootdId, uid, currentlyLiked) {
  * @param {string} monthStart 'YYYY-MM-01'
  * @param {string} monthEnd   'YYYY-MM-31' (or last day)
  */
+/**
+ * All OOTDs the signed-in user has logged, newest first. Used by the
+ * Outfits → Mine tab. Client-side sort so we don't need a new composite
+ * index (userId ASC, date DESC) — typical user has < 1k OOTDs which is
+ * trivial to sort in memory.
+ */
+async function listMyOotds({ uid, pageSize = 60 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, OOTDS),
+    where('userId', '==', uid),
+    limit(pageSize),
+  ));
+  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  ootds.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return { ootds };
+}
+
 async function listMonth({ uid, monthStart, monthEnd }) {
   const snap = await getDocs(query(
     collection(db, OOTDS),
@@ -181,6 +198,7 @@ export const OotdService = {
   getOotdById,
   deleteOotd,
   listMonth,
+  listMyOotds,
   listPublicFeed,
   toggleLike,
 };

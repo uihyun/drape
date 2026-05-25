@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
+import { OotdService } from '../services/ootd-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function formatCardDate(ts) {
@@ -14,18 +15,27 @@ function formatCardDate(ts) {
 export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
+  const [ootds, setOotds] = useState(null);
   const [itemsById, setItemsById] = useState({});
-  const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
+  const [tab, setTab] = useState('mine'); // 'mine' (my OOTDs) | 'saved' (analyzed)
 
+  // Mine tab = the user's OOTD log (the thing that lives in the calendar
+  // and gets published to Discover). The legacy 'outfits' kind='mine'
+  // surface moved into Boards. Saved tab = analyzed outfits (and later
+  // feed-bookmarks).
   useEffect(() => {
-    if (!user || user.isAnonymous) { setOutfits([]); return; }
-    setOutfits(null);
-    OutfitService.listMyOutfits({
-      uid: user.uid,
-      kind: tab === 'saved' ? 'analyzed' : 'mine',
-    })
-      .then(({ outfits }) => setOutfits(outfits))
-      .catch(() => setOutfits([]));
+    if (!user || user.isAnonymous) { setOutfits([]); setOotds([]); return; }
+    if (tab === 'mine') {
+      setOotds(null);
+      OotdService.listMyOotds({ uid: user.uid, pageSize: 60 })
+        .then(({ ootds }) => setOotds(ootds))
+        .catch(() => setOotds([]));
+    } else {
+      setOutfits(null);
+      OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed' })
+        .then(({ outfits }) => setOutfits(outfits))
+        .catch(() => setOutfits([]));
+    }
   }, [user, tab]);
 
   // Once we have outfits, batch-fetch every referenced item just once
@@ -95,29 +105,47 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         </button>
       </nav>
 
-      {outfits === null ? (
-        <div className="loading"><div className="spinner" /></div>
-      ) : outfits.length === 0 ? (
-        tab === 'saved' ? (
+      {tab === 'mine' ? (
+        ootds === null ? (
+          <div className="loading"><div className="spinner" /></div>
+        ) : ootds.length === 0 ? (
           <div className="empty-state empty-state-card">
-            <p>{t('savedEmpty')}</p>
-            <div className="empty-state-actions">
-              <Link to="/analyze" className="btn btn-primary">
-                <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
-              </Link>
-              <Link to="/feed" className="btn btn-secondary">
-                {t('browseFeed')}
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="empty-state empty-state-card">
-            <p>{t('noOutfitsYet')}</p>
-            <Link to="/outfits/new" className="btn btn-primary">
-              <Plus size={14} strokeWidth={1.8} /> {t('createOutfit')}
+            <p>{t('ootdsMineEmpty')}</p>
+            <Link to="/profile/calendar" className="btn btn-primary">
+              <CalendarIcon size={14} strokeWidth={1.8} /> {t('goToCalendar')}
             </Link>
           </div>
+        ) : (
+          <div className="outfit-grid">
+            {ootds.map(o => (
+              <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+                <div className="outfit-card-cover">
+                  {o.photoUrl
+                    ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                    : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
+                </div>
+                <div className="outfit-card-meta">
+                  <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
+                  <span className="card-meta-date">{o.date || ''}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         )
+      ) : outfits === null ? (
+        <div className="loading"><div className="spinner" /></div>
+      ) : outfits.length === 0 ? (
+        <div className="empty-state empty-state-card">
+          <p>{t('savedEmpty')}</p>
+          <div className="empty-state-actions">
+            <Link to="/analyze" className="btn btn-primary">
+              <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
+            </Link>
+            <Link to="/feed" className="btn btn-secondary">
+              {t('browseFeed')}
+            </Link>
+          </div>
+        </div>
       ) : (
         <div className="outfit-grid">
           {outfits.map(o => (
