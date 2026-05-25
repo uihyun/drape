@@ -111,8 +111,8 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         ) : ootds.length === 0 ? (
           <div className="empty-state empty-state-card">
             <p>{t('ootdsMineEmpty')}</p>
-            <Link to="/profile/calendar" className="btn btn-primary">
-              <CalendarIcon size={14} strokeWidth={1.8} /> {t('goToCalendar')}
+            <Link to="/profile/calendar?ootd=today" className="btn btn-primary">
+              <CalendarIcon size={14} strokeWidth={1.8} /> {t('createLogOotd')}
             </Link>
           </div>
         ) : (
