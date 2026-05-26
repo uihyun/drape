@@ -55,7 +55,10 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       setOotds(null);
       OotdService.listBookmarkedOotds({ uid: user.uid })
         .then(({ ootds }) => setOotds(ootds))
-        .catch(() => setOotds([]));
+        .catch((err) => {
+          console.warn('saved bookmarks query failed:', err?.code, err?.message);
+          setOotds([]);
+        });
     } else {
       setOutfits(null);
       OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed' })

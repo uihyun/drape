@@ -157,15 +157,22 @@ async function toggleBookmark(ootdId, currentlyBookmarked) {
 
 /** All OOTDs the user has bookmarked, newest-bookmark first. Returns
  *  hydrated OOTD docs (skips ones that have been deleted / unpublished
- *  since the bookmark). */
+ *  since the bookmark).
+ *
+ *  Client-side filter + sort so we don't need a (type, createdAt)
+ *  composite index on the per-user subcollection. Bookmark counts are
+ *  small per user (tens, not thousands), so this is fine. */
 async function listBookmarkedOotds({ uid, pageSize = 60 } = {}) {
-  const snap = await getDocs(query(
-    collection(db, 'users', uid, 'bookmarks'),
-    where('type', '==', 'ootd'),
-    orderBy('createdAt', 'desc'),
-    limit(pageSize),
-  ));
-  const ids = snap.docs.map(d => d.data().ootdId).filter(Boolean);
+  const snap = await getDocs(collection(db, 'users', uid, 'bookmarks'));
+  const rows = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(r => (r.type || 'ootd') === 'ootd');
+  rows.sort((a, b) => {
+    const at = a.createdAt?.toMillis?.() ?? 0;
+    const bt = b.createdAt?.toMillis?.() ?? 0;
+    return bt - at;
+  });
+  const ids = rows.slice(0, pageSize).map(r => r.ootdId || r.id).filter(Boolean);
   if (!ids.length) return { ootds: [] };
   const hydrated = await Promise.all(
     ids.map(id => getDoc(doc(db, OOTDS, id))
