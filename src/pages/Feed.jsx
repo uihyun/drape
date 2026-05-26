@@ -22,7 +22,11 @@ export function Feed({ user, onSignIn }) {
     setOotds(null);
     OotdService.listPublicFeed({ pageSize: 24, sortBy: sort })
       .then(({ ootds }) => setOotds(ootds))
-      .catch(() => setOotds([]));
+      .catch((err) => {
+        // Surface missing-index errors etc. so they're not silenced.
+        console.warn('feed query failed:', err?.code, err?.message);
+        setOotds([]);
+      });
   }, [sort]);
 
   useEffect(() => {

@@ -2766,7 +2766,12 @@ body.is-native {
 .tryon-custom-card img {
   width: 88px;
   height: 110px;
-  object-fit: cover;
+  /* contain (not cover) so a tall full-body shot isn't cropped to the
+     torso in the small chip — same uniform-size logic as the identity
+     ref slots in Settings. */
+  object-fit: contain;
+  padding: 4px;
+  box-sizing: border-box;
   border-radius: 8px;
   background: var(--surface);
 }
@@ -2863,17 +2868,32 @@ body.is-native {
 .tryon-bg-input { margin-bottom: 0; }
 .variants-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  /* min(280px,100%) so a single-variant grid (default n=1) doesn't try
+     to force a 280px column on a narrow phone. */
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 1rem;
   margin: 1rem 0;
 }
 .variant {
+  /* Fixed portrait aspect so EVERY try-on result renders at the same
+     visual size regardless of the input photo's resolution / aspect.
+     Image fits inside via contain so we never crop the head/feet of
+     the generated person. */
+  position: relative;
+  aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
 }
-.variant img { width: 100%; display: block; }
+.variant img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 /* Legacy .rating-row kept for any consumer; new layout below. */
 .rating-row {
   display: flex;
