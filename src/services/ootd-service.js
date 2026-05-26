@@ -38,8 +38,11 @@ function isValidDate(s) {
   return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
 
-/** Create or update today's (or any date's) OOTD entry. */
-async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '', isPublic = undefined }) {
+/** Create or update today's (or any date's) OOTD entry.
+ *  `linkedType` disambiguates what `outfitId` points at — 'outfit' (legacy
+ *  outfits collection), 'board', or 'tryon' (generations). Older docs have
+ *  no linkedType; treat as 'outfit'. */
+async function upsertOotd({ date, outfitId = null, linkedType = null, photoBlob = null, note = '', isPublic = undefined }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!isValidDate(date)) throw new Error('bad_date');
@@ -61,6 +64,7 @@ async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '', 
     userId: user.uid,
     date,
     outfitId,
+    linkedType: outfitId ? (linkedType || 'outfit') : null,
     ...(photoUrl ? { photoUrl, photoPath } : {}),
     note,
     ...(isPublic !== undefined ? { isPublic } : {}),
@@ -80,14 +84,21 @@ async function upsertOotd({ date, outfitId = null, photoBlob = null, note = '', 
       .catch(e => console.warn('processOotdPhoto skipped:', e?.message));
   }
 
-  // Wear history: stamp each item in the linked outfit with this date.
-  // Lazy-import to avoid circular dep (item-service → ootd-service path
-  // isn't currently in use but this keeps things safe).
+  // Wear history: stamp each item in the linked outfit/tryon with this
+  // date. Boards aren't wear-stamped yet — stickers store itemIds inline
+  // and we'll add that path when board linking sees real use.
   if (outfitId) {
     try {
-      const { OutfitService } = await import('./outfit-service.js');
-      const outfit = await OutfitService.getOutfit(outfitId);
-      const itemIds = outfit?.itemIds || [];
+      const effectiveType = linkedType || 'outfit';
+      let itemIds = [];
+      if (effectiveType === 'tryon') {
+        const genSnap = await getDoc(doc(db, 'generations', outfitId));
+        itemIds = genSnap.exists() ? (genSnap.data().itemIds || []) : [];
+      } else if (effectiveType === 'outfit') {
+        const { OutfitService } = await import('./outfit-service.js');
+        const outfit = await OutfitService.getOutfit(outfitId);
+        itemIds = outfit?.itemIds || [];
+      }
       if (itemIds.length) {
         const { ItemService } = await import('./item-service.js');
         await ItemService.recordWear({ itemIds, date, ootdId: id, outfitId });

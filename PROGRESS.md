@@ -595,3 +595,32 @@ The original `outfits` (item-combo) surface overlapped with `boards`
   secrets (Firebase docs) — dismissed as false positive. Project's
   `.env` is properly gitignored.
 
+## Cycle: 2026-05-26 — OOTD sheet outfit picker as cards
+
+### What changed
+- OotdSheet link picker: dropdown → horizontal card row, filtered
+  to candidates created/updated **on the OOTD's date** (try-ons by
+  createdAt, boards by updatedAt/createdAt). "None" pill at the
+  start, single-select, accent inset on the selected thumb.
+- Try-on cards show the first variant + "Try-on" badge. Board
+  cards show coverUrl + board name as label. If nothing exists
+  for that date, a single muted line replaces the row.
+- OOTD doc gains `linkedType: 'outfit' | 'board' | 'tryon'` (null
+  when no link). Old docs without the field are read as 'outfit'
+  for back-compat.
+- `upsertOotd` wear-log path extended: linking a try-on now
+  stamps wear on `generation.itemIds`. Boards still skipped (their
+  itemIds live inside sticker objects — deferred until board
+  linking sees real use).
+
+### Why
+- The dropdown was a readability dead-end and forced the user to
+  scroll through every legacy outfit. The card row mirrors the
+  "items used" row on the try-on result page (same visual grammar)
+  and naturally surfaces the things you actually did today.
+- Filtering to the same date is a decision aid: "what I tried on
+  this morning" is almost always what I wore.
+
+### Locale parity
+- Added `ootdLinkEmpty` + `tryOnBadge` to en/ko/ja in one pass
+  (per the locked locale rule). No other strings touched.

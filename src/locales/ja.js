@@ -27,6 +27,8 @@ export const ja = {
   ootdPickPhoto: '今日着たコーデの写真を追加。',
   ootdLinkOutfit: 'コーデをリンク (任意)',
   ootdNoOutfit: 'なし',
+  ootdLinkEmpty: 'この日付に作ったものがまだありません — 試着やボードから始めてみましょう。',
+  tryOnBadge: '試着',
   ootdNoteLabel: 'メモ',
   ootdNotePlaceholder: '今日の覚え書き。',
   ootdConfirmDelete: 'この日の OOTD を削除しますか?',

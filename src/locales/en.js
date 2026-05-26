@@ -25,6 +25,8 @@ export const en = {
   ootdPickPhoto: 'Add a photo of what you wore.',
   ootdLinkOutfit: 'Link an outfit (optional)',
   ootdNoOutfit: 'None',
+  ootdLinkEmpty: 'Nothing from this date yet — start a try-on or a board first.',
+  tryOnBadge: 'Try-on',
   ootdNoteLabel: 'Note',
   ootdNotePlaceholder: 'Anything you want to remember about today.',
   ootdConfirmDelete: 'Delete this day’s OOTD?',

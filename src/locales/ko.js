@@ -25,6 +25,8 @@ export const ko = {
   ootdPickPhoto: '오늘 입은 모습의 사진을 추가하세요.',
   ootdLinkOutfit: '코디 연결 (선택)',
   ootdNoOutfit: '없음',
+  ootdLinkEmpty: '이 날짜에 만든 게 아직 없어요 — 트라이온이나 보드를 먼저 만들어보세요.',
+  tryOnBadge: '트라이온',
   ootdNoteLabel: '메모',
   ootdNotePlaceholder: '오늘 기억할 만한 한 줄.',
   ootdConfirmDelete: '이 날 OOTD 를 삭제할까요?',
