@@ -14,6 +14,7 @@
 //     vs default 'pro' for the final saveable result.
 
 const admin = require('firebase-admin');
+const sharp = require('sharp');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -288,8 +289,22 @@ exports.virtualTryOn = onCall(
         const img = extractImage(res.response);
         if (!img) return { idx, ok: false, error: 'no image returned' };
         const path = `generations/${uid}/${genRef.id}/${idx}.png`;
-        await bucket.file(path).save(Buffer.from(img.data, 'base64'), {
-          metadata: { contentType: img.mimeType, cacheControl: 'public,max-age=31536000,immutable' },
+        // identity-refs mode: Gemini outputs the figure on a white catalog
+        // background with lots of padding around — sharp.trim() crops that
+        // away so the saved PNG is tight to the figure. Calendar / result
+        // displays then show the person head-to-feet without manual contain
+        // padding. Skip for custom-photo mode (the photo's real background
+        // is the point — don't strip it).
+        let buf = Buffer.from(img.data, 'base64');
+        if (!customPhotoPath) {
+          try {
+            buf = await sharp(buf).trim({ threshold: 10 }).png().toBuffer();
+          } catch (e) {
+            console.warn('try-on trim skipped:', e?.message);
+          }
+        }
+        await bucket.file(path).save(buf, {
+          metadata: { contentType: 'image/png', cacheControl: 'public,max-age=31536000,immutable' },
         });
         await bucket.file(path).makePublic().catch(() => {});
         return { idx, ok: true, url: bucketUrl(bucket.name, path), path };

@@ -2875,23 +2875,18 @@ body.is-native {
   margin: 1rem 0;
 }
 .variant {
-  /* Fixed portrait aspect so EVERY try-on result renders at the same
-     visual size regardless of the input photo's resolution / aspect.
-     Image fits inside via contain so we never crop the head/feet of
-     the generated person. */
+  /* No fixed aspect — server-side sharp.trim crops each variant PNG
+     tight to the figure, so letting the image dictate the card height
+     keeps head-to-feet flush against the frame on every result. */
   position: relative;
-  aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
 }
 .variant img {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: auto;
   display: block;
 }
 /* Legacy .rating-row kept for any consumer; new layout below. */
