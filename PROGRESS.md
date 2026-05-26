@@ -378,3 +378,220 @@ the mis-diagnoses next time.
   and appends the actual generation at the end. Returning the FIRST
   inline image saved an input echo. Now walks every part and keeps
   the LAST. Same fix in functions/items.js for the item crop pipeline.
+
+---
+
+## Cycle: 2026-05-25 → 2026-05-26 — calendar + outfits / boards remix + try-on quality
+
+Long iteration day; consolidated notes for future-me.
+
+### Outfits ↔ Boards remix
+The original `outfits` (item-combo) surface overlapped with `boards`
+(sticker-canvas item-combo). Decision: **boards owns item composition**,
+**outfits tab becomes OOTDs** (the thing that goes to calendar + feed).
+
+- `OutfitList` Profile tab now has three sub-tabs:
+  - **Mine** — user's OOTDs via `OotdService.listMyOotds` (client-side
+    date desc sort, no new composite index needed).
+  - **Saved** — OOTDs the user bookmarked from the feed. Bookmark write
+    goes to `/users/{uid}/bookmarks/{ootdId}` with `{type:'ootd'}`
+    (typed so outfit / board bookmarks can share the subcollection
+    later). `listBookmarkedOotds` does where+sort client-side to avoid
+    a composite index on the per-user subcollection.
+  - **Analyzed** — `OutfitService.listMyOutfits({kind:'analyzed'})`.
+    Empty-state CTA → `/analyze`.
+- Legacy kind='mine' outfits stay in the DB; no list surface in profile.
+- Saved tab CTA → `/feed` (Browse). Mine empty CTA → `/profile/calendar?ootd=today`.
+
+### Boards (canvas + item picker)
+- BoardEditor canvas footer now shows a dedup'd "items on this board"
+  3-col grid with tap-to-toggle selection, **Select all**, and a
+  **Try on selected** CTA that hands ids to `/tryon?items=...`.
+- Category-overlap inline warning when 2+ items in the same category
+  are picked (accent-soft pill below the grid). Doesn't block.
+- Boards public-share / comments deferred.
+
+### OOTD entry path
+- Create sheet "New outfit" → **"New OOTD"** (en/ko/ja). Routes to
+  `/profile/calendar?ootd=today`. Calendar reads `?ootd=` on mount and
+  opens the OotdSheet for that date — no second tap on today's cell.
+  `useEffect` deps `[search]` so the param fires even on same-route
+  nav (was `[]`, didn't refire when already on Calendar).
+- Outfits/Mine empty state CTA also uses the same `/profile/calendar?ootd=today`
+  path with the "New OOTD" label.
+- Unused `goToCalendar` locale removed.
+
+### Calendar
+- Cells: `aspect-ratio: 1/2` → **`2/5`** (1:2.5) so person cutouts read
+  as figures. `.calendar-embedded { margin: 0 -1rem }` to escape
+  Profile shell padding — grid is now full-bleed on phone.
+- Symmetric border: `.calendar-grid { box-shadow: inset 1px 1px 0 var(--border) }`
+  adds the missing left + top hairlines (cells only draw right + bottom).
+- Cell border moved to `.calendar-cell::after` pseudo-element so the
+  OOTD photo can't paint over it. Same for today's frame.
+- **Today** indicator iterated heavily. Final: thin 1px olive
+  (`var(--accent)`) inset hairline drawn on `.calendar-cell.today::after`,
+  no background fill, day number flips to `var(--accent-strong)` 600.
+
+### OOTD photo cutout pipeline (`processOotdPhoto`)
+- New Cloud Function mirroring `processIdentityRef`. Triggered
+  fire-and-forget by `OotdService.upsertOotd` alongside `analyzeOotd`.
+  Writes `photoCutUrl` + `photoCutPath` back to the ootd doc. Calendar
+  cell prefers `photoCutUrl` (`object-fit: contain` + 4/2px inset) and
+  falls back to `photoUrl` during the ~10s window before processing
+  finishes.
+- Toggled off/on twice — Gemini Image re-renders the person, which
+  spooked the user the first time, then they explicitly OK'd parity
+  with identity-refs the second time.
+- `analyzeOotd` + `processOotdPhoto` both switched from `ootdRef.update()`
+  to `ootdRef.set({...}, {merge:true})` — admin SDK update() hit a
+  transient NOT_FOUND in the eventual-consistency window right after
+  the client's setDoc.
+- Crop prompt (both `processIdentityRef` and `processOotdPhoto`) framing
+  rules rewritten: "**output ONLY the portion of the body visible in
+  the source — never invent body parts**". Previously demanded TOP OF
+  HEAD to SOLES OF FEET, which had Gemini hallucinating feet onto
+  half-body shots.
+
+### Identity refs UX
+- Held-object policy flipped: `processIdentityRef` now REMOVES held
+  items (bags, phones, bottles, etc.) and renders an empty hand.
+  Worn accessories (hats, glasses, earrings, watches, belts) still
+  preserved. Reference = canvas of the person; props belong in the
+  closet as separate items.
+- Drag-to-reorder identity ref slots in Settings (pointer events,
+  threshold-gated so tap-to-preview still works, drop-target detected
+  via `document.elementFromPoint` since `setPointerCapture` suppresses
+  the natural `onPointerEnter` chain). Star "set primary" button
+  removed — drag is the only mechanic; leftmost slot = primary.
+
+### Try-on
+- Result PNG normalization (server): for identity-refs results, run
+  ```
+  sharp(buf).trim({threshold:10}).resize({
+    width: 900, height: 1200, fit: 'contain',
+    background: { r:255, g:255, b:255, alpha:1 }
+  })
+  ```
+  Every variant lands on a fixed 900×1200 (3:4) canvas, figure
+  centered head-to-feet. Custom-photo mode skips both steps (preserve
+  real bg + aspect). `.variant` aspect-ratio restored to 3/4 with
+  `object-fit: contain` — perfect fit because PNG aspect now matches.
+- `.tryon-history-cover img` switched cover → contain so history
+  thumbnails stop cropping head/feet.
+- TryOn picker custom-photo chip cover → contain + 4px padding +
+  border-box. Uniform chip size regardless of source dimensions.
+- TryOn page: **Background (optional)** input below the tier toggle.
+  Wired to `backgroundDesc` in `startTryOn`. Hidden in custom-photo
+  mode (real bg is the point there).
+- `extractImage` now walks all `candidates[0].content.parts` and
+  returns the LAST inline image — Gemini echoes input photos back
+  before appending the actual generation, and grabbing the first
+  was saving an input echo. Same fix in `functions/items.js` crop
+  pipeline.
+- Async navigation: callable pre-writes the `pending` generation doc
+  before downloads; client races a 1.5s timeout — fast path navigates
+  to `/tryon/<id>`, slow path lands on `/profile/tryon` where the
+  pending card pops in via `subscribeMyGenerations` and flips to
+  ready when done. Regenerate uses the same race.
+- TryOn submit / regen accept `customPhotoBlob`, uploaded to
+  `tryon-input/<uid>/<id>.jpg` and validated server-side
+  (`startsWith('tryon-input/<uid>/')`).
+
+### Feed / Discover
+- Composite indexes added to `firestore.indexes.json`:
+  `(isPublic ASC, updatedAt DESC)` and `(isPublic ASC, likeCount DESC)`.
+  Without these, `listPublicFeed` silently fails and the feed shows
+  empty even for the user's own published OOTDs.
+- `Feed.jsx` `.catch` now logs `err.code` + `err.message` so future
+  missing-index errors don't hide.
+- OotdCard gains a bookmark button next to the like (two-action
+  column on the top-right). Live state via `onSnapshot` on
+  `/users/<uid>/bookmarks/<ootdId>`. Saved tab hydrates each
+  bookmarked OOTD via getDoc.
+
+### Storage rules
+- Every owner-writable path now uses the same pattern:
+  ```
+  allow read: <whatever the right read predicate is>;
+  allow write: if request.auth != null
+    && request.auth.uid == userId
+    && (request.resource == null || (size && contentType));
+  ```
+  The `request.resource == null` branch on write covers DELETE.
+  Combined `allow read, write` with a `request.resource` predicate
+  silently 403's reads — empirically hit twice (identity ref delete,
+  ootd photo download URL). Split rules every time. Filed as
+  feedback memory.
+- `analyzed/{uid}/<id>.jpg` path added (public read, owner write) so
+  AnalyzePhoto save flow can upload its source photo for the analyzed-
+  outfit card cover.
+- `tryon-input/{uid}/<id>.jpg` added (owner read/write, no public)
+  for one-shot custom photos.
+- `generations/<uid>/...` write tightened to client `request.resource == null`
+  only (delete allowed, uploads server-only via admin SDK).
+
+### Settings profile
+- 5 per-field Save buttons collapsed to one **Save** at the bottom
+  of the Profile card, dirty-aware. claimHandle runs first if handle
+  is dirty (atomic txn), then the other updates in parallel.
+- Username "Cannot be changed later" sentence dropped (handle has
+  been editable for a while; the hint was lying).
+
+### Brand UX
+- ItemDetail tag editor now has a free-text **Brand** row (60 chars).
+- Tab order in Closet: All / Categories / Brands / Usage.
+- Usage view simplified to 2 buckets: Worn (sorted by wornCount desc)
+  + Never worn.
+- Search already case-insensitive on name / category / brand.
+
+### Auto-name + tag override fix
+- Single-item processItem prompt + sanitizeTags now include `name`
+  (2-4 word title). processItem sets item.name only if user hasn't
+  typed one — never clobbers a manual rename.
+- Detect-add path: `processItem` SKIPS the auto-tag step when `focus`
+  is provided. Previously, running `tagPrompt` on the full multi-item
+  source photo overwrote the user-picked detected tags with whichever
+  garment dominated the frame (e.g. user picked Nike sneakers from a
+  photo also containing Patagonia shorts → tags came back as bottom /
+  Patagonia / Navy Athletic Shorts). Now detect's tags are
+  authoritative; status='ready' even if the focused crop fails since
+  the original photo + detect tags are a usable item.
+
+### Analyze depth
+- AnalyzePhoto redesigned: input mode (3:4 staged-photo card) →
+  result mode (edge-to-edge hero photo + scrollable editorial
+  breakdown — palette swatches, composition bars, styling tips,
+  items list).
+- detectItems prompt extended to mirror analyzeOotd: returns mood,
+  2-4 sentence editorial notes, 3 styling tips, palette (3 swatches),
+  composition (4 style axes × 0-5). createAnalyzedOutfit persists all.
+
+### Locale parity
+- ja.js: full rewrite to mirror en.js key-for-key (was a 37-line
+  stub). en/ko/ja parity verified by flat-key diff script after
+  every locale touch — locked as a project rule in
+  `memory/feedback_locales.md`.
+
+### Mobile layout
+- Grid items everywhere (`.closet-grid`, `.outfit-grid`, `.feed-grid`,
+  `.profile-tabs`) use `minmax(0, 1fr)` instead of `1fr` so long
+  child content doesn't push tracks past the viewport. Grid items
+  get explicit `min-width: 0`.
+- `html, body { overflow-x: hidden; max-width: 100vw }` as a safety
+  net.
+- `@media (max-width: 480px)` shrinks `.profile-tab` font/padding so
+  all 5 tabs fit a phone.
+- Buttons inline-flex `width:100%` no longer clamped by a leftover
+  voda mobile rule `.btn { max-width: 300px }`; that rule deleted.
+- `.btn.board-action-btn` / `.btn.rate-regen` etc. use two-class
+  compound selectors so they win specificity over base `.btn`.
+
+### Security incident
+- GitHub secret-scan flagged an old `GEMINI_API_KEY` value that had
+  been inlined into PROGRESS.md (the leaked key was already replaced
+  earlier; user revoked the old key after the alert). The three
+  Firebase client API keys flagged by the same alert are not actually
+  secrets (Firebase docs) — dismissed as false positive. Project's
+  `.env` is properly gitignored.
+
