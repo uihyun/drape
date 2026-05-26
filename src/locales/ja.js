@@ -267,6 +267,7 @@ export const ja = {
   regenerate: '再生成',
   regenerating: '再生成中…',
   rateThis: '結果を評価',
+  itemsUsed: 'この試着で使ったアイテム',
   good: '良い',
   bad: 'いまいち',
   addIdentityRefsTitle: '本人の全身写真を先に登録してください',

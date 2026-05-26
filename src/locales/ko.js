@@ -265,6 +265,7 @@ export const ko = {
   regenerate: '다시 생성',
   regenerating: '재생성 중…',
   rateThis: '결과 평가',
+  itemsUsed: '이번 피팅에 쓴 아이템',
   good: '좋아요',
   bad: '별로예요',
   addIdentityRefsTitle: '내 전신 사진을 먼저 등록해주세요',

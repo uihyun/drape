@@ -265,6 +265,7 @@ export const en = {
   regenerate: 'Regenerate',
   regenerating: 'Regenerating…',
   rateThis: 'Rate this result',
+  itemsUsed: 'Items in this try-on',
   good: 'Good',
   bad: 'Bad',
   addIdentityRefsTitle: 'Add identity reference photos first',

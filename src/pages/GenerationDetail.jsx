@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { ThumbsUp, ThumbsDown, RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -15,6 +15,7 @@ export function GenerationDetail({ user }) {
   const navigate = useNavigate();
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (!generationId) return;
@@ -22,6 +23,22 @@ export function GenerationDetail({ user }) {
       setGen(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [generationId]);
+
+  // Hydrate the items that were used in this try-on so we can show
+  // them on the result page (so the user remembers what they picked).
+  useEffect(() => {
+    const ids = gen?.itemIds || [];
+    if (!ids.length) { setItems([]); return; }
+    let cancelled = false;
+    Promise.all(
+      ids.map(id => getDoc(doc(db, 'items', id))
+        .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
+        .catch(() => null))
+    ).then(rows => {
+      if (!cancelled) setItems(rows.filter(Boolean));
+    });
+    return () => { cancelled = true; };
+  }, [gen?.id, gen?.itemIds?.join('|')]);
 
   if (!gen) return <div className="loading"><div className="spinner" /></div>;
   if (user && gen.userId !== user.uid) {
@@ -100,6 +117,27 @@ export function GenerationDetail({ user }) {
               </div>
             ))}
           </div>
+
+          {items.length > 0 && (
+            <section className="gen-items">
+              <h3 className="gen-items-head">{t('itemsUsed')}</h3>
+              <div className="gen-items-row">
+                {items.map(it => {
+                  const cover = it.croppedUrl || it.originalUrl;
+                  return (
+                    <Link key={it.id} to={`/i/${it.id}`} className="gen-item-card">
+                      <div className="gen-item-thumb">
+                        {cover
+                          ? <img src={cover} alt={it.name || ''} loading="lazy" />
+                          : <div className="item-card-skeleton" />}
+                      </div>
+                      {it.name && <span className="gen-item-name">{it.name}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <div className="rate-block">
             <span className="rate-label">{t('rateThis')}</span>

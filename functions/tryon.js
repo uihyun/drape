@@ -289,24 +289,29 @@ exports.virtualTryOn = onCall(
         const img = extractImage(res.response);
         if (!img) return { idx, ok: false, error: 'no image returned' };
         const path = `generations/${uid}/${genRef.id}/${idx}.png`;
-        // identity-refs mode: normalize EVERY variant to the same 3:4
-        // portrait canvas so the result card is always the same size
-        // regardless of what Gemini happened to output. Pipeline:
-        //   1. trim — strip the white padding Gemini wraps the figure in
-        //   2. resize fit:contain into 900x1200 (3:4, ~ phone portrait)
-        //      with white padding around — figure now fills the canvas
-        //      vertically and centers horizontally.
-        // Custom-photo mode: skip both. The point of that mode is to
-        // preserve the real photo's background and aspect ratio.
+        // Normalize EVERY variant (except custom-photo) to a fixed 3:4
+        // canvas so every result card renders at the same size:
+        //   - default identity-refs (no backgroundDesc) → Gemini paints
+        //     the figure on a plain white catalog backdrop. trim strips
+        //     that padding, then resize fit:contain pads back into 900x1200
+        //     with white — figure fills the canvas vertically.
+        //   - backgroundDesc set → Gemini paints a real scene. trim is a
+        //     no-op on a varied edge; fit:cover scales to fill 900x1200
+        //     and side-crops the scene (figure is centered, stays in
+        //     frame). fit:contain would leave white bars top+bottom
+        //     because the scene was 1:1 instead of 3:4.
+        // Custom-photo mode: skip both — preserve the real photo aspect
+        // and background.
         let buf = Buffer.from(img.data, 'base64');
         if (!customPhotoPath) {
+          const hasScene = !!(backgroundDesc && backgroundDesc.trim());
           try {
             buf = await sharp(buf)
               .trim({ threshold: 10 })
               .resize({
                 width: 900,
                 height: 1200,
-                fit: 'contain',
+                fit: hasScene ? 'cover' : 'contain',
                 background: { r: 255, g: 255, b: 255, alpha: 1 },
               })
               .png()
