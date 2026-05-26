@@ -1539,10 +1539,16 @@ body.is-native {
   font-size: 3rem;
   color: var(--border-hover);
 }
-.ootd-card-like {
+.ootd-card-actions {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 2;
+}
+.ootd-card-action {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -1555,12 +1561,12 @@ body.is-native {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  z-index: 2;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.ootd-card-like:hover { background: rgba(0, 0, 0, 0.6); }
-.ootd-card-like.active { color: #ff5a6e; }
+.ootd-card-action:hover { background: rgba(0, 0, 0, 0.6); }
+.ootd-card-action.active { color: var(--accent); }
+.ootd-card-action:first-child.active { color: #ff5a6e; }
 .btn.is-liked { color: #ff5a6e; border-color: #ff5a6e; }
 .ootd-card-overlay {
   position: absolute;
@@ -2840,6 +2846,21 @@ body.is-native {
 }
 
 .tier-toggle { display: flex; gap: 0.4rem; margin: 0.5rem 0 1rem; }
+
+.tryon-bg-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.25rem 0 1rem;
+}
+.tryon-bg-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.tryon-bg-input { margin-bottom: 0; }
 .variants-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

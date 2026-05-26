@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { Heart, Bookmark } from 'lucide-react';
+import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
@@ -88,6 +90,19 @@ export function Feed({ user, onSignIn }) {
 
 function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
   const liked = !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid));
+  // Bookmark state — read from the viewer's own /users/<uid>/bookmarks
+  // (the OOTD doc has no bookmark info per viewer). Light onSnapshot
+  // so it stays correct when the user bookmarks elsewhere too.
+  const [bookmarked, setBookmarked] = useState(false);
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setBookmarked(false); return; }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', ootd.id),
+      (s) => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [user?.uid, ootd.id]);
+
   const handleLike = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -97,14 +112,26 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
       ? [...(ootd.likedBy || []), user.uid]
       : (ootd.likedBy || []).filter(u => u !== user.uid);
     const nextCount = Math.max(0, (ootd.likeCount || 0) + (nextLiked ? 1 : -1));
-    // Optimistic update
     onLikeChange?.({ likedBy: nextLikedBy, likeCount: nextCount });
     try {
       await OotdService.toggleLike(ootd.id, user.uid, liked);
     } catch (err) {
       console.warn('like failed', err.message);
-      // Rollback
       onLikeChange?.({ likedBy: ootd.likedBy || [], likeCount: ootd.likeCount || 0 });
+    }
+  };
+
+  const handleBookmark = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    const prev = bookmarked;
+    setBookmarked(!prev); // optimistic
+    try {
+      await OotdService.toggleBookmark(ootd.id, prev);
+    } catch (err) {
+      console.warn('bookmark failed', err.message);
+      setBookmarked(prev);
     }
   };
 
@@ -113,15 +140,25 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
       {ootd.photoUrl
         ? <img src={ootd.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}
-      <button
-        type="button"
-        className={`ootd-card-like${liked ? ' active' : ''}`}
-        onClick={handleLike}
-        aria-label={liked ? t('unlike') : t('like')}
-      >
-        <Heart size={18} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
-        {(ootd.likeCount || 0) > 0 && <span>{ootd.likeCount}</span>}
-      </button>
+      <div className="ootd-card-actions">
+        <button
+          type="button"
+          className={`ootd-card-action${liked ? ' active' : ''}`}
+          onClick={handleLike}
+          aria-label={liked ? t('unlike') : t('like')}
+        >
+          <Heart size={18} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
+          {(ootd.likeCount || 0) > 0 && <span>{ootd.likeCount}</span>}
+        </button>
+        <button
+          type="button"
+          className={`ootd-card-action${bookmarked ? ' active' : ''}`}
+          onClick={handleBookmark}
+          aria-label={bookmarked ? t('unbookmark') : t('bookmark')}
+        >
+          <Bookmark size={18} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+        </button>
+      </div>
       <div className="ootd-card-overlay">
         <div className="ootd-card-author">
           <Avatar

@@ -12,22 +12,48 @@ function formatCardDate(ts) {
   return d ? d.toLocaleDateString() : '';
 }
 
+function OotdGrid({ ootds, t }) {
+  return (
+    <div className="outfit-grid">
+      {ootds.map(o => (
+        <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+          <div className="outfit-card-cover">
+            {o.photoUrl
+              ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
+          </div>
+          <div className="outfit-card-meta">
+            <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
+            <span className="card-meta-date">{o.date || ''}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
   const [ootds, setOotds] = useState(null);
   const [itemsById, setItemsById] = useState({});
-  const [tab, setTab] = useState('mine'); // 'mine' (my OOTDs) | 'saved' (analyzed)
+  // 'mine' (my OOTDs) | 'saved' (OOTDs I bookmarked from feed) | 'analyzed'
+  const [tab, setTab] = useState('mine');
 
-  // Mine tab = the user's OOTD log (the thing that lives in the calendar
-  // and gets published to Discover). The legacy 'outfits' kind='mine'
-  // surface moved into Boards. Saved tab = analyzed outfits (and later
-  // feed-bookmarks).
+  // Each tab populates a different source:
+  //   mine     → OotdService.listMyOotds
+  //   saved    → OotdService.listBookmarkedOotds (feed bookmarks)
+  //   analyzed → OutfitService.listMyOutfits (kind='analyzed')
   useEffect(() => {
     if (!user || user.isAnonymous) { setOutfits([]); setOotds([]); return; }
     if (tab === 'mine') {
       setOotds(null);
       OotdService.listMyOotds({ uid: user.uid, pageSize: 60 })
+        .then(({ ootds }) => setOotds(ootds))
+        .catch(() => setOotds([]));
+    } else if (tab === 'saved') {
+      setOotds(null);
+      OotdService.listBookmarkedOotds({ uid: user.uid })
         .then(({ ootds }) => setOotds(ootds))
         .catch(() => setOotds([]));
     } else {
@@ -85,24 +111,18 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       )}
 
       <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '0.75rem' }}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'mine'}
-          className={`chip${tab === 'mine' ? ' active' : ''}`}
-          onClick={() => setTab('mine')}
-        >
-          {t('outfitsMine')}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'saved'}
-          className={`chip${tab === 'saved' ? ' active' : ''}`}
-          onClick={() => setTab('saved')}
-        >
-          {t('outfitsSaved')}
-        </button>
+        {['mine', 'saved', 'analyzed'].map(key => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            className={`chip${tab === key ? ' active' : ''}`}
+            onClick={() => setTab(key)}
+          >
+            {t(`outfits${key.charAt(0).toUpperCase() + key.slice(1)}`)}
+          </button>
+        ))}
       </nav>
 
       {tab === 'mine' ? (
@@ -116,35 +136,27 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
             </Link>
           </div>
         ) : (
-          <div className="outfit-grid">
-            {ootds.map(o => (
-              <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
-                <div className="outfit-card-cover">
-                  {o.photoUrl
-                    ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-                    : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
-                </div>
-                <div className="outfit-card-meta">
-                  <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
-                  <span className="card-meta-date">{o.date || ''}</span>
-                </div>
-              </Link>
-            ))}
+          <OotdGrid ootds={ootds} t={t} />
+        )
+      ) : tab === 'saved' ? (
+        ootds === null ? (
+          <div className="loading"><div className="spinner" /></div>
+        ) : ootds.length === 0 ? (
+          <div className="empty-state empty-state-card">
+            <p>{t('savedEmpty')}</p>
+            <Link to="/feed" className="btn btn-primary">{t('browseFeed')}</Link>
           </div>
+        ) : (
+          <OotdGrid ootds={ootds} t={t} />
         )
       ) : outfits === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : outfits.length === 0 ? (
         <div className="empty-state empty-state-card">
-          <p>{t('savedEmpty')}</p>
-          <div className="empty-state-actions">
-            <Link to="/analyze" className="btn btn-primary">
-              <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
-            </Link>
-            <Link to="/feed" className="btn btn-secondary">
-              {t('browseFeed')}
-            </Link>
-          </div>
+          <p>{t('analyzedEmpty')}</p>
+          <Link to="/analyze" className="btn btn-primary">
+            <Plus size={14} strokeWidth={1.8} /> {t('analyzeAPhoto')}
+          </Link>
         </div>
       ) : (
         <div className="outfit-grid">

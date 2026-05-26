@@ -26,6 +26,10 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
   const [pickedOutfitId, setPickedOutfitId] = useState(null);
   const [tier, setTier] = useState('pro');
   const [whatTab, setWhatTab] = useState('items'); // 'items' | 'outfits'
+  // Optional scene description sent to the model — empty = default
+  // catalog backdrop. Only meaningful in identity-refs mode (custom-
+  // photo mode preserves the photo's background regardless).
+  const [backgroundDesc, setBackgroundDesc] = useState('');
   const [customBlob, setCustomBlob] = useState(null);
   const [customPreview, setCustomPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -135,6 +139,7 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
         modelTier: tier,
+        backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
       });
       // Race the request against a short timeout — long enough to catch
@@ -223,6 +228,23 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
           {t('tierFlash')} <span className="muted">· {t('tierFlashHint')}</span>
         </button>
       </div>
+
+      {/* Optional scene — only relevant in identity-refs mode (custom
+          photos already carry their own background, which we preserve). */}
+      {!customBlob && (
+        <div className="tryon-bg-row">
+          <label htmlFor="bg-desc" className="tryon-bg-label">{t('tryOnBackgroundLabel')}</label>
+          <input
+            id="bg-desc"
+            type="text"
+            className="page-input tryon-bg-input"
+            value={backgroundDesc}
+            onChange={e => setBackgroundDesc(e.target.value.slice(0, 160))}
+            placeholder={t('tryOnBackgroundPlaceholder')}
+            maxLength={160}
+          />
+        </div>
+      )}
 
       {/* ── What to wear: items OR outfit ─────────────────────────── */}
       <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginTop: '0.75rem' }}>

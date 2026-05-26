@@ -136,6 +136,45 @@ async function deleteOotd({ uid, date }) {
   await deleteDoc(doc(db, OOTDS, ootdDocId(uid, date)));
 }
 
+/** Bookmark / unbookmark a feed OOTD. Stored under the viewer's own
+ *  /users/{uid}/bookmarks/{ootdId} so we can list them without
+ *  scanning every OOTD. type='ootd' tagged so the same collection
+ *  can hold outfit bookmarks later without a schema migration. */
+async function toggleBookmark(ootdId, currentlyBookmarked) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  const ref_ = doc(db, 'users', user.uid, 'bookmarks', ootdId);
+  if (currentlyBookmarked) {
+    await deleteDoc(ref_);
+  } else {
+    await setDoc(ref_, {
+      type: 'ootd',
+      ootdId,
+      createdAt: serverTimestamp(),
+    });
+  }
+}
+
+/** All OOTDs the user has bookmarked, newest-bookmark first. Returns
+ *  hydrated OOTD docs (skips ones that have been deleted / unpublished
+ *  since the bookmark). */
+async function listBookmarkedOotds({ uid, pageSize = 60 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, 'users', uid, 'bookmarks'),
+    where('type', '==', 'ootd'),
+    orderBy('createdAt', 'desc'),
+    limit(pageSize),
+  ));
+  const ids = snap.docs.map(d => d.data().ootdId).filter(Boolean);
+  if (!ids.length) return { ootds: [] };
+  const hydrated = await Promise.all(
+    ids.map(id => getDoc(doc(db, OOTDS, id))
+      .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
+      .catch(() => null))
+  );
+  return { ootds: hydrated.filter(Boolean) };
+}
+
 /** Like / unlike a published OOTD. Mirrors OutfitService.toggleLike. */
 async function toggleLike(ootdId, uid, currentlyLiked) {
   const ref_ = doc(db, OOTDS, ootdId);
@@ -201,6 +240,8 @@ export const OotdService = {
   listMyOotds,
   listPublicFeed,
   toggleLike,
+  toggleBookmark,
+  listBookmarkedOotds,
 };
 
 export default OotdService;
