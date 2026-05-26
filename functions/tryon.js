@@ -289,18 +289,30 @@ exports.virtualTryOn = onCall(
         const img = extractImage(res.response);
         if (!img) return { idx, ok: false, error: 'no image returned' };
         const path = `generations/${uid}/${genRef.id}/${idx}.png`;
-        // identity-refs mode: Gemini outputs the figure on a white catalog
-        // background with lots of padding around — sharp.trim() crops that
-        // away so the saved PNG is tight to the figure. Calendar / result
-        // displays then show the person head-to-feet without manual contain
-        // padding. Skip for custom-photo mode (the photo's real background
-        // is the point — don't strip it).
+        // identity-refs mode: normalize EVERY variant to the same 3:4
+        // portrait canvas so the result card is always the same size
+        // regardless of what Gemini happened to output. Pipeline:
+        //   1. trim — strip the white padding Gemini wraps the figure in
+        //   2. resize fit:contain into 900x1200 (3:4, ~ phone portrait)
+        //      with white padding around — figure now fills the canvas
+        //      vertically and centers horizontally.
+        // Custom-photo mode: skip both. The point of that mode is to
+        // preserve the real photo's background and aspect ratio.
         let buf = Buffer.from(img.data, 'base64');
         if (!customPhotoPath) {
           try {
-            buf = await sharp(buf).trim({ threshold: 10 }).png().toBuffer();
+            buf = await sharp(buf)
+              .trim({ threshold: 10 })
+              .resize({
+                width: 900,
+                height: 1200,
+                fit: 'contain',
+                background: { r: 255, g: 255, b: 255, alpha: 1 },
+              })
+              .png()
+              .toBuffer();
           } catch (e) {
-            console.warn('try-on trim skipped:', e?.message);
+            console.warn('try-on normalize skipped:', e?.message);
           }
         }
         await bucket.file(path).save(buf, {
