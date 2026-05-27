@@ -43,6 +43,8 @@ export const ja = {
   notifications: '通知',
   followers: 'フォロワー',
   following: 'フォロー中',
+  followersEmpty: 'まだフォロワーがいません。',
+  followingEmpty: 'まだ誰もフォローしていません。',
   follow: 'フォロー',
   userNotFound: 'ユーザーが見つかりません。',
   publicProfileEmpty: '公開コーデはまだありません。',

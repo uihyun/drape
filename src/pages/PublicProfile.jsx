@@ -4,7 +4,9 @@ import { MapPin } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
+import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { formatCount } from '../utils/formatCount.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only profile for *other* users (route: /u/:handle). Same identity
@@ -25,10 +27,11 @@ function InstagramGlyph(props) {
 }
 
 export function PublicProfile({ user, onSignIn }) {
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
   const { handle } = useParams();
   const [profile, setProfile] = useState(undefined); // undefined = loading, null = not found
   const [outfits, setOutfits] = useState(null);
+  const [followSheet, setFollowSheet] = useState(null);
 
   useEffect(() => {
     if (!handle) { setProfile(null); return; }
@@ -112,9 +115,14 @@ export function PublicProfile({ user, onSignIn }) {
             )}
           </div>
           <div className="profile-stats">
-            <span><strong>{followers}</strong> {t('followers')}</span>
-            <span className="profile-stats-sep">/</span>
-            <span><strong>{following}</strong> {t('following')}</span>
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
+              <strong>{formatCount(followers, lang)}</strong>
+              <span>{t('followers')}</span>
+            </button>
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('following')}>
+              <strong>{formatCount(following, lang)}</strong>
+              <span>{t('following')}</span>
+            </button>
           </div>
           {location && (
             <div className="profile-location">
@@ -152,6 +160,13 @@ export function PublicProfile({ user, onSignIn }) {
           ))}
         </div>
       )}
+
+      <FollowListSheet
+        open={!!followSheet}
+        uid={profile.uid}
+        kind={followSheet}
+        onClose={() => setFollowSheet(null)}
+      />
     </div>
   );
 }

@@ -41,6 +41,8 @@ export const ko = {
   notifications: '알림',
   followers: '팔로워',
   following: '팔로잉',
+  followersEmpty: '아직 팔로워가 없어요.',
+  followingEmpty: '아직 팔로잉하는 사람이 없어요.',
   follow: '팔로우',
   userNotFound: '사용자를 찾을 수 없어요.',
   publicProfileEmpty: '아직 공개된 코디가 없어요.',

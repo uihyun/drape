@@ -1173,6 +1173,47 @@ body.is-native {
   color: var(--text-muted);
   margin-bottom: 0.6rem;
 }
+/* Follower / Following list sheet (Instagram-style modal). */
+.follow-sheet { max-height: 80vh; overflow-y: auto; }
+.follow-sheet-empty {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 1.5rem 0;
+}
+.follow-sheet-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.follow-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.25rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+}
+.follow-sheet-row:hover { background: var(--surface-elevated); }
+.follow-sheet-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.follow-sheet-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.follow-sheet-handle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 .create-sheet-row {
   width: 100%;
   display: flex;
@@ -3549,19 +3590,37 @@ body.is-native {
   text-decoration: none;
 }
 .profile-ig:hover { color: var(--text-primary); }
+/* Instagram-style stat cells — number stacked over label, two cells
+   side-by-side with breathing room. Tapping opens FollowListSheet. */
 .profile-stats {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  gap: 1.4rem;
+  margin-top: 0.35rem;
 }
-.profile-stats strong {
+.profile-stat {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.profile-stat strong {
   color: var(--text-primary);
   font-weight: 700;
+  font-size: 0.98rem;
   font-feature-settings: 'tnum' 1;
 }
-.profile-stats-sep { color: var(--text-muted); padding: 0 0.1rem; }
+.profile-stat span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
 .profile-location {
   display: flex;
   align-items: center;

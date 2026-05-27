@@ -9,7 +9,9 @@ import { BoardList } from './BoardList.jsx';
 import { TryOnHistory } from './TryOnHistory.jsx';
 import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { shareLink } from '../services/share-service.js';
+import { formatCount } from '../utils/formatCount.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -33,7 +35,7 @@ function InstagramGlyph(props) {
 }
 
 export function Profile({ user, authReady, onSignIn }) {
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
   const navigate = useNavigate();
   const { tab: tabParam } = useParams();
   const activeTab = TABS.includes(tabParam) ? tabParam : DEFAULT_TAB;
@@ -41,6 +43,7 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profile, setProfile] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
+  const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
   useEffect(() => {
     if (!user || user.isAnonymous) { setProfile(null); setProfileLoaded(false); return; }
     return ProfileService.subscribeByUid(user.uid, p => {
@@ -143,9 +146,14 @@ export function Profile({ user, authReady, onSignIn }) {
             )}
           </div>
           <div className="profile-stats">
-            <span><strong>{followers}</strong> {t('followers')}</span>
-            <span className="profile-stats-sep">/</span>
-            <span><strong>{following}</strong> {t('following')}</span>
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
+              <strong>{formatCount(followers, lang)}</strong>
+              <span>{t('followers')}</span>
+            </button>
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('following')}>
+              <strong>{formatCount(following, lang)}</strong>
+              <span>{t('following')}</span>
+            </button>
           </div>
           {location && (
             <div className="profile-location">
@@ -185,6 +193,13 @@ export function Profile({ user, authReady, onSignIn }) {
       <ClaimHandleModal
         open={profileLoaded && !profile?.handle && !skipClaim}
         onClose={() => setSkipClaim(true)}
+      />
+
+      <FollowListSheet
+        open={!!followSheet}
+        uid={user.uid}
+        kind={followSheet}
+        onClose={() => setFollowSheet(null)}
       />
     </div>
   );

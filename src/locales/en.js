@@ -41,6 +41,8 @@ export const en = {
   notifications: 'Notifications',
   followers: 'Followers',
   following: 'Following',
+  followersEmpty: 'No followers yet.',
+  followingEmpty: 'Not following anyone yet.',
   follow: 'Follow',
   userNotFound: 'User not found.',
   publicProfileEmpty: 'No public outfits yet.',
