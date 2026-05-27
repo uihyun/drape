@@ -227,6 +227,7 @@ exports.onCommentCreated         = commentFns.onCommentCreated;
 exports.onCommentDeleted         = commentFns.onCommentDeleted;
 exports.onFollowCreated          = followFns.onFollowCreated;
 exports.onFollowDeleted          = followFns.onFollowDeleted;
+exports.recountMyFollows         = followFns.recountMyFollows;
 exports.onCollectionItemCreated  = collectionFns.onCollectionItemCreated;
 exports.onCollectionItemDeleted  = collectionFns.onCollectionItemDeleted;
 

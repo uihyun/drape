@@ -1,61 +1,53 @@
 // Maintain profiles.followerCount / followingCount via follow doc triggers.
 // Doc ID convention: `${followerId}_${followingId}`.
 //
-// Writes go straight to /profiles/{uid} — the same collection the UI reads
-// from. An earlier version wrote to /users/{uid} and relied on a mirror
-// trigger to copy values into /profiles/. The mirror was onDocumentUpdated,
-// so the FIRST follow for a user with no pre-existing /users/{uid} doc
-// silently CREATED the doc instead of updating it, and the mirror never
-// fired. Direct writes here eliminate that hidden failure mode.
+// We RECOUNT both sides from /follows on every trigger instead of using
+// FieldValue.increment, so counters always reflect the actual collection
+// state. Drift from missed events, replays, or rule failures self-heals
+// on the next follow/unfollow either side participates in. The extra
+// count() reads (≤ 1KB billed per 1000 docs) are negligible at our
+// scale and worth the correctness guarantee.
 
 const { onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 const db = admin.firestore();
 
-async function decrementClamped(ref, field) {
-    // FieldValue.increment(-1) would let counts go negative if the doc
-    // somehow drifted out of sync (replayed delete, missed create, etc.).
-    // A transaction reads + clamps so we never display a negative count.
-    await db.runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        const cur = (snap.exists && Number(snap.data()?.[field])) || 0;
-        tx.set(ref, { [field]: Math.max(0, cur - 1) }, { merge: true });
-    });
+async function recountFor(uid) {
+    if (!uid) return;
+    const [followersSnap, followingSnap] = await Promise.all([
+        db.collection('follows').where('followingId', '==', uid).count().get(),
+        db.collection('follows').where('followerId', '==', uid).count().get(),
+    ]);
+    await db.collection('profiles').doc(uid).set({
+        followerCount: followersSnap.data().count,
+        followingCount: followingSnap.data().count,
+    }, { merge: true });
+}
+
+async function recountBothSides(data) {
+    const { followerId, followingId } = data || {};
+    await Promise.all([recountFor(followerId), recountFor(followingId)]);
 }
 
 exports.onFollowCreated = onDocumentCreated('follows/{followId}', async (event) => {
-    const data = event.data?.data();
-    if (!data) return;
-    const { followerId, followingId } = data;
-    if (!followerId || !followingId) return;
-    try {
-        await Promise.all([
-            db.collection('profiles').doc(followingId).set(
-                { followerCount: admin.firestore.FieldValue.increment(1) },
-                { merge: true },
-            ),
-            db.collection('profiles').doc(followerId).set(
-                { followingCount: admin.firestore.FieldValue.increment(1) },
-                { merge: true },
-            ),
-        ]);
-    } catch (err) {
-        console.warn('onFollowCreated counter bump failed:', err.message);
-    }
+    try { await recountBothSides(event.data?.data()); }
+    catch (err) { console.warn('onFollowCreated recount failed:', err.message); }
 });
 
 exports.onFollowDeleted = onDocumentDeleted('follows/{followId}', async (event) => {
-    const data = event.data?.data();
-    if (!data) return;
-    const { followerId, followingId } = data;
-    if (!followerId || !followingId) return;
-    try {
-        await Promise.all([
-            decrementClamped(db.collection('profiles').doc(followingId), 'followerCount'),
-            decrementClamped(db.collection('profiles').doc(followerId), 'followingCount'),
-        ]);
-    } catch (err) {
-        console.warn('onFollowDeleted counter bump failed:', err.message);
-    }
+    try { await recountBothSides(event.data?.data()); }
+    catch (err) { console.warn('onFollowDeleted recount failed:', err.message); }
+});
+
+// One-shot self-heal. The caller can only recount themselves (no admin
+// surface to recount arbitrary users). The client invokes this once per
+// session on profile mount to fix any pre-existing drift from when the
+// trigger wrote to /users/ and the mirror sometimes missed.
+exports.recountMyFollows = onCall(async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    await recountFor(uid);
+    return { ok: true };
 });

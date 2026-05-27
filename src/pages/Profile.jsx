@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin } from 'lucide-react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Closet } from './Closet.jsx';
 import { Calendar } from './Calendar.jsx';
@@ -9,6 +11,7 @@ import { BoardList } from './BoardList.jsx';
 import { TryOnHistory } from './TryOnHistory.jsx';
 import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { shareLink } from '../services/share-service.js';
 import { formatCount } from '../utils/formatCount.js';
@@ -51,6 +54,19 @@ export function Profile({ user, authReady, onSignIn }) {
       setProfileLoaded(true);
     });
   }, [user]);
+
+  // One-shot self-heal for follower/following counts. Old triggers could
+  // leave the counts drifted from the actual /follows collection. Cost
+  // is two count() reads + one write; sessionStorage flag keeps it to
+  // once per browser session per user.
+  useEffect(() => {
+    if (!user?.uid || user.isAnonymous) return;
+    const key = `drape:followsRecounted:${user.uid}`;
+    if (sessionStorage.getItem(key)) return;
+    httpsCallable(functions, 'recountMyFollows')()
+      .then(() => sessionStorage.setItem(key, '1'))
+      .catch(err => console.warn('recountMyFollows failed:', err?.code, err?.message));
+  }, [user?.uid]);
 
   if (!authReady) {
     return <div className="loading"><div className="spinner" /></div>;
@@ -165,7 +181,7 @@ export function Profile({ user, authReady, onSignIn }) {
 
       </section>
 
-      {bio && <p className="profile-bio">{bio}</p>}
+      <ExpandableBio text={bio} />
 
       <nav className="profile-tabs" role="tablist" aria-label="Profile sections">
         {TABS.map(name => (

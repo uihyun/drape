@@ -6,6 +6,7 @@ import { OutfitService } from '../services/outfit-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { formatCount } from '../utils/formatCount.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -133,7 +134,7 @@ export function PublicProfile({ user, onSignIn }) {
         </div>
       </section>
 
-      {bio && <p className="profile-bio">{bio}</p>}
+      <ExpandableBio text={bio} />
 
       <div className="profile-public-tab">
         <span>{t('profileTabs.outfits')}</span>

@@ -13,7 +13,7 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
-const BIO_MAX = 200;
+const BIO_MAX = 80;
 const DISPLAY_NAME_MAX = 30;
 const INSTAGRAM_MAX = 30;
 const INSTAGRAM_RE = /^[a-zA-Z0-9._]{1,30}$/;

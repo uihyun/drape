@@ -12,7 +12,7 @@ const CLAIM_FN_URL = `${FUNCTIONS_BASE}/claimHandle`;
 const UPDATE_FN_URL = `${FUNCTIONS_BASE}/updateProfile`;
 
 export const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
-export const BIO_MAX = 200;
+export const BIO_MAX = 80;
 export const DISPLAY_NAME_MAX = 30;
 export const INSTAGRAM_MAX = 30;
 export const LOCATION_MAX = 60;
