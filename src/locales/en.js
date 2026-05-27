@@ -314,7 +314,7 @@ export const en = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'Account',
   identityRefsTitle: 'Identity reference photos',
-  identityRefsHint: 'Up to {max} full-body photos. Backgrounds removed; anything held (bags, phones) stays.',
+  identityRefsHint: 'Up to {max} full-body photos. Backgrounds removed; anything held (bags, phones) could stay in the cutout.',
   identityRefsPrimary: 'The first photo sets the pose and framing for try-on results. Others help preserve your face and body from different angles.',
   identityRefsPrimaryDragHint: 'First photo sets the pose. Drag to reorder, tap to preview.',
   identityRefsPrimaryBadge: 'Primary',

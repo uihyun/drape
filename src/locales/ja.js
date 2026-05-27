@@ -316,7 +316,7 @@ export const ja = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'アカウント',
   identityRefsTitle: 'アイデンティティ用写真',
-  identityRefsHint: '全身写真 最大 {max} 枚。背景は自動削除、手に持っているもの (バッグ、スマホなど) はそのまま残ります。',
+  identityRefsHint: '全身写真 最大 {max} 枚。背景は自動削除、手に持っているもの (バッグ、スマホなど) はカットアウトに残る場合があります。',
   identityRefsPrimary: '1 枚目がメインで、試着結果のポーズと構図を決めます。残りは別角度で顔と体をより正確に保存するために使われます。',
   identityRefsPrimaryDragHint: '1 枚目がポーズの基準。ドラッグで並べ替え、タップでプレビュー。',
   identityRefsPrimaryBadge: 'メイン',

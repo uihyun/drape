@@ -314,7 +314,7 @@ export const ko = {
   // ── Settings ───────────────────────────────────────────────────────
   account: '계정',
   identityRefsTitle: '내 정체성 레퍼런스 사진',
-  identityRefsHint: '전신 사진 최대 {max}장. 배경은 자동 제거, 손에 든 것 (가방, 폰 등) 은 그대로 남아요.',
+  identityRefsHint: '전신 사진 최대 {max}장. 배경은 자동 제거, 손에 든 것 (가방, 폰 등) 은 컷아웃에 남을 수 있어요.',
   identityRefsPrimary: '첫 번째 사진이 피팅 결과의 포즈와 구도를 결정해요. 나머지는 얼굴과 몸을 다른 각도에서 더 정확히 보존하는 데 사용됩니다.',
   identityRefsPrimaryDragHint: '첫 사진이 포즈 기준. 드래그로 순서 바꾸기, 탭하면 미리보기.',
   identityRefsPrimaryBadge: '메인',
