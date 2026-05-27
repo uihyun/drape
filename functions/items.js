@@ -327,13 +327,10 @@ a redesign.`;
     const [cropRes, tagRes] = await Promise.all([cropPromise, tagPromise]);
 
     // ── Crop result ────────────────────────────────────────────────────
-    // Gemini decides which pixels are the garment (handles "person
-    // wearing it" / "on hanger" / "on bed" cases segmentation alone
-    // can't reason about). Then we try segmentation first for smooth
-    // alpha edges; for white-on-white (segmentation has no semantic
-    // signal at zero contrast), we fall back to chromaKey which
-    // gracefully degrades — preserves the garment intact even if it
-    // can't punch a true cutout.
+    // TEMP: chromaKey-only for white-shirt comparison test. Hybrid
+    // (segmentation+chromaKey fallback) was here before — restore that
+    // block once we know whether segmentation actually adds value over
+    // the legacy chroma-key path on item photos.
     let croppedUrl = null;
     let croppedPath = null;
     if (cropRes?.response) {
@@ -341,21 +338,11 @@ a redesign.`;
       if (img) {
         try {
           const geminiPng = Buffer.from(img.data, 'base64');
-          const mime = img.mimeType || 'image/png';
-          let final = await segmentForeground(geminiPng, mime);
-          const ratio = await maskOpacityRatio(final);
-          if (ratio < 0.02 || ratio > 0.98) {
-            console.warn('processItem segmentation ratio out of range, falling back to chromaKey:', ratio.toFixed(3));
-            final = await chromaKeyToTransparent(
-              await sharp(geminiPng).png().toBuffer()
-            );
-          }
-          // Versioned path: each reprocess writes a fresh file so the
-          // immutable cache header doesn't make browsers/CDN keep
-          // serving the old crop. Old versions stay in storage as
-          // orphans (cleaned up by a scheduled job later).
+          const keyed = await chromaKeyToTransparent(
+            await sharp(geminiPng).png().toBuffer()
+          );
           croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
-          croppedUrl = await uploadAlphaPng(bucket, croppedPath, final);
+          croppedUrl = await uploadAlphaPng(bucket, croppedPath, keyed);
         } catch (err) {
           console.warn('processItem alpha pipeline failed:', err?.message);
         }
