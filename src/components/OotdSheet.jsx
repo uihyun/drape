@@ -127,6 +127,21 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
       let blob = null;
       if (photoBlob) {
         blob = await CameraService.compressImage(photoBlob);
+      } else if (
+        // No user-uploaded photo + no existing OOTD photo + linked
+        // a try-on → use the try-on's first variant as the OOTD
+        // photo. Without this the calendar cell and feed card
+        // render empty (linked-only OOTDs had no photoUrl).
+        linkedType === 'tryon' &&
+        linkedId &&
+        !existing?.photoUrl
+      ) {
+        const gen = tryons.find(g => g.id === linkedId);
+        const url = gen?.variantUrls?.[0];
+        if (url) {
+          try { blob = await fetch(url).then(r => r.blob()); }
+          catch (e) { console.warn('tryon→ootd photo fetch failed:', e?.message); }
+        }
       }
       await OotdService.upsertOotd({
         date,
