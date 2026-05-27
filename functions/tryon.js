@@ -306,21 +306,43 @@ exports.virtualTryOn = onCall(
         if (!customPhotoPath) {
           const hasScene = !!(backgroundDesc && backgroundDesc.trim());
           try {
-            buf = await sharp(buf)
-              // threshold bumped 10 → 30 because the segmentation
-              // identity refs (vs the old Gemini re-render) push
-              // Gemini to paint slightly off-white catalog bgs that
-              // trim at threshold 10 missed — figure was left with
-              // a few-pixel white margin top/bottom and fit:contain
-              // pillar/letter-boxed white bars into the variant
-              // card. 30 catches near-white reliably without eating
-              // bright fabric.
-              .trim({ threshold: 30 })
+            // Figure-size consistency matters most — we want the
+            // figure to fill the same height (~1200) in every
+            // variant regardless of how Gemini framed its backdrop.
+            // Trick: sample Gemini's corner color and use it BOTH
+            // as the trim reference AND the resize pad.
+            //   - trim({ background: sampled }) detects the exact
+            //     shade Gemini drew, not "near-white". Figure bbox
+            //     is consistent whether the backdrop is #ffffff or
+            //     #f6f6f6, so the trimmed result is always
+            //     figure-tight (fills the canvas height).
+            //   - pad uses the same sampled color, so the seam
+            //     between figure-area and pad strips disappears.
+            const original = sharp(buf);
+            let bgFill = { r: 255, g: 255, b: 255, alpha: 1 };
+            if (!hasScene) {
+              try {
+                const sample = await original.clone()
+                  .extract({ left: 0, top: 0, width: 8, height: 8 })
+                  .raw().toBuffer({ resolveWithObject: true });
+                let r = 0, g = 0, b = 0;
+                const px = sample.info.width * sample.info.height;
+                const ch = sample.info.channels;
+                for (let i = 0; i < sample.data.length; i += ch) {
+                  r += sample.data[i]; g += sample.data[i + 1]; b += sample.data[i + 2];
+                }
+                bgFill = { r: Math.round(r / px), g: Math.round(g / px), b: Math.round(b / px), alpha: 1 };
+              } catch (e) {
+                console.warn('bg sample skipped:', e?.message);
+              }
+            }
+            buf = await original
+              .trim({ background: bgFill, threshold: 15 })
               .resize({
                 width: 900,
                 height: 1200,
                 fit: hasScene ? 'cover' : 'contain',
-                background: { r: 255, g: 255, b: 255, alpha: 1 },
+                background: bgFill,
               })
               .png()
               .toBuffer();
