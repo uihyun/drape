@@ -232,7 +232,7 @@ async function uploadAlphaPng(bucket, path, pngBuf) {
  *   response:     { ok: true, tags, croppedUrl }
  */
 exports.processItem = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 120, memory: '1GiB' },
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 120, memory: '2GiB' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
