@@ -6,7 +6,8 @@ import { FUNCTIONS_BASE } from './api-base.js';
 
 import { collection, doc, getDoc, getDocs, query, where, limit, onSnapshot } from 'firebase/firestore';
 import { updateProfile as authUpdateProfile } from 'firebase/auth';
-import { db, auth } from '../firebase.js';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../firebase.js';
 
 const CLAIM_FN_URL = `${FUNCTIONS_BASE}/claimHandle`;
 const UPDATE_FN_URL = `${FUNCTIONS_BASE}/updateProfile`;
@@ -128,6 +129,27 @@ export const ProfileService = {
 
   async updateLocation(location) {
     return authedFetch(UPDATE_FN_URL, { location });
+  },
+
+  // Upload a profile photo. Stored under /users/{uid}/profile/avatar.jpg
+  // (public read, owner write via storage.rules), then the URL is pushed
+  // to profiles/{uid}.photoURL through the updateProfile cloud function.
+  // A query-string cache buster suffixes the URL on subsequent uploads
+  // so the browser doesn't keep serving the old image after a swap.
+  async updateProfilePhoto(blob) {
+    const user = auth.currentUser;
+    if (!user) throw new Error('not_signed_in');
+    const path = `users/${user.uid}/profile/avatar.jpg`;
+    const r = storageRef(storage, path);
+    await uploadBytes(r, blob, { contentType: blob.type || 'image/jpeg' });
+    const url = await getDownloadURL(r);
+    const bustered = `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`;
+    await authedFetch(UPDATE_FN_URL, { photoURL: bustered });
+    return bustered;
+  },
+
+  async removeProfilePhoto() {
+    await authedFetch(UPDATE_FN_URL, { photoURL: '' });
   },
 
   // Persist displayName to profiles/{uid} (server) and mirror to the

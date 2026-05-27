@@ -95,7 +95,10 @@ export function Profile({ user, authReady, onSignIn }) {
   // pill in the corner of the avatar like the "14" in the Lekondo
   // capture. Hidden when 0 (would otherwise be visual noise).
   const outfitCount = profile?.outfitCount ?? 0;
-  const photoURL = user.photoURL || profile?.photoURL;
+  // Only the user-uploaded photo counts. We deliberately don't fall
+  // back to the auth provider's avatar (Google profile pic etc) so a
+  // fresh account shows an empty avatar and gets nudged to upload.
+  const photoURL = profile?.photoURL || null;
 
   // "Invite" = friend invite. Shares a referral link back to the user's
   // own public profile (so the recipient lands on their look first),

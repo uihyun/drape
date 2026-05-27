@@ -27,7 +27,10 @@ function defaultHandleForUid(uid) {
     return `drape${uid.replace(/[^a-z0-9]/gi, '').slice(0, 8).toLowerCase()}`;
 }
 
-async function ensureProfile(uid, { displayName, photoURL }) {
+// Profile is created with photoURL: null intentionally — the user
+// uploads their own from Settings. We don't pull from auth provider so
+// the empty avatar prompts a real choice.
+async function ensureProfile(uid, { displayName }) {
     const profileRef = db.collection('profiles').doc(uid);
 
     return db.runTransaction(async (txn) => {
@@ -37,7 +40,6 @@ async function ensureProfile(uid, { displayName, photoURL }) {
         if (existing && existing.handle) {
             const update = {};
             if (displayName && displayName !== existing.displayName) update.displayName = displayName;
-            if (photoURL && photoURL !== existing.photoURL) update.photoURL = photoURL;
             if (Object.keys(update).length) txn.update(profileRef, update);
             return existing.handle;
         }
@@ -54,7 +56,7 @@ async function ensureProfile(uid, { displayName, photoURL }) {
                 txn.set(profileRef, {
                     handle,
                     displayName: displayName || '',
-                    photoURL: photoURL || null,
+                    photoURL: null,
                     bio: '',
                     location: '',
                     followerCount: 0,
@@ -123,7 +125,7 @@ exports.claimHandle = onRequest(async (req, res) => {
                 txn.set(profileRef, {
                     handle: desired,
                     displayName: decoded.name || '',
-                    photoURL: decoded.picture || null,
+                    photoURL: null,
                     bio: '',
                     location: '',
                     followerCount: 0,
@@ -201,6 +203,14 @@ exports.updateProfile = onRequest(async (req, res) => {
             const location = data.location.trim().slice(0, LOCATION_MAX);
             update.location = location;
             result.location = location;
+        }
+        if (typeof data.photoURL === 'string') {
+            // Empty string = explicit removal. Anything else: trust the
+            // client URL since the only writable Storage path is
+            // /users/{uid}/profile/{filename} (owner-only per rules).
+            const photoURL = data.photoURL.trim();
+            update.photoURL = photoURL || null;
+            result.photoURL = update.photoURL;
         }
 
         if (Object.keys(update).length === 0) {

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
+import { Avatar } from '../components/Avatar.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { useCredits } from '../services/credits-service.js';
@@ -156,6 +157,8 @@ function ProfileSection({ profile, user, t }) {
     <section className="settings-card">
       <h2 className="settings-h2">{t('profile')}</h2>
 
+      <ProfilePhotoRow profile={profile} user={user} t={t} />
+
       <FieldRow
         label={t('handle')}
         value={handle}
@@ -213,6 +216,71 @@ function ProfileSection({ profile, user, t }) {
         </button>
       </div>
     </section>
+  );
+}
+
+function ProfilePhotoRow({ profile, user, t }) {
+  const fileRef = useRef();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  // Optimistic preview so the user sees the new photo immediately while
+  // the upload + profile mirror are still in flight.
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const photoURL = previewUrl || profile?.photoURL || null;
+
+  const onPick = async (file) => {
+    if (!file || busy) return;
+    setErr(null);
+    setBusy(true);
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
+    try {
+      const blob = await CameraService.compressImage(file);
+      await ProfileService.updateProfilePhoto(blob);
+    } catch (e) {
+      setErr(e.message || 'upload_failed');
+      setPreviewUrl(null);
+    } finally {
+      URL.revokeObjectURL(localPreview);
+      setBusy(false);
+    }
+  };
+
+  const onRemove = async () => {
+    if (busy) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await ProfileService.removeProfilePhoto();
+      setPreviewUrl(null);
+    } catch (e) {
+      setErr(e.message || 'remove_failed');
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="settings-photo-row">
+      <Avatar src={photoURL} name={profile?.displayName || user?.displayName} size={76} className="settings-photo-avatar" />
+      <div className="settings-photo-actions">
+        <button type="button" className="btn btn-secondary" onClick={() => fileRef.current?.click()} disabled={busy}>
+          <Upload size={14} strokeWidth={1.7} />
+          {photoURL ? t('changePhoto') : t('addPhoto')}
+        </button>
+        {photoURL && (
+          <button type="button" className="btn btn-secondary danger-btn" onClick={onRemove} disabled={busy}>
+            {t('removePhoto')}
+          </button>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => onPick(e.target.files?.[0])}
+        />
+        {err && <p className="settings-error" style={{ margin: '0.4rem 0 0' }}>{err}</p>}
+      </div>
+    </div>
   );
 }
 

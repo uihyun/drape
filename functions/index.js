@@ -164,14 +164,13 @@ exports.initializeUser = onRequest(async (req, res) => {
             const guestCreditsClaimed = Number(body.guestCreditsClaimed || 0);
             const credits = await initializeAndApplyDaily(auth.uid, guestCreditsClaimed);
 
-            // Best-effort profile bootstrap. The Firebase Auth token already
-            // carries displayName + photoURL, so we don't need them in the
-            // request body.
+            // Best-effort profile bootstrap. We only seed displayName from
+            // the auth provider — photoURL stays null so the avatar starts
+            // empty and the user is nudged to upload their own.
             try {
                 const userRecord = await admin.auth().getUser(auth.uid);
                 await profileFns.ensureProfile(auth.uid, {
                     displayName: userRecord.displayName || '',
-                    photoURL: userRecord.photoURL || null,
                 });
             } catch (e) {
                 console.warn('ensureProfile failed (non-fatal):', e.message);
