@@ -1215,11 +1215,15 @@ body.is-native {
 }
 .closet-grid {
   display: grid;
-  /* Lekondo's closet is fixed 3-col on every viewport — items stay
-     legible and the rhythm of the page stays predictable. */
+  /* Default 3-col rhythm — overridden inline by .pinch-grid when the
+     user pinch-zooms (1..4 cols persisted in localStorage). */
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem 0.75rem;
 }
+/* Two-finger pinch on a grid: opt out of the browser's own zoom so the
+   gesture flows into our useColumnZoom hook. pan-y still allows the
+   page to scroll vertically with one finger. */
+.pinch-grid { touch-action: pan-y; }
 /* Grid items default to min-width:auto (== min-content), which on a
    narrow phone viewport lets a long item name (or large image) push
    the 3-col track wider than the screen. Explicit min-width:0 lets

@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CATEGORIES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { usePinchColumns } from '../hooks/usePinchColumns.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
@@ -11,6 +12,7 @@ const VIEWS = ['all', 'categories', 'brands', 'usage'];
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
+  const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
   const [items, setItems] = useState(null);
   // Top-row view (Lekondo: All / Usage / Brands / Categories). Picking
   // "categories" reveals a second row of category chips that drive the
@@ -158,11 +160,15 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           </Link>
         </div>
       ) : view === 'usage' ? (
-        <GroupedList groups={groupByUsage(filtered, t)} t={t} />
+        <GroupedList groups={groupByUsage(filtered, t)} cols={cols} t={t} />
       ) : view === 'brands' ? (
-        <GroupedList groups={groupByBrand(filtered, t)} t={t} />
+        <GroupedList groups={groupByBrand(filtered, t)} cols={cols} t={t} />
       ) : (
-        <div className="closet-grid">
+        <div
+          ref={gridRef}
+          className="closet-grid pinch-grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {filtered.map(item => <ItemCard key={item.id} item={item} t={t} />)}
         </div>
       )}
@@ -209,7 +215,7 @@ function groupByBrand(items, t) {
   return sorted;
 }
 
-function GroupedList({ groups, t }) {
+function GroupedList({ groups, cols, t }) {
   return (
     <div className="closet-groups">
       {groups.map((g, i) => (
@@ -218,7 +224,10 @@ function GroupedList({ groups, t }) {
             <h3>{g.label}</h3>
             <span className="closet-group-count">{g.items.length}</span>
           </header>
-          <div className="closet-grid">
+          <div
+            className="closet-grid"
+            style={cols ? { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` } : undefined}
+          >
             {g.items.map(item => <ItemCard key={item.id} item={item} t={t} />)}
           </div>
         </section>

@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { OotdService } from '../services/ootd-service.js';
+import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function formatCardDate(ts) {
@@ -13,8 +14,13 @@ function formatCardDate(ts) {
 }
 
 function OotdGrid({ ootds, t }) {
+  const { cols, ref } = usePinchColumns('outfits', { min: 1, max: 3, def: 1 });
   return (
-    <div className="outfit-grid">
+    <div
+      ref={ref}
+      className="outfit-grid pinch-grid"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
       {ootds.map(o => (
         <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
           <div className="outfit-card-cover">
@@ -162,18 +168,29 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
           </Link>
         </div>
       ) : (
-        <div className="outfit-grid">
-          {outfits.map(o => (
-            <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
-              <OutfitCover outfit={o} itemsById={itemsById} t={t} />
-              <div className="outfit-card-meta">
-                <span className="card-meta-name">{o.name || t('untitledOutfit')}</span>
-                <span className="card-meta-date">{formatCardDate(o.createdAt || o.updatedAt)}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <AnalyzedGrid outfits={outfits} itemsById={itemsById} t={t} />
       )}
+    </div>
+  );
+}
+
+function AnalyzedGrid({ outfits, itemsById, t }) {
+  const { cols, ref } = usePinchColumns('outfits', { min: 1, max: 3, def: 1 });
+  return (
+    <div
+      ref={ref}
+      className="outfit-grid pinch-grid"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
+      {outfits.map(o => (
+        <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
+          <OutfitCover outfit={o} itemsById={itemsById} t={t} />
+          <div className="outfit-card-meta">
+            <span className="card-meta-name">{o.name || t('untitledOutfit')}</span>
+            <span className="card-meta-date">{formatCardDate(o.createdAt || o.updatedAt)}</span>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }

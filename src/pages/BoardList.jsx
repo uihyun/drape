@@ -4,12 +4,14 @@ import { Plus } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // "My boards" — grid of sticker-board cover thumbnails. Embedded in the
 // Profile shell's Boards tab, or standalone at /boards.
 export function BoardList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
+  const { cols, ref: gridRef } = usePinchColumns('boards', { min: 1, max: 3, def: 2 });
   const [boards, setBoards] = useState(null);
   const [items, setItems] = useState([]);
   const itemsById = useMemo(
@@ -62,7 +64,11 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           </Link>
         </div>
       ) : (
-        <div className="board-list-grid">
+        <div
+          ref={gridRef}
+          className="board-list-grid pinch-grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {boards.map(b => (
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
               <BoardThumbnail board={b} itemsById={itemsById} />
