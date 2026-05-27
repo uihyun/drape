@@ -3600,13 +3600,16 @@ body.is-native {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-bottom: 0.2rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
 }
 .profile-name {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.005em;
   color: var(--text-primary);
+  word-break: break-word;
+  line-height: 1.2;
 }
 .profile-ig {
   display: inline-flex;
@@ -3615,11 +3618,12 @@ body.is-native {
 }
 .profile-ig:hover { color: var(--text-primary); }
 /* Instagram-style stat cells — number stacked over label, two cells
-   side-by-side with breathing room. Tapping opens FollowListSheet. */
+   side-by-side with breathing room. Stats sit first in the meta column
+   (visually aligned with the avatar's vertical center) and the name
+   row follows underneath. Tapping opens FollowListSheet. */
 .profile-stats {
   display: flex;
-  gap: 1.4rem;
-  margin-top: 0.35rem;
+  gap: 1.6rem;
 }
 .profile-stat {
   display: inline-flex;
