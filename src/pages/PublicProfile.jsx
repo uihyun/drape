@@ -142,16 +142,6 @@ export function PublicProfile({ user, onSignIn }) {
         </div>
 
         <div className="profile-meta">
-          <div className="profile-stats">
-            <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
-              <strong>{formatCount(followers, lang)}</strong>
-              <span>{t('followers')}</span>
-            </button>
-            <button type="button" className="profile-stat" onClick={() => setFollowSheet('following')}>
-              <strong>{formatCount(following, lang)}</strong>
-              <span>{t('following')}</span>
-            </button>
-          </div>
           <div className="profile-name-row">
             <span className="profile-name">{displayName}</span>
             {profile.instagram && (
@@ -165,6 +155,16 @@ export function PublicProfile({ user, onSignIn }) {
                 <InstagramGlyph />
               </a>
             )}
+          </div>
+          <div className="profile-stats">
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
+              <strong>{formatCount(followers, lang)}</strong>
+              <span>{t('followers')}</span>
+            </button>
+            <button type="button" className="profile-stat" onClick={() => setFollowSheet('following')}>
+              <strong>{formatCount(following, lang)}</strong>
+              <span>{t('following')}</span>
+            </button>
           </div>
           {location && (
             <div className="profile-location">
