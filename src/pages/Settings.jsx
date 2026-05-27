@@ -413,7 +413,6 @@ function IdentitySection({ user, t }) {
     <section className="settings-card">
       <h2 className="settings-h2">{t('identityRefsTitle')}</h2>
       <p className="settings-hint">{t('identityRefsHint', { max: IdentityService.MAX_IDENTITY_REFS })}</p>
-      <p className="settings-hint">{t('identityRefsHeldItemsHint')}</p>
       {refs.length > 0 && (
         <p className="settings-hint identity-refs-primary-hint">
           {t('identityRefsPrimaryDragHint')}

@@ -1467,6 +1467,13 @@ body.is-native {
   position: relative;
   user-select: none;
   -webkit-user-select: none;
+  outline: none;
+  caret-color: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-chips--text .chip:focus,
+.filter-chips--text .chip:focus-visible {
+  outline: none;
 }
 .filter-chips--text .chip.active {
   color: var(--text-primary);

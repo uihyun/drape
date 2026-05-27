@@ -313,10 +313,9 @@ export const en = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'Account',
   identityRefsTitle: 'Identity reference photos',
-  identityRefsHint: 'Add up to {max} full-body photos for virtual try-on. Backgrounds are removed automatically.',
-  identityRefsHeldItemsHint: 'Anything you hold in the photo (bags, phones, etc.) will be kept in the cutout — pick a photo with what you want shown.',
+  identityRefsHint: 'Up to {max} full-body photos. Backgrounds removed; anything held (bags, phones) stays.',
   identityRefsPrimary: 'The first photo sets the pose and framing for try-on results. Others help preserve your face and body from different angles.',
-  identityRefsPrimaryDragHint: 'The first photo is the primary — it sets the pose and framing. Drag to reorder; the leftmost photo becomes primary. Tap to preview.',
+  identityRefsPrimaryDragHint: 'First photo sets the pose. Drag to reorder, tap to preview.',
   identityRefsPrimaryBadge: 'Primary',
   identityRefsReprocess: 'Re-cut background',
   addRef: 'Add photo',

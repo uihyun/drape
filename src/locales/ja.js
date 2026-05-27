@@ -315,10 +315,9 @@ export const ja = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'アカウント',
   identityRefsTitle: 'アイデンティティ用写真',
-  identityRefsHint: 'バーチャル試着用の全身写真を最大 {max} 枚まで登録。背景は自動で削除されます。',
-  identityRefsHeldItemsHint: '写真の中で手に持っているもの (バッグ、スマホなど) はカットアウトに残ります。見せたい姿が写った写真を選んでください。',
+  identityRefsHint: '全身写真 最大 {max} 枚。背景は自動削除、手に持っているもの (バッグ、スマホなど) はそのまま残ります。',
   identityRefsPrimary: '1 枚目がメインで、試着結果のポーズと構図を決めます。残りは別角度で顔と体をより正確に保存するために使われます。',
-  identityRefsPrimaryDragHint: '1 枚目がメイン (ポーズと構図の基準)。ドラッグで並べ替え — 一番左がメインになります。タップで拡大表示。',
+  identityRefsPrimaryDragHint: '1 枚目がポーズの基準。ドラッグで並べ替え、タップでプレビュー。',
   identityRefsPrimaryBadge: 'メイン',
   identityRefsReprocess: '背景を再切り抜き',
   addRef: '写真を追加',
