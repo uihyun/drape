@@ -307,7 +307,15 @@ exports.virtualTryOn = onCall(
           const hasScene = !!(backgroundDesc && backgroundDesc.trim());
           try {
             buf = await sharp(buf)
-              .trim({ threshold: 10 })
+              // threshold bumped 10 → 30 because the segmentation
+              // identity refs (vs the old Gemini re-render) push
+              // Gemini to paint slightly off-white catalog bgs that
+              // trim at threshold 10 missed — figure was left with
+              // a few-pixel white margin top/bottom and fit:contain
+              // pillar/letter-boxed white bars into the variant
+              // card. 30 catches near-white reliably without eating
+              // bright fabric.
+              .trim({ threshold: 30 })
               .resize({
                 width: 900,
                 height: 1200,

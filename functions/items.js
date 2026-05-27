@@ -327,10 +327,13 @@ a redesign.`;
     const [cropRes, tagRes] = await Promise.all([cropPromise, tagPromise]);
 
     // ── Crop result ────────────────────────────────────────────────────
-    // TEMP: chromaKey-only for white-shirt comparison test. Hybrid
-    // (segmentation+chromaKey fallback) was here before — restore that
-    // block once we know whether segmentation actually adds value over
-    // the legacy chroma-key path on item photos.
+    // Gemini decides which pixels are the garment (handles "person
+    // wearing it" / "on hanger" / "on bed" cases segmentation alone
+    // can't reason about). Then segmentation cleans Gemini's flat-bg
+    // output to a real alpha channel — confirmed sharper than the
+    // legacy chroma-key on white shirts in A/B tests. chromaKey stays
+    // as a fallback for the rare case segmentation can't find the
+    // subject at all (ratio out of bounds).
     let croppedUrl = null;
     let croppedPath = null;
     if (cropRes?.response) {
@@ -338,11 +341,17 @@ a redesign.`;
       if (img) {
         try {
           const geminiPng = Buffer.from(img.data, 'base64');
-          const keyed = await chromaKeyToTransparent(
-            await sharp(geminiPng).png().toBuffer()
-          );
+          const mime = img.mimeType || 'image/png';
+          let final = await segmentForeground(geminiPng, mime);
+          const ratio = await maskOpacityRatio(final);
+          if (ratio < 0.02 || ratio > 0.98) {
+            console.warn('processItem segmentation ratio out of range, falling back to chromaKey:', ratio.toFixed(3));
+            final = await chromaKeyToTransparent(
+              await sharp(geminiPng).png().toBuffer()
+            );
+          }
           croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
-          croppedUrl = await uploadAlphaPng(bucket, croppedPath, keyed);
+          croppedUrl = await uploadAlphaPng(bucket, croppedPath, final);
         } catch (err) {
           console.warn('processItem alpha pipeline failed:', err?.message);
         }
