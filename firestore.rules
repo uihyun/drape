@@ -41,9 +41,14 @@ service cloud.firestore {
 
     // ── Items (the closet) ─────────────────────────────────────────────
     match /items/{itemId} {
-      // Items are always private to the owner. Outfits posted publicly
-      // surface the cropped item images independently via outfit doc fields.
-      allow read: if request.auth != null
+      // Single-doc reads are public so visitors viewing someone's public
+      // board can fetch each sticker's item doc (for its image URL).
+      // List queries still require owner scope — clients query with
+      // where('userId', '==', uid); attempts to enumerate the whole
+      // collection fail because per-doc evaluation rejects items owned
+      // by other users.
+      allow get: if true;
+      allow list: if request.auth != null
         && resource.data.userId == request.auth.uid;
 
       allow create: if request.auth != null
