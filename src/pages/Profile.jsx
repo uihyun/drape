@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon, MapPin } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, MapPin, MessageSquare } from 'lucide-react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -126,6 +126,9 @@ export function Profile({ user, authReady, onSignIn }) {
           <button type="button" className="btn-invite" onClick={onInvite}>
             {t('invite')}
           </button>
+          <Link to="/messages" className="icon-btn" aria-label={t('inboxTitle')}>
+            <MessageSquare size={20} strokeWidth={1.6} />
+          </Link>
           <button type="button" className="icon-btn" aria-label={t('notifications')}>
             <Bell size={20} strokeWidth={1.6} />
           </button>

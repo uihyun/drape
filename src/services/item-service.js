@@ -123,13 +123,20 @@ async function getItem(itemId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-/** Owner-only edits — tag corrections, rename, archive toggle. */
+/** Owner-only edits — tag corrections, rename, archive toggle, listing flags. */
 async function updateItem(itemId, patch) {
   // The Firestore rule limits which keys may change; keep this list aligned.
-  const allowed = ['name', 'notes', 'tags', 'isArchived', 'isFavorite'];
+  const allowed = [
+    'name', 'notes', 'tags', 'isArchived', 'isFavorite',
+    'forSale', 'priceOriginal', 'priceAsking', 'conditionGrade', 'listedAt',
+  ];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))
   );
+  // Stamp listedAt the first time forSale flips on; preserves original list time.
+  if (safe.forSale === true && patch.listedAt === undefined) {
+    safe.listedAt = serverTimestamp();
+  }
   safe.updatedAt = serverTimestamp();
   await updateDoc(doc(db, ITEMS, itemId), safe);
 }

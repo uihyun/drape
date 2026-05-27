@@ -32,6 +32,9 @@ import { OotdDetail } from './pages/OotdDetail.jsx';
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
 import { Feed } from './pages/Feed.jsx';
+import { Marketplace } from './pages/Marketplace.jsx';
+import { Inbox } from './pages/Inbox.jsx';
+import { Thread } from './pages/Thread.jsx';
 import { Settings } from './pages/Settings.jsx';
 import { Privacy } from './pages/Privacy.jsx';
 import { Terms } from './pages/Terms.jsx';
@@ -141,7 +144,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/tryons" element={<Navigate to="/profile/tryon" replace />} />
 
           <Route path="/closet/add" element={<AddItem user={user} onSignIn={handleSignIn} />} />
-          <Route path="/i/:itemId" element={<ItemDetail user={user} />} />
+          <Route path="/i/:itemId" element={<ItemDetail user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/outfits/new" element={<OutfitBuilder user={user} onSignIn={handleSignIn} />} />
           <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
@@ -151,13 +154,16 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
-          <Route path="/ootd/:ootdId" element={<OotdDetail user={user} />} />
+          <Route path="/market" element={<Marketplace />} />
+          <Route path="/messages" element={<Inbox user={user} />} />
+          <Route path="/messages/:threadId" element={<Thread user={user} />} />
+          <Route path="/ootd/:ootdId" element={<OotdDetail user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/:boardId/edit" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
-          <Route path="/boards/:boardId" element={<BoardDetail user={user} />} />
+          <Route path="/boards/:boardId" element={<BoardDetail user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
 

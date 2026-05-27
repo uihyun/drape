@@ -7,13 +7,14 @@ import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { MoreMenu } from '../components/MoreMenu.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only board view at /b/:boardId. Anyone can hit this URL but
 // the underlying read only succeeds if the board is public OR they're
 // the owner. Composition rendered via the shared BoardThumbnail.
 // Owner sees the OOTD-style "Publish to Feed" / "Unlist" eye button.
-export function BoardDetail({ user }) {
+export function BoardDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { boardId } = useParams();
   const navigate = useNavigate();
@@ -110,21 +111,29 @@ export function BoardDetail({ user }) {
             {board.isPublic ? t('unlist') : t('publishToFeed')}
           </button>
         ) : (
-          <button
-            type="button"
-            className={`btn-edit${bookmarked ? ' is-liked' : ''}`}
-            onClick={async () => {
-              if (!user || user.isAnonymous) return;
-              const prev = bookmarked;
-              setBookmarked(!prev);
-              try { await BoardService.toggleBookmark(board.id, prev); }
-              catch (err) { console.warn('bookmark failed:', err.message); setBookmarked(prev); }
-            }}
-            aria-label={bookmarked ? t('unbookmark') : t('bookmark')}
-          >
-            <Bookmark size={14} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
-            {bookmarked ? t('unbookmark') : t('bookmark')}
-          </button>
+          <>
+            <button
+              type="button"
+              className={`btn-edit${bookmarked ? ' is-liked' : ''}`}
+              onClick={async () => {
+                if (!user || user.isAnonymous) return;
+                const prev = bookmarked;
+                setBookmarked(!prev);
+                try { await BoardService.toggleBookmark(board.id, prev); }
+                catch (err) { console.warn('bookmark failed:', err.message); setBookmarked(prev); }
+              }}
+              aria-label={bookmarked ? t('unbookmark') : t('bookmark')}
+            >
+              <Bookmark size={14} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+              {bookmarked ? t('unbookmark') : t('bookmark')}
+            </button>
+            <MoreMenu
+              target={{ type: 'board', id: board.id }}
+              targetUid={board.userId}
+              user={user}
+              onSignIn={onSignIn}
+            />
+          </>
         )}
       </header>
 

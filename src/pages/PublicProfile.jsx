@@ -9,6 +9,7 @@ import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
+import { MoreMenu } from '../components/MoreMenu.jsx';
 import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -107,7 +108,16 @@ export function PublicProfile({ user, onSignIn }) {
           {isSelf ? (
             <Link to="/profile" className="btn-invite">{t('navProfile')}</Link>
           ) : (
-            <FollowButton targetUid={profile.uid} user={user} onSignInRequest={onSignIn} />
+            <>
+              <FollowButton targetUid={profile.uid} user={user} onSignInRequest={onSignIn} />
+              <MoreMenu
+                target={{ type: 'profile', id: profile.uid }}
+                targetUid={profile.uid}
+                user={user}
+                onSignIn={onSignIn}
+                showBlock
+              />
+            </>
           )}
         </div>
       </header>

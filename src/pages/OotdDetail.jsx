@@ -8,6 +8,7 @@ import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
+import { MoreMenu } from '../components/MoreMenu.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Editorial page for a single OOTD. Mirrors the Lekondo capture:
@@ -15,7 +16,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // palette, aesthetic composition bars, notes. Owner can publish /
 // unpublish and delete; visitor can just read (and the OOTD is only
 // readable at all if isPublic=true — owner-only otherwise).
-export function OotdDetail({ user }) {
+export function OotdDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { ootdId } = useParams();
   const navigate = useNavigate();
@@ -191,10 +192,17 @@ export function OotdDetail({ user }) {
           text={notes || ''}
           url={`${typeof window !== 'undefined' ? window.location.origin : ''}/ootd/${ootd.id}`}
         />
-        {isOwner && (
+        {isOwner ? (
           <button type="button" className="btn btn-secondary danger-btn" onClick={remove} disabled={busy}>
             <Trash2 size={14} strokeWidth={1.6} /> {t('delete')}
           </button>
+        ) : (
+          <MoreMenu
+            target={{ type: 'ootd', id: ootd.id }}
+            targetUid={ootd.userId}
+            user={user}
+            onSignIn={onSignIn}
+          />
         )}
       </div>
     </div>

@@ -7,7 +7,10 @@ import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
 import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { ShareButton } from '../components/ShareButton.jsx';
+import { MoreMenu } from '../components/MoreMenu.jsx';
+import { MessageService } from '../services/message-service.js';
 import { shareOrDownloadImage } from '../services/share-service.js';
+import { elapsedLabel, daysSince } from '../utils/elapsed.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Full-screen single-item viewer modeled on Image 24:
@@ -17,7 +20,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 //
 // The legacy stacked layout is preserved for screens > 768px where the
 // editor lives below the hero.
-export function ItemDetail({ user }) {
+export function ItemDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { itemId } = useParams();
   const navigate = useNavigate();
@@ -34,7 +37,14 @@ export function ItemDetail({ user }) {
     return onSnapshot(doc(db, 'items', itemId), snap => {
       const data = snap.exists() ? { id: snap.id, ...snap.data() } : null;
       setItem(data);
-      if (data && !editing) setDraft({ name: data.name || '', tags: data.tags || {} });
+      if (data && !editing) setDraft({
+        name: data.name || '',
+        tags: data.tags || {},
+        forSale: !!data.forSale,
+        priceOriginal: data.priceOriginal ?? '',
+        priceAsking: data.priceAsking ?? '',
+        conditionGrade: data.conditionGrade || '',
+      });
     });
   }, [itemId, editing]);
 
@@ -55,9 +65,31 @@ export function ItemDetail({ user }) {
   };
 
   const save = async () => {
+    // Listing fields are gated: forSale only takes effect with a numeric
+    // asking price + a condition grade. If either is missing we warn and
+    // keep the toggle off — saves the user from a half-formed listing.
+    const wantsSale = !!draft.forSale;
+    const askingNum = Number(draft.priceAsking);
+    const originalNum = draft.priceOriginal === '' || draft.priceOriginal == null
+      ? null : Number(draft.priceOriginal);
+    if (wantsSale && (!Number.isFinite(askingNum) || askingNum <= 0)) {
+      alert(t('saleNeedsAsking'));
+      return;
+    }
+    if (wantsSale && !draft.conditionGrade) {
+      alert(t('saleNeedsGrade'));
+      return;
+    }
     setSaving(true);
     try {
-      await ItemService.updateItem(item.id, { name: draft.name, tags: draft.tags });
+      await ItemService.updateItem(item.id, {
+        name: draft.name,
+        tags: draft.tags,
+        forSale: wantsSale,
+        priceOriginal: originalNum,
+        priceAsking: wantsSale ? askingNum : null,
+        conditionGrade: wantsSale ? draft.conditionGrade : null,
+      });
       setEditing(false);
     } finally { setSaving(false); }
   };
@@ -166,7 +198,7 @@ export function ItemDetail({ user }) {
           url={`${window.location.origin}/i/${item.id}`}
           label=""
         />
-        {isOwner && (
+        {isOwner ? (
           <button
             type="button"
             className="item-rail-btn"
@@ -175,6 +207,14 @@ export function ItemDetail({ user }) {
           >
             <MoreHorizontal size={20} strokeWidth={1.6} />
           </button>
+        ) : (
+          <MoreMenu
+            className="item-rail-more"
+            target={{ type: 'item', id: item.id }}
+            targetUid={item.userId}
+            user={user}
+            onSignIn={onSignIn}
+          />
         )}
         {isOwner && menuOpen && (
           <div className="item-rail-menu" onMouseLeave={() => setMenuOpen(false)}>
@@ -205,9 +245,9 @@ export function ItemDetail({ user }) {
       </aside>
 
       {isOwner && Array.isArray(item.wearLog) && item.wearLog.length > 0 && (
-        <div className="item-viewer-wear">
+        <div className={`item-viewer-wear${daysSince(item.lastWornAt) > 180 ? ' is-dormant' : ''}`}>
           <span className="item-viewer-wear-label">
-            {t('lastWorn')}: {item.wearLog[0].date}
+            {t('lastWorn')}: {elapsedLabel(item.lastWornAt, t)}
           </span>
           <span className="item-viewer-wear-count">
             · {t('wornN', { n: item.wornCount || item.wearLog.length })}
@@ -226,6 +266,7 @@ export function ItemDetail({ user }) {
               maxLength={80}
             />
             <TagsBlock t={t} tags={draft.tags} editing onChange={tags => setDraft({ ...draft, tags })} />
+            <SaleBlock t={t} draft={draft} setDraft={setDraft} />
             <div className="item-viewer-edit-actions">
               <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>{t('cancel')}</button>
               <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? t('saving') : t('save')}</button>
@@ -237,9 +278,21 @@ export function ItemDetail({ user }) {
               {item.tags?.category && (
                 <span className="item-viewer-cat">{t(`taxonomy.categories.${item.tags.category}`)}</span>
               )}
-              <h1 className="item-viewer-name">{item.name || t('untitledItem')}</h1>
+              <h1 className="item-viewer-name">
+                {item.name || t('untitledItem')}
+                {item.forSale && item.priceAsking > 0 && (
+                  <span className="item-sale-tags">
+                    <span className="item-sale-price">
+                      {t('salePriceCurrency')}{item.priceAsking.toLocaleString()}
+                    </span>
+                    {item.conditionGrade && (
+                      <span className="item-sale-grade">{item.conditionGrade}</span>
+                    )}
+                  </span>
+                )}
+              </h1>
             </div>
-            {isOwner && (
+            {isOwner ? (
               <button
                 type="button"
                 className="item-viewer-edit-toggle"
@@ -248,7 +301,24 @@ export function ItemDetail({ user }) {
               >
                 <Layers size={16} strokeWidth={1.7} />
               </button>
-            )}
+            ) : item.forSale && item.priceAsking > 0 ? (
+              <button
+                type="button"
+                className="btn btn-primary item-viewer-contact"
+                onClick={async () => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try {
+                    const id = await MessageService.openThread({ sellerUid: item.userId, item });
+                    navigate(`/messages/${id}`);
+                  } catch (err) {
+                    console.warn('open thread failed:', err.message);
+                    alert(err.message);
+                  }
+                }}
+              >
+                {t('contactSeller')}
+              </button>
+            ) : null}
           </>
         )}
       </footer>
@@ -344,5 +414,71 @@ function Chip({ active, editable, onClick, children }) {
     >
       {children}
     </button>
+  );
+}
+
+const CONDITION_GRADES = ['S', 'A', 'B', 'C'];
+
+function SaleBlock({ t, draft, setDraft }) {
+  const onToggle = (e) => setDraft({ ...draft, forSale: e.target.checked });
+  const onNum = (key) => (e) => {
+    // Strip non-digits, keep as string in draft so empty stays empty.
+    const v = e.target.value.replace(/[^0-9]/g, '');
+    setDraft({ ...draft, [key]: v });
+  };
+  return (
+    <div className="sale-block">
+      <label className="sale-toggle">
+        <input type="checkbox" checked={!!draft.forSale} onChange={onToggle} />
+        <span>{t('saleToggle')}</span>
+      </label>
+      {draft.forSale && (
+        <div className="sale-fields">
+          <div className="sale-price-row">
+            <label className="sale-field">
+              <span className="sale-field-label">{t('salePriceOriginal')}</span>
+              <div className="sale-price-input">
+                <span className="sale-currency">{t('salePriceCurrency')}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.priceOriginal ?? ''}
+                  onChange={onNum('priceOriginal')}
+                  placeholder={t('salePricePlaceholder')}
+                />
+              </div>
+            </label>
+            <label className="sale-field">
+              <span className="sale-field-label">{t('salePriceAsking')}</span>
+              <div className="sale-price-input">
+                <span className="sale-currency">{t('salePriceCurrency')}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={draft.priceAsking ?? ''}
+                  onChange={onNum('priceAsking')}
+                  placeholder={t('saleAskingPlaceholder')}
+                />
+              </div>
+            </label>
+          </div>
+          <div className="sale-field">
+            <span className="sale-field-label">{t('saleConditionGrade')}</span>
+            <div className="sale-grades">
+              {CONDITION_GRADES.map(g => (
+                <button
+                  key={g}
+                  type="button"
+                  className={`sale-grade${draft.conditionGrade === g ? ' active' : ''}`}
+                  onClick={() => setDraft({ ...draft, conditionGrade: g })}
+                >
+                  {t(`saleGrade_${g}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

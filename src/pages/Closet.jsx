@@ -5,6 +5,7 @@ import { ItemService } from '../services/item-service.js';
 import { CATEGORIES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
+import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
@@ -160,7 +161,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           </Link>
         </div>
       ) : view === 'usage' ? (
-        <GroupedList groups={groupByUsage(filtered, t)} cols={cols} t={t} />
+        <GroupedList groups={groupByUsage(filtered, t)} cols={cols} t={t} showElapsed />
       ) : view === 'brands' ? (
         <GroupedList groups={groupByBrand(filtered, t)} cols={cols} t={t} />
       ) : (
@@ -176,23 +177,23 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   );
 }
 
-// Two simple sections: items the user has actually worn (sorted by how
-// many times, heavy hitters first) and a "Never worn" pile so the unused
-// pieces remain easy to spot. Kept simple per user request — the earlier
-// 3-bucket split (Often / Sometimes / Never) was too granular when most
-// users have only a few wear logs.
+// Group by how recently each piece was last worn. The "dormant" bucket
+// (6+ months) is what the marketplace will surface as listing candidates
+// — items the user clearly isn't reaching for anymore.
 function groupByUsage(items, t) {
-  const worn = [];
-  const never = [];
+  const buckets = new Map();
   for (const it of items) {
-    if ((it.wornCount || 0) >= 1) worn.push(it);
-    else never.push(it);
+    const b = usageBucket(it.lastWornAt);
+    if (!buckets.has(b.key)) buckets.set(b.key, { ...b, items: [] });
+    buckets.get(b.key).items.push(it);
   }
-  worn.sort((a, b) => (b.wornCount || 0) - (a.wornCount || 0));
-  const groups = [];
-  if (worn.length) groups.push({ label: t('usageWorn'), items: worn });
-  if (never.length) groups.push({ label: t('usageNever'), items: never });
-  return groups;
+  // Sort within each bucket: most recent first for worn buckets; alpha for never.
+  for (const g of buckets.values()) {
+    g.items.sort((a, b) => (b.lastWornAt || '').localeCompare(a.lastWornAt || ''));
+  }
+  return [...buckets.values()]
+    .sort((a, b) => a.order - b.order)
+    .map(g => ({ label: t(`usage${g.key.charAt(0).toUpperCase()}${g.key.slice(1)}`), items: g.items, key: g.key }));
 }
 
 // Group by brand (case-insensitive key, original casing for the label).
@@ -215,11 +216,14 @@ function groupByBrand(items, t) {
   return sorted;
 }
 
-function GroupedList({ groups, cols, t }) {
+function GroupedList({ groups, cols, t, showElapsed = false }) {
   return (
     <div className="closet-groups">
       {groups.map((g, i) => (
-        <section key={i} className="closet-group">
+        <section
+          key={i}
+          className={`closet-group${g.key === 'dormant' ? ' closet-group-dormant' : ''}`}
+        >
           <header className="closet-group-head">
             <h3>{g.label}</h3>
             <span className="closet-group-count">{g.items.length}</span>
@@ -228,7 +232,14 @@ function GroupedList({ groups, cols, t }) {
             className="closet-grid"
             style={cols ? { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` } : undefined}
           >
-            {g.items.map(item => <ItemCard key={item.id} item={item} t={t} />)}
+            {g.items.map(item => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                t={t}
+                elapsed={showElapsed ? elapsedLabel(item.lastWornAt, t) : null}
+              />
+            ))}
           </div>
         </section>
       ))}
@@ -236,7 +247,7 @@ function GroupedList({ groups, cols, t }) {
   );
 }
 
-function ItemCard({ item, t }) {
+function ItemCard({ item, t, elapsed = null }) {
   const processing = item.status === 'processing' || item.status === 'uploading';
   const failed = item.status === 'failed';
   const cover = item.croppedUrl || item.originalUrl;
@@ -256,6 +267,11 @@ function ItemCard({ item, t }) {
             {t('processFailed')}
           </span>
         )}
+        {item.forSale && item.priceAsking > 0 && (
+          <span className="item-card-sale">
+            {t('salePriceCurrency')}{item.priceAsking.toLocaleString()}
+          </span>
+        )}
       </div>
       <div className="item-card-meta">
         {item.tags?.category && (
@@ -263,6 +279,9 @@ function ItemCard({ item, t }) {
         )}
         {item.name && (
           <span className="item-card-name">{item.name}</span>
+        )}
+        {elapsed && (
+          <span className="item-card-elapsed">{elapsed}</span>
         )}
       </div>
     </Link>

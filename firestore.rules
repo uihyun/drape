@@ -31,7 +31,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.token.firebase.sign_in_provider != 'anonymous'
         && request.resource.data.reporterId == request.auth.uid
-        && request.resource.data.targetType in ['outfit', 'item']
+        && request.resource.data.targetType in ['outfit', 'item', 'ootd', 'board', 'profile']
         && request.resource.data.targetId is string
         && request.resource.data.reason is string
         && request.resource.data.reason in ['spam', 'nsfw', 'copyright', 'other']
@@ -48,8 +48,11 @@ service cloud.firestore {
       // collection fail because per-doc evaluation rejects items owned
       // by other users.
       allow get: if true;
-      allow list: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // Owner-scoped list (closet queries) OR public listings query
+      // (marketplace surface filters items where forSale == true).
+      allow list: if (request.auth != null
+          && resource.data.userId == request.auth.uid)
+        || resource.data.forSale == true;
 
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
@@ -65,7 +68,12 @@ service cloud.firestore {
                       'status', 'updatedAt', 'originalUrl', 'originalPath',
                       // Wear history maintained when an OOTD is recorded —
                       // see ItemService.recordWear / OotdService.upsertOotd.
-                      'wearLog', 'lastWornAt', 'wornCount']);
+                      'wearLog', 'lastWornAt', 'wornCount',
+                      // Marketplace listing flags (set when owner lists the
+                      // item for sale). Schema enforced client-side; rules
+                      // just allow the keys through.
+                      'forSale', 'priceOriginal', 'priceAsking',
+                      'conditionGrade', 'listedAt']);
 
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
@@ -200,6 +208,43 @@ service cloud.firestore {
             .hasOnly(['name', 'stickers', 'coverUrl', 'updatedAt', 'isPublic']);
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Threads + messages (marketplace DM) ────────────────────────────
+    // Thread id convention: `${minUid}_${maxUid}_${itemId}` so the same
+    // buyer/seller pair opening the same listing always lands in one
+    // canonical thread (idempotent set). Threads + messages are private
+    // to their two participants.
+    match /threads/{threadId} {
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.resource.data.participants is list
+        && request.resource.data.participants.size() == 2
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.itemId is string;
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.participants
+        // participants list is immutable
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.itemId == resource.data.itemId;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Participant-only read; create requires fromUid == auth.uid and
+        // a non-empty text under the 1k cap. No update/delete in v1.
+        allow read: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+        allow create: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants
+          && request.resource.data.fromUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000;
+        allow update, delete: if false;
+      }
     }
 
     // ── Bookmarks (saved outfits) ──────────────────────────────────────

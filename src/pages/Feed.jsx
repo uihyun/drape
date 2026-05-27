@@ -86,6 +86,13 @@ export function Feed({ user, onSignIn }) {
             >
               {t('feedKindBoards')}
             </button>
+            <Link
+              to="/market"
+              role="tab"
+              className="feed-kind-tab"
+            >
+              {t('feedKindMarket')}
+            </Link>
           </nav>
           {!showingBoards && (
             <nav className="feed-sort-tabs" role="tablist">
