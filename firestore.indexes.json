@@ -36,6 +36,40 @@
       ]
     },
     {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "forSale", "order": "ASCENDING" },
+        { "fieldPath": "listedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "forSale", "order": "ASCENDING" },
+        { "fieldPath": "conditionGrade", "order": "ASCENDING" },
+        { "fieldPath": "listedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "forSale", "order": "ASCENDING" },
+        { "fieldPath": "listedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "threads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participants", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "outfits",
       "queryScope": "COLLECTION",
       "fields": [

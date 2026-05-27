@@ -6,7 +6,7 @@
 // the same listing always lands in one canonical thread (idempotent).
 
 import {
-  collection, doc, getDoc, getDocs, setDoc, addDoc,
+  collection, doc, getDoc, setDoc, addDoc,
   query, where, orderBy, limit, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase.js';
@@ -20,30 +20,32 @@ export function threadIdFor(uidA, uidB, itemId) {
 
 export const MessageService = {
   // Open (or create) a thread between the current user and a seller for
-  // a specific item. Returns the threadId. Idempotent — calling twice
-  // returns the same id without creating a duplicate.
+  // a specific item. Returns the threadId. Idempotent via deterministic id.
+  //
+  // We deliberately skip the existence check here — getDoc on a missing
+  // thread denies under the participants-only read rule (rule evaluates
+  // resource.data on null). setDoc with merge:true handles both cases:
+  // first call hits the CREATE rule, repeat calls hit UPDATE (which only
+  // requires participants + itemId to stay the same — they always do
+  // because the threadId encodes both). lastMessage is omitted so the
+  // preview from sendMessage isn't clobbered on reopen.
   async openThread({ sellerUid, item }) {
     const user = auth.currentUser;
     if (!user || user.isAnonymous) throw new Error('AUTH_REQUIRED');
     if (user.uid === sellerUid) throw new Error('CANNOT_DM_SELF');
     const id = threadIdFor(user.uid, sellerUid, item.id);
     const ref = doc(db, THREADS, id);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      await setDoc(ref, {
-        participants: [user.uid, sellerUid].sort(),
-        itemId: item.id,
-        itemName: item.name || '',
-        itemCover: item.croppedUrl || item.originalUrl || '',
-        priceAsking: item.priceAsking || 0,
-        currency: item.currency || 'KRW',
-        sellerUid,
-        buyerUid: user.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        lastMessage: null,
-      });
-    }
+    await setDoc(ref, {
+      participants: [user.uid, sellerUid].sort(),
+      itemId: item.id,
+      itemName: item.name || '',
+      itemCover: item.croppedUrl || item.originalUrl || '',
+      priceAsking: item.priceAsking || 0,
+      currency: item.currency || 'KRW',
+      sellerUid,
+      buyerUid: user.uid,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
     return id;
   },
 
