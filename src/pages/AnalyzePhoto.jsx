@@ -44,7 +44,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
         <h1 className="page-h1">{t('analyzeTitle')}</h1>
         <div className="empty-state empty-state-card">
           <p>{t('analyzeSignInBody')}</p>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
         </div>
       </div>
     );

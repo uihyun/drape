@@ -67,7 +67,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         <h2>{t('closetSignInTitle')}</h2>
         <p>{t('closetSignInBody')}</p>
         <button className="btn btn-primary" onClick={onSignIn}>
-          {t('signInGoogle')}
+          {t('signIn')}
         </button>
       </div>
     );

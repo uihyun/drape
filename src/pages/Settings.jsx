@@ -29,7 +29,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
         <div className="empty-state">
           <h2>{t('settings')}</h2>
           <p>{t('settingsSignInBody')}</p>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
         </div>
       </div>
     );

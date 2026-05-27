@@ -79,7 +79,7 @@ export function Profile({ user, authReady, onSignIn }) {
         <h2>{t('profileSignInTitle')}</h2>
         <p>{t('profileSignInBody')}</p>
         <button className="btn btn-primary" onClick={onSignIn}>
-          {t('signInGoogle')}
+          {t('signIn')}
         </button>
       </div>
     );

@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAnalytics, logEvent as _firebaseLogEvent, setUserId as _firebaseSetUserId } from 'firebase/analytics';
-import { getAuth, initializeAuth, indexedDBLocalPersistence, signInAnonymously, getRedirectResult } from 'firebase/auth';
+import { getAuth, initializeAuth, indexedDBLocalPersistence, getRedirectResult } from 'firebase/auth';
 import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
@@ -68,17 +68,12 @@ export const db = isNativeApp()
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
 
-const attachAuthState = () => {
-  auth.onAuthStateChanged((user) => {
-    if (!user) {
-      signInAnonymously(auth).catch(err => console.warn('Anonymous auth failed:', err));
-    }
-  });
-};
-if (isNativeApp()) {
-  attachAuthState();
-} else {
-  getRedirectResult(auth).catch(() => null).finally(attachAuthState);
+// Anonymous auth was previously used to let guests browse — but the
+// Firebase project has Anonymous sign-in disabled now (every user
+// signs in explicitly via Google/Apple from /welcome). Process the
+// redirect result on web so popup→redirect fallbacks still resolve.
+if (!isNativeApp()) {
+  getRedirectResult(auth).catch(() => null);
 }
 
 export default app;

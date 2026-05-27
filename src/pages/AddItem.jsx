@@ -44,7 +44,7 @@ export function AddItem({ user, onSignIn }) {
       <div className="empty-state">
         <Lock size={32} strokeWidth={1.4} />
         <p>{t('signInRequired')}</p>
-        <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+        <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
       </div>
     );
   }

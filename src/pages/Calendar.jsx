@@ -60,7 +60,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
     return (
       <div className="empty-state">
         <h2>{t('calendarSignInTitle')}</h2>
-        <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+        <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
       </div>
     );
   }

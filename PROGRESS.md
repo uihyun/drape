@@ -624,3 +624,114 @@ The original `outfits` (item-combo) surface overlapped with `boards`
 ### Locale parity
 - Added `ootdLinkEmpty` + `tryOnBadge` to en/ko/ja in one pass
   (per the locked locale rule). No other strings touched.
+
+## Cycle: 2026-05-26 → 2026-05-27 — social loop hardening + profile depth + credit removal
+
+### Profile / public profile
+- IG-style stat cells (number stacked over label), `Intl.NumberFormat`
+  compact (`1.2K` / `1.2만` / `1.2万`) for big counts, tap → live-loaded
+  FollowListSheet (avatar rows linking to `/u/:handle`).
+- Bio capped at 80 chars (was 200); `ExpandableBio` clamps to 2 lines
+  with show-more / 접기 / もっと見る toggle.
+- Profile photo upload + remove in Settings (`users/{uid}/profile/
+  avatar.jpg`, public-read / owner-write via storage.rules). Avatar
+  now renders an *empty* gray + faint glyph when no photoURL is set —
+  no colored-letter fallback, no auto-pull from the Google profile
+  picture; freshly signed-up accounts visibly *need* a photo.
+- Location: free text → curated city autocomplete (~120 cities, KR/
+  JP/Greater China/SEA/NA/EU/Other). Stored as canonical id
+  (`tokyo-jp`); rendered via `cityDisplay(id, lang)` so the city name
+  follows the viewer's locale (도쿄 / Tokyo / 東京). Suggestions only
+  after typing, alphabetical tiebreak on equal match index.
+- PublicProfile now mirrors the owner tab structure (Outfits /
+  Calendar / Boards) — calendar bucketed off the same fetched OOTDs
+  so month nav doesn't re-hit Firestore. Outfits tab merges public
+  OOTDs + listed legacy `outfits` docs into one sorted stream.
+
+### Follow counters
+- Triggers now recount from `/follows` on every event (instead of
+  `FieldValue.increment(1/-1)`) — drift from missed events or replays
+  self-heals on the next mutation. `recountMyFollows` callable runs
+  once per session on Profile mount to fix any historical drift.
+- Counts write directly to `/profiles/{uid}` (the read source). Old
+  pipeline wrote to `/users/{uid}` then mirrored via
+  `onUserCountsChange`, which only fires on UPDATE — a fresh account
+  whose `/users/` doc didn't exist saw its first follow CREATE the
+  doc, the mirror never fired, and counts stayed at 0.
+- PublicProfile subscribes live to the resolved uid so following a
+  user updates the counter on screen instead of staying frozen at the
+  fetch-time value.
+
+### Boards
+- Public/private toggle on Board detail (Eye / EyeOff button matching
+  OOTD detail). Default private; editor no longer has the toggle.
+- `BoardThumbnail` component renders the actual sticker composition as
+  the card cover everywhere (Feed, BoardList, BoardDetail hero) —
+  self-hydrates items so callers without an itemsById map (Feed
+  visitors) don't have to.
+- Single canonical URL: `/boards/:id` is the read-only detail page,
+  `/boards/:id/edit` is the editor (matches `/boards/new`). Profile-
+  list and feed cards both land on detail so visibility-toggle is
+  reachable from either entry. `/b/:id` alias removed.
+
+### Discovery
+- Feed gets a kind pill (OOTDs / Boards) above the sort row. Public
+  boards render as full-bleed 1-col cards mirroring OOTD card size,
+  not the 2-col mini grid we shipped first.
+- Discover title removed — pill alone signals context, saving vertical
+  space.
+
+### Try-on quality-of-life
+- "Save as OOTD" primary CTA on the result page → fetches first
+  variant, uploads as today's OOTD photo, links via
+  `linkedType='tryon'`. Confirms before overwriting an existing OOTD
+  photo. Wear-log path extended to stamp `generation.itemIds` when
+  the link is a try-on.
+- OOTD link picker is a date-bound horizontal card row (try-ons +
+  boards from that day) instead of an all-time dropdown.
+
+### Pinch zoom
+- `usePinchColumns` hook: two-finger pinch changes column count on
+  closet (1↔4, def 3) / outfits (1↔3, def 1) / boards (1↔3, def 2).
+  Per-grid choice persisted in localStorage. iOS-specific
+  `gesture*` event blocking added so the gesture changes the grid
+  instead of the viewport.
+
+### Auth
+- In-app `SignInModal` (Google + Apple). Replaces the direct
+  `signInWithGoogle` call on every "Sign in" CTA — the modal is the
+  one place Apple discoverability lives for already-running sessions.
+- All `signInGoogle` labels swapped to neutral `signIn` so the button
+  reads "Sign in" and the modal shows the providers.
+- Removed `signInAnonymously` from firebase.js — anonymous is disabled
+  in the Firebase console, so the call just spammed the console with
+  `admin-restricted-operation`. Every drape user now signs in
+  explicitly through Welcome or the SignInModal.
+
+### Credits removal
+- The credit system was vestigial from voda: `deductCredits` /
+  `refundCredits` were defined and exported but **never called**
+  from the Gemini call sites. Every try-on and every item process
+  was free regardless of balance — the numbers on the UI never
+  decremented because nothing wired them in.
+- Full strip: deleted `credits-service`, `billing-service`,
+  `referral-service`, `revenuecat-service`, `CreditModal`,
+  `functions/promo.js`, `functions/referral.js`,
+  `functions/revenuecat.js`. Deleted `redeemReferral` and
+  `redeemPromo` cloud functions. Simplified `initializeUser` to just
+  call `ensureProfile`. firestore.rules dropped the billing / promo
+  / referral collection matches and the credit-field allowlist on
+  `users/{uid}`.
+- When monetization clarifies, the right model (subscription, per-
+  generation tokens, freemium) can land fresh against today's
+  actual Gemini cost (~$0.04 / try-on Pro) instead of inheriting
+  this paper trail.
+
+### Locale parity
+- Added through this cycle, all three langs: `showMore`, `showLess`,
+  `addPhoto`, `changePhoto`, `removePhoto`, `saveAsTodaysOutfit`,
+  `ootdReplaceConfirm`, `savedToCalendar`, `viewCalendar`,
+  `feedKindOotds`, `feedKindBoards`, `feedBoardsEmptyTitle`,
+  `feedBoardsEmptyBody`, `boardNotFound`, `publicBoardsEmpty`,
+  `signInTitle`, `signInSubtitle`, `followersEmpty`,
+  `followingEmpty`. Removed `credits`.

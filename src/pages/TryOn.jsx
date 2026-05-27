@@ -66,7 +66,7 @@ export function TryOn({ user, onSignIn }) {
         <h1 className="page-h1">{t('navTryOn')}</h1>
         <div className="empty-state empty-state-card">
           <h2>{t('tryOnSignInTitle')}</h2>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
         </div>
       </div>
     );

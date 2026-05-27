@@ -28,7 +28,7 @@ export function OutfitBuilder({ user, onSignIn }) {
         <h1 className="page-h1">{t('newOutfit')}</h1>
         <div className="empty-state">
           <p>{t('outfitSignInBody')}</p>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signInGoogle')}</button>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
         </div>
       </div>
     );
