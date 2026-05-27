@@ -3066,16 +3066,14 @@ body.is-native {
 }
 .variant {
   /* Fixed 3:4 portrait (matches the 900x1200 canvas the server pads
-     every variant onto). Image always fits perfectly via contain —
-     no whitespace mismatch, uniform card size across every try-on.
-     Padding here adds visual breathing room around the figure (the
-     image stores the figure at full canvas size, the margin lives at
-     CSS level so it scales with the card no matter the render width). */
+     every variant onto). White card bg matches the figure's saved
+     white backdrop so the padding area blends seamlessly — figure
+     looks like it's floating on the card with breathing room. */
   position: relative;
   aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--surface-elevated);
+  background: #fff;
   border: 1px solid var(--border);
   padding: 7%;
   box-sizing: border-box;
