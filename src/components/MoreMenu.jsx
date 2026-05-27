@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Flag, Ban } from 'lucide-react';
+import { MoreHorizontal, Flag, Ban, Bookmark } from 'lucide-react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase.js';
 import { ReportModal } from './ReportModal.jsx';
 import { BlockService } from '../services/block-service.js';
+import { OotdService } from '../services/ootd-service.js';
+import { BoardService } from '../services/board-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Visitor-facing safety menu. Renders the three-dot button + popover with
@@ -22,6 +26,7 @@ export function MoreMenu({
   user,
   onSignIn,
   showBlock = false,
+  showBookmark = false,
   className = '',
   buttonSize = 20,
 }) {
@@ -29,6 +34,7 @@ export function MoreMenu({
   const [open, setOpen] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
   const wrapRef = useRef(null);
 
   useEffect(() => {
@@ -36,6 +42,22 @@ export function MoreMenu({
     const unsub = BlockService.subscribeIsBlocked(targetUid, setBlocked);
     return () => unsub && unsub();
   }, [showBlock, targetUid]);
+
+  // Bookmark state lives under the viewer's own /users/{uid}/bookmarks/{targetId}
+  // (same convention OotdService/BoardService use), so a single onSnapshot on
+  // that doc tracks the current state — stays in sync if the user bookmarks
+  // the same item from the feed in another tab.
+  useEffect(() => {
+    if (!showBookmark || !user || user.isAnonymous || !target?.id) {
+      setBookmarked(false);
+      return;
+    }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', target.id),
+      s => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [showBookmark, user?.uid, target?.id]);
 
   // Close on outside click. Popover patterns this small don't need a
   // portal — just dismiss when the user clicks anywhere else.
@@ -72,6 +94,20 @@ export function MoreMenu({
     }
   };
 
+  const onToggleBookmark = async () => {
+    setOpen(false);
+    if (!requireAuth() || !target?.id) return;
+    const svc = target.type === 'ootd' ? OotdService
+      : target.type === 'board' ? BoardService
+      : null;
+    if (!svc) return;
+    try {
+      await svc.toggleBookmark(target.id, bookmarked);
+    } catch (err) {
+      console.warn('bookmark toggle failed:', err.message);
+    }
+  };
+
   return (
     <div className={`more-menu ${className}`} ref={wrapRef}>
       <button
@@ -85,6 +121,16 @@ export function MoreMenu({
       </button>
       {open && (
         <div className="more-menu-popover" role="menu">
+          {showBookmark && (
+            <button type="button" role="menuitem" onClick={onToggleBookmark}>
+              <Bookmark
+                size={14}
+                strokeWidth={1.7}
+                fill={bookmarked ? 'currentColor' : 'none'}
+              />
+              {bookmarked ? t('unbookmark') : t('bookmark')}
+            </button>
+          )}
           <button type="button" role="menuitem" onClick={onReport}>
             <Flag size={14} strokeWidth={1.7} /> {t('report')}
           </button>

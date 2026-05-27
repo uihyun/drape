@@ -119,6 +119,7 @@ export function OotdDetail({ user, onSignIn }) {
               targetUid={ootd.userId}
               user={user}
               onSignIn={onSignIn}
+              showBookmark
             />
           )}
         </div>

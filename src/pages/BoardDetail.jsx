@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Edit3, Eye, EyeOff, Bookmark } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { Edit3, Eye, EyeOff } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -22,7 +22,6 @@ export function BoardDetail({ user, onSignIn }) {
   const [author, setAuthor] = useState(null);
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
 
   const refresh = () => {
     if (!boardId) return;
@@ -37,17 +36,6 @@ export function BoardDetail({ user, onSignIn }) {
     if (!board?.userId) return;
     ProfileService.getByUid(board.userId).then(setAuthor).catch(() => setAuthor(null));
   }, [board?.userId]);
-
-  // Live bookmark state — keeps in sync if the user bookmarks the
-  // same board from the Feed in another tab.
-  useEffect(() => {
-    if (!user || user.isAnonymous || !boardId) { setBookmarked(false); return; }
-    return onSnapshot(
-      doc(db, 'users', user.uid, 'bookmarks', boardId),
-      (s) => setBookmarked(s.exists()),
-      () => setBookmarked(false),
-    );
-  }, [user?.uid, boardId]);
 
   // Hydrate items used on the board (so we can show the same
   // "items on this board" row that the editor shows owners).
@@ -112,28 +100,12 @@ export function BoardDetail({ user, onSignIn }) {
               {board.isPublic ? t('unlist') : t('publishToFeed')}
             </button>
           ) : (
-            <button
-              type="button"
-              className={`btn-edit${bookmarked ? ' is-liked' : ''}`}
-              onClick={async () => {
-                if (!user || user.isAnonymous) return;
-                const prev = bookmarked;
-                setBookmarked(!prev);
-                try { await BoardService.toggleBookmark(board.id, prev); }
-                catch (err) { console.warn('bookmark failed:', err.message); setBookmarked(prev); }
-              }}
-              aria-label={bookmarked ? t('unbookmark') : t('bookmark')}
-            >
-              <Bookmark size={14} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
-              {bookmarked ? t('unbookmark') : t('bookmark')}
-            </button>
-          )}
-          {!isOwner && (
             <MoreMenu
               target={{ type: 'board', id: board.id }}
               targetUid={board.userId}
               user={user}
               onSignIn={onSignIn}
+              showBookmark
             />
           )}
         </div>
