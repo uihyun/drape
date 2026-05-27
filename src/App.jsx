@@ -3,13 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
-import { useCredits } from './services/credits-service.js';
 import { useLocale } from './hooks/useLocale.jsx';
 
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
 import { Onboarding } from './components/Onboarding.jsx';
-import { CreditModal } from './components/CreditModal.jsx';
+import { SignInModal } from './components/SignInModal.jsx';
 
 import { Closet } from './pages/Closet.jsx';
 import { AddItem } from './pages/AddItem.jsx';
@@ -44,8 +43,7 @@ import './styles/drape.css';
 export default function App() {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
-  const [creditModalOpen, setCreditModalOpen] = useState(false);
-  const credits = useCredits(user);
+  const [signInModalOpen, setSignInModalOpen] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
@@ -57,10 +55,10 @@ export default function App() {
     });
   }, []);
 
-  const handleSignIn = async () => {
-    try { await AuthService.signInWithGoogle(); }
-    catch (e) { console.warn('signin failed', e?.message); }
-  };
+  // In-app "Sign in" CTAs open the provider chooser modal (Google +
+  // Apple). The first-run Welcome page still calls each provider
+  // directly so its layout can stay full-bleed.
+  const handleSignIn = () => setSignInModalOpen(true);
 
   const handleSignOut = async () => {
     try { await AuthService.signOut(); }
@@ -72,11 +70,12 @@ export default function App() {
       <AppShell
         user={user}
         authReady={authReady}
-        credits={credits}
-        creditModalOpen={creditModalOpen}
-        setCreditModalOpen={setCreditModalOpen}
         handleSignIn={handleSignIn}
         handleSignOut={handleSignOut}
+      />
+      <SignInModal
+        open={signInModalOpen}
+        onClose={() => setSignInModalOpen(false)}
       />
     </BrowserRouter>
   );
@@ -105,7 +104,7 @@ const HIDE_NAV = [
   /^\/ootd\//,
 ];
 
-function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpen, handleSignIn, handleSignOut }) {
+function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
   const hideNav = isFullBleed || HIDE_NAV.some(re => re.test(location.pathname));
@@ -148,7 +147,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
           <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
 
-          <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} onOpenCredits={() => setCreditModalOpen(true)} />} />
+          <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} />} />
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
@@ -171,15 +170,6 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
       </main>
 
       {!hideNav && <MobileTabBar user={user} />}
-
-      {creditModalOpen && (
-        <CreditModal
-          user={user}
-          credits={credits}
-          onClose={() => setCreditModalOpen(false)}
-          onSignIn={handleSignIn}
-        />
-      )}
 
       {/* Onboarding only after sign-in — never on top of /welcome. */}
       {isLoggedIn && !isFullBleed && <Onboarding />}

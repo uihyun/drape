@@ -103,9 +103,6 @@ exports.deleteAccount = onRequest({ timeoutSeconds: 540 }, async (req, res) => {
         const bucket = admin.storage().bucket();
         const summary = {};
 
-        const userDocBefore = await db.collection('users').doc(uid).get();
-        const userDataBefore = userDocBefore.exists ? userDocBefore.data() : {};
-
         // 1) Items
         const itemsSnap = await db.collection('items').where('userId', '==', uid).get();
         for (const d of itemsSnap.docs) await deleteItemAndStorage(d, bucket);
@@ -180,14 +177,7 @@ exports.deleteAccount = onRequest({ timeoutSeconds: 540 }, async (req, res) => {
             summary.profile = 1;
         }
 
-        // 12) Referral code reverse index
-        const referralCode = userDataBefore?.referralCode;
-        if (referralCode) {
-            await db.collection('referralCodes').doc(referralCode).delete().catch(() => {});
-            summary.referralCode = referralCode;
-        }
-
-        // 13) Storage: any leftover under identity/{uid}/, users/{uid}/, items/{uid}/, ootds/{uid}/, generations/{uid}/
+        // 12) Storage: any leftover under identity/{uid}/, users/{uid}/, items/{uid}/, ootds/{uid}/, generations/{uid}/
         const prefixes = [
             `identity/${uid}/`,
             `users/${uid}/`,

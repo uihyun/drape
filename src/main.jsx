@@ -3,11 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import { LocaleProvider } from './hooks/useLocale.jsx'
 import { AIService } from './services/ai-service.js'
-import { ReferralService } from './services/referral-service.js'
 import { isNativeApp } from './services/platform-service.js'
-
-// Stash ?ref=DRAPE-XXXX before routing so it survives any sign-in redirect.
-ReferralService.capturePendingReferral();
 
 // PWA service worker — web only. Inside the Capacitor native app the SW
 // caching layer is redundant and conflicts with the capacitor:// origin.

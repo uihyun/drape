@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, Zap, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
+import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -8,16 +8,14 @@ import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
-import { useCredits } from '../services/credits-service.js';
 
 // One Settings page (Lekondo tone). Sections, ordered by frequency of use:
 // 1. Profile — handle (one-time claim), displayName, bio, instagram, location
 // 2. Try-on identity refs (existing flow)
-// 3. Account — language, credits, sign out
+// 3. Account — language, sign out
 // 4. Legal — privacy, terms, support
 export function Settings({ user, onSignIn, onSignOut }) {
   const { t, lang, setLang } = useLocale();
-  const credits = useCredits(user);
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -45,7 +43,6 @@ export function Settings({ user, onSignIn, onSignOut }) {
       <IdentitySection user={user} t={t} />
       <AccountSection
         user={user}
-        credits={credits}
         lang={lang}
         setLang={setLang}
         onSignOut={onSignOut}
@@ -480,7 +477,7 @@ function IdentitySection({ user, t }) {
   );
 }
 
-function AccountSection({ user, credits, lang, setLang, onSignOut, t }) {
+function AccountSection({ user, lang, setLang, onSignOut, t }) {
   return (
     <section className="settings-card">
       <h2 className="settings-h2">{t('account')}</h2>
@@ -488,14 +485,6 @@ function AccountSection({ user, credits, lang, setLang, onSignOut, t }) {
       <div className="settings-row">
         <span className="settings-row-label">{t('signedInAs')}</span>
         <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
-      </div>
-
-      <div className="settings-row">
-        <span className="settings-row-label">
-          <Zap size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
-          {t('credits')}
-        </span>
-        <span className="settings-row-value">{credits?.credits ?? '—'}</span>
       </div>
 
       <div className="settings-row">

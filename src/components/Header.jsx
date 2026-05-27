@@ -3,7 +3,7 @@ import { useLocale, LANG_LABELS } from '../hooks/useLocale.jsx';
 
 // Desktop header — brand wordmark + primary nav + lang + user chip.
 // MobileTabBar handles small screens; this is hidden under 768px via CSS.
-export function Header({ user, credits, onSignIn, onSignOut, onOpenCredits }) {
+export function Header({ user, onSignIn, onSignOut }) {
   const { t, lang, setLang } = useLocale();
   const navigate = useNavigate();
   const isLoggedIn = user && !user.isAnonymous;
@@ -37,21 +37,15 @@ export function Header({ user, credits, onSignIn, onSignOut, onOpenCredits }) {
           </select>
 
           {isLoggedIn ? (
-            <>
-              <button className="credit-badge" onClick={onOpenCredits} title={t('credits')}>
-                <i className="material-icons" aria-hidden="true">bolt</i>
-                <span>{credits?.credits ?? '—'}</span>
-              </button>
-              <button
-                className="avatar-btn"
-                onClick={() => navigate('/settings')}
-                title={t('settings')}
-              >
-                {user.photoURL
-                  ? <img src={user.photoURL} alt="" />
-                  : <i className="material-icons">person</i>}
-              </button>
-            </>
+            <button
+              className="avatar-btn"
+              onClick={() => navigate('/settings')}
+              title={t('settings')}
+            >
+              {user.photoURL
+                ? <img src={user.photoURL} alt="" />
+                : <i className="material-icons">person</i>}
+            </button>
           ) : (
             <button className="btn btn-primary" onClick={onSignIn}>
               <i className="material-icons">login</i>

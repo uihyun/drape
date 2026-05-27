@@ -14,8 +14,6 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase.js';
-import { CreditsService } from './credits-service.js';
-import { ReferralService } from './referral-service.js';
 import { isNativeApp, isIOS as isIOSPlatform } from './platform-service.js';
 
 // iOS Safari/WebKit blocks popups in PWAs — used to switch sign-in to redirect.
@@ -303,35 +301,19 @@ export const AuthService = {
     }
   },
 
-  // Grant signup bonus + daily login bonus (idempotent on server).
-  // Only consumes guest credits if the server confirms this was the first init,
-  // so a failed/unreached server doesn't destroy the guest's localStorage balance.
+  // Server-side bootstrap after sign-in: hits initializeUser which
+  // ensures the /profiles/{uid} doc + handle exist. No body — there's
+  // nothing else to pass post credit-removal.
   async initializeCredits(user) {
     try {
-      const guestCreditsClaimed = CreditsService.peekGuestForTransfer();
       const token = await user.getIdToken();
-      const res = await fetch(
-        `${FUNCTIONS_BASE}/initializeUser`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ guestCreditsClaimed }),
-        }
-      );
-      if (!res.ok) {
-        console.warn('initializeCredits failed:', res.status);
-        return;
-      }
-      const state = await res.json().catch(() => null);
-      if (state?.isFirstInit) {
-        CreditsService.clearGuestCredits();
-      }
-      // Apply a pending ?ref= code if one is stashed. Must run AFTER
-      // initializeUser so the invitee's user doc exists + has a referralCode.
-      ReferralService.redeemPendingReferral().catch(() => { /* non-fatal */ });
+      await fetch(`${FUNCTIONS_BASE}/initializeUser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
     } catch (err) {
       console.warn('initializeCredits error:', err);
     }

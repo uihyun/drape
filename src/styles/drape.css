@@ -4319,6 +4319,27 @@ body.is-native {
   width: 100%;
   margin: 0 auto;
 }
+/* In-app sign-in chooser sheet. Reuses the create-sheet shell; the
+   provider buttons are the same .signin-btn modifiers as Welcome. */
+.signin-sheet { padding-bottom: 1.5rem; }
+.signin-sheet-title {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0.3rem 0 0.25rem;
+}
+.signin-sheet-sub {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+.signin-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
 .signin-btn {
   display: flex;
   align-items: center;

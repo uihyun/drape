@@ -3,47 +3,24 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── users/{uid} ────────────────────────────────────────────────────
-    // Self-readable. Profile fields self-writable; credit / billing /
-    // counter fields are server-only. identityRefs is self-writable so the
-    // identity-service can manage the user's reference photos directly.
+    // Self-readable. Profile-shaped fields self-writable; counter fields
+    // (followerCount, followingCount) are server-only. identityRefs is
+    // self-writable so the identity-service can manage reference photos.
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
 
       allow create: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.keys().hasAny(
-            ['credits', 'lifetimeCredits', 'lastDailyBonusAt',
-             'plan', 'subscriptionStatus', 'subscriptionRenewsAt',
-             'cancelAtPeriodEnd', 'stripeCustomerId', 'stripeSubscriptionId',
-             'referralCode', 'referredBy',
-             'followerCount', 'followingCount']
+            ['followerCount', 'followingCount']
            );
 
       allow update: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['credits', 'lifetimeCredits', 'lastDailyBonusAt',
-                     'plan', 'subscriptionStatus', 'subscriptionRenewsAt',
-                     'cancelAtPeriodEnd', 'stripeCustomerId', 'stripeSubscriptionId',
-                     'referralCode', 'referredBy',
-                     'followerCount', 'followingCount']);
+            .hasAny(['followerCount', 'followingCount']);
 
       allow delete: if false;
-    }
-
-    // ── Billing ledger / referral / promo — server-only ─────────────────
-    match /billingInvoices/{invoiceId} {
-      allow read, write: if false;
-    }
-    match /referralCodes/{code} {
-      allow read, write: if false;
-    }
-    match /promoCodes/{code} {
-      allow read: if request.auth != null;
-      allow write: if false;
-    }
-    match /promoCodeUses/{id} {
-      allow read, write: if false;
     }
 
     // ── Reports ────────────────────────────────────────────────────────

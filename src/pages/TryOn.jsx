@@ -12,7 +12,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 //   - WHO: identityRefs (default) OR a one-shot custom photo
 //   - WHAT: individual items OR a saved outfit (set)
 // When you submit, navigates to /tryon/:generationId for the variant gallery.
-export function TryOn({ user, onSignIn, onOpenCredits }) {
+export function TryOn({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const [search] = useSearchParams();
@@ -133,8 +133,8 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
     // the model runs. The cloud function writes a 'pending' generation
     // doc early, then TryOnHistory's live subscription shows it as a
     // pending card and flips to ready when done. We only await long
-    // enough to surface pre-flight errors (credits, missing identity
-    // refs, etc.) — otherwise we navigate to the tryon tab immediately.
+    // enough to surface pre-flight errors (missing identity refs etc.)
+    // — otherwise we navigate to the tryon tab immediately.
     try {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
@@ -160,7 +160,6 @@ export function TryOn({ user, onSignIn, onOpenCredits }) {
       }
     } catch (err) {
       setError(err.message);
-      if (/credit|quota/i.test(err.message || '')) onOpenCredits?.();
     } finally { setSubmitting(false); }
   };
 
