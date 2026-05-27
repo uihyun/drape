@@ -2124,7 +2124,9 @@ body.is-native {
   border: 1px solid var(--border);
   border-radius: 14px;
   margin-bottom: 1rem;
-  overflow: hidden;
+  /* No overflow:hidden — the location autocomplete dropdown needs to
+     escape the card boundary. Nothing inside the card relies on the
+     rounded corners clipping its content. */
 }
 .settings-h2 {
   /* 0.12em tracking blows out Korean syllables — they're already
@@ -3419,7 +3421,8 @@ body.is-native {
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 8px 22px rgba(0,0,0,0.08);
-  max-height: 280px;
+  /* ~4 rows visible; the rest scrolls inside. */
+  max-height: 192px;
   overflow-y: auto;
 }
 .location-input-row {
@@ -3454,13 +3457,19 @@ body.is-native {
 .settings-photo-avatar { flex-shrink: 0; }
 .settings-photo-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 .settings-photo-actions .btn {
   padding: 0.45rem 0.85rem;
   font-size: 0.85rem;
+}
+.settings-photo-actions .settings-error {
+  width: 100%;
+  margin: 0;
 }
 
 /* ── Settings / identity refs ──────────────────────────────────────── */
