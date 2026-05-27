@@ -3347,7 +3347,10 @@ body.is-native {
   color: var(--text-muted);
 }
 .ootd-link-card.selected .ootd-link-thumb {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  /* outline (not inset shadow) so the accent ring sits OVER the
+     cover-fit image. inset box-shadow got hidden behind the photo. */
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
 }
 .ootd-link-badge {
   position: absolute;
