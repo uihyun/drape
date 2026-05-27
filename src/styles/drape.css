@@ -2911,6 +2911,30 @@ body.is-native {
   color: var(--accent);
 }
 
+/* Try-on result → "Save as OOTD" primary action. Sits between the
+   items-used row and the rate-block so it reads as the obvious next
+   step after looking at the result. */
+.btn.gen-save-ootd {
+  width: 100%;
+  justify-content: center;
+  margin: 0.6rem 0 0;
+}
+.gen-saved-msg {
+  margin: 0.8rem 0 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 8px;
+  text-align: center;
+}
+.gen-saved-msg a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  margin-left: 0.35rem;
+}
+
 /* Try-on result rating block. Two thumb buttons side-by-side, regenerate
    full-width below. Width matches the variant image above (parent
    .page container caps to 600px on desktop, full-width on phone) so the
