@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, ChevronDown } from 'lucide-react';
+import { Compass, ChevronDown } from 'lucide-react';
 import { AuthService } from '../services/auth-service.js';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 
@@ -33,11 +33,7 @@ export function Welcome() {
     finally { setBusy(null); }
   };
 
-  const onEmail = () => {
-    // Email link auth not implemented yet — surface intent without
-    // pretending to sign in.
-    setError(t('emailSignInComingSoon'));
-  };
+  const onBrowse = () => navigate('/feed');
 
   const version = (typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__) || '0.1.0';
 
@@ -108,12 +104,12 @@ export function Welcome() {
 
         <button
           type="button"
-          className="signin-btn signin-btn--email"
-          onClick={onEmail}
+          className="signin-btn signin-btn--browse"
+          onClick={onBrowse}
           disabled={!!busy}
         >
-          <Mail size={18} strokeWidth={1.8} />
-          <span>{t('continueEmail')}</span>
+          <Compass size={18} strokeWidth={1.8} />
+          <span>{t('browseWithoutSignIn')}</span>
         </button>
 
         {error && <p className="welcome-error">{error}</p>}

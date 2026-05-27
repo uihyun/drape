@@ -4373,11 +4373,17 @@ body.is-native {
   background: var(--border);
   margin: 0.4rem 0;
 }
-.signin-btn--email {
-  background: var(--accent);
-  color: #fff;
+/* Browse-without-sign-in: ghost outline, deliberately quieter than
+   Google/Apple so it doesn't compete with the primary sign-in CTA. */
+.signin-btn--browse {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
 }
-.signin-btn--email:hover:not(:disabled) { background: var(--accent-strong); }
+.signin-btn--browse:hover:not(:disabled) {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
 .welcome-error {
   margin-top: 0.5rem;
   font-size: 0.85rem;
