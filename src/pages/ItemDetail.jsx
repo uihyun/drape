@@ -40,14 +40,14 @@ export function ItemDetail({ user }) {
 
   if (!item) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && item.userId === user.uid;
-  if (!isOwner) {
-    return <div className="empty-state"><p>{t('notFound')}</p></div>;
-  }
 
-  const hasBoth = item.originalUrl && item.croppedUrl && item.originalUrl !== item.croppedUrl;
-  const cover = showOriginal && item.originalUrl
+  // Visitors get the processed cutout + tags only. Before-photo
+  // (originalUrl) stays owner-only — that's the user's raw source
+  // shot, which often shows their bedroom / hanger setup.
+  const hasBoth = isOwner && item.originalUrl && item.croppedUrl && item.originalUrl !== item.croppedUrl;
+  const cover = isOwner && showOriginal && item.originalUrl
     ? item.originalUrl
-    : (item.croppedUrl || item.originalUrl);
+    : (item.croppedUrl || (isOwner ? item.originalUrl : null));
 
   const close = () => {
     if (window.history.length > 1) navigate(-1);
@@ -154,9 +154,11 @@ export function ItemDetail({ user }) {
       </div>
 
       <aside className="item-viewer-rail" aria-label="actions">
-        <Link to={`/tryon?items=${item.id}`} className="item-rail-btn" aria-label={t('tryThisOn')}>
-          <Sparkles size={20} strokeWidth={1.6} />
-        </Link>
+        {isOwner && (
+          <Link to={`/tryon?items=${item.id}`} className="item-rail-btn" aria-label={t('tryThisOn')}>
+            <Sparkles size={20} strokeWidth={1.6} />
+          </Link>
+        )}
         <ShareButton
           className="item-rail-btn item-rail-share"
           title={item.name || t('untitledItem')}
@@ -164,15 +166,17 @@ export function ItemDetail({ user }) {
           url={`${window.location.origin}/i/${item.id}`}
           label=""
         />
-        <button
-          type="button"
-          className="item-rail-btn"
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label={t('more')}
-        >
-          <MoreHorizontal size={20} strokeWidth={1.6} />
-        </button>
-        {menuOpen && (
+        {isOwner && (
+          <button
+            type="button"
+            className="item-rail-btn"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label={t('more')}
+          >
+            <MoreHorizontal size={20} strokeWidth={1.6} />
+          </button>
+        )}
+        {isOwner && menuOpen && (
           <div className="item-rail-menu" onMouseLeave={() => setMenuOpen(false)}>
             <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); }}>
               <Pencil size={14} strokeWidth={1.7} /> {t('editTags')}
@@ -200,7 +204,7 @@ export function ItemDetail({ user }) {
         )}
       </aside>
 
-      {Array.isArray(item.wearLog) && item.wearLog.length > 0 && (
+      {isOwner && Array.isArray(item.wearLog) && item.wearLog.length > 0 && (
         <div className="item-viewer-wear">
           <span className="item-viewer-wear-label">
             {t('lastWorn')}: {item.wearLog[0].date}
@@ -235,14 +239,16 @@ export function ItemDetail({ user }) {
               )}
               <h1 className="item-viewer-name">{item.name || t('untitledItem')}</h1>
             </div>
-            <button
-              type="button"
-              className="item-viewer-edit-toggle"
-              onClick={() => setEditing(true)}
-              aria-label={t('editTags')}
-            >
-              <Layers size={16} strokeWidth={1.7} />
-            </button>
+            {isOwner && (
+              <button
+                type="button"
+                className="item-viewer-edit-toggle"
+                onClick={() => setEditing(true)}
+                aria-label={t('editTags')}
+              >
+                <Layers size={16} strokeWidth={1.7} />
+              </button>
+            )}
           </>
         )}
       </footer>

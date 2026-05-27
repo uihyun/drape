@@ -651,11 +651,24 @@ exports.processOotdPhoto = onCall(
     if (!snap.exists) throw new HttpsError('not-found', 'ootd missing');
     const ootd = snap.data();
     if (ootd.userId !== uid) throw new HttpsError('permission-denied', 'not yours');
-    if (!ootd.photoPath) throw new HttpsError('failed-precondition', 'no photo');
+    if (!ootd.photoPath && !ootd.photoUrl) throw new HttpsError('failed-precondition', 'no photo');
 
+    // Source can be a Storage path (direct upload) or a remote URL
+    // (when the OOTD reuses a try-on variant URL — no copy needed).
+    // Server-side fetch works either way; no CORS concerns.
     const bucket = admin.storage().bucket();
-    const buf = await downloadStorageObject(bucket, ootd.photoPath);
-    const mime = ootd.photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    let buf;
+    let mime = 'image/jpeg';
+    if (ootd.photoPath) {
+      buf = await downloadStorageObject(bucket, ootd.photoPath);
+      mime = ootd.photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    } else {
+      const res = await fetch(ootd.photoUrl);
+      if (!res.ok) throw new HttpsError('internal', `photoUrl fetch ${res.status}`);
+      const arr = await res.arrayBuffer();
+      buf = Buffer.from(arr);
+      mime = res.headers.get('content-type') || (ootd.photoUrl.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg');
+    }
 
     // Same pipeline as processIdentityRef: segmentation cutout (pixels
     // preserved exactly, no model re-render) → mask sanity → upload as
@@ -670,7 +683,9 @@ exports.processOotdPhoto = onCall(
       if (ratio < 0.02 || ratio > 0.95) {
         console.warn('processOotdPhoto mask out of range:', ratio.toFixed(3));
       } else {
-        croppedPath = ootd.photoPath.replace(/\.(jpg|jpeg|png)$/i, `-cut-${Date.now()}.png`);
+        croppedPath = ootd.photoPath
+          ? ootd.photoPath.replace(/\.(jpg|jpeg|png)$/i, `-cut-${Date.now()}.png`)
+          : `ootds/${uid}/${ootd.date}-cut-${Date.now()}.png`;
         croppedUrl = await uploadAlphaPng(bucket, croppedPath, cutout);
         await ootdRef.set({
           photoCutUrl: croppedUrl,

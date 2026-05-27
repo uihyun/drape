@@ -86,12 +86,12 @@ async function upsertOotd({
     createdAt: serverTimestamp(),
   }, { merge: true });
 
-  // Trigger AI analysis + background-removal when a new photo was
-  // uploaded. Both run fire-and-forget so upsertOotd returns fast.
-  // processOotdPhoto uses the same Gemini-Image pipeline as
-  // processIdentityRef — the calendar accepts a slight model
-  // interpretation in exchange for a clean person cutout in each cell.
-  if (photoBlob) {
+  // Trigger AI analysis + background-removal whenever the OOTD got a
+  // new photo source — direct upload OR reused try-on variant URL.
+  // Both run fire-and-forget so upsertOotd returns fast.
+  // processOotdPhoto produces photoCutUrl which the Calendar prefers
+  // over the raw photoUrl, so the cell always shows a clean cutout.
+  if (photoBlob || photoUrlFromTryon) {
     httpsCallable(functions, 'analyzeOotd')({ ootdId: id })
       .catch(e => console.warn('analyzeOotd skipped:', e?.message));
     httpsCallable(functions, 'processOotdPhoto')({ ootdId: id })
