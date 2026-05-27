@@ -105,6 +105,7 @@ const HIDE_NAV = [
   /^\/o\//,
   /^\/s\//,
   /^\/ootd\//,
+  /^\/messages\/[^/]+$/,
 ];
 
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
