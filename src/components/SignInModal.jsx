@@ -16,17 +16,31 @@ export function SignInModal({ open, onClose, onSignedIn }) {
 
   const after = () => { onSignedIn?.(); onClose?.(); };
 
+  // User-driven cancellations (closed the popup, denied the OAuth
+  // consent screen) aren't errors worth surfacing — the user already
+  // knows they backed out. Only true failures (network, misconfig,
+  // blocked popup) hit the error line.
+  const CANCEL_CODES = new Set([
+    'auth/user-cancelled',
+    'auth/popup-closed-by-user',
+    'auth/cancelled-popup-request',
+  ]);
+  const handleSignInError = (e) => {
+    if (e?.code && CANCEL_CODES.has(e.code)) return;
+    setError(e?.message || 'Sign-in failed');
+  };
+
   const onGoogle = async () => {
     setBusy('google'); setError(null);
     try { await AuthService.signInWithGoogle(); after(); }
-    catch (e) { setError(e.message || 'Sign-in failed'); }
+    catch (e) { handleSignInError(e); }
     finally { setBusy(null); }
   };
 
   const onApple = async () => {
     setBusy('apple'); setError(null);
     try { await AuthService.signInWithApple(); after(); }
-    catch (e) { setError(e.message || 'Sign-in failed'); }
+    catch (e) { handleSignInError(e); }
     finally { setBusy(null); }
   };
 

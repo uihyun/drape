@@ -19,17 +19,29 @@ export function Welcome() {
 
   const afterSignIn = () => navigate('/profile');
 
+  // Swallow user-driven cancellations so closing the OAuth popup or
+  // denying consent doesn't show a scary red error message.
+  const CANCEL_CODES = new Set([
+    'auth/user-cancelled',
+    'auth/popup-closed-by-user',
+    'auth/cancelled-popup-request',
+  ]);
+  const onSignInErr = (e) => {
+    if (e?.code && CANCEL_CODES.has(e.code)) return;
+    setError(e?.message || 'Sign-in failed');
+  };
+
   const onGoogle = async () => {
     setBusy('google'); setError(null);
     try { await AuthService.signInWithGoogle(); afterSignIn(); }
-    catch (e) { setError(e.message || 'Sign-in failed'); }
+    catch (e) { onSignInErr(e); }
     finally { setBusy(null); }
   };
 
   const onApple = async () => {
     setBusy('apple'); setError(null);
     try { await AuthService.signInWithApple(); afterSignIn(); }
-    catch (e) { setError(e.message || 'Sign-in failed'); }
+    catch (e) { onSignInErr(e); }
     finally { setBusy(null); }
   };
 
