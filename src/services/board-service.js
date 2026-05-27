@@ -12,7 +12,7 @@ import { db, auth } from '../firebase.js';
 
 const BOARDS = 'boards';
 
-async function createBoard({ name = '', stickers = [], coverUrl = null } = {}) {
+async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic = false } = {}) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   const ref = await addDoc(collection(db, BOARDS), {
@@ -20,6 +20,7 @@ async function createBoard({ name = '', stickers = [], coverUrl = null } = {}) {
     name: String(name).slice(0, 80),
     stickers: Array.isArray(stickers) ? stickers : [],
     coverUrl,
+    isPublic: !!isPublic,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -56,6 +57,19 @@ async function listMyBoards({ pageSize = 30 } = {}) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+/** Public board feed — every board with isPublic=true, newest first.
+ *  Owner-agnostic, so the caller hydrates author profiles separately
+ *  (same pattern as listPublicFeed for OOTDs). */
+async function listPublicBoards({ pageSize = 24 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, BOARDS),
+    where('isPublic', '==', true),
+    orderBy('updatedAt', 'desc'),
+    limit(pageSize),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 function subscribeMyBoards(cb) {
   const user = auth.currentUser;
   if (!user) { cb([]); return () => {}; }
@@ -82,6 +96,7 @@ export const BoardService = {
   updateBoard,
   deleteBoard,
   listMyBoards,
+  listPublicBoards,
   subscribeMyBoards,
 };
 

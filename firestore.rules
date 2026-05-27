@@ -204,11 +204,11 @@ service cloud.firestore {
 
     // ── Boards (sticker-board: clothing items arranged on a canvas) ────
     // Each board doc holds an array of placed stickers (itemId + x/y/
-    // scale/rotation/zIndex). Reads are owner-only for now; later we'll
-    // surface a public flag if users want to share boards on the feed.
+    // scale/rotation/zIndex). Public boards readable by anyone (auth or
+    // not — Discovery feed); private boards owner-only.
     match /boards/{boardId} {
-      allow read: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow read: if resource.data.isPublic == true
+        || (request.auth != null && resource.data.userId == request.auth.uid);
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.stickers is list;

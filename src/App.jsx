@@ -24,6 +24,7 @@ import { PublicProfile } from './pages/PublicProfile.jsx';
 import { Welcome } from './pages/Welcome.jsx';
 import { BoardList } from './pages/BoardList.jsx';
 import { BoardEditor } from './pages/BoardEditor.jsx';
+import { BoardDetail } from './pages/BoardDetail.jsx';
 import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
 import { TryOnHistory } from './pages/TryOnHistory.jsx';
 import { OotdDetail } from './pages/OotdDetail.jsx';
@@ -155,6 +156,7 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
 
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/:boardId" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
+          <Route path="/b/:boardId" element={<BoardDetail user={user} />} />
 
           <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
 

@@ -24,6 +24,7 @@ export function BoardEditor({ user, onSignIn }) {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [stickers, setStickers] = useState([]); // { itemId, x, y, scale, rotation, z }
+  const [isPublic, setIsPublic] = useState(false);
   const [selectedSticker, setSelectedSticker] = useState(null); // index
   const [pickerOpen, setPickerOpen] = useState(false);
   const [menuFor, setMenuFor] = useState(null); // index for long-press menu
@@ -95,6 +96,7 @@ export function BoardEditor({ user, onSignIn }) {
       if (b) {
         setName(b.name || '');
         setStickers(Array.isArray(b.stickers) ? b.stickers : []);
+        setIsPublic(b.isPublic === true);
       }
       setLoaded(true);
     });
@@ -162,10 +164,10 @@ export function BoardEditor({ user, onSignIn }) {
       const coverItem = top ? itemsById[top.itemId] : null;
       const coverUrl = coverItem?.croppedUrl || coverItem?.originalUrl || null;
       if (isNew) {
-        const { id } = await BoardService.createBoard({ name: name.trim(), stickers, coverUrl });
+        const { id } = await BoardService.createBoard({ name: name.trim(), stickers, coverUrl, isPublic });
         navigate(`/boards/${id}`, { replace: true });
       } else {
-        await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl });
+        await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic });
         navigate('/profile/boards');
       }
     } catch (e) {
@@ -261,6 +263,18 @@ export function BoardEditor({ user, onSignIn }) {
           </button>
         </section>
       )}
+
+      <label className="ootd-sheet-public board-public-row">
+        <input
+          type="checkbox"
+          checked={isPublic}
+          onChange={e => setIsPublic(e.target.checked)}
+        />
+        <span className="ootd-sheet-public-label">
+          <strong>{t('boardPublishLabel')}</strong>
+          <small>{t('boardPublishHint')}</small>
+        </span>
+      </label>
 
       <div className="board-actions">
         <button

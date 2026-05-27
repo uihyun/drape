@@ -4,6 +4,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { Heart, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
+import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -14,24 +15,39 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // /ootd/:id for the editorial breakdown.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
+  const [kind, setKind] = useState('ootds'); // 'ootds' | 'boards'
   const [ootds, setOotds] = useState(null);
+  const [boards, setBoards] = useState(null);
   const [authorMap, setAuthorMap] = useState(new Map());
   const [sort, setSort] = useState('latest');
 
   useEffect(() => {
+    if (kind !== 'ootds') return;
     setOotds(null);
     OotdService.listPublicFeed({ pageSize: 24, sortBy: sort })
       .then(({ ootds }) => setOotds(ootds))
       .catch((err) => {
-        // Surface missing-index errors etc. so they're not silenced.
-        console.warn('feed query failed:', err?.code, err?.message);
+        console.warn('ootd feed query failed:', err?.code, err?.message);
         setOotds([]);
       });
-  }, [sort]);
+  }, [sort, kind]);
 
   useEffect(() => {
-    if (!ootds?.length) return;
-    const missing = ootds.map(o => o.userId).filter(uid => uid && !authorMap.has(uid));
+    if (kind !== 'boards') return;
+    setBoards(null);
+    BoardService.listPublicBoards({ pageSize: 24 })
+      .then(rows => setBoards(rows))
+      .catch((err) => {
+        console.warn('boards feed query failed:', err?.code, err?.message);
+        setBoards([]);
+      });
+  }, [kind]);
+
+  // Hydrate author profiles for whichever feed is showing.
+  useEffect(() => {
+    const rows = kind === 'ootds' ? ootds : boards;
+    if (!rows?.length) return;
+    const missing = rows.map(r => r.userId).filter(uid => uid && !authorMap.has(uid));
     if (!missing.length) return;
     ProfileService.getProfilesByUids?.(missing).then(map => {
       if (!map || map.size === 0) return;
@@ -41,38 +57,71 @@ export function Feed({ user, onSignIn }) {
         return next;
       });
     }).catch(() => {});
-  }, [ootds, authorMap]);
+  }, [ootds, boards, kind, authorMap]);
+
+  const showingBoards = kind === 'boards';
+  const list = showingBoards ? boards : ootds;
 
   return (
     <div className="community-feed">
       <header className="feed-top">
         <h1 className="feed-h1">{t('feedTitle')}</h1>
-        <nav className="feed-sort-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={sort === 'latest'}
-            className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
-            onClick={() => setSort('latest')}
-          >
-            {t('feedSortLatest')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={sort === 'popular'}
-            className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
-            onClick={() => setSort('popular')}
-          >
-            {t('feedSortPopular')}
-          </button>
-        </nav>
+        <div className="feed-top-controls">
+          <nav className="feed-kind-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={kind === 'ootds'}
+              className={`feed-kind-tab${kind === 'ootds' ? ' active' : ''}`}
+              onClick={() => setKind('ootds')}
+            >
+              {t('feedKindOotds')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={kind === 'boards'}
+              className={`feed-kind-tab${kind === 'boards' ? ' active' : ''}`}
+              onClick={() => setKind('boards')}
+            >
+              {t('feedKindBoards')}
+            </button>
+          </nav>
+          {!showingBoards && (
+            <nav className="feed-sort-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sort === 'latest'}
+              className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+              onClick={() => setSort('latest')}
+            >
+              {t('feedSortLatest')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sort === 'popular'}
+              className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+              onClick={() => setSort('popular')}
+            >
+              {t('feedSortPopular')}
+            </button>
+            </nav>
+          )}
+        </div>
       </header>
 
-      {ootds === null ? (
+      {list === null ? (
         <div className="loading"><div className="spinner" /></div>
-      ) : ootds.length === 0 ? (
-        <FeedEmpty t={t} />
+      ) : list.length === 0 ? (
+        <FeedEmpty t={t} kind={kind} />
+      ) : showingBoards ? (
+        <div className="board-feed">
+          {boards.map(b => (
+            <BoardCard key={b.id} board={b} author={authorMap.get(b.userId)} t={t} />
+          ))}
+        </div>
       ) : (
         <div className="ootd-feed">
           {ootds.map(o => (
@@ -89,6 +138,23 @@ export function Feed({ user, onSignIn }) {
         </div>
       )}
     </div>
+  );
+}
+
+function BoardCard({ board, author, t }) {
+  return (
+    <Link to={`/b/${board.id}`} className="board-feed-card">
+      {board.coverUrl
+        ? <img src={board.coverUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        : <div className="board-feed-card-empty">◇</div>}
+      <div className="board-feed-card-overlay">
+        <div className="board-feed-card-author">
+          <Avatar src={author?.photoURL} name={author?.handle} size={24} />
+          <span className="board-feed-card-handle">@{author?.handle || '—'}</span>
+        </div>
+        {board.name && <h3 className="board-feed-card-title">{board.name}</h3>}
+      </div>
+    </Link>
   );
 }
 
@@ -179,12 +245,13 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
   );
 }
 
-function FeedEmpty({ t }) {
+function FeedEmpty({ t, kind }) {
+  const isBoards = kind === 'boards';
   return (
     <div className="feed-empty">
       <div className="feed-empty-mark">◇</div>
-      <h2 className="feed-empty-title">{t('feedEmptyTitle')}</h2>
-      <p className="feed-empty-body">{t('feedEmptyBody')}</p>
+      <h2 className="feed-empty-title">{isBoards ? t('feedBoardsEmptyTitle') : t('feedEmptyTitle')}</h2>
+      <p className="feed-empty-body">{isBoards ? t('feedBoardsEmptyBody') : t('feedEmptyBody')}</p>
     </div>
   );
 }
