@@ -62,15 +62,27 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
 
     const onEnd = () => { stateRef.current = null; };
 
+    // iOS Safari fires its own gesture* events for two-finger touches
+    // and uses them to drive the viewport pinch-zoom. touch-action and
+    // touchmove preventDefault on their own DON'T block it — gesture
+    // events must be preventDefaulted explicitly. They no-op on Android.
+    const onGesture = (e) => e.preventDefault();
+
     el.addEventListener('touchstart', onStart, { passive: true });
     el.addEventListener('touchmove', onMove, { passive: false });
     el.addEventListener('touchend', onEnd);
     el.addEventListener('touchcancel', onEnd);
+    el.addEventListener('gesturestart', onGesture, { passive: false });
+    el.addEventListener('gesturechange', onGesture, { passive: false });
+    el.addEventListener('gestureend', onGesture, { passive: false });
     return () => {
       el.removeEventListener('touchstart', onStart);
       el.removeEventListener('touchmove', onMove);
       el.removeEventListener('touchend', onEnd);
       el.removeEventListener('touchcancel', onEnd);
+      el.removeEventListener('gesturestart', onGesture);
+      el.removeEventListener('gesturechange', onGesture);
+      el.removeEventListener('gestureend', onGesture);
     };
   }, [key, min, max]);
 

@@ -1221,9 +1221,13 @@ body.is-native {
   gap: 1.25rem 0.75rem;
 }
 /* Two-finger pinch on a grid: opt out of the browser's own zoom so the
-   gesture flows into our useColumnZoom hook. pan-y still allows the
-   page to scroll vertically with one finger. */
-.pinch-grid { touch-action: pan-y; }
+   gesture flows into useColumnZoom. pan-y still allows the page to
+   scroll vertically with one finger. Cascading to children matters
+   because the touch usually lands on a card's image / link, not the
+   grid container itself, and iOS reads the gesture's touch-action from
+   the leaf. */
+.pinch-grid,
+.pinch-grid * { touch-action: pan-y; }
 /* Grid items default to min-width:auto (== min-content), which on a
    narrow phone viewport lets a long item name (or large image) push
    the 3-col track wider than the screen. Explicit min-width:0 lets
