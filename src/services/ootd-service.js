@@ -42,7 +42,18 @@ function isValidDate(s) {
  *  `linkedType` disambiguates what `outfitId` points at — 'outfit' (legacy
  *  outfits collection), 'board', or 'tryon' (generations). Older docs have
  *  no linkedType; treat as 'outfit'. */
-async function upsertOotd({ date, outfitId = null, linkedType = null, photoBlob = null, note = '', isPublic = undefined }) {
+async function upsertOotd({
+  date,
+  outfitId = null,
+  linkedType = null,
+  photoBlob = null,
+  // Reuse an existing public Storage URL (typically a try-on variant)
+  // as the OOTD photo without re-uploading. Skipped when photoBlob is
+  // also set — the user-uploaded blob takes precedence.
+  photoUrlFromTryon = null,
+  note = '',
+  isPublic = undefined,
+}) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!isValidDate(date)) throw new Error('bad_date');
@@ -56,6 +67,9 @@ async function upsertOotd({ date, outfitId = null, linkedType = null, photoBlob 
     await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
     photoUrl = await getDownloadURL(r);
     photoPath = path;
+  } else if (photoUrlFromTryon) {
+    photoUrl = photoUrlFromTryon;
+    photoPath = null; // not owned by this OOTD; deleting the OOTD doesn't touch the variant
   }
 
   // setDoc(..., { merge: true }) is intentional — an OOTD often grows over

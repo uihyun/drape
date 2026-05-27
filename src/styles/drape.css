@@ -3304,7 +3304,10 @@ body.is-native {
   display: flex;
   gap: 0.55rem;
   overflow-x: auto;
-  padding: 0.15rem 0 0.4rem;
+  /* horizontal padding so the selected card's outline (2px) has room
+     on the first/last items — overflow-x: auto otherwise clips the
+     left edge of the first thumb's outline. */
+  padding: 0.3rem 4px 0.5rem;
   -webkit-overflow-scrolling: touch;
 }
 .ootd-link-card {
