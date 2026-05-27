@@ -3384,6 +3384,11 @@ body.is-native {
 
 /* ── Location autocomplete (Settings profile section) ──────────────── */
 .location-input { position: relative; }
+/* page-input ships with margin-bottom: 1rem (form rhythm). That makes
+   the wrapper taller than the input itself, throwing off the absolute
+   X-button's 50% top centering. Zero it here; the parent .settings-row
+   already provides spacing between fields. */
+.location-input .page-input { margin-bottom: 0; }
 .location-input-clear {
   position: absolute;
   top: 50%;

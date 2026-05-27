@@ -156,11 +156,13 @@ export function cityDisplay(id, lang = 'en') {
 }
 
 /** Substring search across every locale name. Returns at most `limit`
- *  cities sorted by best match position (prefix match first). Empty
- *  query returns the first `limit` cities in declaration order. */
+ *  cities sorted by match position (prefix matches first), with
+ *  alphabetical name as the tie-breaker so siblings like "San Diego"
+ *  / "San Francisco" stay predictable. Empty query → empty result; the
+ *  caller decides whether to show anything when nothing's typed. */
 export function searchCities(query, { limit = 10 } = {}) {
   const q = String(query || '').trim().toLowerCase();
-  if (!q) return CITIES.slice(0, limit);
+  if (!q) return [];
   const scored = [];
   for (const c of CITIES) {
     let best = Infinity;
@@ -172,6 +174,9 @@ export function searchCities(query, { limit = 10 } = {}) {
     }
     if (best !== Infinity) scored.push({ c, best });
   }
-  scored.sort((a, b) => a.best - b.best);
+  scored.sort((a, b) => {
+    if (a.best !== b.best) return a.best - b.best;
+    return (a.c.names.en || '').localeCompare(b.c.names.en || '');
+  });
   return scored.slice(0, limit).map(s => s.c);
 }
