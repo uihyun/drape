@@ -36,13 +36,13 @@ export function Feed({ user, onSignIn }) {
   useEffect(() => {
     if (kind !== 'boards') return;
     setBoards(null);
-    BoardService.listPublicBoards({ pageSize: 24 })
+    BoardService.listPublicBoards({ pageSize: 24, sortBy: sort })
       .then(rows => setBoards(rows))
       .catch((err) => {
         console.warn('boards feed query failed:', err?.code, err?.message);
         setBoards([]);
       });
-  }, [kind]);
+  }, [kind, sort]);
 
   // Hydrate author profiles for whichever feed is showing.
   useEffect(() => {
@@ -94,7 +94,6 @@ export function Feed({ user, onSignIn }) {
               {t('feedKindMarket')}
             </Link>
           </nav>
-          {!showingBoards && (
             <nav className="feed-sort-tabs" role="tablist">
             <button
               type="button"
@@ -115,7 +114,6 @@ export function Feed({ user, onSignIn }) {
               {t('feedSortPopular')}
             </button>
             </nav>
-          )}
         </div>
       </header>
 
@@ -126,7 +124,15 @@ export function Feed({ user, onSignIn }) {
       ) : showingBoards ? (
         <div className="board-feed">
           {boards.map(b => (
-            <BoardCard key={b.id} board={b} author={authorMap.get(b.userId)} user={user} onSignIn={onSignIn} t={t} />
+            <BoardCard
+              key={b.id}
+              board={b}
+              author={authorMap.get(b.userId)}
+              user={user}
+              onSignIn={onSignIn}
+              onLikeChange={(patch) => setBoards(prev => prev.map(x => x.id === b.id ? { ...x, ...patch } : x))}
+              t={t}
+            />
           ))}
         </div>
       ) : (
@@ -148,7 +154,8 @@ export function Feed({ user, onSignIn }) {
   );
 }
 
-function BoardCard({ board, author, user, onSignIn, t }) {
+function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
+  const liked = !!(user && Array.isArray(board.likedBy) && board.likedBy.includes(user.uid));
   const [bookmarked, setBookmarked] = useState(false);
   useEffect(() => {
     if (!user || user.isAnonymous) { setBookmarked(false); return; }
@@ -158,6 +165,24 @@ function BoardCard({ board, author, user, onSignIn, t }) {
       () => setBookmarked(false),
     );
   }, [user?.uid, board.id]);
+
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    const nextLiked = !liked;
+    const nextLikedBy = nextLiked
+      ? [...(board.likedBy || []), user.uid]
+      : (board.likedBy || []).filter(u => u !== user.uid);
+    const nextCount = Math.max(0, (board.likeCount || 0) + (nextLiked ? 1 : -1));
+    onLikeChange?.({ likedBy: nextLikedBy, likeCount: nextCount });
+    try {
+      await BoardService.toggleLike(board.id, user.uid, liked);
+    } catch (err) {
+      console.warn('board like failed:', err.message);
+      onLikeChange?.({ likedBy: board.likedBy || [], likeCount: board.likeCount || 0 });
+    }
+  };
 
   const handleBookmark = async (e) => {
     e.preventDefault();
@@ -173,6 +198,14 @@ function BoardCard({ board, author, user, onSignIn, t }) {
     <Link to={`/boards/${board.id}`} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
       <div className="ootd-card-actions">
+        <button
+          type="button"
+          className={`ootd-card-action${liked ? ' active' : ''}`}
+          onClick={handleLike}
+          aria-label={liked ? t('unlike') : t('like')}
+        >
+          <Heart size={18} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
+        </button>
         <button
           type="button"
           className={`ootd-card-action${bookmarked ? ' active' : ''}`}

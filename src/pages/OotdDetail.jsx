@@ -106,12 +106,22 @@ export function OotdDetail({ user, onSignIn }) {
           />
           <span className="outfit-byline-handle">{owner?.handle ? `@${owner.handle}` : ''}</span>
         </Link>
-        {isOwner && (
-          <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
-            {ootd.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
-            {ootd.isPublic ? t('unlist') : t('publishToFeed')}
-          </button>
-        )}
+        <div className="outfit-byline-actions">
+          {isOwner && (
+            <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
+              {ootd.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
+              {ootd.isPublic ? t('unlist') : t('publishToFeed')}
+            </button>
+          )}
+          {!isOwner && (
+            <MoreMenu
+              target={{ type: 'ootd', id: ootd.id }}
+              targetUid={ootd.userId}
+              user={user}
+              onSignIn={onSignIn}
+            />
+          )}
+        </div>
       </header>
 
       {dateLabel && <div className="outfit-date">{dateLabel}</div>}
@@ -192,17 +202,10 @@ export function OotdDetail({ user, onSignIn }) {
           text={notes || ''}
           url={`${typeof window !== 'undefined' ? window.location.origin : ''}/ootd/${ootd.id}`}
         />
-        {isOwner ? (
+        {isOwner && (
           <button type="button" className="btn btn-secondary danger-btn" onClick={remove} disabled={busy}>
             <Trash2 size={14} strokeWidth={1.6} /> {t('delete')}
           </button>
-        ) : (
-          <MoreMenu
-            target={{ type: 'ootd', id: ootd.id }}
-            targetUid={ootd.userId}
-            user={user}
-            onSignIn={onSignIn}
-          />
         )}
       </div>
     </div>

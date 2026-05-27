@@ -155,6 +155,14 @@ export function cityDisplay(id, lang = 'en') {
   return c.names[lang] || c.names.en || c.id;
 }
 
+/** ISO country code for a given city id, or null if unknown / legacy
+ *  free-text. Used to derive default listing currency. */
+export function cityCountry(id) {
+  if (!id) return null;
+  const c = BY_ID.get(id);
+  return c?.country || null;
+}
+
 /** Substring search across every locale name. Returns at most `limit`
  *  cities sorted by match position (prefix matches first), with
  *  alphabetical name as the tie-breaker so siblings like "San Diego"

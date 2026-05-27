@@ -9,8 +9,11 @@ import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.
 import { ShareButton } from '../components/ShareButton.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
 import { MessageService } from '../services/message-service.js';
+import { ProfileService } from '../services/profile-service.js';
 import { shareOrDownloadImage } from '../services/share-service.js';
 import { elapsedLabel, daysSince } from '../utils/elapsed.js';
+import { currencyForCountry, currencySymbol, formatPrice } from '../utils/currency.js';
+import { cityCountry } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Full-screen single-item viewer modeled on Image 24:
@@ -30,6 +33,7 @@ export function ItemDetail({ user, onSignIn }) {
   const [saving, setSaving] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ownerCurrency, setOwnerCurrency] = useState(null);
   const changeInputRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +51,17 @@ export function ItemDetail({ user, onSignIn }) {
       });
     });
   }, [itemId, editing]);
+
+  // Resolve currency once for the editor — falls back to item's stamped
+  // currency, then to KRW. The save handler re-resolves from the profile
+  // for a freshly-listed item so this only matters for the form preview.
+  useEffect(() => {
+    if (!item?.userId) return;
+    if (item.currency) { setOwnerCurrency(item.currency); return; }
+    ProfileService.getByUid(item.userId)
+      .then(p => setOwnerCurrency(currencyForCountry(cityCountry(p?.location))))
+      .catch(() => setOwnerCurrency('KRW'));
+  }, [item?.userId, item?.currency]);
 
   if (!item) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && item.userId === user.uid;
@@ -82,6 +97,18 @@ export function ItemDetail({ user, onSignIn }) {
     }
     setSaving(true);
     try {
+      // Resolve the listing currency once, from the seller's profile
+      // location. Stamped onto the item so future viewers don't need to
+      // hit ProfileService just to format the price.
+      let currency = item.currency || null;
+      if (wantsSale && !currency) {
+        try {
+          const prof = await ProfileService.getByUid(item.userId);
+          currency = currencyForCountry(cityCountry(prof?.location));
+        } catch {
+          currency = 'KRW';
+        }
+      }
       await ItemService.updateItem(item.id, {
         name: draft.name,
         tags: draft.tags,
@@ -89,6 +116,7 @@ export function ItemDetail({ user, onSignIn }) {
         priceOriginal: originalNum,
         priceAsking: wantsSale ? askingNum : null,
         conditionGrade: wantsSale ? draft.conditionGrade : null,
+        currency: wantsSale ? currency : null,
       });
       setEditing(false);
     } finally { setSaving(false); }
@@ -266,7 +294,7 @@ export function ItemDetail({ user, onSignIn }) {
               maxLength={80}
             />
             <TagsBlock t={t} tags={draft.tags} editing onChange={tags => setDraft({ ...draft, tags })} />
-            <SaleBlock t={t} draft={draft} setDraft={setDraft} />
+            <SaleBlock t={t} draft={draft} setDraft={setDraft} currency={ownerCurrency} />
             <div className="item-viewer-edit-actions">
               <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>{t('cancel')}</button>
               <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? t('saving') : t('save')}</button>
@@ -283,7 +311,7 @@ export function ItemDetail({ user, onSignIn }) {
                 {item.forSale && item.priceAsking > 0 && (
                   <span className="item-sale-tags">
                     <span className="item-sale-price">
-                      {t('salePriceCurrency')}{item.priceAsking.toLocaleString()}
+                      {formatPrice(item.priceAsking, item.currency)}
                     </span>
                     {item.conditionGrade && (
                       <span className="item-sale-grade">{item.conditionGrade}</span>
@@ -419,13 +447,14 @@ function Chip({ active, editable, onClick, children }) {
 
 const CONDITION_GRADES = ['S', 'A', 'B', 'C'];
 
-function SaleBlock({ t, draft, setDraft }) {
+function SaleBlock({ t, draft, setDraft, currency }) {
   const onToggle = (e) => setDraft({ ...draft, forSale: e.target.checked });
   const onNum = (key) => (e) => {
     // Strip non-digits, keep as string in draft so empty stays empty.
     const v = e.target.value.replace(/[^0-9]/g, '');
     setDraft({ ...draft, [key]: v });
   };
+  const sym = currencySymbol(currency);
   return (
     <div className="sale-block">
       <label className="sale-toggle">
@@ -438,7 +467,7 @@ function SaleBlock({ t, draft, setDraft }) {
             <label className="sale-field">
               <span className="sale-field-label">{t('salePriceOriginal')}</span>
               <div className="sale-price-input">
-                <span className="sale-currency">{t('salePriceCurrency')}</span>
+                <span className="sale-currency">{sym}</span>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -451,7 +480,7 @@ function SaleBlock({ t, draft, setDraft }) {
             <label className="sale-field">
               <span className="sale-field-label">{t('salePriceAsking')}</span>
               <div className="sale-price-input">
-                <span className="sale-currency">{t('salePriceCurrency')}</span>
+                <span className="sale-currency">{sym}</span>
                 <input
                   type="text"
                   inputMode="numeric"

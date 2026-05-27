@@ -36,6 +36,7 @@ export const MessageService = {
         itemName: item.name || '',
         itemCover: item.croppedUrl || item.originalUrl || '',
         priceAsking: item.priceAsking || 0,
+        currency: item.currency || 'KRW',
         sellerUid,
         buyerUid: user.uid,
         createdAt: serverTimestamp(),

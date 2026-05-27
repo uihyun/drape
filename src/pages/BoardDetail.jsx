@@ -105,13 +105,13 @@ export function BoardDetail({ user, onSignIn }) {
           />
           <span className="outfit-byline-handle">{author?.handle ? `@${author.handle}` : ''}</span>
         </Link>
-        {isOwner ? (
-          <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
-            {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
-            {board.isPublic ? t('unlist') : t('publishToFeed')}
-          </button>
-        ) : (
-          <>
+        <div className="outfit-byline-actions">
+          {isOwner ? (
+            <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
+              {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
+              {board.isPublic ? t('unlist') : t('publishToFeed')}
+            </button>
+          ) : (
             <button
               type="button"
               className={`btn-edit${bookmarked ? ' is-liked' : ''}`}
@@ -127,14 +127,16 @@ export function BoardDetail({ user, onSignIn }) {
               <Bookmark size={14} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
               {bookmarked ? t('unbookmark') : t('bookmark')}
             </button>
+          )}
+          {!isOwner && (
             <MoreMenu
               target={{ type: 'board', id: board.id }}
               targetUid={board.userId}
               user={user}
               onSignIn={onSignIn}
             />
-          </>
-        )}
+          )}
+        </div>
       </header>
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}

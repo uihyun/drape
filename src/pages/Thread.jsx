@@ -4,6 +4,7 @@ import { ChevronLeft, Send } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
+import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Single conversation view. Top: item summary card linking back to the
@@ -97,7 +98,7 @@ export function Thread({ user }) {
           <span className="thread-listing-name">{thread.itemName || t('untitledItem')}</span>
           {thread.priceAsking > 0 && (
             <span className="thread-listing-price">
-              {t('salePriceCurrency')}{thread.priceAsking.toLocaleString()}
+              {formatPrice(thread.priceAsking, thread.currency)}
             </span>
           )}
         </div>

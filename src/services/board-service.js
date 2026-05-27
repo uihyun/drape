@@ -114,14 +114,31 @@ async function listPublicBoardsByUser({ uid, pageSize = 30 } = {}) {
 /** Public board feed — every board with isPublic=true, newest first.
  *  Owner-agnostic, so the caller hydrates author profiles separately
  *  (same pattern as listPublicFeed for OOTDs). */
-async function listPublicBoards({ pageSize = 24 } = {}) {
+async function listPublicBoards({ pageSize = 24, sortBy = 'latest' } = {}) {
+  const orderField = sortBy === 'popular' ? 'likeCount' : 'updatedAt';
   const snap = await getDocs(query(
     collection(db, BOARDS),
     where('isPublic', '==', true),
-    orderBy('updatedAt', 'desc'),
+    orderBy(orderField, 'desc'),
     limit(pageSize),
   ));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/** Like / unlike a public board. Mirrors OotdService.toggleLike. */
+async function toggleLike(boardId, uid, currentlyLiked) {
+  const ref_ = doc(db, BOARDS, boardId);
+  const snap = await getDoc(ref_);
+  if (!snap.exists()) throw new Error('not_found');
+  const data = snap.data();
+  const liked = Array.isArray(data.likedBy) ? data.likedBy : [];
+  const nextLiked = currentlyLiked
+    ? liked.filter(u => u !== uid)
+    : [...liked, uid];
+  await setDoc(ref_, {
+    likedBy: nextLiked,
+    likeCount: Math.max(0, (data.likeCount || 0) + (currentlyLiked ? -1 : 1)),
+  }, { merge: true });
 }
 
 function subscribeMyBoards(cb) {
@@ -155,6 +172,7 @@ export const BoardService = {
   listBookmarkedBoards,
   subscribeMyBoards,
   toggleBookmark,
+  toggleLike,
 };
 
 export default BoardService;

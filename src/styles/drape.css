@@ -1545,6 +1545,10 @@ body.is-native {
   cursor: pointer;
   border-radius: 999px;
   transition: background 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .feed-kind-tab.active {
   background: var(--text-primary);
@@ -3020,6 +3024,16 @@ body.is-native {
   gap: 0.5rem;
   padding: 1rem 1rem 0;
 }
+/* When the edit panel is open the form grows tall (tags + sale block).
+   Cap its height to the available viewport and let it scroll internally
+   so the Save / Cancel actions always stay reachable. */
+.item-viewer-foot:has(.item-viewer-edit) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 1rem;
+}
 .item-viewer-meta { flex: 1; min-width: 0; }
 .item-viewer-cat {
   font-size: 0.7rem;
@@ -4378,6 +4392,21 @@ body.is-native {
   font-size: 0.9rem;
   color: var(--text-primary);
 }
+.outfit-byline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+/* In-byline MoreMenu sits next to compact pill buttons — shrink it
+   so the trigger doesn't tower over the @handle. */
+.outfit-byline-actions .more-menu-trigger {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border-color: transparent;
+  background: var(--surface);
+}
+.outfit-byline-actions .more-menu-trigger:hover { background: var(--surface-elevated); }
 .btn-edit {
   display: inline-flex;
   align-items: center;

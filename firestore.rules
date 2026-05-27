@@ -73,7 +73,7 @@ service cloud.firestore {
                       // item for sale). Schema enforced client-side; rules
                       // just allow the keys through.
                       'forSale', 'priceOriginal', 'priceAsking',
-                      'conditionGrade', 'listedAt']);
+                      'conditionGrade', 'currency', 'listedAt']);
 
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
@@ -205,7 +205,21 @@ service cloud.firestore {
       allow update: if request.auth != null
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['name', 'stickers', 'coverUrl', 'updatedAt', 'isPublic']);
+            .hasOnly(['name', 'stickers', 'coverUrl', 'updatedAt', 'isPublic',
+                      'likeCount', 'likedBy']);
+      // Like / unlike — any signed-in user on a public board, only the
+      // likedBy + likeCount keys, must include themselves +1 / -1.
+      allow update: if request.auth != null
+        && resource.data.isPublic == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['likeCount', 'likedBy'])
+        && (
+          (request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) + 1)
+          ||
+          (!request.resource.data.likedBy.hasAll([request.auth.uid])
+            && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1)
+        );
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
     }

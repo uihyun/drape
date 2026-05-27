@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketplaceService } from '../services/marketplace-service.js';
+import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 const GRADES = ['', 'S', 'A', 'B', 'C'];
@@ -86,10 +87,10 @@ function ListingCard({ item, t }) {
         {item.tags?.brand && <span className="listing-card-brand">{item.tags.brand}</span>}
         <span className="listing-card-name">{item.name || t('untitledItem')}</span>
         <span className="listing-card-price">
-          {t('salePriceCurrency')}{(item.priceAsking || 0).toLocaleString()}
+          {formatPrice(item.priceAsking || 0, item.currency)}
           {item.priceOriginal > 0 && item.priceOriginal !== item.priceAsking && (
             <span className="listing-card-price-original">
-              {t('salePriceCurrency')}{item.priceOriginal.toLocaleString()}
+              {formatPrice(item.priceOriginal, item.currency)}
             </span>
           )}
         </span>

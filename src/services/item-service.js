@@ -128,7 +128,8 @@ async function updateItem(itemId, patch) {
   // The Firestore rule limits which keys may change; keep this list aligned.
   const allowed = [
     'name', 'notes', 'tags', 'isArchived', 'isFavorite',
-    'forSale', 'priceOriginal', 'priceAsking', 'conditionGrade', 'listedAt',
+    'forSale', 'priceOriginal', 'priceAsking', 'conditionGrade',
+    'currency', 'listedAt',
   ];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))

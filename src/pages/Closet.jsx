@@ -6,6 +6,7 @@ import { CATEGORIES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
+import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
@@ -269,7 +270,7 @@ function ItemCard({ item, t, elapsed = null }) {
         )}
         {item.forSale && item.priceAsking > 0 && (
           <span className="item-card-sale">
-            {t('salePriceCurrency')}{item.priceAsking.toLocaleString()}
+            {formatPrice(item.priceAsking, item.currency)}
           </span>
         )}
       </div>
