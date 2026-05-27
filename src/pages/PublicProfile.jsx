@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
 import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
@@ -36,6 +37,7 @@ export function PublicProfile({ user, onSignIn }) {
   const [profile, setProfile] = useState(undefined);
   const [tab, setTab] = useState('outfits');
   const [ootds, setOotds] = useState(null);
+  const [listedOutfits, setListedOutfits] = useState(null);
   const [boards, setBoards] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
 
@@ -64,6 +66,19 @@ export function PublicProfile({ user, onSignIn }) {
       .catch((err) => {
         console.warn('public ootds failed:', err?.code, err?.message);
         setOotds([]);
+      });
+  }, [profile?.uid]);
+
+  // Legacy "outfits" collection — analyzed editorial entries that the
+  // user listed publicly. These pre-date the OOTD model but still show
+  // up under Outfits so visitors see *every* public outfit-ish piece.
+  useEffect(() => {
+    if (!profile?.uid) { setListedOutfits(null); return; }
+    OutfitService.getFeedOutfits({ userIds: [profile.uid], pageSize: 60 })
+      .then(({ outfits }) => setListedOutfits(outfits || []))
+      .catch((err) => {
+        console.warn('public outfits failed:', err?.code, err?.message);
+        setListedOutfits([]);
       });
   }, [profile?.uid]);
 
@@ -178,7 +193,7 @@ export function PublicProfile({ user, onSignIn }) {
       </nav>
 
       <div className="profile-tabcontent" role="tabpanel">
-        {tab === 'outfits' && <PublicOotdsGrid ootds={ootds} t={t} />}
+        {tab === 'outfits' && <PublicOutfitsGrid ootds={ootds} listedOutfits={listedOutfits} t={t} />}
         {tab === 'calendar' && <PublicCalendar ootds={ootds} t={t} />}
         {tab === 'boards' && <PublicBoardsGrid boards={boards} t={t} />}
       </div>
@@ -193,21 +208,45 @@ export function PublicProfile({ user, onSignIn }) {
   );
 }
 
-function PublicOotdsGrid({ ootds, t }) {
-  if (ootds === null) return <div className="loading"><div className="spinner" /></div>;
-  if (ootds.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
+// Merged Outfits grid — both public OOTDs and public legacy "outfits"
+// (the editorial analyzed entries). Normalized into a single card
+// shape and sorted by date desc so the order reads as one stream.
+function PublicOutfitsGrid({ ootds, listedOutfits, t }) {
+  if (ootds === null || listedOutfits === null) {
+    return <div className="loading"><div className="spinner" /></div>;
+  }
+  const items = [
+    ...ootds.map(o => ({
+      key: `ootd-${o.id}`,
+      to: `/ootd/${o.id}`,
+      cover: o.photoUrl || null,
+      title: o.title || o.note || t('untitledOutfit'),
+      dateLabel: o.date || '',
+      sortMs: o.date ? Date.parse(o.date) : 0,
+    })),
+    ...listedOutfits.map(o => ({
+      key: `outfit-${o.id}`,
+      to: `/o/${o.id}`,
+      cover: o.coverUrl || null,
+      title: o.name || t('untitledOutfit'),
+      dateLabel: '',
+      sortMs: (o.listedAt?.toMillis?.() ?? o.createdAt?.toMillis?.() ?? 0),
+    })),
+  ].sort((a, b) => b.sortMs - a.sortMs);
+
+  if (items.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
   return (
     <div className="outfit-grid">
-      {ootds.map(o => (
-        <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+      {items.map(it => (
+        <Link key={it.key} to={it.to} className="outfit-card">
           <div className="outfit-card-cover">
-            {o.photoUrl
-              ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-              : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
+            {it.cover
+              ? <img src={it.cover} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              : <div className="outfit-card-cover-empty"><span>{it.dateLabel}</span></div>}
           </div>
           <div className="outfit-card-meta">
-            <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
-            <span className="card-meta-date">{o.date || ''}</span>
+            <span className="card-meta-name">{it.title}</span>
+            {it.dateLabel && <span className="card-meta-date">{it.dateLabel}</span>}
           </div>
         </Link>
       ))}
