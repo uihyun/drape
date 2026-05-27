@@ -1465,6 +1465,8 @@ body.is-native {
   color: var(--text-muted);
   font-size: 0.95rem;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .filter-chips--text .chip.active {
   color: var(--text-primary);
