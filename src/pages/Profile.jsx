@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare } from 'lucide-react';
+import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -126,9 +127,7 @@ export function Profile({ user, authReady, onSignIn }) {
           <button type="button" className="btn-invite" onClick={onInvite}>
             {t('invite')}
           </button>
-          <Link to="/messages" className="icon-btn" aria-label={t('inboxTitle')}>
-            <MessageSquare size={20} strokeWidth={1.6} />
-          </Link>
+          <InboxIconLink user={user} t={t} />
           <button type="button" className="icon-btn" aria-label={t('notifications')}>
             <Bell size={20} strokeWidth={1.6} />
           </button>
@@ -225,6 +224,20 @@ export function Profile({ user, authReady, onSignIn }) {
         onClose={() => setFollowSheet(null)}
       />
     </div>
+  );
+}
+
+function InboxIconLink({ user, t }) {
+  const unread = useUnreadMessages(user);
+  return (
+    <Link to="/messages" className="icon-btn icon-btn-badged" aria-label={t('inboxTitle')}>
+      <MessageSquare size={20} strokeWidth={1.6} />
+      {unread > 0 && (
+        <span className="icon-btn-badge" aria-label={`${unread} unread`}>
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
   );
 }
 

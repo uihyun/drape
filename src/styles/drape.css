@@ -2910,6 +2910,42 @@ body.is-native {
 .inbox-row-thumb { width: 42px; height: 56px; border-radius: 6px; overflow: hidden; background: var(--surface); }
 .inbox-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
+.inbox-row.is-unread .inbox-row-name,
+.inbox-row.is-unread .inbox-row-preview { color: var(--text-primary); font-weight: 600; }
+.inbox-row-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reusable badged icon button (Profile inbox). */
+.icon-btn-badged { position: relative; }
+.icon-btn-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .thread {
   /* Cover the whole viewport so the input bar can dock at the bottom
      edge. .thread used to be 100dvh inside <main>, but main sits below

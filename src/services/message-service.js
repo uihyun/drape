@@ -96,20 +96,44 @@ export const MessageService = {
       text: trimmed,
       createdAt: serverTimestamp(),
     });
-    // Update thread metadata so the inbox reorders + previews the new text.
-    // We deliberately keep this client-side (no Cloud Function) to ship
-    // the v1 quickly — if abuse becomes an issue we can move it server-side.
+    // Bump unread for the *other* participant + reset mine. Stored as a
+    // map { [uid]: count } so the inbox can render a badge per row and
+    // a hook can sum across threads for a global icon badge.
+    // Done client-side for v1; move to a Cloud Function if abuse pops up.
     try {
+      const snap = await getDoc(doc(db, THREADS, threadId));
+      const data = snap.data() || {};
+      const others = (data.participants || []).filter(u => u !== user.uid);
+      const prev = (data.unreadFor && typeof data.unreadFor === 'object') ? data.unreadFor : {};
+      const next = { ...prev, [user.uid]: 0 };
+      for (const o of others) next[o] = (prev[o] || 0) + 1;
       await setDoc(
         doc(db, THREADS, threadId),
         {
           updatedAt: serverTimestamp(),
           lastMessage: { text: trimmed, fromUid: user.uid, createdAt: serverTimestamp() },
+          unreadFor: next,
         },
         { merge: true },
       );
     } catch (err) {
       console.warn('thread updatedAt patch failed:', err.message);
+    }
+  },
+
+  // Reset the current user's unread count for this thread. Called when
+  // the Thread page mounts so opening a chat clears its badge.
+  async markThreadRead(threadId) {
+    const user = auth.currentUser;
+    if (!user || user.isAnonymous) return;
+    try {
+      await setDoc(
+        doc(db, THREADS, threadId),
+        { unreadFor: { [user.uid]: 0 } },
+        { merge: true },
+      );
+    } catch (err) {
+      console.warn('markThreadRead failed:', err.message);
     }
   },
 };

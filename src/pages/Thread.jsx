@@ -33,6 +33,13 @@ export function Thread({ user }) {
     return MessageService.subscribeMessages(threadId, setMessages);
   }, [threadId]);
 
+  // Opening the conversation = reading it. Clear my unread badge on
+  // mount and also whenever new messages arrive while I have it open.
+  useEffect(() => {
+    if (!threadId || !user || user.isAnonymous) return;
+    MessageService.markThreadRead(threadId);
+  }, [threadId, user?.uid, messages.length]);
+
   useEffect(() => {
     if (!thread || !user) return;
     const otherUid = thread.participants.find(p => p !== user.uid);

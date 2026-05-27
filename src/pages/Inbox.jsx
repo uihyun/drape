@@ -50,9 +50,10 @@ export function Inbox({ user }) {
           const author = authors.get(otherUid);
           const preview = th.lastMessage?.text || t('inboxNoMessages');
           const fromMe = th.lastMessage?.fromUid === user.uid;
+          const unread = th.unreadFor?.[user.uid] || 0;
           return (
             <li key={th.id}>
-              <Link to={`/messages/${th.id}`} className="inbox-row">
+              <Link to={`/messages/${th.id}`} className={`inbox-row${unread ? ' is-unread' : ''}`}>
                 <Avatar src={author?.photoURL} name={author?.displayName || author?.handle} size={42} />
                 <div className="inbox-row-meta">
                   <div className="inbox-row-top">
@@ -66,6 +67,11 @@ export function Inbox({ user }) {
                     {preview}
                   </div>
                 </div>
+                {unread > 0 && (
+                  <span className="inbox-row-badge" aria-label={`${unread} unread`}>
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
                 {th.itemCover && (
                   <div className="inbox-row-thumb">
                     <img src={th.itemCover} alt="" />
