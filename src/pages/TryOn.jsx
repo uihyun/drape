@@ -32,6 +32,7 @@ export function TryOn({ user, onSignIn }) {
   const [backgroundDesc, setBackgroundDesc] = useState('');
   const [customBlob, setCustomBlob] = useState(null);
   const [customPreview, setCustomPreview] = useState(null);
+  const [removeCustomBg, setRemoveCustomBg] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -141,6 +142,7 @@ export function TryOn({ user, onSignIn }) {
         modelTier: tier,
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
+        removeCustomBg: customBlob ? removeCustomBg : false,
       });
       // Race the request against a short timeout — long enough to catch
       // synchronous validation errors, short enough that we don't make
@@ -174,21 +176,31 @@ export function TryOn({ user, onSignIn }) {
           {customBlob ? t('tryOnHintCustom') : t('tryOnHintRefs')}
         </p>
         {customBlob ? (
-          <div className="tryon-custom-card">
-            <img src={customPreview} alt="" />
-            <button
-              type="button"
-              className="tryon-custom-remove"
-              onClick={() => setCustomBlob(null)}
-              aria-label={t('remove')}
-            >
-              <X size={14} strokeWidth={2} />
-            </button>
-            <div className="tryon-custom-meta">
-              <strong>{t('customPhotoActive')}</strong>
-              <span className="muted">{t('customPhotoHint')}</span>
+          <>
+            <div className="tryon-custom-card">
+              <img src={customPreview} alt="" />
+              <button
+                type="button"
+                className="tryon-custom-remove"
+                onClick={() => setCustomBlob(null)}
+                aria-label={t('remove')}
+              >
+                <X size={14} strokeWidth={2} />
+              </button>
+              <div className="tryon-custom-meta">
+                <strong>{t('customPhotoActive')}</strong>
+                <span className="muted">{t('customPhotoHint')}</span>
+              </div>
             </div>
-          </div>
+            <label className="tryon-custom-bg-toggle">
+              <input
+                type="checkbox"
+                checked={removeCustomBg}
+                onChange={e => setRemoveCustomBg(e.target.checked)}
+              />
+              <span>{t('tryOnRemoveCustomBg')}</span>
+            </label>
+          </>
         ) : (
           <div className="tryon-source-row">
             {/* Whole refs cluster is a link to /settings so the user can

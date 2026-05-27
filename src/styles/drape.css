@@ -2966,6 +2966,16 @@ body.is-native {
 }
 .tryon-custom-meta strong { font-weight: 600; }
 .tryon-custom-meta .muted { color: var(--text-muted); font-size: 0.76rem; line-height: 1.35; }
+.tryon-custom-bg-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.tryon-custom-bg-toggle input { margin: 0; cursor: pointer; }
 .tryon-custom-remove {
   position: absolute;
   top: -6px;

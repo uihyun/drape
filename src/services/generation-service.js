@@ -47,6 +47,10 @@ async function startTryOn({
   // tryon-input/<uid>/<id>.jpg and passed to the function. When set, the
   // user's saved identityRefs are bypassed for this single call.
   customPhotoBlob = null,
+  // When customPhotoBlob is set, default behavior preserves the source
+  // photo's background. Pass true to run segmentation on the result so
+  // the figure ends up on a clean white card (identity-refs style).
+  removeCustomBg = false,
 }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -68,6 +72,7 @@ async function startTryOn({
     backgroundDesc,
     regenerateOf,
     customPhotoPath,
+    removeCustomBg,
   });
   return res.data; // { generationId }
 }

@@ -152,6 +152,7 @@ export const ja = {
   tryOnEmptyOutfits: '保存されたコーデがありません — 一つ作るとセットで試着できます。',
   tryOnHintRefs: '保存中のレファレンス写真を使います。選んだ服が今着ているものと入れ替わり、選んでないカテゴリは無難な定番アイテムで自動補完されます。',
   tryOnHintCustom: '選んだ服だけ写真の中で差し替え。背景、ポーズ、他の服はそのまま維持されます。',
+  tryOnRemoveCustomBg: '背景を削除 (figureを白いカードに配置)',
   tryOnBackgroundLabel: '背景 (任意)',
   tryOnBackgroundPlaceholder: '例: ゴールデンアワーの屋上',
   goToCloset: 'クローゼットへ',

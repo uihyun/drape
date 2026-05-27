@@ -150,6 +150,7 @@ export const en = {
   tryOnEmptyOutfits: 'No saved outfits yet — create one to try it as a set.',
   tryOnHintRefs: 'Your saved reference photos. The selected clothes replace what you were wearing; any category you don\'t pick gets filled with neutral basics.',
   tryOnHintCustom: 'Only the selected clothes replace what\'s in your photo. Everything else — background, pose, other clothing — stays exactly the same.',
+  tryOnRemoveCustomBg: 'Remove background (show figure on a white card)',
   tryOnBackgroundLabel: 'Background (optional)',
   tryOnBackgroundPlaceholder: 'e.g. city rooftop at golden hour',
   goToCloset: 'Go to closet',

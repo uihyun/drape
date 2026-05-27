@@ -150,6 +150,7 @@ export const ko = {
   tryOnEmptyOutfits: '저장된 코디가 없어요 — 만들어서 세트로 입어볼 수 있어요.',
   tryOnHintRefs: '저장된 레퍼런스 사진. 선택한 옷이 입고 있던 옷을 갈아입힘. 안 고른 카테고리는 무난한 기본 아이템으로 자동 채움.',
   tryOnHintCustom: '선택한 옷만 사진 속에서 교체돼요. 배경, 포즈, 다른 옷은 모두 그대로 유지.',
+  tryOnRemoveCustomBg: '배경 제거 (figure를 흰 카드 위에 표시)',
   tryOnBackgroundLabel: '배경 (선택)',
   tryOnBackgroundPlaceholder: '예: 황금시간 도시 옥상',
   goToCloset: '옷장으로',

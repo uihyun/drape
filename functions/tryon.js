@@ -184,6 +184,10 @@ exports.virtualTryOn = onCall(
       // reference image instead of the user's saved identityRefs. The
       // prompt switches to preserve-everything-except-clothing mode.
       customPhotoPath = null,
+      // Custom-photo mode default = keep the original scene. Pass true
+      // to run segmentation on the result so the figure ends up on a
+      // clean white card (matches the identity-refs default look).
+      removeCustomBg = false,
     } = request.data || {};
     if (!Array.isArray(itemIds) || itemIds.length === 0) {
       throw new HttpsError('invalid-argument', 'itemIds required');
@@ -304,8 +308,13 @@ exports.virtualTryOn = onCall(
         // Custom-photo mode: skip both — preserve the real photo aspect
         // and background.
         let buf = Buffer.from(img.data, 'base64');
-        if (!customPhotoPath) {
-          const hasScene = !!(backgroundDesc && backgroundDesc.trim());
+        // Normalize unless we're in custom-photo mode AND the user
+        // wants the original scene preserved. removeCustomBg=true
+        // opts custom-photo into the same segmentation+white-card
+        // pipeline as the identity-refs default.
+        const shouldNormalize = !customPhotoPath || removeCustomBg;
+        if (shouldNormalize) {
+          const hasScene = !customPhotoPath && !!(backgroundDesc && backgroundDesc.trim());
           try {
             if (hasScene) {
               // Real scene — keep Gemini's backdrop, just fit to
