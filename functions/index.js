@@ -235,7 +235,6 @@ exports.claimHandle              = profileFns.claimHandle;
 exports.updateProfile            = profileFns.updateProfile;
 exports.onOutfitListChange       = profileFns.onOutfitListChange;
 exports.onOutfitDeletedDecrement = profileFns.onOutfitDeletedDecrement;
-exports.onUserCountsChange       = profileFns.onUserCountsChange;
 
 // ── Account deletion ───────────────────────────────────────────────────
 const accountFns = require('./account.js');

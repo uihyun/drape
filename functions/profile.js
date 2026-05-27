@@ -249,21 +249,5 @@ exports.onOutfitDeletedDecrement = onDocumentDeleted('outfits/{outfitId}', async
     }
 });
 
-exports.onUserCountsChange = onDocumentUpdated('users/{uid}', async (event) => {
-    const before = event.data?.before?.data() || {};
-    const after = event.data?.after?.data() || {};
-    const followerChanged = before.followerCount !== after.followerCount;
-    const followingChanged = before.followingCount !== after.followingCount;
-    if (!followerChanged && !followingChanged) return;
-    try {
-        const update = {};
-        if (followerChanged) update.followerCount = after.followerCount || 0;
-        if (followingChanged) update.followingCount = after.followingCount || 0;
-        await db.collection('profiles').doc(event.params.uid).set(update, { merge: true });
-    } catch (err) {
-        console.warn('onUserCountsChange mirror failed:', err.message);
-    }
-});
-
 exports.ensureProfile = ensureProfile;
 exports.HANDLE_RE = HANDLE_RE;
