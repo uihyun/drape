@@ -338,23 +338,22 @@ exports.virtualTryOn = onCall(
                 output: { format: 'image/png' },
               });
               const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
-              // Figure occupies ~85% of the card so there's a small
-              // breathing margin top + bottom (a hard fit-to-edge
-              // looked cramped). 1020 of 1200 height = ~85%.
+              // Save the figure at full canvas resolution. Visual
+              // breathing margin around the figure is added at CSS
+              // level on .variant (padding), so the same image
+              // looks calm no matter what size the card renders at.
               const figure = await sharp(cutout)
                 .trim({ threshold: 1 })
                 .resize({
-                  width: 760,
-                  height: 1020,
+                  width: 900,
+                  height: 1200,
                   fit: 'contain',
                   background: { r: 255, g: 255, b: 255, alpha: 0 },
                 })
                 .png().toBuffer();
-              // Center the figure on a 900x1200 white card so the
-              // saved variant is opaque RGB (matches the card bg).
               buf = await sharp({
                 create: { width: 900, height: 1200, channels: 3, background: { r: 255, g: 255, b: 255 } },
-              }).composite([{ input: figure, gravity: 'center' }]).png().toBuffer();
+              }).composite([{ input: figure }]).png().toBuffer();
             }
           } catch (e) {
             console.warn('try-on normalize skipped:', e?.message);
