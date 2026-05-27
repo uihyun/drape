@@ -264,18 +264,6 @@ export function BoardEditor({ user, onSignIn }) {
         </section>
       )}
 
-      <label className="ootd-sheet-public board-public-row">
-        <input
-          type="checkbox"
-          checked={isPublic}
-          onChange={e => setIsPublic(e.target.checked)}
-        />
-        <span className="ootd-sheet-public-label">
-          <strong>{t('boardPublishLabel')}</strong>
-          <small>{t('boardPublishHint')}</small>
-        </span>
-      </label>
-
       <div className="board-actions">
         <button
           type="button"

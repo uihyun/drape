@@ -295,8 +295,6 @@ export const ko = {
   feedKindBoards: '보드',
   feedBoardsEmptyTitle: '공개된 보드가 아직 없어요',
   feedBoardsEmptyBody: '보드 만들고 공개로 켜면 여기서 다른 사람들이 볼 수 있어요.',
-  boardPublishLabel: 'Discover 에 공개',
-  boardPublishHint: '다른 사람들이 피드에서 이 보드를 볼 수 있어요.',
   boardNotFound: '이 보드는 볼 수 없어요.',
   like: '좋아요',
   unlike: '좋아요 취소',

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // "My boards" — grid of sticker-board cover thumbnails. Embedded in the
@@ -64,7 +65,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
         <div className="board-list-grid">
           {boards.map(b => (
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
-              <BoardThumb board={b} itemsById={itemsById} />
+              <BoardThumbnail board={b} itemsById={itemsById} />
               <div className="board-card-meta">
                 <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
                 <span className="card-meta-date">{formatCardDate(b.createdAt || b.updatedAt)}</span>
@@ -80,41 +81,6 @@ export function BoardList({ user, onSignIn, embedded = false }) {
 function formatCardDate(ts) {
   const d = ts?.toDate?.() || (ts instanceof Date ? ts : null);
   return d ? d.toLocaleDateString() : '';
-}
-
-// Mini-canvas thumbnail: replays the stickers at their stored 0..1
-// coordinates so the card matches what the editor shows, just shrunk.
-// The container's aspect-ratio mirrors the editor canvas (3/4 portrait).
-function BoardThumb({ board, itemsById }) {
-  const stickers = Array.isArray(board.stickers) ? board.stickers : [];
-  // Render in z-order so the topmost sticker actually sits on top.
-  const sorted = [...stickers].sort((a, b) => (a.z || 0) - (b.z || 0));
-  if (sorted.length === 0) {
-    return <div className="board-card-cover"><div className="board-card-cover-empty">◇</div></div>;
-  }
-  return (
-    <div className="board-card-cover board-card-canvas">
-      {sorted.map((s, i) => {
-        const item = itemsById[s.itemId];
-        const cover = item?.croppedUrl || item?.originalUrl;
-        if (!cover) return null;
-        return (
-          <div
-            key={`${s.itemId}-${i}`}
-            className="board-card-sticker"
-            style={{
-              left: `${(s.x || 0.5) * 100}%`,
-              top: `${(s.y || 0.5) * 100}%`,
-              transform: `translate(-50%, -50%) scale(${s.scale || 0.35}) rotate(${s.rotation || 0}deg)`,
-              zIndex: s.z || 1,
-            }}
-          >
-            <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" draggable={false} />
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 export default BoardList;

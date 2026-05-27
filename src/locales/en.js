@@ -295,8 +295,6 @@ export const en = {
   feedKindBoards: 'Boards',
   feedBoardsEmptyTitle: 'No public boards yet',
   feedBoardsEmptyBody: 'Make a board and toggle it public to share your composition.',
-  boardPublishLabel: 'Publish to Discover',
-  boardPublishHint: 'Others can see this board in the public feed.',
   boardNotFound: 'This board isn’t available.',
   like: 'Like',
   unlike: 'Unlike',

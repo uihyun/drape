@@ -297,8 +297,6 @@ export const ja = {
   feedKindBoards: 'ボード',
   feedBoardsEmptyTitle: '公開されたボードがまだありません',
   feedBoardsEmptyBody: 'ボードを作って公開トグルをオンにすると、ここに表示されます。',
-  boardPublishLabel: 'Discover に公開',
-  boardPublishHint: '公開フィードで他の人にもこのボードが表示されます。',
   boardNotFound: 'このボードは表示できません。',
   like: 'いいね',
   unlike: 'いいね取消',

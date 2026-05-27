@@ -1,18 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { Edit3 } from 'lucide-react';
+import { Edit3, Eye, EyeOff } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-
-const CANVAS_RATIO = 3 / 4;
 
 // Read-only board view at /b/:boardId. Anyone can hit this URL but
 // the underlying read only succeeds if the board is public OR they're
-// the owner. Stickers rendered without drag handles or selection state.
+// the owner. Composition rendered via the shared BoardThumbnail.
+// Owner sees the OOTD-style "Publish to Feed" / "Unlist" eye button.
 export function BoardDetail({ user }) {
   const { t } = useLocale();
   const { boardId } = useParams();
@@ -20,13 +20,16 @@ export function BoardDetail({ user }) {
   const [board, setBoard] = useState(undefined); // undefined=loading, null=not-found
   const [author, setAuthor] = useState(null);
   const [items, setItems] = useState([]);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
+  const refresh = () => {
     if (!boardId) return;
     BoardService.getBoard(boardId)
       .then(b => setBoard(b || null))
       .catch(() => setBoard(null));
-  }, [boardId]);
+  };
+
+  useEffect(refresh, [boardId]);
 
   useEffect(() => {
     if (!board?.userId) return;
@@ -62,43 +65,48 @@ export function BoardDetail({ user }) {
   const itemsById = Object.fromEntries(items.map(i => [i.id, i]));
   const isOwner = user && board.userId === user.uid;
 
+  const togglePublic = async () => {
+    if (!isOwner || busy) return;
+    setBusy(true);
+    try {
+      await BoardService.updateBoard(board.id, { isPublic: !board.isPublic });
+      refresh();
+    } finally { setBusy(false); }
+  };
+
   return (
     <div className="page board-detail">
-      <header className="board-detail-head">
-        <Link to={author?.handle ? `/u/${author.handle}` : '#'} className="board-detail-author">
-          <Avatar src={author?.photoURL} name={author?.handle} size={32} />
-          <span className="board-detail-handle">@{author?.handle || '—'}</span>
+      <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
+
+      <header className="outfit-byline">
+        <Link
+          to={author?.handle ? `/u/${author.handle}` : '#'}
+          className="outfit-byline-author"
+          onClick={(e) => { if (!author?.handle) e.preventDefault(); }}
+        >
+          <Avatar
+            src={author?.photoURL}
+            name={author?.displayName || author?.handle}
+            size={32}
+            className="outfit-byline-avatar"
+          />
+          <span className="outfit-byline-handle">{author?.handle ? `@${author.handle}` : ''}</span>
         </Link>
         {isOwner && (
-          <Link to={`/boards/${board.id}`} className="btn btn-secondary board-detail-edit">
-            <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
-          </Link>
+          <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
+            {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
+            {board.isPublic ? t('unlist') : t('publishToFeed')}
+          </button>
         )}
       </header>
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
-      <div className="board-canvas board-canvas-readonly" style={{ aspectRatio: `${CANVAS_RATIO}` }}>
-        {(board.stickers || []).map((s, idx) => {
-          const item = itemsById[s.itemId];
-          if (!item) return null;
-          const cover = item.croppedUrl || item.originalUrl;
-          return (
-            <div
-              key={`${s.itemId}-${idx}`}
-              className="board-sticker board-sticker-readonly"
-              style={{
-                left: `${s.x * 100}%`,
-                top: `${s.y * 100}%`,
-                transform: `translate(-50%, -50%) scale(${s.scale}) rotate(${s.rotation || 0}deg)`,
-                zIndex: s.z || 1,
-              }}
-            >
-              {cover && <img src={cover} alt={item.name || ''} draggable={false} referrerPolicy="no-referrer" />}
-            </div>
-          );
-        })}
-      </div>
+      {isOwner && (
+        <Link to={`/boards/${board.id}`} className="btn btn-secondary board-detail-edit">
+          <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
+        </Link>
+      )}
 
       {items.length > 0 && (
         <section className="board-items">

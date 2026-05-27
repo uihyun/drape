@@ -7,6 +7,7 @@ import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Discovery — published OOTDs from every user, newest first. Each
@@ -65,7 +66,6 @@ export function Feed({ user, onSignIn }) {
   return (
     <div className="community-feed">
       <header className="feed-top">
-        <h1 className="feed-h1">{t('feedTitle')}</h1>
         <div className="feed-top-controls">
           <nav className="feed-kind-tabs" role="tablist">
             <button
@@ -144,12 +144,10 @@ export function Feed({ user, onSignIn }) {
 function BoardCard({ board, author, t }) {
   return (
     <Link to={`/b/${board.id}`} className="board-feed-card">
-      {board.coverUrl
-        ? <img src={board.coverUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-        : <div className="board-feed-card-empty">◇</div>}
+      <BoardThumbnail board={board} className="board-feed-thumb" />
       <div className="board-feed-card-overlay">
         <div className="board-feed-card-author">
-          <Avatar src={author?.photoURL} name={author?.handle} size={24} />
+          <Avatar src={author?.photoURL} name={author?.handle} size={28} />
           <span className="board-feed-card-handle">@{author?.handle || '—'}</span>
         </div>
         {board.name && <h3 className="board-feed-card-title">{board.name}</h3>}
