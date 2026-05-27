@@ -34,14 +34,21 @@ export function PublicProfile({ user, onSignIn }) {
   const [outfits, setOutfits] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
 
+  // Resolve handle → uid once, then subscribe live so a follow toggle
+  // here updates followerCount on the screen immediately (instead of
+  // staying frozen on whatever was fetched at mount).
   useEffect(() => {
     if (!handle) { setProfile(null); return; }
     let cancelled = false;
+    let unsub = null;
     ProfileService.getByHandle(handle).then(p => {
-      if (cancelled) return;
+      if (cancelled || !p) { setProfile(p || null); return; }
       setProfile(p);
+      unsub = ProfileService.subscribeByUid(p.uid, live => {
+        if (!cancelled && live) setProfile(live);
+      });
     });
-    return () => { cancelled = true; };
+    return () => { cancelled = true; if (unsub) unsub(); };
   }, [handle]);
 
   useEffect(() => {
