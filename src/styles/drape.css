@@ -1439,20 +1439,23 @@ body.is-native {
   margin: 0 auto;
   padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
 }
+/* Stack title above the controls so adding/removing the sort row
+   doesn't shift the kind pill around. Controls row is full-width with
+   kind-tabs left, sort-tabs right when present. */
 .feed-top {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
   padding: 0.5rem 0 0.75rem;
   margin-bottom: 0.5rem;
-  flex-wrap: wrap;
 }
 .feed-top-controls {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
+  width: 100%;
 }
 .feed-h1 {
   font-size: 1.5rem;
@@ -1483,7 +1486,7 @@ body.is-native {
 }
 .feed-kind-tab.active {
   background: var(--text-primary);
-  color: var(--bg);
+  color: var(--background);
   font-weight: 600;
 }
 
