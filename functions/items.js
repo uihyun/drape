@@ -15,6 +15,7 @@ const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { removeBackground } = require('@imgly/background-removal-node');
 const sharp = require('sharp');
 const TAXONOMY = require('./taxonomy.js');
 
@@ -102,20 +103,52 @@ async function downloadStorageObject(bucket, path) {
   return buf;
 }
 
+// Foreground / person segmentation via @imgly's BRIA RMBG ONNX model.
+// Returns a PNG buffer with a real alpha channel — original source
+// pixels preserved exactly (no model re-render), background painted to
+// alpha=0. ~50MB model file bundled with the npm package, so no
+// runtime download; first call per cold instance still pays the model-
+// load cost (~2-5s) but subsequent calls are fast.
+//
+// Wrapping the Buffer in a Blob with an explicit mime is required —
+// passing a raw Buffer makes the package's format sniffer fail with
+// "Unsupported format:" because the Node port wants a recognized
+// MIME source, not a bare bytestream.
+async function segmentForeground(buf, mime = 'image/jpeg') {
+  const blob = new Blob([buf], { type: mime });
+  const out = await removeBackground(blob, {
+    output: { format: 'image/png', quality: 0.9 },
+  });
+  return Buffer.from(await out.arrayBuffer());
+}
+
+// What fraction of the PNG's pixels are non-transparent. Used as a
+// sanity check after segmentation — a healthy person cutout occupies
+// ~10-80% of the frame. Outside that range the model probably missed
+// the subject (whole image foreground = no real background detected;
+// tiny mask = nothing found) and we'd rather fall back to the
+// original than save a broken cutout.
+async function maskOpacityRatio(pngBuf) {
+  const img = sharp(pngBuf).ensureAlpha();
+  const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
+  if (info.channels !== 4) return 1;
+  let opaque = 0;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 16) opaque++;
+  }
+  return opaque / (info.width * info.height);
+}
+
 /**
- * If Gemini handed back an image with a uniform near-white background,
- * key it out so the saved PNG has true transparency. The model usually
- * complies with our "transparent PNG" prompt for new requests, but the
- * fallback path catches cases where it returns a flat-bg JPEG/PNG.
- *
- * Approach: sample edge pixels to learn the bg color; if the center
- * differs enough (i.e. the garment isn't itself near-white-on-white),
- * walk the raster and convert pixels close to that bg color to alpha=0
- * with a feathered band on the edge to avoid hard halos.
- *
- * Skipped when the whole frame is roughly one color — that's the
- * white-shirt-on-white case where keying would punch a hole in the
- * garment.
+ * Chroma-key a flat near-white background to alpha. Used downstream of
+ * Gemini's catalog-crop step in processItem, since the segmentation
+ * model can't distinguish a white shirt from a white catalog background
+ * (no semantic or contrast signal). Graceful failure mode: if the
+ * frame is too uniform — i.e. white-on-white — we bail and return the
+ * source buffer unchanged so the garment doesn't get holes punched
+ * through it. Outcome for a white shirt: the saved card shows the
+ * garment on its flat white bg instead of a true cutout, but the
+ * garment itself stays intact.
  */
 async function chromaKeyToTransparent(buf) {
   try {
@@ -123,8 +156,6 @@ async function chromaKeyToTransparent(buf) {
     const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
     const { width, height, channels } = info;
     if (channels !== 4) return buf;
-
-    // Sample 12 edge points for bg color.
     const ePts = [
       [0, 0], [width - 1, 0], [0, height - 1], [width - 1, height - 1],
       [Math.floor(width / 2), 0], [Math.floor(width / 2), height - 1],
@@ -141,13 +172,7 @@ async function chromaKeyToTransparent(buf) {
       return [r / pts.length, g / pts.length, b / pts.length];
     };
     const [bgR, bgG, bgB] = avg(ePts);
-
-    // If bg isn't bright, the catalog crop didn't give us a clean
-    // backdrop — bail and keep the original.
     if ((bgR + bgG + bgB) / 3 < 200) return buf;
-
-    // Sanity: if the center is also near the bg color, the garment is
-    // probably similar (white-on-white) — keying would damage it.
     const cPts = [
       [Math.floor(width / 2), Math.floor(height / 2)],
       [Math.floor(width / 3), Math.floor(height / 2)],
@@ -158,13 +183,10 @@ async function chromaKeyToTransparent(buf) {
     const [cR, cG, cB] = avg(cPts);
     const centerDist = Math.sqrt((cR - bgR) ** 2 + (cG - bgG) ** 2 + (cB - bgB) ** 2);
     if (centerDist < 25) return buf;
-
-    const THRESH = 38; // hard transparent boundary
-    const FEATHER = 18; // soft fade band beyond the boundary
-
+    const THRESH = 38;
+    const FEATHER = 18;
     const out = Buffer.from(data);
     for (let i = 0; i < out.length; i += 4) {
-      // Skip pixels Gemini already marked transparent.
       if (out[i + 3] === 0) continue;
       const dr = out[i] - bgR;
       const dg = out[i + 1] - bgG;
@@ -183,32 +205,26 @@ async function chromaKeyToTransparent(buf) {
   }
 }
 
-async function uploadCropped(bucket, path, base64, mime) {
-  const file = bucket.file(path);
-  const raw = Buffer.from(base64, 'base64');
-  // Belt-and-suspenders: model is asked for transparent PNG, but if it
-  // returns flat-bg we chroma-key the bg color out ourselves.
-  const keyed = await chromaKeyToTransparent(await sharp(raw).png().toBuffer());
-  // Trim transparent (and uniform-color) edges so the stored PNG is a
-  // tight bbox of the actual subject. This makes thumbnails render at
-  // a consistent size regardless of how much whitespace the source
-  // photo had around the person / garment, and shrinks the file too.
-  let png;
+// Trim transparent edges + save. Used by both the segmentation path
+// (processIdentityRef / processOotdPhoto) and the chroma-key path
+// (processItem) once they each produce an alpha PNG.
+async function uploadAlphaPng(bucket, path, pngBuf) {
+  let png = pngBuf;
   try {
-    png = await sharp(keyed).trim({ threshold: 10 }).png().toBuffer();
+    png = await sharp(pngBuf).trim({ threshold: 10 }).png().toBuffer();
   } catch (e) {
     console.warn('trim failed, using untrimmed:', e?.message);
-    png = keyed;
   }
-  await file.save(png, {
+  await bucket.file(path).save(png, {
     metadata: {
       contentType: 'image/png',
       cacheControl: 'public,max-age=31536000,immutable',
     },
   });
-  await file.makePublic().catch(() => { /* ignore — signed URL fallback below */ });
+  await bucket.file(path).makePublic().catch(() => {});
   return `https://storage.googleapis.com/${bucket.name}/${path}`;
 }
+
 
 /**
  * processItem callable — called from item-service.createItem after upload.
@@ -249,7 +265,9 @@ exports.processItem = onCall(
     // "transparent PNG" instructions and sometimes change the garment's
     // shape (e.g. long pants → shorts). The original-quality crop works
     // best on a flat white background; the alpha channel is added in
-    // post by chromaKeyToTransparent() below before the file is saved.
+    // post by segmentForeground() on the Gemini output, which preserves
+    // every garment pixel (including white-on-white shirts) instead of
+    // the old chroma-key that would punch holes through bright fabrics.
     // When the caller knows specifically which piece to crop (e.g. detect-
     // flow add: source photo has a top + bottom + shoes and the user picked
     // the top), pass focus so the prompt can disambiguate. Otherwise the
@@ -309,17 +327,38 @@ a redesign.`;
     const [cropRes, tagRes] = await Promise.all([cropPromise, tagPromise]);
 
     // ── Crop result ────────────────────────────────────────────────────
+    // Gemini decides which pixels are the garment (handles "person
+    // wearing it" / "on hanger" / "on bed" cases segmentation alone
+    // can't reason about). Then we try segmentation first for smooth
+    // alpha edges; for white-on-white (segmentation has no semantic
+    // signal at zero contrast), we fall back to chromaKey which
+    // gracefully degrades — preserves the garment intact even if it
+    // can't punch a true cutout.
     let croppedUrl = null;
     let croppedPath = null;
     if (cropRes?.response) {
       const img = extractImage(cropRes.response);
       if (img) {
-        // Versioned path: each reprocess writes a fresh file so the
-        // immutable cache header doesn't make browsers/CDN keep
-        // serving the old crop. Old versions stay in storage as
-        // orphans (cleaned up by a scheduled job later).
-        croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
-        croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
+        try {
+          const geminiPng = Buffer.from(img.data, 'base64');
+          const mime = img.mimeType || 'image/png';
+          let final = await segmentForeground(geminiPng, mime);
+          const ratio = await maskOpacityRatio(final);
+          if (ratio < 0.02 || ratio > 0.98) {
+            console.warn('processItem segmentation ratio out of range, falling back to chromaKey:', ratio.toFixed(3));
+            final = await chromaKeyToTransparent(
+              await sharp(geminiPng).png().toBuffer()
+            );
+          }
+          // Versioned path: each reprocess writes a fresh file so the
+          // immutable cache header doesn't make browsers/CDN keep
+          // serving the old crop. Old versions stay in storage as
+          // orphans (cleaned up by a scheduled job later).
+          croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
+          croppedUrl = await uploadAlphaPng(bucket, croppedPath, final);
+        } catch (err) {
+          console.warn('processItem alpha pipeline failed:', err?.message);
+        }
       }
     } else if (cropRes?.__error) {
       console.warn('crop failed', cropRes.__error.message);
@@ -544,13 +583,16 @@ exports.analyzeOotd = onCall(
   }
 );
 
-// Identity reference background removal. Same crop pipeline pattern
-// as processItem but tuned for a person: isolate the human silhouette
-// (face, hair, body, hands), output transparent PNG. Try-on then
-// composites garments on a clean cutout without dragging the original
-// room/wall/floor along.
+// Identity reference background removal — segmentation cutout. The
+// previous implementation asked Gemini Image to "crop on white" then
+// chroma-keyed the bg out, but Gemini re-rendered the face / body /
+// clothing along the way and we lost identity fidelity (the whole
+// point of an identity ref). BRIA RMBG via @imgly preserves source
+// pixels exactly — just masks out the background. Held items remain
+// in the cutout (segmentation models can't reason about "person
+// minus what they're carrying") — accepted trade for fidelity.
 exports.processIdentityRef = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 90, memory: '1GiB' },
+  { cors: true, timeoutSeconds: 90, memory: '2GiB' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -565,64 +607,25 @@ exports.processIdentityRef = onCall(
     const bucket = admin.storage().bucket();
     const buf = await downloadStorageObject(bucket, storagePath);
     const mime = storagePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-    const base64 = buf.toString('base64');
-
-    const genai = new GoogleGenerativeAI(geminiApiKey.value());
-    const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
-    // Same trick as processItem — model crops on white bg, chroma-key
-    // does the alpha. Asking for "transparent PNG" directly causes the
-    // model to redraw the person and lose detail.
-    const cropPrompt = `Extract the person from this photo and place them
-centered on a fully white background. The output is an identity
-reference — a clean canvas of the person, NOT a snapshot of them with
-their props.
-
-CRITICAL FRAMING RULES — match the SOURCE crop exactly:
-- Output ONLY the portion of the body that is visible in the input.
-  If the source shows full body, output full body. If the source shows
-  half body / waist-up / head-and-shoulders, output the same.
-- Do NOT invent or extrapolate body parts that are not in the source —
-  no imagined feet, legs, or shoes if the source cuts off at the waist.
-- Within whatever IS in frame, do not crop further. Don't chop the
-  head, feet, or hands that ARE visible.
-- The person's silhouette must occupy the same vertical extent as in
-  the input; just remove the surrounding room/wall/floor/furniture.
-
-PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
-- Face (every feature, identical).
-- Hair (color, length, texture).
-- Skin tone.
-- Pose, height, body proportions.
-- Clothing they are currently wearing.
-- Worn accessories that sit ON the body: hats, glasses, earrings,
-  necklaces, watches, rings, belts.
-
-REMOVE (do NOT include in the output):
-- Anything the person is HOLDING or CARRYING — bags, totes, backpacks,
-  phones, bottles, umbrellas, drinks, cameras, shopping bags, leashes,
-  etc. If a hand is holding an object, render an empty hand naturally
-  in the same position. Do NOT invent a held object.
-- Other people, pets, vehicles, furniture, or background props.
-
-This is a faithful person-only cutout — never hallucinate body parts
-or props that are not in the source photo.`;
 
     let croppedUrl = null;
     let croppedPath = null;
     try {
-      const res = await cropModel.generateContent([
-        { inlineData: { data: base64, mimeType: mime } },
-        { text: cropPrompt },
-      ]);
-      const img = extractImage(res?.response);
-      if (img) {
+      const cutout = await segmentForeground(buf, mime);
+      const ratio = await maskOpacityRatio(cutout);
+      // Mask sanity: too tiny = model missed the person; too huge = no
+      // real background detected, probably a flat product shot. Fall
+      // back to the original photo in either case.
+      if (ratio < 0.02 || ratio > 0.95) {
+        console.warn('processIdentityRef mask out of range:', ratio.toFixed(3));
+      } else {
         // Versioned suffix so reprocessing doesn't get blocked by the
         // immutable cache header on the storage URL.
-        croppedPath = storagePath.replace(/\.(jpg|png)$/i, `-${Date.now()}.png`);
-        croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
+        croppedPath = storagePath.replace(/\.(jpg|jpeg|png)$/i, `-${Date.now()}.png`);
+        croppedUrl = await uploadAlphaPng(bucket, croppedPath, cutout);
       }
     } catch (err) {
-      console.warn('processIdentityRef crop failed:', err?.message);
+      console.warn('processIdentityRef segmentation failed:', err?.message);
       // Caller falls back to original on null URL.
     }
 
@@ -637,7 +640,7 @@ or props that are not in the source photo.`;
 // available so the figure stands out clean on the day cell instead of
 // dragging the room/wall into the calendar.
 exports.processOotdPhoto = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 90, memory: '1GiB' },
+  { cors: true, timeoutSeconds: 90, memory: '2GiB' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -656,61 +659,23 @@ exports.processOotdPhoto = onCall(
 
     const bucket = admin.storage().bucket();
     const buf = await downloadStorageObject(bucket, ootd.photoPath);
-    const base64 = buf.toString('base64');
     const mime = ootd.photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
 
-    const genai = new GoogleGenerativeAI(geminiApiKey.value());
-    const cropModel = genai.getGenerativeModel({ model: IMAGE_FLASH });
-    // Identical prompt shape to processIdentityRef — same tradeoff
-    // (Gemini Image re-draws pixels but tries hard to preserve every
-    // listed attribute). Worn accessories AND the OUTFIT itself stay
-    // since the photo IS the OOTD; held props go.
-    const cropPrompt = `Extract the person from this photo and place them
-centered on a fully white background. The output is a calendar
-thumbnail of what they wore today — a clean canvas of the person,
-NOT a snapshot of them in their environment.
-
-CRITICAL FRAMING RULES — match the SOURCE crop exactly:
-- Output ONLY the portion of the body that is visible in the input.
-  If the source shows full body, output full body. If the source shows
-  half body / waist-up / head-and-shoulders, output the same.
-- Do NOT invent or extrapolate body parts that are not in the source —
-  no imagined feet, legs, or shoes if the source cuts off at the waist.
-- Within whatever IS in frame, do not crop further. Don't chop the
-  head, feet, or hands that ARE visible.
-- The person's silhouette must occupy the same vertical extent as in
-  the input; just remove the surrounding scene.
-
-PRESERVE EXACTLY (do not retouch, restyle, reshape, re-fit, or modify):
-- Face (every feature, identical).
-- Hair (color, length, texture).
-- Skin tone.
-- Pose, height, body proportions.
-- Clothing they are currently wearing (this IS the OOTD).
-- Worn accessories that sit ON the body: hats, glasses, earrings,
-  necklaces, watches, rings, belts, scarves, bags strapped over the
-  shoulder.
-
-REMOVE (do NOT include in the output):
-- Anything the person is HOLDING or CARRYING in their hand — phones,
-  bottles, drinks, umbrellas, shopping bags, cameras, leashes, etc.
-  Render an empty hand naturally in the same position.
-- Other people, pets, vehicles, furniture, or background props.
-
-This is a faithful person-only cutout — never hallucinate body parts
-or props that are not in the source photo.`;
-
+    // Same pipeline as processIdentityRef: segmentation cutout (pixels
+    // preserved exactly, no model re-render) → mask sanity → upload as
+    // the calendar's photoCutUrl. Held items stay in the cutout since
+    // the segmentation model can't reason about "person minus what
+    // they're carrying" — accepted trade for face/outfit fidelity.
     let croppedUrl = null;
     let croppedPath = null;
     try {
-      const res = await cropModel.generateContent([
-        { inlineData: { data: base64, mimeType: mime } },
-        { text: cropPrompt },
-      ]);
-      const img = extractImage(res?.response);
-      if (img) {
-        croppedPath = ootd.photoPath.replace(/\.(jpg|png)$/i, `-cut-${Date.now()}.png`);
-        croppedUrl = await uploadCropped(bucket, croppedPath, img.data, img.mimeType);
+      const cutout = await segmentForeground(buf, mime);
+      const ratio = await maskOpacityRatio(cutout);
+      if (ratio < 0.02 || ratio > 0.95) {
+        console.warn('processOotdPhoto mask out of range:', ratio.toFixed(3));
+      } else {
+        croppedPath = ootd.photoPath.replace(/\.(jpg|jpeg|png)$/i, `-cut-${Date.now()}.png`);
+        croppedUrl = await uploadAlphaPng(bucket, croppedPath, cutout);
         await ootdRef.set({
           photoCutUrl: croppedUrl,
           photoCutPath: croppedPath,
