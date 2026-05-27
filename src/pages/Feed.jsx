@@ -143,7 +143,7 @@ export function Feed({ user, onSignIn }) {
 
 function BoardCard({ board, author, t }) {
   return (
-    <Link to={`/b/${board.id}`} className="board-feed-card">
+    <Link to={`/boards/${board.id}`} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
       <div className="board-feed-card-overlay">
         <div className="board-feed-card-author">

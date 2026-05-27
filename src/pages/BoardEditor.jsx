@@ -168,7 +168,7 @@ export function BoardEditor({ user, onSignIn }) {
         navigate(`/boards/${id}`, { replace: true });
       } else {
         await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic });
-        navigate('/profile/boards');
+        navigate(`/boards/${boardId}`);
       }
     } catch (e) {
       console.warn('save board failed', e?.message);

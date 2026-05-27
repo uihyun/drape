@@ -25,6 +25,8 @@ import { Welcome } from './pages/Welcome.jsx';
 import { BoardList } from './pages/BoardList.jsx';
 import { BoardEditor } from './pages/BoardEditor.jsx';
 import { BoardDetail } from './pages/BoardDetail.jsx';
+// /b/:boardId removed — canonical board URL is /boards/:boardId (detail);
+// editor is /boards/:boardId/edit (matches /boards/new).
 import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
 import { TryOnHistory } from './pages/TryOnHistory.jsx';
 import { OotdDetail } from './pages/OotdDetail.jsx';
@@ -155,8 +157,8 @@ function AppShell({ user, authReady, credits, creditModalOpen, setCreditModalOpe
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
-          <Route path="/boards/:boardId" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
-          <Route path="/b/:boardId" element={<BoardDetail user={user} />} />
+          <Route path="/boards/:boardId/edit" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
+          <Route path="/boards/:boardId" element={<BoardDetail user={user} />} />
 
           <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
 

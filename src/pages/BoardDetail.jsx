@@ -103,7 +103,7 @@ export function BoardDetail({ user }) {
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
       {isOwner && (
-        <Link to={`/boards/${board.id}`} className="btn btn-secondary board-detail-edit">
+        <Link to={`/boards/${board.id}/edit`} className="btn btn-secondary board-detail-edit">
           <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
         </Link>
       )}
