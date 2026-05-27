@@ -735,3 +735,108 @@ The original `outfits` (item-combo) surface overlapped with `boards`
   `feedBoardsEmptyBody`, `boardNotFound`, `publicBoardsEmpty`,
   `signInTitle`, `signInSubtitle`, `followersEmpty`,
   `followingEmpty`. Removed `credits`.
+
+## Cycle: 2026-05-27 — segmentation everywhere + try-on card framing
+
+### B-4 segmentation rollout
+- Swapped the "Gemini Image redraws subject on white → chromaKey to
+  alpha" pipeline for `@imgly/background-removal-node` (BRIA RMBG ONNX)
+  on the human-photo functions. Source pixels are preserved exactly —
+  no model re-interpretation of face / body / clothing. Per-function
+  layout:
+  - `processIdentityRef` — segmentation only. The whole point of an
+    identity ref is identity fidelity; Gemini re-render had been
+    silently smoothing faces and shifting body shape.
+  - `processOotdPhoto` — same pattern, so the calendar's
+    `photoCutUrl` is the user's real selfie pixels, not a redraw.
+  - `processItem` — kept Gemini for the catalog crop (still the only
+    model that can isolate a garment from a person / hanger / scene),
+    then segmentation on Gemini's flat-bg output for smooth alpha
+    edges. chromaKey stays as a fallback for the rare ratio-out-of-
+    range case (segmentation can't find subject at zero contrast).
+  - `virtualTryOn` — no-scene mode: segmentation on Gemini's try-on
+    output → tight figure bbox → resize fit:contain into 900x1200 →
+    flatten onto white card. Solves the "Gemini drew a backdrop
+    gradient and color-trim stopped at the shadow line" problem.
+- Helpers added in `functions/items.js`: `segmentForeground(buf, mime)`
+  (Blob-wrapped because Node Buffer alone failed the package's format
+  sniff), `maskOpacityRatio(pngBuf)` (sanity check — fall back when
+  the mask is <2% or >98%), `uploadAlphaPng` (trim + save). Identity
+  + OOTD callables dropped the `GEMINI_API_KEY` secret since they
+  no longer call Gemini.
+- Memory bumped 1GiB → 2GiB on `processItem`, `processIdentityRef`,
+  `processOotdPhoto`, `virtualTryOn` — first run OOM'd at 1GiB once
+  BRIA's ONNX model loaded alongside Gemini SDK + sharp.
+- Held items are no longer ML-removed (Gemini's prompted "drop the
+  bag" cleverness is gone). Settings copy now informs the user
+  ("anything held could stay in the cutout") rather than prescribing.
+
+### Try-on result framing
+- Two issues surfaced from the segmentation rollout, fixed in tandem:
+  1. Color-based `sharp.trim` on Gemini's catalog backdrop was
+     inconsistent — gradients / cast shadows stopped trim early,
+     leaving asymmetric figure margins across variants.
+  2. The card showed a visible seam between Gemini's slightly-
+     off-white backdrop and pure-white pillarbox padding.
+- Fix path:
+  - Run segmentation on Gemini's try-on output too. The alpha mask
+    is the source of truth for figure bbox.
+  - `sharp.trim({ threshold: 1 })` on the alpha gives a tight bbox
+    regardless of backdrop shade.
+  - Resize fit:contain into 900x1200, composite onto an opaque white
+    card so the saved variant is uniform RGB.
+- Layout breathing: instead of baking margin into the image
+  (resolution loss, ratio frozen), use 7% padding on `.variant` with
+  `inset:7% width/height:86%` on the inner `img`. Card bg switched to
+  `#fff` so the padded zone matches the image's white backdrop — no
+  gray ring around the figure.
+- Custom-photo mode: default preserves the original scene (unchanged).
+  New "remove background" toggle on the TryOn page routes custom
+  uploads through the same segmentation + white-card pipeline as
+  identity-refs default. Off by default so the typical "I want to see
+  myself in my room" use case stays the path of least surprise.
+
+### Auth + browse
+- `signInAnonymously` removed from `firebase.js` — Anonymous sign-in
+  is disabled on the project, so the auth-state-change loop was just
+  spamming `admin-restricted-operation` errors. Public OOTDs / boards
+  / profiles already read fine without auth via the `isPublic`
+  Firestore rules; the SignInModal pops only on interactive actions.
+- Welcome's "Continue with Email" (which alerted "coming soon")
+  replaced with a ghost "Browse without signing in" CTA → `/feed`.
+  Visitors can poke around before deciding to sign in.
+- `signInGoogle` button labels across 12 pages → neutral `signIn` so
+  the SignInModal (Google + Apple) is what actually opens. Apple's
+  discoverability is now consistent everywhere.
+- `auth/operation-not-allowed` chase: Firebase Console toggle alone
+  isn't enough — provider needs Services ID + Team ID + Key ID +
+  .p8 contents filled. Documented in chat, not in repo.
+- Provider-cancel errors (`user-cancelled`, `popup-closed-by-user`,
+  `cancelled-popup-request`) swallowed in both Welcome and
+  SignInModal. Backing out of OAuth no longer flashes a red error.
+
+### Storage rule cascade
+- `items/{uid}/{itemId}/{filename}` flipped to public read. Without
+  it, a signed-out visitor (or another user) viewing a public board
+  got 403'd item images and a broken board thumbnail. Clothing
+  photos aren't sensitive — identity refs and try-on results stay
+  private.
+
+### Filter chip caret
+- Mobile Safari + Grammarly (and similar extensions) injected what
+  looked like a text-cursor next to the chip labels. `user-select:
+  none` + `outline: none` + `caret-color: transparent` +
+  `-webkit-tap-highlight-color: transparent` on `.filter-chips--text
+  .chip` to kill every interpretation of the chip text as selectable.
+
+### Locale parity
+- Added through this cycle: `identityRefsHeldItemsHint` (later
+  merged into `identityRefsHint`), `tryOnRemoveCustomBg`,
+  `browseWithoutSignIn`. Removed: `continueEmail`,
+  `emailSignInComingSoon`.
+
+### Misc
+- `functions/test-item-pipeline.js` — standalone Node script for
+  local Gemini→segmentation A/B testing without needing to deploy.
+- Repo convention: don't append `Co-Authored-By: Claude …` trailers
+  to commit messages.
