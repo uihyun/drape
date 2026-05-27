@@ -57,6 +57,47 @@ async function listMyBoards({ pageSize = 30 } = {}) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+/** Bookmark / unbookmark a board. Same subcollection as OOTDs at
+ *  /users/{uid}/bookmarks/{boardId}, with type='board' so listing can
+ *  filter the two kinds without a per-type collection. */
+async function toggleBookmark(boardId, currentlyBookmarked) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  const ref = doc(db, 'users', user.uid, 'bookmarks', boardId);
+  if (currentlyBookmarked) {
+    await deleteDoc(ref);
+  } else {
+    await setDoc(ref, {
+      type: 'board',
+      boardId,
+      createdAt: serverTimestamp(),
+    });
+  }
+}
+
+/** All boards the user has bookmarked, newest-bookmark first. Same
+ *  client-side filter+sort as listBookmarkedOotds — avoids needing a
+ *  per-user subcollection composite index. */
+async function listBookmarkedBoards({ uid, pageSize = 30 } = {}) {
+  const snap = await getDocs(collection(db, 'users', uid, 'bookmarks'));
+  const rows = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(r => r.type === 'board');
+  rows.sort((a, b) => {
+    const at = a.createdAt?.toMillis?.() ?? 0;
+    const bt = b.createdAt?.toMillis?.() ?? 0;
+    return bt - at;
+  });
+  const ids = rows.slice(0, pageSize).map(r => r.boardId || r.id).filter(Boolean);
+  if (!ids.length) return [];
+  const hydrated = await Promise.all(
+    ids.map(id => getDoc(doc(db, BOARDS, id))
+      .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
+      .catch(() => null))
+  );
+  return hydrated.filter(Boolean);
+}
+
 /** This user's public boards — used by PublicProfile's Boards tab.
  *  Same shape as listPublicBoards but scoped to a single userId. */
 async function listPublicBoardsByUser({ uid, pageSize = 30 } = {}) {
@@ -111,7 +152,9 @@ export const BoardService = {
   listMyBoards,
   listPublicBoards,
   listPublicBoardsByUser,
+  listBookmarkedBoards,
   subscribeMyBoards,
+  toggleBookmark,
 };
 
 export default BoardService;

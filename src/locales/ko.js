@@ -137,6 +137,8 @@ export const ko = {
   ootdsMineEmpty: '아직 OOTD가 없어요. 기록하면 여기, 캘린더, 그리고 (공개하면) 피드에 함께 보여요.',
   analyzedEmpty: '아직 분석한 코디가 없어요. 사진을 올려서 룩을 분석해보세요.',
   savedEmpty: '저장한 OOTD 가 없어요. 피드에서 마음에 드는 룩을 북마크하면 여기에 모여요.',
+  savedBoardsEmpty: '저장한 보드가 없어요. 피드에서 마음에 드는 보드를 북마크하면 여기에 모여요.',
+  boardsTabs: { mine: '내 보드', saved: '저장' },
   analyzeAPhoto: '사진 분석하기',
   browseFeed: '피드 보러 가기',
   tryOnSource: '입혀줄 사진',

@@ -137,6 +137,8 @@ export const en = {
   ootdsMineEmpty: 'No OOTDs yet. Log one — it lives here, on your calendar, and (if you publish) in the public feed.',
   analyzedEmpty: 'No analyzed outfits yet. Drop a photo to break down the look.',
   savedEmpty: 'No saved OOTDs yet. Bookmark a look from the feed to keep it here.',
+  savedBoardsEmpty: 'No saved boards yet. Bookmark a board from the feed to keep it here.',
+  boardsTabs: { mine: 'Mine', saved: 'Saved' },
   analyzeAPhoto: 'Analyze a photo',
   browseFeed: 'Browse feed',
   tryOnSource: 'Photo to dress',

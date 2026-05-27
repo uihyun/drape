@@ -139,6 +139,8 @@ export const ja = {
   ootdsMineEmpty: 'まだ OOTD がありません。記録するとここ、カレンダー、(公開設定なら) フィードにも表示されます。',
   analyzedEmpty: 'まだ解析したコーデがありません。写真を上げてルックを解析してみて。',
   savedEmpty: '保存した OOTD がありません。フィードでお気に入りのルックをブックマークするとここに集まります。',
+  savedBoardsEmpty: '保存したボードがありません。フィードでお気に入りのボードをブックマークするとここに集まります。',
+  boardsTabs: { mine: 'マイボード', saved: '保存' },
   analyzeAPhoto: '写真を解析する',
   browseFeed: 'フィードを見る',
   tryOnSource: '着せる写真',

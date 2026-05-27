@@ -119,7 +119,7 @@ export function Feed({ user, onSignIn }) {
       ) : showingBoards ? (
         <div className="board-feed">
           {boards.map(b => (
-            <BoardCard key={b.id} board={b} author={authorMap.get(b.userId)} t={t} />
+            <BoardCard key={b.id} board={b} author={authorMap.get(b.userId)} user={user} onSignIn={onSignIn} t={t} />
           ))}
         </div>
       ) : (
@@ -141,10 +141,40 @@ export function Feed({ user, onSignIn }) {
   );
 }
 
-function BoardCard({ board, author, t }) {
+function BoardCard({ board, author, user, onSignIn, t }) {
+  const [bookmarked, setBookmarked] = useState(false);
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setBookmarked(false); return; }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', board.id),
+      (s) => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [user?.uid, board.id]);
+
+  const handleBookmark = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    const prev = bookmarked;
+    setBookmarked(!prev); // optimistic
+    try { await BoardService.toggleBookmark(board.id, prev); }
+    catch (err) { console.warn('board bookmark failed:', err.message); setBookmarked(prev); }
+  };
+
   return (
     <Link to={`/boards/${board.id}`} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
+      <div className="ootd-card-actions">
+        <button
+          type="button"
+          className={`ootd-card-action${bookmarked ? ' active' : ''}`}
+          onClick={handleBookmark}
+          aria-label={bookmarked ? t('unbookmark') : t('bookmark')}
+        >
+          <Bookmark size={18} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+        </button>
+      </div>
       <div className="board-feed-card-overlay">
         <div className="board-feed-card-author">
           <Avatar src={author?.photoURL} name={author?.handle} size={28} />
