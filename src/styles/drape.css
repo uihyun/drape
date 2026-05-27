@@ -2911,10 +2911,18 @@ body.is-native {
 .inbox-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 .thread {
+  /* Cover the whole viewport so the input bar can dock at the bottom
+     edge. .thread used to be 100dvh inside <main>, but main sits below
+     MobileHeader so the textarea pushed off-screen. Pattern mirrors
+     .item-viewer / .tryon-modal — full-bleed overlay with its own
+     back button in the thread header. */
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 90;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  padding: var(--safe-top) 0 0;
 }
 .thread-head {
   display: flex;
