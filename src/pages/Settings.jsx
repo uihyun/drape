@@ -5,6 +5,7 @@ import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
+import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { useCredits } from '../services/credits-service.js';
@@ -186,13 +187,14 @@ function ProfileSection({ profile, user, t }) {
         placeholder={t('bioPlaceholder')}
         textarea
       />
-      <FieldRow
-        label={t('location')}
-        value={location}
-        setValue={setLocation}
-        max={LOCATION_MAX}
-        placeholder={t('locationPlaceholder')}
-      />
+      <div className="settings-row settings-row-col">
+        <label className="settings-label">{t('location')}</label>
+        <LocationInput
+          value={location}
+          onChange={setLocation}
+          placeholder={t('locationPlaceholder')}
+        />
+      </div>
       <FieldRow
         label={t('instagram')}
         value={instagram}

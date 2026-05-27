@@ -11,6 +11,7 @@ import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { formatCount } from '../utils/formatCount.js';
+import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only profile for *other* users (route: /u/:handle). Same identity
@@ -108,7 +109,7 @@ export function PublicProfile({ user, onSignIn }) {
   const followers = profile.followerCount ?? 0;
   const following = profile.followingCount ?? 0;
   const bio = profile.bio || '';
-  const location = profile.location || '';
+  const location = cityDisplay(profile.location, lang);
   const outfitCount = profile.outfitCount ?? 0;
   const photoURL = profile.photoURL;
   const isSelf = user && profile.uid === user.uid;

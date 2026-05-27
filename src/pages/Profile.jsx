@@ -15,6 +15,7 @@ import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { shareLink } from '../services/share-service.js';
 import { formatCount } from '../utils/formatCount.js';
+import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
@@ -89,7 +90,7 @@ export function Profile({ user, authReady, onSignIn }) {
   const followers = profile?.followerCount ?? 0;
   const following = profile?.followingCount ?? 0;
   const bio = profile?.bio || '';
-  const location = profile?.location || '';
+  const location = cityDisplay(profile?.location, lang);
   // Avatar badge: number of outfits this user has saved. Server-side
   // counter trigger maintains profile.outfitCount; we render the small
   // pill in the corner of the avatar like the "14" in the Lekondo
