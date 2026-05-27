@@ -233,6 +233,20 @@ async function listMyOotds({ uid, pageSize = 60 } = {}) {
   return { ootds };
 }
 
+/** Public OOTDs by user — used by PublicProfile (calendar + outfits tab).
+ *  Filtered server-side to isPublic=true so non-owners' queries don't trip
+ *  the security rules. */
+async function listPublicByUser({ uid, pageSize = 200 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, OOTDS),
+    where('userId', '==', uid),
+    where('isPublic', '==', true),
+    orderBy('date', 'desc'),
+    limit(pageSize),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 async function listMonth({ uid, monthStart, monthEnd }) {
   const snap = await getDocs(query(
     collection(db, OOTDS),
@@ -256,6 +270,7 @@ export const OotdService = {
   deleteOotd,
   listMonth,
   listMyOotds,
+  listPublicByUser,
   listPublicFeed,
   toggleLike,
   toggleBookmark,

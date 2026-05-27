@@ -46,6 +46,7 @@ export const en = {
   follow: 'Follow',
   userNotFound: 'User not found.',
   publicProfileEmpty: 'No public outfits yet.',
+  publicBoardsEmpty: 'No public boards yet.',
   profile: 'Profile',
   handle: 'Username',
   handlePlaceholder: 'pick a unique name',

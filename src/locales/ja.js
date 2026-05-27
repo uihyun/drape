@@ -48,6 +48,7 @@ export const ja = {
   follow: 'フォロー',
   userNotFound: 'ユーザーが見つかりません。',
   publicProfileEmpty: '公開コーデはまだありません。',
+  publicBoardsEmpty: '公開ボードはまだありません。',
   profile: 'プロフィール',
   handle: 'ユーザー名',
   handlePlaceholder: '好きな名前を選んで',

@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
-import { OutfitService } from '../services/outfit-service.js';
+import { OotdService } from '../services/ootd-service.js';
+import { BoardService } from '../services/board-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { formatCount } from '../utils/formatCount.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only profile for *other* users (route: /u/:handle). Same identity
-// header as the owner Profile (handle, avatar with 14 badge, name +
-// IG, follower/following counts, location) but Invite is replaced with
-// a Follow button and the closet / calendar tabs are omitted — only the
-// public Outfits grid renders, matching what other people can actually
-// see.
+// header as the owner Profile, with Follow + three tabs of public-only
+// content: Outfits (public OOTDs), Calendar (read-only month grid of
+// those OOTDs), Boards (public sticker boards). Closet / try-on / their
+// drafts are not exposed.
 function InstagramGlyph(props) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -27,16 +28,19 @@ function InstagramGlyph(props) {
   );
 }
 
+const PUBLIC_TABS = ['outfits', 'calendar', 'boards'];
+
 export function PublicProfile({ user, onSignIn }) {
   const { t, lang } = useLocale();
   const { handle } = useParams();
-  const [profile, setProfile] = useState(undefined); // undefined = loading, null = not found
-  const [outfits, setOutfits] = useState(null);
+  const [profile, setProfile] = useState(undefined);
+  const [tab, setTab] = useState('outfits');
+  const [ootds, setOotds] = useState(null);
+  const [boards, setBoards] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
 
   // Resolve handle → uid once, then subscribe live so a follow toggle
-  // here updates followerCount on the screen immediately (instead of
-  // staying frozen on whatever was fetched at mount).
+  // here updates followerCount on the screen immediately.
   useEffect(() => {
     if (!handle) { setProfile(null); return; }
     let cancelled = false;
@@ -51,11 +55,26 @@ export function PublicProfile({ user, onSignIn }) {
     return () => { cancelled = true; if (unsub) unsub(); };
   }, [handle]);
 
+  // OOTDs power both the Outfits grid and the Calendar tab, so we fetch
+  // them once when the profile resolves rather than per-tab.
   useEffect(() => {
-    if (!profile?.uid) { setOutfits([]); return; }
-    OutfitService.getFeedOutfits({ userIds: [profile.uid], pageSize: 30 })
-      .then(({ outfits }) => setOutfits(outfits))
-      .catch(() => setOutfits([]));
+    if (!profile?.uid) { setOotds(null); return; }
+    OotdService.listPublicByUser({ uid: profile.uid, pageSize: 200 })
+      .then(setOotds)
+      .catch((err) => {
+        console.warn('public ootds failed:', err?.code, err?.message);
+        setOotds([]);
+      });
+  }, [profile?.uid]);
+
+  useEffect(() => {
+    if (!profile?.uid) { setBoards(null); return; }
+    BoardService.listPublicBoardsByUser({ uid: profile.uid, pageSize: 30 })
+      .then(setBoards)
+      .catch((err) => {
+        console.warn('public boards failed:', err?.code, err?.message);
+        setBoards([]);
+      });
   }, [profile?.uid]);
 
   if (profile === undefined) {
@@ -143,31 +162,26 @@ export function PublicProfile({ user, onSignIn }) {
 
       <ExpandableBio text={bio} />
 
-      <div className="profile-public-tab">
-        <span>{t('profileTabs.outfits')}</span>
-      </div>
+      <nav className="profile-tabs" role="tablist">
+        {PUBLIC_TABS.map(name => (
+          <button
+            key={name}
+            type="button"
+            role="tab"
+            aria-selected={tab === name}
+            className={`profile-tab${tab === name ? ' active' : ''}`}
+            onClick={() => setTab(name)}
+          >
+            {t(`profileTabs.${name}`)}
+          </button>
+        ))}
+      </nav>
 
-      {outfits === null ? (
-        <div className="loading"><div className="spinner" /></div>
-      ) : outfits.length === 0 ? (
-        <div className="empty-state">
-          <p>{t('publicProfileEmpty')}</p>
-        </div>
-      ) : (
-        <div className="moodboard-grid">
-          {outfits.map(o => (
-            <div key={o.id} className="moodboard-item">
-              <Link to={`/o/${o.id}`} className="feed-card">
-                <div className="feed-card-cover">
-                  {o.coverUrl
-                    ? <img src={o.coverUrl} alt={o.name || ''} loading="lazy" />
-                    : <div className="feed-card-cover-empty" />}
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="profile-tabcontent" role="tabpanel">
+        {tab === 'outfits' && <PublicOotdsGrid ootds={ootds} t={t} />}
+        {tab === 'calendar' && <PublicCalendar ootds={ootds} t={t} />}
+        {tab === 'boards' && <PublicBoardsGrid boards={boards} t={t} />}
+      </div>
 
       <FollowListSheet
         open={!!followSheet}
@@ -175,6 +189,127 @@ export function PublicProfile({ user, onSignIn }) {
         kind={followSheet}
         onClose={() => setFollowSheet(null)}
       />
+    </div>
+  );
+}
+
+function PublicOotdsGrid({ ootds, t }) {
+  if (ootds === null) return <div className="loading"><div className="spinner" /></div>;
+  if (ootds.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
+  return (
+    <div className="outfit-grid">
+      {ootds.map(o => (
+        <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+          <div className="outfit-card-cover">
+            {o.photoUrl
+              ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
+          </div>
+          <div className="outfit-card-meta">
+            <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
+            <span className="card-meta-date">{o.date || ''}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function PublicBoardsGrid({ boards, t }) {
+  if (boards === null) return <div className="loading"><div className="spinner" /></div>;
+  if (boards.length === 0) return <div className="empty-state"><p>{t('publicBoardsEmpty')}</p></div>;
+  return (
+    <div className="board-list-grid">
+      {boards.map(b => (
+        <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
+          <BoardThumbnail board={b} />
+          <div className="board-card-meta">
+            <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// Calendar view of someone else's public OOTDs. Month grid pulled from
+// the already-fetched ootds list (bucketed by date) so we don't re-hit
+// Firestore on month navigation. Cells link to /ootd/:id; days with no
+// public entry render as blanks.
+function PublicCalendar({ ootds, t }) {
+  const today = new Date();
+  const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const byDate = useMemo(() => {
+    const m = {};
+    for (const o of ootds || []) {
+      if (o.date) m[o.date] = o;
+    }
+    return m;
+  }, [ootds]);
+
+  if (ootds === null) return <div className="loading"><div className="spinner" /></div>;
+
+  const year = cursor.getFullYear();
+  const month0 = cursor.getMonth();
+  const days = new Date(year, month0 + 1, 0).getDate();
+  const firstWeekday = new Date(year, month0, 1).getDay();
+  const cells = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= days; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  const monthLabel = cursor.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  return (
+    <div className="calendar calendar-embedded">
+      <div className="calendar-header">
+        <button type="button" className="btn" aria-label="Previous month" onClick={() => setCursor(new Date(year, month0 - 1, 1))}>
+          <ChevronLeft size={20} strokeWidth={1.6} />
+        </button>
+        <h2>{monthLabel}</h2>
+        <button type="button" className="btn" aria-label="Next month" onClick={() => setCursor(new Date(year, month0 + 1, 1))}>
+          <ChevronRight size={20} strokeWidth={1.6} />
+        </button>
+      </div>
+
+      <div className="calendar-weekdays">
+        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+          <div key={d} className="calendar-weekday">{t(`weekdaysShort.${d.toLowerCase()}`)}</div>
+        ))}
+      </div>
+
+      <div className="calendar-grid">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} className="calendar-cell empty" />;
+          const dateStr = ymd(new Date(year, month0, d));
+          const entry = byDate[dateStr];
+          const isToday = ymd(today) === dateStr;
+          const inner = (
+            <>
+              <span className="calendar-day-num">{d}</span>
+              {(entry?.photoCutUrl || entry?.photoUrl) && (
+                <img
+                  src={entry.photoCutUrl || entry.photoUrl}
+                  alt=""
+                  className={`calendar-thumb${entry.photoCutUrl ? ' is-cut' : ''}`}
+                  loading="lazy"
+                />
+              )}
+            </>
+          );
+          return entry ? (
+            <Link
+              key={i}
+              to={`/ootd/${entry.id}`}
+              className={`calendar-cell ${isToday ? 'today' : ''}`}
+              aria-label={dateStr}
+            >{inner}</Link>
+          ) : (
+            <div key={i} className={`calendar-cell ${isToday ? 'today' : ''}`}>{inner}</div>
+          );
+        })}
+      </div>
     </div>
   );
 }

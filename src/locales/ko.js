@@ -46,6 +46,7 @@ export const ko = {
   follow: '팔로우',
   userNotFound: '사용자를 찾을 수 없어요.',
   publicProfileEmpty: '아직 공개된 코디가 없어요.',
+  publicBoardsEmpty: '아직 공개된 보드가 없어요.',
   profile: '프로필',
   handle: '아이디',
   handlePlaceholder: '고유한 이름을 골라주세요',
