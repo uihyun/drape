@@ -18,6 +18,7 @@ const sharp = require('sharp');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { removeBackground } = require('@imgly/background-removal-node');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
@@ -167,7 +168,7 @@ one person, no panels.`;
 }
 
 exports.virtualTryOn = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 180, memory: '1GiB' },
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 180, memory: '2GiB' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
@@ -306,46 +307,43 @@ exports.virtualTryOn = onCall(
         if (!customPhotoPath) {
           const hasScene = !!(backgroundDesc && backgroundDesc.trim());
           try {
-            // Figure-size consistency matters most — we want the
-            // figure to fill the same height (~1200) in every
-            // variant regardless of how Gemini framed its backdrop.
-            // Trick: sample Gemini's corner color and use it BOTH
-            // as the trim reference AND the resize pad.
-            //   - trim({ background: sampled }) detects the exact
-            //     shade Gemini drew, not "near-white". Figure bbox
-            //     is consistent whether the backdrop is #ffffff or
-            //     #f6f6f6, so the trimmed result is always
-            //     figure-tight (fills the canvas height).
-            //   - pad uses the same sampled color, so the seam
-            //     between figure-area and pad strips disappears.
-            const original = sharp(buf);
-            let bgFill = { r: 255, g: 255, b: 255, alpha: 1 };
-            if (!hasScene) {
-              try {
-                const sample = await original.clone()
-                  .extract({ left: 0, top: 0, width: 8, height: 8 })
-                  .raw().toBuffer({ resolveWithObject: true });
-                let r = 0, g = 0, b = 0;
-                const px = sample.info.width * sample.info.height;
-                const ch = sample.info.channels;
-                for (let i = 0; i < sample.data.length; i += ch) {
-                  r += sample.data[i]; g += sample.data[i + 1]; b += sample.data[i + 2];
-                }
-                bgFill = { r: Math.round(r / px), g: Math.round(g / px), b: Math.round(b / px), alpha: 1 };
-              } catch (e) {
-                console.warn('bg sample skipped:', e?.message);
-              }
+            if (hasScene) {
+              // Real scene — keep Gemini's backdrop, just fit to
+              // the 3:4 canvas via cover crop.
+              buf = await sharp(buf)
+                .resize({ width: 900, height: 1200, fit: 'cover' })
+                .png().toBuffer();
+            } else {
+              // No-scene mode: figure size must be consistent across
+              // variants, but color-trim fails when Gemini draws a
+              // gradient / cast shadow in its catalog backdrop (it
+              // stops at the first non-matching pixel, leaving a
+              // few-cm margin above the head and below the feet).
+              // Solution: run segmentation on the Gemini output to
+              // get a semantic figure mask, trim transparent edges
+              // (always accurate, no threshold guesswork), then
+              // composite the trimmed figure centered on a 900x1200
+              // white card.
+              const blob = new Blob([buf], { type: img.mimeType || 'image/png' });
+              const cutoutBlob = await removeBackground(blob, {
+                output: { format: 'image/png' },
+              });
+              const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
+              const figure = await sharp(cutout)
+                .trim({ threshold: 1 })
+                .resize({
+                  width: 900,
+                  height: 1200,
+                  fit: 'contain',
+                  background: { r: 255, g: 255, b: 255, alpha: 0 },
+                })
+                .png().toBuffer();
+              // Flatten onto a white 900x1200 background so the
+              // saved variant is opaque RGB (matches the card bg).
+              buf = await sharp({
+                create: { width: 900, height: 1200, channels: 3, background: { r: 255, g: 255, b: 255 } },
+              }).composite([{ input: figure }]).png().toBuffer();
             }
-            buf = await original
-              .trim({ background: bgFill, threshold: 15 })
-              .resize({
-                width: 900,
-                height: 1200,
-                fit: hasScene ? 'cover' : 'contain',
-                background: bgFill,
-              })
-              .png()
-              .toBuffer();
           } catch (e) {
             console.warn('try-on normalize skipped:', e?.message);
           }

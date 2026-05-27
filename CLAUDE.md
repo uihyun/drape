@@ -28,7 +28,6 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 - Don't add a 4th tier of model routing. Two tiers (Pro / Flash) is enough until we hear from users.
 - Don't write planning / spec docs unless asked — keep notes in `PROGRESS.md`.
 - Don't commit secrets. `GEMINI_API_KEY` lives in a Firebase secret; the dev value is in `.env` (gitignored).
-- Don't append `Co-Authored-By: Claude …` (or any AI co-author trailer) to commit messages. User commits as themselves.
 
 ## Conventions worth keeping
 
