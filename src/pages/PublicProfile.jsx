@@ -261,17 +261,20 @@ function PublicCalendar({ ootds, t }) {
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
 
-  // Multi-OOTD per day: keep only the representative per date for the
-  // mini calendar (most recent createdAt). The Outfits grid above
-  // already shows the full list separately.
+  // Multi-OOTD per day: pick one representative per date for the mini
+  // calendar. Prefer the OOTD explicitly marked isCalendarRep; fall
+  // back to most recent. Matches Calendar.jsx's listMonth sort.
   const byDate = useMemo(() => {
     const m = {};
     for (const o of ootds || []) {
       if (!o.date) continue;
       const prev = m[o.date];
+      if (!prev) { m[o.date] = o; continue; }
+      if (o.isCalendarRep && !prev.isCalendarRep) { m[o.date] = o; continue; }
+      if (prev.isCalendarRep && !o.isCalendarRep) continue;
       const prevMs = prev?.createdAt?.toMillis?.() ?? 0;
       const curMs = o.createdAt?.toMillis?.() ?? 0;
-      if (!prev || curMs > prevMs) m[o.date] = o;
+      if (curMs > prevMs) m[o.date] = o;
     }
     return m;
   }, [ootds]);

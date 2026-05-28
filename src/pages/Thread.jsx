@@ -11,7 +11,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // listing. Middle: messages bubbles (mine right-aligned). Bottom: send
 // input. No typing indicators / read receipts in v1.
 export function Thread({ user }) {
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
   const { threadId } = useParams();
   const navigate = useNavigate();
   const [thread, setThread] = useState(undefined);
@@ -141,11 +141,7 @@ export function Thread({ user }) {
         {messages.length === 0 ? (
           <div className="thread-empty"><p>{t('threadEmptyHint')}</p></div>
         ) : (
-          messages.map(m => (
-            <div key={m.id} className={`thread-bubble${m.fromUid === user?.uid ? ' mine' : ''}`}>
-              {m.text}
-            </div>
-          ))
+          renderMessageStream(messages, user?.uid, lang, t)
         )}
       </div>
 
@@ -164,6 +160,88 @@ export function Thread({ user }) {
       </footer>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------
+// Message stream rendering — Instagram/iMessage-style timestamp grouping.
+// Most messages render bare. We inject:
+//   1. A centered "day header" before the first message of each new day
+//      ("Today" / "Yesterday" / locale date).
+//   2. A small time label after the last message of a burst — defined as
+//      consecutive messages from the same sender within BURST_GAP_MS.
+//      So a rapid back-and-forth shows one stamp per direction, not per
+//      message.
+// ---------------------------------------------------------------------
+
+const BURST_GAP_MS = 5 * 60 * 1000; // 5 minutes
+
+function startOfDay(ts) {
+  const d = new Date(ts);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+function dayHeader(ts, lang, t) {
+  const today = startOfDay(Date.now());
+  const that = startOfDay(ts);
+  const diffDays = Math.round((today - that) / 86400000);
+  if (diffDays === 0) return t('today');
+  if (diffDays === 1) return t('yesterday');
+  return new Date(ts).toLocaleDateString(lang || undefined, {
+    year: that < new Date(today).setMonth(new Date(today).getMonth() - 11) ? 'numeric' : undefined,
+    month: 'short',
+    day: 'numeric',
+    weekday: 'short',
+  });
+}
+
+function timeLabel(ts, lang) {
+  return new Date(ts).toLocaleTimeString(lang || undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function renderMessageStream(messages, myUid, lang, t) {
+  const out = [];
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    const prev = messages[i - 1];
+    const next = messages[i + 1];
+    const ms = m.createdAt?.toMillis?.() ?? 0;
+    const prevMs = prev?.createdAt?.toMillis?.() ?? 0;
+    const nextMs = next?.createdAt?.toMillis?.() ?? 0;
+
+    // Day separator at the top of each new day.
+    if (!prev || startOfDay(ms) !== startOfDay(prevMs)) {
+      out.push(
+        <div key={`day-${m.id}`} className="thread-day">
+          <span>{dayHeader(ms, lang, t)}</span>
+        </div>
+      );
+    }
+
+    const mine = m.fromUid === myUid;
+    out.push(
+      <div key={m.id} className={`thread-bubble${mine ? ' mine' : ''}`}>
+        {m.text}
+      </div>
+    );
+
+    // End-of-burst → emit a small time label aligned to that bubble's
+    // side. End-of-burst = no next OR next is from a different sender
+    // OR next is more than BURST_GAP_MS later.
+    const endsBurst = !next
+      || next.fromUid !== m.fromUid
+      || (nextMs - ms) > BURST_GAP_MS;
+    if (endsBurst && ms > 0) {
+      out.push(
+        <div key={`t-${m.id}`} className={`thread-time${mine ? ' mine' : ''}`}>
+          {timeLabel(ms, lang)}
+        </div>
+      );
+    }
+  }
+  return out;
 }
 
 export default Thread;

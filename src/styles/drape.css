@@ -3034,6 +3034,33 @@ body.is-native {
   border-radius: 16px 16px 4px 16px;
 }
 
+/* Day header — centered separator at the top of each new day. */
+.thread-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.6rem 0 0.2rem;
+}
+.thread-day span {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* Burst-end time stamp — small, aligned to the burst's side. */
+.thread-time {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  color: var(--text-muted, var(--text-secondary));
+  padding: 0 0.4rem;
+  margin-top: -0.1rem;
+}
+.thread-time.mine { align-self: flex-end; }
+
 .thread-input {
   display: flex;
   align-items: flex-end;
@@ -3306,21 +3333,33 @@ body.is-native {
   letter-spacing: 0.04em;
 }
 
-/* "+N" pill on a cell that holds multiple OOTDs for one day. */
+/* "+N" pill on a cell that holds multiple OOTDs for one day.
+   Kept tiny + tucked into the bottom-right so it doesn't fight the
+   day number (top-left) or crowd the cutout image. */
 .calendar-multi-badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(0,0,0,0.7);
+  bottom: 3px;
+  right: 3px;
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
   border-radius: 999px;
-  padding: 0.05rem 0.35rem;
-  font-size: 0.6rem;
+  min-width: 13px;
+  height: 13px;
+  padding: 0 3px;
+  font-size: 0.52rem;
   font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+  pointer-events: none;
 }
 
 /* DayPicker sheet — pick which of a day's OOTDs to view/edit. */
 .day-picker { padding-bottom: 1.5rem; }
+.day-picker-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
 .day-picker-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3336,6 +3375,33 @@ body.is-native {
   gap: 0.3rem;
   cursor: pointer;
   text-align: center;
+  position: relative;
+}
+.day-picker-thumb-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.day-picker-rep {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+}
+.day-picker-rep.active {
+  background: #facc15;
+  color: #111;
 }
 .day-picker-thumb {
   aspect-ratio: 3/4;

@@ -291,8 +291,11 @@ async function listPublicByUser({ uid, pageSize = 200 } = {}) {
 }
 
 /** Bucket a month's OOTDs by date. With multi-OOTD per day each bucket
- *  is an array, newest first; the caller picks bucket[0] as the calendar
- *  cell's representative and exposes the rest via the day-picker. */
+ *  is an array sorted so the calendar representative comes first:
+ *  the one explicitly marked `isCalendarRep: true`, or — when none is
+ *  marked — the most recently created. The DayPicker shows the full
+ *  array (including the rep) so the user can switch the rep or open
+ *  the others. */
 async function listMonth({ uid, monthStart, monthEnd }) {
   const snap = await getDocs(query(
     collection(db, OOTDS),
@@ -308,9 +311,31 @@ async function listMonth({ uid, monthStart, monthEnd }) {
     byDate[data.date].push(data);
   }
   for (const k of Object.keys(byDate)) {
-    byDate[k].sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+    byDate[k].sort((a, b) => {
+      // Explicit rep wins, then most recent.
+      if (!!a.isCalendarRep !== !!b.isCalendarRep) return a.isCalendarRep ? -1 : 1;
+      return (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0);
+    });
   }
   return byDate;
+}
+
+/** Mark one OOTD as the calendar representative for its date, clearing
+ *  the flag on every other OOTD the user has logged for that same date.
+ *  No-op if the chosen one is already the rep. */
+async function setCalendarRepresentative({ uid, date, id }) {
+  const user = auth.currentUser;
+  if (!user || user.uid !== uid) throw new Error('not_authorized');
+  if (!id || !isValidDate(date)) throw new Error('bad_args');
+  const peers = await listForDate({ uid, date });
+  await Promise.all(peers.map(p => {
+    const shouldBe = p.id === id;
+    if (!!p.isCalendarRep === shouldBe) return null;
+    return setDoc(doc(db, OOTDS, p.id), {
+      isCalendarRep: shouldBe,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }).filter(Boolean));
 }
 
 export const OotdService = {
@@ -325,6 +350,7 @@ export const OotdService = {
   toggleLike,
   toggleBookmark,
   listBookmarkedOotds,
+  setCalendarRepresentative,
 };
 
 export default OotdService;

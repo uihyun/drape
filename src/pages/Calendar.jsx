@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Plus, Star } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -169,6 +169,18 @@ export function Calendar({ user, onSignIn, embedded = false }) {
             setSheetDate(pickerDate);
             setPickerDate(null);
           }}
+          onSetRep={async (entry) => {
+            try {
+              await OotdService.setCalendarRepresentative({
+                uid: user.uid,
+                date: pickerDate,
+                id: entry.id,
+              });
+              refetch();
+            } catch (err) {
+              console.warn('setCalendarRepresentative failed:', err.message);
+            }
+          }}
           t={t}
         />
       )}
@@ -177,9 +189,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
 }
 
 // Small sheet shown when a day has 2+ OOTDs — choose which to edit or
-// add a brand-new one. Tapping a card opens OotdSheet in edit mode for
-// that specific OOTD; tapping "Add new" opens an empty OotdSheet.
-function DayPicker({ date, entries, onClose, onPick, onAddNew, t }) {
+// add a brand-new one. Star button on each card sets that OOTD as the
+// calendar cell's representative (cover). Tapping the card body opens
+// the OotdSheet in edit mode for that specific OOTD.
+function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
+  // First entry from listMonth's sort is the current rep — either the
+  // explicit isCalendarRep flag or fallback to most-recent.
+  const repId = entries.find(e => e.isCalendarRep)?.id || entries[0]?.id;
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
       <div className="create-sheet day-picker" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -188,17 +204,37 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, t }) {
           <X size={18} />
         </button>
         <h3 className="create-sheet-title">{date}</h3>
+        <p className="day-picker-hint">{t('ootdRepHint')}</p>
         <div className="day-picker-grid">
-          {entries.map(e => (
-            <button key={e.id} type="button" className="day-picker-card" onClick={() => onPick(e)}>
-              <div className="day-picker-thumb">
-                {(e.photoCutUrl || e.photoUrl)
-                  ? <img src={e.photoCutUrl || e.photoUrl} alt="" />
-                  : <div className="item-card-skeleton" />}
+          {entries.map(e => {
+            const isRep = e.id === repId;
+            return (
+              <div key={e.id} className="day-picker-card">
+                <button
+                  type="button"
+                  className="day-picker-thumb-btn"
+                  onClick={() => onPick(e)}
+                >
+                  <div className="day-picker-thumb">
+                    {(e.photoCutUrl || e.photoUrl)
+                      ? <img src={e.photoCutUrl || e.photoUrl} alt="" />
+                      : <div className="item-card-skeleton" />}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`day-picker-rep${isRep ? ' active' : ''}`}
+                  onClick={(ev) => { ev.stopPropagation(); if (!isRep) onSetRep(e); }}
+                  aria-label={isRep ? t('ootdRepActive') : t('ootdSetRep')}
+                  aria-pressed={isRep}
+                  title={isRep ? t('ootdRepActive') : t('ootdSetRep')}
+                >
+                  <Star size={14} strokeWidth={1.7} fill={isRep ? 'currentColor' : 'none'} />
+                </button>
+                {e.note && <span className="day-picker-note">{e.note}</span>}
               </div>
-              {e.note && <span className="day-picker-note">{e.note}</span>}
-            </button>
-          ))}
+            );
+          })}
           <button type="button" className="day-picker-card day-picker-add" onClick={onAddNew}>
             <div className="day-picker-thumb day-picker-add-thumb">
               <Plus size={24} strokeWidth={1.5} />
