@@ -164,6 +164,7 @@ export const ja = {
   tryOnBackgroundPlaceholder: '例: ゴールデンアワーの屋上',
   tryOnTitleLabel: 'タイトル (任意)',
   tryOnTitlePlaceholder: '例: 金曜デートルック',
+  tryOnAnalyzing: 'ルックを分析中…',
   tryOnSearchPlaceholder: 'タイトルや日付で検索',
   tryOnSearchEmpty: '一致する試着がありません。',
   ootdLinkSearchPlaceholder: 'タイトルやボード名で検索',

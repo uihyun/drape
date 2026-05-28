@@ -70,31 +70,43 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   // than once. Restricting to same-day creations hid exactly the items
   // the user wants to attach.
   const candidates = useMemo(() => {
+    const dateStr = ms => (ms ? new Date(ms).toLocaleDateString() : '');
     const tryonCards = tryons
       .filter(g => g.status === 'ready' && (g.variantUrls?.length ?? 0) > 0)
-      .map(g => ({
-        kind: 'tryon',
-        id: g.id,
-        label: g.title || t('tryOnBadge'),
-        thumbUrl: g.variantUrls?.[0] || null,
-        sortMs: g.createdAt?.toMillis?.() ?? 0,
-      }));
-    const boardCards = boards.map(b => ({
-      kind: 'board',
-      id: b.id,
-      label: b.name || t('untitledBoard'),
-      thumbUrl: b.coverUrl || null,
-      sortMs: b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0,
-    }));
+      .map(g => {
+        const ms = g.createdAt?.toMillis?.() ?? 0;
+        return {
+          kind: 'tryon',
+          id: g.id,
+          label: g.title || t('tryOnBadge'),
+          thumbUrl: g.variantUrls?.[0] || null,
+          sortMs: ms,
+          dateStr: dateStr(ms),
+        };
+      });
+    const boardCards = boards.map(b => {
+      const ms = b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
+      return {
+        kind: 'board',
+        id: b.id,
+        label: b.name || t('untitledBoard'),
+        thumbUrl: b.coverUrl || null,
+        sortMs: ms,
+        dateStr: dateStr(ms),
+      };
+    });
     return [...tryonCards, ...boardCards].sort((a, b) => b.sortMs - a.sortMs);
   }, [boards, tryons, t]);
 
-  // Filter the picker by label (try-on title / board name) — once a user
-  // has many saved looks the horizontal strip alone isn't enough.
+  // Filter the picker by label (try-on title / board name) OR date —
+  // once a user has many saved looks the horizontal strip isn't enough.
   const visibleCandidates = useMemo(() => {
     const q = linkSearch.trim().toLowerCase();
     if (!q) return candidates;
-    return candidates.filter(c => (c.label || '').toLowerCase().includes(q));
+    return candidates.filter(c =>
+      (c.label || '').toLowerCase().includes(q) ||
+      (c.dateStr || '').toLowerCase().includes(q)
+    );
   }, [candidates, linkSearch]);
 
   if (!open) return null;
@@ -225,7 +237,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             <div className="closet-search-bar ootd-link-search">
               <Search size={15} strokeWidth={1.6} />
               <input
-                type="search"
+                type="text"
                 value={linkSearch}
                 onChange={e => setLinkSearch(e.target.value)}
                 placeholder={t('ootdLinkSearchPlaceholder')}

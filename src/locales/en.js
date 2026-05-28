@@ -162,6 +162,7 @@ export const en = {
   tryOnBackgroundPlaceholder: 'e.g. city rooftop at golden hour',
   tryOnTitleLabel: 'Title (optional)',
   tryOnTitlePlaceholder: 'e.g. Friday date-night look',
+  tryOnAnalyzing: 'Reading your look…',
   tryOnSearchPlaceholder: 'Search by title or date',
   tryOnSearchEmpty: 'No try-ons match.',
   ootdLinkSearchPlaceholder: 'Search title or board name',

@@ -162,6 +162,7 @@ export const ko = {
   tryOnBackgroundPlaceholder: '예: 황금시간 도시 옥상',
   tryOnTitleLabel: '제목 (선택)',
   tryOnTitlePlaceholder: '예: 금요일 데이트 룩',
+  tryOnAnalyzing: '룩을 분석하는 중…',
   tryOnSearchPlaceholder: '제목이나 날짜로 검색',
   tryOnSearchEmpty: '일치하는 트라이온이 없어요.',
   ootdLinkSearchPlaceholder: '제목이나 보드 이름 검색',

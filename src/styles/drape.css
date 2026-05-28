@@ -2017,6 +2017,22 @@ body.is-native {
   min-width: 0;
 }
 .closet-search-input::placeholder { color: var(--text-muted); }
+/* Kill the browser's native search-clear (the extra blue/grey X) — we
+   render our own X button next to these inputs. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+/* Kill the browser's native search-clear (the extra blue/grey ✕) — we
+   render our own X button next to these inputs. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
 
 /* Second-row category chips that appear when Categories tab is active.
    Pill style (smaller than the .chip default) so the row stays calm. */
@@ -3815,6 +3831,14 @@ body.is-native {
   width: 100%;
   justify-content: center;
   margin: 0.6rem 0 0;
+}
+.gen-analyzing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 0.25rem 0 0.5rem;
 }
 .gen-saved-msg {
   margin: 0.8rem 0 0;

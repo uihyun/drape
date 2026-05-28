@@ -166,13 +166,22 @@ export function GenerationDetail({ user }) {
 
       {gen.status === 'ready' && (
         <>
-          <div className="variants-grid">
+          <div className={`variants-grid${(gen.variantUrls || []).length === 1 ? ' single' : ''}`}>
             {(gen.variantUrls || []).map((url, i) => (
               <div key={i} className="variant">
                 <img src={url} alt={`variant ${i + 1}`} loading="lazy" />
               </div>
             ))}
           </div>
+
+          {/* Analysis runs async after the image is ready. Show a calm
+              "analyzing" placeholder so the empty space reads as
+              in-progress, not broken, while title/palette/notes load. */}
+          {!gen.analyzedAt && !gen.palette && (
+            <div className="gen-analyzing">
+              <span className="dot-pulse" /> {t('tryOnAnalyzing')}
+            </div>
+          )}
 
           {gen.title && <h2 className="outfit-title">{gen.title}</h2>}
 
