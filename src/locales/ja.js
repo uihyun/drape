@@ -38,6 +38,7 @@ export const ja = {
   ootdConfirmDelete: 'この日の OOTD を削除しますか?',
   ootdAddNew: '新しく追加',
   ootdRepHint: 'チェックをタップしてその日の表紙を選びましょう。',
+  ootdDayHint: 'タップして編集、または別のルックを追加。',
   ootdSetRep: '表紙に設定',
   ootdRepActive: '表紙写真',
   ootdPublishLabel: 'Discover に公開',

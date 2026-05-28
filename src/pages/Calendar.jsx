@@ -107,11 +107,12 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           const rep = entries[0]; // most-recent = the calendar representative
           const isToday = ymd(today) === dateStr;
           const openCell = () => {
+            // No entries yet → straight to the log sheet. Any existing
+            // entries (even just one) → the day picker, so the user can
+            // see what's there and choose edit vs. add-another. Tapping
+            // the single card from the picker still opens the editor.
             if (entries.length === 0) {
               setSheetExisting(null);
-              setSheetDate(dateStr);
-            } else if (entries.length === 1) {
-              setSheetExisting(entries[0]);
               setSheetDate(dateStr);
             } else {
               setPickerDate(dateStr);
@@ -196,6 +197,9 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
   // First entry from listMonth's sort is the current rep — either the
   // explicit isCalendarRep flag or fallback to most-recent.
   const repId = entries.find(e => e.isCalendarRep)?.id || entries[0]?.id;
+  // The cover/check affordance only matters with 2+ entries — a single
+  // OOTD is trivially the cover, so we skip the hint + check there.
+  const multi = entries.length > 1;
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
       <div className="create-sheet day-picker" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -204,7 +208,9 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
           <X size={18} />
         </button>
         <h3 className="create-sheet-title">{date}</h3>
-        <p className="day-picker-hint">{t('ootdRepHint')}</p>
+        {multi
+          ? <p className="day-picker-hint">{t('ootdRepHint')}</p>
+          : <p className="day-picker-hint">{t('ootdDayHint')}</p>}
         <div className="day-picker-grid">
           {entries.map(e => {
             const isRep = e.id === repId;
@@ -221,16 +227,18 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
                       : <div className="item-card-skeleton" />}
                   </div>
                 </button>
-                <button
-                  type="button"
-                  className={`day-picker-rep${isRep ? ' active' : ''}`}
-                  onClick={(ev) => { ev.stopPropagation(); if (!isRep) onSetRep(e); }}
-                  aria-label={isRep ? t('ootdRepActive') : t('ootdSetRep')}
-                  aria-pressed={isRep}
-                  title={isRep ? t('ootdRepActive') : t('ootdSetRep')}
-                >
-                  <Check size={14} strokeWidth={2.2} />
-                </button>
+                {multi && (
+                  <button
+                    type="button"
+                    className={`day-picker-rep${isRep ? ' active' : ''}`}
+                    onClick={(ev) => { ev.stopPropagation(); if (!isRep) onSetRep(e); }}
+                    aria-label={isRep ? t('ootdRepActive') : t('ootdSetRep')}
+                    aria-pressed={isRep}
+                    title={isRep ? t('ootdRepActive') : t('ootdSetRep')}
+                  >
+                    <Check size={14} strokeWidth={2.2} />
+                  </button>
+                )}
                 {e.note && <span className="day-picker-note">{e.note}</span>}
               </div>
             );

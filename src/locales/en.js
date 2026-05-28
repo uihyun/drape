@@ -36,6 +36,7 @@ export const en = {
   ootdConfirmDelete: 'Delete this day’s OOTD?',
   ootdAddNew: 'Add new',
   ootdRepHint: 'Tap a check to set the day’s cover.',
+  ootdDayHint: 'Tap to edit, or add another look.',
   ootdSetRep: 'Set as cover',
   ootdRepActive: 'Day cover',
   ootdPublishLabel: 'Publish to Discover',
