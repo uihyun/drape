@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
-import { CATEGORIES, SEASONS, STYLES, COLORS, FITS } from '../services/taxonomy.js';
+import { CATEGORIES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
@@ -10,14 +10,16 @@ import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-const VIEWS = ['all', 'categories', 'seasons', 'styles', 'brands', 'usage'];
+const VIEWS = ['all', 'categories', 'brands', 'usage'];
 
 // Facet views map to a tag dimension + its vocab. Picking a view reveals
 // a chip row of that dimension's values; selecting one filters the grid.
+// Seasons/styles/colors/fit are intentionally NOT tabs — six tabs
+// overflowed the row. They're reachable via search (which matches every
+// localized tag label), and a dedicated multi-facet filter sheet is the
+// planned home for them.
 const FACETS = {
   categories: { field: 'category', values: CATEGORIES, label: 'categories', multi: false },
-  seasons: { field: 'seasons', values: SEASONS, label: 'seasons', multi: true },
-  styles: { field: 'styles', values: STYLES, label: 'styles', multi: true },
 };
 
 // Build one lowercase haystack per item covering name, brand, and every

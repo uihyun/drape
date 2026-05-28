@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Heart, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
+import { Users } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
+import { MarketplaceService } from '../services/marketplace-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Discovery — published OOTDs from every user, newest first. Each
@@ -18,15 +21,18 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
   const [scope, setScope] = useState('forYou'); // 'forYou' | 'following'
-  const [kind, setKind] = useState('ootds'); // 'ootds' | 'boards'
+  const [kind, setKind] = useState('ootds'); // 'ootds' | 'boards' | 'market'
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
+  const [listings, setListings] = useState(null);
   const [authorMap, setAuthorMap] = useState(new Map());
   const [sort, setSort] = useState('latest');
   // null = not yet loaded, [] = signed in but follows nobody. Used by
   // both kinds, so we resolve once per user change.
   const [followingIds, setFollowingIds] = useState(null);
-  const isFollowingScope = scope === 'following';
+  // Market is a public catalogue — the Following filter doesn't apply to
+  // it. Treat it as For-You-only.
+  const isFollowingScope = scope === 'following' && kind !== 'market';
   const isLoggedIn = user && !user.isAnonymous;
 
   useEffect(() => {
@@ -85,9 +91,20 @@ export function Feed({ user, onSignIn }) {
       });
   }, [kind, sort, isFollowingScope, followingIds]);
 
+  useEffect(() => {
+    if (kind !== 'market') return;
+    setListings(null);
+    MarketplaceService.listRecent({ pageSize: 30 })
+      .then(res => setListings(res.listings))
+      .catch(err => {
+        console.warn('market feed query failed:', err?.code, err?.message);
+        setListings([]);
+      });
+  }, [kind]);
+
   // Hydrate author profiles for whichever feed is showing.
   useEffect(() => {
-    const rows = kind === 'ootds' ? ootds : boards;
+    const rows = kind === 'ootds' ? ootds : kind === 'boards' ? boards : null;
     if (!rows?.length) return;
     const missing = rows.map(r => r.userId).filter(uid => uid && !authorMap.has(uid));
     if (!missing.length) return;
@@ -102,42 +119,27 @@ export function Feed({ user, onSignIn }) {
   }, [ootds, boards, kind, authorMap]);
 
   const showingBoards = kind === 'boards';
-  const list = showingBoards ? boards : ootds;
+  const showingMarket = kind === 'market';
+  const list = showingMarket ? listings : showingBoards ? boards : ootds;
+  // Following toggle only applies to OOTDs/Boards; market is global.
+  const canFollow = kind !== 'market';
+
+  const setKindAnd = (k) => {
+    setKind(k);
+    if (k === 'market') setScope('forYou'); // market has no following view
+  };
 
   return (
     <div className="community-feed">
       <header className="feed-top">
         <div className="feed-top-controls">
-          {/* Scope: For You (all public) vs Following (just people you
-              follow). Sits above the kind tabs so the hierarchy reads
-              left-to-right: who → what → how. */}
-          <nav className="feed-scope-tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!isFollowingScope}
-              className={`feed-scope-tab${!isFollowingScope ? ' active' : ''}`}
-              onClick={() => setScope('forYou')}
-            >
-              {t('feedScopeForYou')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isFollowingScope}
-              className={`feed-scope-tab${isFollowingScope ? ' active' : ''}`}
-              onClick={() => setScope('following')}
-            >
-              {t('feedScopeFollowing')}
-            </button>
-          </nav>
           <nav className="feed-kind-tabs" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={kind === 'ootds'}
               className={`feed-kind-tab${kind === 'ootds' ? ' active' : ''}`}
-              onClick={() => setKind('ootds')}
+              onClick={() => setKindAnd('ootds')}
             >
               {t('feedKindOotds')}
             </button>
@@ -146,43 +148,58 @@ export function Feed({ user, onSignIn }) {
               role="tab"
               aria-selected={kind === 'boards'}
               className={`feed-kind-tab${kind === 'boards' ? ' active' : ''}`}
-              onClick={() => setKind('boards')}
+              onClick={() => setKindAnd('boards')}
             >
               {t('feedKindBoards')}
             </button>
-            <Link
-              to="/market"
+            <button
+              type="button"
               role="tab"
-              className="feed-kind-tab"
+              aria-selected={kind === 'market'}
+              className={`feed-kind-tab${kind === 'market' ? ' active' : ''}`}
+              onClick={() => setKindAnd('market')}
             >
               {t('feedKindMarket')}
-            </Link>
+            </button>
           </nav>
-          {/* Popular sort doesn't make sense in Following mode (the whole
-              point is "people I picked, chronologically"). Hide there. */}
-          {!isFollowingScope && (
-            <nav className="feed-sort-tabs" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sort === 'latest'}
-                className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
-                onClick={() => setSort('latest')}
-              >
-                {t('feedSortLatest')}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sort === 'popular'}
-                className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
-                onClick={() => setSort('popular')}
-              >
-                {t('feedSortPopular')}
-              </button>
-            </nav>
+          {/* Following is a compact filter toggle, not a top-level tab —
+              it just narrows the current kind to people you follow. */}
+          {canFollow && (
+            <button
+              type="button"
+              className={`feed-following-toggle${isFollowingScope ? ' active' : ''}`}
+              aria-pressed={isFollowingScope}
+              onClick={() => setScope(isFollowingScope ? 'forYou' : 'following')}
+            >
+              <Users size={15} strokeWidth={1.8} />
+              {t('feedScopeFollowing')}
+            </button>
           )}
         </div>
+        {/* Sort only for the chronological/popular content kinds in the
+            For-You scope. Hidden for market + following. */}
+        {canFollow && !isFollowingScope && (
+          <nav className="feed-sort-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sort === 'latest'}
+              className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+              onClick={() => setSort('latest')}
+            >
+              {t('feedSortLatest')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={sort === 'popular'}
+              className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+              onClick={() => setSort('popular')}
+            >
+              {t('feedSortPopular')}
+            </button>
+          </nav>
+        )}
       </header>
 
       {list === null ? (
@@ -197,6 +214,10 @@ export function Feed({ user, onSignIn }) {
           onSignIn={onSignIn}
           onSwitchScope={() => setScope('forYou')}
         />
+      ) : showingMarket ? (
+        <div className="marketplace-grid feed-market-grid">
+          {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
+        </div>
       ) : showingBoards ? (
         <div className="board-feed">
           {boards.map(b => (
@@ -420,6 +441,15 @@ function FeedEmpty({ t, kind, followingMode, isLoggedIn, hasFollows, onSignIn, o
         <div className="feed-empty-mark">◇</div>
         <h2 className="feed-empty-title">{t('feedFollowingQuietTitle')}</h2>
         <p className="feed-empty-body">{t('feedFollowingQuietBody')}</p>
+      </div>
+    );
+  }
+  if (kind === 'market') {
+    return (
+      <div className="feed-empty">
+        <div className="feed-empty-mark">◇</div>
+        <h2 className="feed-empty-title">{t('marketplaceTitle')}</h2>
+        <p className="feed-empty-body">{t('marketplaceEmpty')}</p>
       </div>
     );
   }

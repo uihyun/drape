@@ -71,7 +71,7 @@ export function Marketplace() {
   );
 }
 
-function ListingCard({ item, t }) {
+export function ListingCard({ item, t }) {
   const cover = item.croppedUrl || item.originalUrl;
   return (
     <Link to={`/i/${item.id}`} className="listing-card">

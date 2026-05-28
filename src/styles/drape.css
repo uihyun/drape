@@ -1431,6 +1431,25 @@ body.is-native {
   margin-bottom: 1rem;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Hide the horizontal scrollbar on every swipe-able chip/tab strip —
+   the affordance is the overflow itself; the bar just adds visual noise
+   (and a grey track on desktop). Content still scrolls. */
+.filter-chips,
+.closet-cat-row,
+.marketplace-filters,
+.feed-kind-tabs,
+.ootd-link-row {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* old Edge */
+}
+.filter-chips::-webkit-scrollbar,
+.closet-cat-row::-webkit-scrollbar,
+.marketplace-filters::-webkit-scrollbar,
+.feed-kind-tabs::-webkit-scrollbar,
+.ootd-link-row::-webkit-scrollbar {
+  display: none;                  /* WebKit */
+}
 .chip {
   flex-shrink: 0;
   border: 1px solid var(--border);
@@ -1525,39 +1544,28 @@ body.is-native {
   letter-spacing: -0.015em;
   color: var(--text-primary);
 }
-/* For You vs Following — top-level scope above the kind tabs. Reads
-   as the "who am I looking at" filter, so it's prominent and centered.
-   Underline-style instead of pills so it doesn't compete visually
-   with the pill-shaped kind tabs underneath. */
-.feed-scope-tabs {
+/* Following filter — a compact toggle on the right of the kind tabs.
+   It narrows whichever kind is active to people you follow; off = For
+   You (everyone). Reads as a filter chip, not a top-level destination. */
+.feed-following-toggle {
   display: inline-flex;
-  gap: 1.25rem;
-  align-self: flex-start;
-  margin-bottom: 0.35rem;
-}
-.feed-scope-tab {
-  background: none;
-  border: none;
-  padding: 0.25rem 0;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
   font-family: inherit;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
   cursor: pointer;
-  position: relative;
+  white-space: nowrap;
 }
-.feed-scope-tab.active {
-  color: var(--text-primary);
-}
-.feed-scope-tab.active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -4px;
-  height: 2px;
+.feed-following-toggle.active {
   background: var(--text-primary);
-  border-radius: 1px;
+  border-color: var(--text-primary);
+  color: #fff;
 }
 
 /* OOTDs vs Boards switch — primary, sits above the sort tabs.
