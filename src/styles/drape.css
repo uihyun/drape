@@ -551,8 +551,6 @@ body.is-native {
 }
 /* Search bars reused from the closet pattern in the try-on contexts. */
 .tryon-search-bar { margin: 0 0 0.75rem; }
-.tryon-filter-chips { margin: 0 0 1.25rem; }
-.tryon-style-chips { margin-top: -0.75rem; margin-bottom: 1.25rem; }
 .ootd-link-search { margin: 0 0 0.6rem; }
 
 /* ── Analyze photo ─────────────────────────────────────────────────── */
@@ -1525,6 +1523,11 @@ body.is-native {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Try-on filter chip overrides — defined here (after .filter-chips) so
+   specificity order is correct and margin-bottom isn't clobbered. */
+.tryon-filter-chips { margin-bottom: 1.25rem; }
+.tryon-style-chips { margin-top: -0.75rem; margin-bottom: 1.25rem; }
 
 /* Discovery feed wrapper — topmost surface on /feed, needs the notch. */
 .community-feed {
