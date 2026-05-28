@@ -3387,21 +3387,24 @@ body.is-native {
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  border: none;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .day-picker-rep.active {
-  background: #facc15;
-  color: #111;
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: #fff;
 }
 .day-picker-thumb {
   aspect-ratio: 3/4;

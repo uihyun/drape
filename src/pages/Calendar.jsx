@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, Plus, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -229,7 +229,7 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
                   aria-pressed={isRep}
                   title={isRep ? t('ootdRepActive') : t('ootdSetRep')}
                 >
-                  <Star size={14} strokeWidth={1.7} fill={isRep ? 'currentColor' : 'none'} />
+                  <Check size={14} strokeWidth={2.2} />
                 </button>
                 {e.note && <span className="day-picker-note">{e.note}</span>}
               </div>

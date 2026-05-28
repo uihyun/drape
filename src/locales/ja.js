@@ -37,7 +37,7 @@ export const ja = {
   ootdNotePlaceholder: '今日の覚え書き。',
   ootdConfirmDelete: 'この日の OOTD を削除しますか?',
   ootdAddNew: '新しく追加',
-  ootdRepHint: '星をタップしてその日の表紙を選びましょう。',
+  ootdRepHint: 'チェックをタップしてその日の表紙を選びましょう。',
   ootdSetRep: '表紙に設定',
   ootdRepActive: '表紙写真',
   ootdPublishLabel: 'Discover に公開',

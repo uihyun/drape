@@ -35,7 +35,7 @@ export const en = {
   ootdNotePlaceholder: 'Anything you want to remember about today.',
   ootdConfirmDelete: 'Delete this day’s OOTD?',
   ootdAddNew: 'Add new',
-  ootdRepHint: 'Tap a star to set the day’s cover.',
+  ootdRepHint: 'Tap a check to set the day’s cover.',
   ootdSetRep: 'Set as cover',
   ootdRepActive: 'Day cover',
   ootdPublishLabel: 'Publish to Discover',
