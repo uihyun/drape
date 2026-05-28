@@ -15,6 +15,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const [search, setSearch] = useState('');
   const [filterLiked, setFilterLiked] = useState(false);
   const [filterStyle, setFilterStyle] = useState(null);
+  const [compOpen, setCompOpen] = useState(false);
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
@@ -94,17 +95,28 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
               <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
               {t('filterLiked')}
             </button>
-            {STYLES.map(s => (
-              <button
-                key={s}
-                type="button"
-                className={`chip${filterStyle === s ? ' active' : ''}`}
-                onClick={() => setFilterStyle(f => f === s ? null : s)}
-              >
-                {t(`taxonomy.styles.${s}`)}
-              </button>
-            ))}
+            <button
+              type="button"
+              className={`chip${(compOpen || filterStyle) ? ' active' : ''}`}
+              onClick={() => setCompOpen(o => !o)}
+            >
+              {t('filterComposition')} {compOpen ? '▴' : '▾'}
+            </button>
           </div>
+          {compOpen && (
+            <div className="filter-chips filter-chips--text tryon-filter-chips tryon-style-chips">
+              {STYLES.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`chip${filterStyle === s ? ' active' : ''}`}
+                  onClick={() => setFilterStyle(f => f === s ? null : s)}
+                >
+                  {t(`taxonomy.styles.${s}`)}
+                </button>
+              ))}
+            </div>
+          )}
         </>
       )}
 

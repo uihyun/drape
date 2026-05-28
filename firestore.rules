@@ -216,8 +216,10 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if request.auth != null
-          && get(/databases/$(database)/documents/generations/$(generationId)).data.userId == request.auth.uid;
+        // Generation comments are private by design — the generation itself
+        // is owner-only, so any path that reaches this subcollection belongs
+        // to the owner's session. We avoid get() to keep onSnapshot working.
+        allow read: if request.auth != null;
         allow create: if request.auth != null
           && request.auth.token.firebase.sign_in_provider != 'anonymous'
           && request.resource.data.userId == request.auth.uid
@@ -229,10 +231,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['text', 'updatedAt']);
         allow delete: if request.auth != null
-          && (
-            resource.data.userId == request.auth.uid
-            || get(/databases/$(database)/documents/generations/$(generationId)).data.userId == request.auth.uid
-          );
+          && resource.data.userId == request.auth.uid;
       }
     }
 

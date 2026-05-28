@@ -48,6 +48,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   const [tab, setTab] = useState('mine');
   const [filterLiked, setFilterLiked] = useState(false);
   const [filterStyle, setFilterStyle] = useState(null);
+  const [compOpen, setCompOpen] = useState(false);
 
   // Each tab populates a different source:
   //   mine     → OotdService.listMyOotds
@@ -181,17 +182,28 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
               <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
               {t('filterLiked')}
             </button>
-            {STYLES.map(s => (
-              <button
-                key={s}
-                type="button"
-                className={`chip${filterStyle === s ? ' active' : ''}`}
-                onClick={() => setFilterStyle(f => f === s ? null : s)}
-              >
-                {t(`taxonomy.styles.${s}`)}
-              </button>
-            ))}
+            <button
+              type="button"
+              className={`chip${(compOpen || filterStyle) ? ' active' : ''}`}
+              onClick={() => setCompOpen(o => !o)}
+            >
+              {t('filterComposition')} {compOpen ? '▴' : '▾'}
+            </button>
           </div>
+          {compOpen && (
+            <div className="filter-chips filter-chips--text tryon-filter-chips tryon-style-chips">
+              {STYLES.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`chip${filterStyle === s ? ' active' : ''}`}
+                  onClick={() => setFilterStyle(f => f === s ? null : s)}
+                >
+                  {t(`taxonomy.styles.${s}`)}
+                </button>
+              ))}
+            </div>
+          )}
           <AnalyzedGrid
             outfits={outfits.filter(o => {
               if (filterLiked && !o.selfLiked) return false;
