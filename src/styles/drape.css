@@ -1525,6 +1525,41 @@ body.is-native {
   letter-spacing: -0.015em;
   color: var(--text-primary);
 }
+/* For You vs Following — top-level scope above the kind tabs. Reads
+   as the "who am I looking at" filter, so it's prominent and centered.
+   Underline-style instead of pills so it doesn't compete visually
+   with the pill-shaped kind tabs underneath. */
+.feed-scope-tabs {
+  display: inline-flex;
+  gap: 1.25rem;
+  align-self: flex-start;
+  margin-bottom: 0.35rem;
+}
+.feed-scope-tab {
+  background: none;
+  border: none;
+  padding: 0.25rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+}
+.feed-scope-tab.active {
+  color: var(--text-primary);
+}
+.feed-scope-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 1px;
+}
+
 /* OOTDs vs Boards switch — primary, sits above the sort tabs.
    Pill style so it reads as a content-type filter, not a sort. */
 .feed-kind-tabs {

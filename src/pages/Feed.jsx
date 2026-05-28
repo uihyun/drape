@@ -5,6 +5,7 @@ import { Heart, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
+import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
@@ -16,33 +17,73 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // /ootd/:id for the editorial breakdown.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
+  const [scope, setScope] = useState('forYou'); // 'forYou' | 'following'
   const [kind, setKind] = useState('ootds'); // 'ootds' | 'boards'
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [authorMap, setAuthorMap] = useState(new Map());
   const [sort, setSort] = useState('latest');
+  // null = not yet loaded, [] = signed in but follows nobody. Used by
+  // both kinds, so we resolve once per user change.
+  const [followingIds, setFollowingIds] = useState(null);
+  const isFollowingScope = scope === 'following';
+  const isLoggedIn = user && !user.isAnonymous;
+
+  useEffect(() => {
+    if (!isFollowingScope) return;
+    if (!isLoggedIn) { setFollowingIds([]); return; }
+    let cancelled = false;
+    FollowService.getFollowingIds(user.uid, { max: FOLLOWING_FEED_LIMIT })
+      .then(ids => { if (!cancelled) setFollowingIds(ids); })
+      .catch(err => {
+        console.warn('getFollowingIds failed:', err?.code, err?.message);
+        if (!cancelled) setFollowingIds([]);
+      });
+    return () => { cancelled = true; };
+  }, [user?.uid, isFollowingScope, isLoggedIn]);
 
   useEffect(() => {
     if (kind !== 'ootds') return;
     setOotds(null);
+    if (isFollowingScope) {
+      // Wait for followingIds to resolve so we don't fire an empty query.
+      if (followingIds === null) return;
+      OotdService.listFollowingFeed({ followingIds, pageSize: 24 })
+        .then(rows => setOotds(rows))
+        .catch(err => {
+          console.warn('following ootd query failed:', err?.code, err?.message);
+          setOotds([]);
+        });
+      return;
+    }
     OotdService.listPublicFeed({ pageSize: 24, sortBy: sort })
       .then(({ ootds }) => setOotds(ootds))
       .catch((err) => {
         console.warn('ootd feed query failed:', err?.code, err?.message);
         setOotds([]);
       });
-  }, [sort, kind]);
+  }, [sort, kind, isFollowingScope, followingIds]);
 
   useEffect(() => {
     if (kind !== 'boards') return;
     setBoards(null);
+    if (isFollowingScope) {
+      if (followingIds === null) return;
+      BoardService.listFollowingBoards({ followingIds, pageSize: 24 })
+        .then(rows => setBoards(rows))
+        .catch(err => {
+          console.warn('following boards query failed:', err?.code, err?.message);
+          setBoards([]);
+        });
+      return;
+    }
     BoardService.listPublicBoards({ pageSize: 24, sortBy: sort })
       .then(rows => setBoards(rows))
       .catch((err) => {
         console.warn('boards feed query failed:', err?.code, err?.message);
         setBoards([]);
       });
-  }, [kind, sort]);
+  }, [kind, sort, isFollowingScope, followingIds]);
 
   // Hydrate author profiles for whichever feed is showing.
   useEffect(() => {
@@ -67,6 +108,29 @@ export function Feed({ user, onSignIn }) {
     <div className="community-feed">
       <header className="feed-top">
         <div className="feed-top-controls">
+          {/* Scope: For You (all public) vs Following (just people you
+              follow). Sits above the kind tabs so the hierarchy reads
+              left-to-right: who → what → how. */}
+          <nav className="feed-scope-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isFollowingScope}
+              className={`feed-scope-tab${!isFollowingScope ? ' active' : ''}`}
+              onClick={() => setScope('forYou')}
+            >
+              {t('feedScopeForYou')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isFollowingScope}
+              className={`feed-scope-tab${isFollowingScope ? ' active' : ''}`}
+              onClick={() => setScope('following')}
+            >
+              {t('feedScopeFollowing')}
+            </button>
+          </nav>
           <nav className="feed-kind-tabs" role="tablist">
             <button
               type="button"
@@ -94,33 +158,45 @@ export function Feed({ user, onSignIn }) {
               {t('feedKindMarket')}
             </Link>
           </nav>
+          {/* Popular sort doesn't make sense in Following mode (the whole
+              point is "people I picked, chronologically"). Hide there. */}
+          {!isFollowingScope && (
             <nav className="feed-sort-tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={sort === 'latest'}
-              className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
-              onClick={() => setSort('latest')}
-            >
-              {t('feedSortLatest')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={sort === 'popular'}
-              className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
-              onClick={() => setSort('popular')}
-            >
-              {t('feedSortPopular')}
-            </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sort === 'latest'}
+                className={`feed-sort-tab${sort === 'latest' ? ' active' : ''}`}
+                onClick={() => setSort('latest')}
+              >
+                {t('feedSortLatest')}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sort === 'popular'}
+                className={`feed-sort-tab${sort === 'popular' ? ' active' : ''}`}
+                onClick={() => setSort('popular')}
+              >
+                {t('feedSortPopular')}
+              </button>
             </nav>
+          )}
         </div>
       </header>
 
       {list === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : list.length === 0 ? (
-        <FeedEmpty t={t} kind={kind} />
+        <FeedEmpty
+          t={t}
+          kind={kind}
+          followingMode={isFollowingScope}
+          isLoggedIn={isLoggedIn}
+          hasFollows={Array.isArray(followingIds) && followingIds.length > 0}
+          onSignIn={onSignIn}
+          onSwitchScope={() => setScope('forYou')}
+        />
       ) : showingBoards ? (
         <div className="board-feed">
           {boards.map(b => (
@@ -313,8 +389,40 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
   );
 }
 
-function FeedEmpty({ t, kind }) {
+function FeedEmpty({ t, kind, followingMode, isLoggedIn, hasFollows, onSignIn, onSwitchScope }) {
   const isBoards = kind === 'boards';
+  // Following mode has its own messaging — "you don't follow anyone yet"
+  // is very different from "the global feed is empty".
+  if (followingMode) {
+    if (!isLoggedIn) {
+      return (
+        <div className="feed-empty">
+          <div className="feed-empty-mark">◇</div>
+          <h2 className="feed-empty-title">{t('feedFollowingSignInTitle')}</h2>
+          <p className="feed-empty-body">{t('feedFollowingSignInBody')}</p>
+          <button type="button" className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
+        </div>
+      );
+    }
+    if (!hasFollows) {
+      return (
+        <div className="feed-empty">
+          <div className="feed-empty-mark">◇</div>
+          <h2 className="feed-empty-title">{t('feedFollowingEmptyTitle')}</h2>
+          <p className="feed-empty-body">{t('feedFollowingEmptyBody')}</p>
+          <button type="button" className="btn btn-secondary" onClick={onSwitchScope}>{t('feedScopeForYou')}</button>
+        </div>
+      );
+    }
+    // Signed in, follows people, but nothing matched — they just haven't posted yet.
+    return (
+      <div className="feed-empty">
+        <div className="feed-empty-mark">◇</div>
+        <h2 className="feed-empty-title">{t('feedFollowingQuietTitle')}</h2>
+        <p className="feed-empty-body">{t('feedFollowingQuietBody')}</p>
+      </div>
+    );
+  }
   return (
     <div className="feed-empty">
       <div className="feed-empty-mark">◇</div>

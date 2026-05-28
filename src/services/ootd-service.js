@@ -190,6 +190,23 @@ async function deleteOotd({ id }) {
   await deleteDoc(doc(db, OOTDS, id));
 }
 
+/** Following feed — public OOTDs from a specific set of authors, newest
+ *  first. Caller passes the followed-uid list (see FollowService.
+ *  getFollowingIds). Firestore `in` caps at 30, which matches our
+ *  FOLLOWING_FEED_LIMIT; longer lists require a fan-out collection. */
+async function listFollowingFeed({ followingIds, pageSize = 24 } = {}) {
+  if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
+  const ids = followingIds.slice(0, 30);
+  const snap = await getDocs(query(
+    collection(db, OOTDS),
+    where('isPublic', '==', true),
+    where('userId', 'in', ids),
+    orderBy('updatedAt', 'desc'),
+    limit(pageSize),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 /** Bookmark / unbookmark a feed OOTD. Stored under the viewer's own
  *  /users/{uid}/bookmarks/{ootdId} so we can list them without
  *  scanning every OOTD. type='ootd' tagged so the same collection
@@ -347,6 +364,7 @@ export const OotdService = {
   listMyOotds,
   listPublicByUser,
   listPublicFeed,
+  listFollowingFeed,
   toggleLike,
   toggleBookmark,
   listBookmarkedOotds,
