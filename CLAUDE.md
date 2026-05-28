@@ -15,6 +15,11 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 - **Identity refs go into every try-on call.** Don't strip them to save tokens — face/body preservation is the product's reason to exist.
 - **Every try-on writes a Generation doc, including failures.** That table is the feedback-loop training data for an eventual self-hosted model (brief §8).
 - **Auto-tag output is sanitized against the closed vocab** (`sanitizeTags` in `functions/items.js`). Don't loosen that — a hallucinated tag silently breaks search/filter.
+- **OOTD doc ids are not constrained.** Multiple OOTDs per day is supported — `OotdService.upsertOotd({ id?, date, ... })` creates auto-id when no `id`, updates the given one when set. Pick the calendar representative via `isCalendarRep: true` (set by `setCalendarRepresentative`); fallback is most-recent `createdAt`.
+- **Marketplace currency lives on the item.** Stamped from the seller's `profile.location.country` at list time and rendered via `utils/currency.js`. Never derive currency from the viewer's locale.
+- **DM thread id is deterministic.** `${sortedUidPair}_${itemId}`. `MessageService.openThread` does setDoc-with-merge (no getDoc — the participants-only read rule denies on non-existent docs). `activeIn[uid]` presence flag suppresses unread bumps for the recipient when they're already watching the room.
+- **Comments parent collection is a parameter.** `CommentService.subscribe / addComment / deleteComment` take `(parentColl, parentId, …)`. Allowed parents are `outfits | ootds | boards` (whitelisted in the service).
+- **Push notifications are native-only.** `PushService.ensureRegistered()` is gated on `Capacitor.isNativePlatform()`; web is a no-op (the Firestore stream + in-app badge cover web). Tokens go to `users/{uid}/fcmTokens/{token}`, fanned out by `functions/messages.js`.
 
 ## Stack reminders
 

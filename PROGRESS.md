@@ -937,6 +937,86 @@ Full checklist: CAPACITOR_SETUP.md §8-3.
 - Marketplace v2: location-based filter (denormalize sellerCity onto
   the item), price-range filter, escrow / 합배송 (Toss Payments + CJ
   방문수거).
-- Multi OOTD per day — schema migration (doc id `${uid}_${date}` →
-  auto-id + date field). Calendar picks one representative.
-- Board likes UI on BoardDetail (Feed card has it; detail doesn't).
+
+## Cycle: 2026-05-27 — multi-OOTD per day, board likes + comments, chat polish
+
+Followup cycle right after the marketplace push. Picks up the
+deferred items, plus a handful of UX papercuts the user flagged
+during their first end-to-end DM test.
+
+### Multi-OOTD per day
+- Schema migration: `${uid}_${date}` doc id constraint removed.
+  OotdService.upsertOotd takes optional `id` — present → setDoc-merge
+  on that doc, absent → addDoc auto-id. Existing legacy docs still
+  validate (userId + date checks unchanged); new docs use auto-id so
+  the same date can hold N independent OOTDs. Storage path got a
+  timestamp suffix (`{date}-{ts}.jpg`) so a second upload doesn't
+  clobber the first.
+- listForDate replaces the old getOotd; deleteOotd takes `{id}`.
+  listMonth returns `{ [date]: ootd[] }` sorted by isCalendarRep
+  desc, then createdAt desc — entries[0] is the cell representative.
+- Calendar.jsx: rep = entries[0]; cells with N>1 get a small `+N`
+  badge (bottom-right, 13px, semi-transparent so it doesn't crowd
+  the day number or the cutout). Tapping a multi-entry cell opens
+  a DayPicker sheet listing all OOTDs + an "Add new" card.
+- DayPicker: each card has a check button (top-right) for setting
+  that OOTD as the day's cover — flips `isCalendarRep:true` on the
+  chosen doc and clears it on every other OOTD for that date via
+  `setCalendarRepresentative`. PublicProfile's mini calendar mirrors
+  the same pick order so the public-facing cover matches owner view.
+- GenerationDetail saveAsOotd no longer prompts to overwrite; just
+  creates an additional OOTD for today (multi-OOTD makes the
+  replace-confirm meaningless).
+
+### BoardDetail likes (parity with OOTDs)
+- BoardDetail switched from one-shot getBoard to onSnapshot so the
+  heart updates live as other users like the board.
+- BoardLikeButton mirrors OotdDetail's LikeButton. ShareButton
+  alongside; owner sees Edit instead of Like.
+
+### Comments on OOTDs + boards
+- CommentService generalized — signatures take `(parentColl,
+  parentId, ...)` instead of being hard-coded to outfits. Allowed
+  parents: outfits | ootds | boards.
+- Comments.jsx props are now `parentColl + parentId + ownerId`.
+  Outfit detail / share callers updated. Mounted under OotdDetail
+  and BoardDetail with the same UI / blocklist filtering / counter.
+- firestore.rules: comments subcollection rules duplicated under
+  ootds + boards (public read, signed-in non-anon create, comment
+  owner OR parent owner can delete).
+- functions/comment-counter.js: onOotdCommentCreated/Deleted +
+  onBoardCommentCreated/Deleted bump commentCount on the parent
+  doc the same way outfit comments already did.
+
+### Chat polish (Thread page)
+- Thread's other-party avatar + name in the header is a Link to
+  `/u/{handle}` so the user can vet the person they're talking to
+  and Report from PublicProfile's ⋯ menu if needed.
+- Timestamps: iMessage / Instagram-style burst grouping.
+  - Day header (Today / Yesterday / locale date) appears before the
+    first message of each new day.
+  - Per-burst time label after the last message of consecutive
+    messages from the same sender within 5 min. Rapid back-and-forth
+    shows one stamp per direction, not one per message.
+- New locale keys: today, yesterday.
+
+### Unread badge — presence-aware
+- Added before this cycle but worth noting: thread.activeIn[uid]
+  flips true on Thread mount / false on unmount / tab-hide.
+  sendMessage skips bumping unreadFor[recipient] when the recipient
+  is already in the room — so back-and-forth typing doesn't raise
+  a badge for someone literally watching the chat.
+
+### Deferred (now)
+- Push notification user actions: APNs key upload to Firebase, iOS
+  Xcode capability flip, Android google-services.json, real-device
+  test. Code paths all written (functions/messages.js,
+  push-service.js); just keys outstanding. See CAPACITOR_SETUP.md §8-3.
+- Push for like / follow / digest / dormant OOTD reminder — same
+  Firestore trigger pattern as DM, different events.
+- Per-user notification settings UI (/settings/notifications).
+- Marketplace v2: city/location filter (needs sellerCity
+  denormalization at list time), price-range filter, Toss escrow +
+  CJ방문수거 — full transactional layer.
+- Stock comments on items (not just ootd/outfit/board).
+- Marketplace + DM analytics surface (admin-only).
