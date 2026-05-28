@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { ThumbsUp, ThumbsDown, RefreshCw, Trash2, CalendarPlus } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, RefreshCw, Trash2, CalendarPlus, ChevronRight } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OotdService } from '../services/ootd-service.js';
@@ -10,6 +10,16 @@ import { useLocale } from '../hooks/useLocale.jsx';
 function todayLocalISO() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Pick readable ink for a palette swatch background.
+function contrastInk(hex) {
+  if (!hex || hex[0] !== '#' || hex.length < 7) return '#111';
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? '#111' : '#fff';
 }
 
 // Variant gallery + rating + regenerate. The Cloud Function writes
@@ -31,6 +41,17 @@ export function GenerationDetail({ user }) {
       setGen(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [generationId]);
+
+  // Once a try-on is ready and the viewer owns it, run the palette /
+  // composition analysis (once) — same editorial read OOTDs get. Guard
+  // on !palette so it fires exactly once per generation.
+  useEffect(() => {
+    if (!gen || gen.status !== 'ready') return;
+    if (!user || gen.userId !== user.uid) return;
+    if (gen.palette || gen.analyzedAt) return;
+    GenerationService.analyzeGeneration(gen.id)
+      .catch(e => console.warn('analyzeGeneration skipped:', e?.message));
+  }, [gen?.id, gen?.status, gen?.palette, gen?.analyzedAt, user?.uid]);
 
   // Hydrate the items that were used in this try-on so we can show
   // them on the result page (so the user remembers what they picked).
@@ -152,6 +173,55 @@ export function GenerationDetail({ user }) {
               </div>
             ))}
           </div>
+
+          {gen.title && <h2 className="outfit-title">{gen.title}</h2>}
+
+          {Array.isArray(gen.palette) && gen.palette.length > 0 && (
+            <section className="outfit-palette">
+              {gen.palette.map((c, i) => (
+                <div
+                  key={i}
+                  className="palette-card"
+                  style={{ background: c.hex, color: contrastInk(c.hex) }}
+                >
+                  <span className="palette-pct">{Math.round(c.percent || 0)}%</span>
+                  <div className="palette-meta">
+                    <div className="palette-name">{c.name || ''}</div>
+                    <div className="palette-hex">{c.hex}</div>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {Array.isArray(gen.composition) && gen.composition.length > 0 && (
+            <section className="outfit-composition">
+              <header>
+                <h2>{t('aestheticComposition')}</h2>
+                <span className="composition-sub">{t('aestheticCompositionSub')}</span>
+              </header>
+              <ul>
+                {gen.composition.map((c, i) => {
+                  const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
+                  return (
+                    <li key={i} className="composition-row">
+                      <span className="composition-label">{t(`taxonomy.styles.${c.label}`) || c.label}</span>
+                      <div className="composition-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0} aria-label={c.label}>
+                        <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {gen.notes && (
+            <section className="outfit-notes">
+              <header><h2>{t('notesOnComposition')}</h2></header>
+              <p>{gen.notes}</p>
+            </section>
+          )}
 
           {items.length > 0 && (
             <section className="gen-items">

@@ -27,10 +27,6 @@ export function OotdDetail({ user, onSignIn }) {
   const [outfit, setOutfit] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  // Open at the top — otherwise the page inherits the feed's scroll
-  // offset and lands the user mid-content.
-  useEffect(() => { window.scrollTo(0, 0); }, [ootdId]);
-
   useEffect(() => {
     if (!ootdId) return;
     return onSnapshot(doc(db, 'ootds', ootdId), snap => {

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Search, X } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -11,6 +11,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
@@ -19,6 +20,20 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     // 'ready' (cover thumb) when the Cloud Function finishes.
     return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
   }, [user]);
+
+  // Filter by title or creation date — once there are hundreds of
+  // try-ons, scrolling isn't enough. Title is user-set; date matches
+  // the locale-formatted string ("5/28/2026" or "2026").
+  const visible = useMemo(() => {
+    if (!gens) return null;
+    const q = search.trim().toLowerCase();
+    if (!q) return gens;
+    return gens.filter(g => {
+      const title = (g.title || '').toLowerCase();
+      const date = (g.createdAt?.toDate?.()?.toLocaleDateString?.() || '').toLowerCase();
+      return title.includes(q) || date.includes(q);
+    });
+  }, [gens, search]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -43,7 +58,25 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
         </div>
       )}
 
-      {gens === null ? (
+      {gens && gens.length > 0 && (
+        <div className="closet-search-bar tryon-search-bar">
+          <Search size={16} strokeWidth={1.6} />
+          <input
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('tryOnSearchPlaceholder')}
+            className="closet-search-input"
+          />
+          {search && (
+            <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
+              <X size={16} strokeWidth={1.7} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {visible === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : gens.length === 0 ? (
         <div className="empty-state empty-state-card">
@@ -52,9 +85,13 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
             <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
           </Link>
         </div>
+      ) : visible.length === 0 ? (
+        <div className="empty-state empty-state-card">
+          <p>{t('tryOnSearchEmpty')}</p>
+        </div>
       ) : (
         <div className="tryon-history-grid">
-          {gens.map(g => {
+          {visible.map(g => {
             const cover = (g.variantUrls || [])[0];
             const status = g.status || 'unknown';
             return (
@@ -65,10 +102,9 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                     : <div className={`tryon-history-empty status-${status}`}>{t(`tryOnStatus.${status}`) || status}</div>}
                 </div>
                 <div className="tryon-history-meta">
-                  <span className="tryon-history-tier">{(g.modelTier || 'pro').toUpperCase()}</span>
-                  <span className="tryon-history-date">
-                    {g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}
-                  </span>
+                  {g.title
+                    ? <span className="tryon-history-title">{g.title}</span>
+                    : <span className="tryon-history-date">{g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}</span>}
                 </div>
               </Link>
             );

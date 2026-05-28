@@ -40,6 +40,7 @@ const GENERATIONS = 'generations';
 async function startTryOn({
   itemIds,
   modelTier = 'pro',
+  title = '',
   prompt = '',
   backgroundDesc = '',
   regenerateOf = null,
@@ -68,6 +69,7 @@ async function startTryOn({
   const res = await callable({
     itemIds,
     modelTier,
+    title,
     prompt,
     backgroundDesc,
     regenerateOf,
@@ -132,8 +134,16 @@ async function deleteGeneration(generationId) {
   await deleteDoc(doc(db, GENERATIONS, generationId));
 }
 
+/** Fire-and-forget palette/composition analysis for a ready try-on.
+ *  Mirrors how OOTDs are analyzed; safe to call repeatedly (the caller
+ *  guards on !palette). */
+async function analyzeGeneration(generationId) {
+  return httpsCallable(functions, 'analyzeGeneration')({ generationId });
+}
+
 export const GenerationService = {
   startTryOn,
+  analyzeGeneration,
   getGeneration,
   rateGeneration,
   listMyGenerations,

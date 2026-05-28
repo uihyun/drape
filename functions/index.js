@@ -91,6 +91,7 @@ exports.processItem = itemFns.processItem;
 exports.detectItems = itemFns.detectItems;
 exports.processIdentityRef = itemFns.processIdentityRef;
 exports.analyzeOotd = itemFns.analyzeOotd;
+exports.analyzeGeneration = itemFns.analyzeGeneration;
 exports.processOotdPhoto = itemFns.processOotdPhoto;
 
 // ── Virtual try-on ─────────────────────────────────────────────────────

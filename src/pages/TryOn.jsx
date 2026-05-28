@@ -29,6 +29,7 @@ export function TryOn({ user, onSignIn }) {
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
   // photo mode preserves the photo's background regardless).
   const [backgroundDesc, setBackgroundDesc] = useState('');
+  const [title, setTitle] = useState('');
   const [customBlob, setCustomBlob] = useState(null);
   const [customPreview, setCustomPreview] = useState(null);
   const [removeCustomBg, setRemoveCustomBg] = useState(false);
@@ -138,6 +139,7 @@ export function TryOn({ user, onSignIn }) {
     try {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
+        title: title.trim(),
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
@@ -244,6 +246,21 @@ export function TryOn({ user, onSignIn }) {
           />
         </div>
       )}
+
+      {/* Optional title — names the look so it's findable later in the
+          OOTD link picker + history (which can hold hundreds). */}
+      <div className="tryon-bg-row">
+        <label htmlFor="tryon-title" className="tryon-bg-label">{t('tryOnTitleLabel')}</label>
+        <input
+          id="tryon-title"
+          type="text"
+          className="page-input tryon-bg-input"
+          value={title}
+          onChange={e => setTitle(e.target.value.slice(0, 80))}
+          placeholder={t('tryOnTitlePlaceholder')}
+          maxLength={80}
+        />
+      </div>
 
       {/* ── What to wear: items OR outfit ─────────────────────────── */}
       <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginTop: '0.75rem' }}>

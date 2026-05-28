@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Image as ImageIcon, Camera as CameraIcon, Trash2 } from 'lucide-react';
+import { X, Image as ImageIcon, Camera as CameraIcon, Trash2, Search } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -29,6 +29,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [linkSearch, setLinkSearch] = useState('');
 
   // Seed from existing OOTD on open (edit case).
   useEffect(() => {
@@ -39,6 +40,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     setLinkedType(existing?.linkedType || (existing?.outfitId ? 'outfit' : ''));
     setNote(existing?.note || '');
     setIsPublic(existing?.isPublic === true);
+    setLinkSearch('');
     setError(null);
   }, [open, existing?.id]);
 
@@ -86,6 +88,14 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     }));
     return [...tryonCards, ...boardCards].sort((a, b) => b.sortMs - a.sortMs);
   }, [boards, tryons, t]);
+
+  // Filter the picker by label (try-on title / board name) — once a user
+  // has many saved looks the horizontal strip alone isn't enough.
+  const visibleCandidates = useMemo(() => {
+    const q = linkSearch.trim().toLowerCase();
+    if (!q) return candidates;
+    return candidates.filter(c => (c.label || '').toLowerCase().includes(q));
+  }, [candidates, linkSearch]);
 
   if (!open) return null;
 
@@ -209,8 +219,25 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             )}
           </div>
 
-          {/* Outfit linker — try-ons + boards made on this date */}
+          {/* Outfit linker — try-ons + boards (newest first, any date) */}
           <label className="ootd-sheet-label">{t('ootdLinkOutfit')}</label>
+          {candidates.length > 6 && (
+            <div className="closet-search-bar ootd-link-search">
+              <Search size={15} strokeWidth={1.6} />
+              <input
+                type="search"
+                value={linkSearch}
+                onChange={e => setLinkSearch(e.target.value)}
+                placeholder={t('ootdLinkSearchPlaceholder')}
+                className="closet-search-input"
+              />
+              {linkSearch && (
+                <button type="button" className="icon-btn" onClick={() => setLinkSearch('')} aria-label={t('clear')}>
+                  <X size={15} strokeWidth={1.7} />
+                </button>
+              )}
+            </div>
+          )}
           {candidates.length > 0 ? (
             <div className="ootd-link-row">
               <button
@@ -221,7 +248,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
                 <div className="ootd-link-thumb ootd-link-thumb-none"><span>—</span></div>
                 <span className="ootd-link-label">{t('ootdNoOutfit')}</span>
               </button>
-              {candidates.map(c => {
+              {visibleCandidates.map(c => {
                 const selected = linkedId === c.id && linkedType === c.kind;
                 return (
                   <button
@@ -234,9 +261,9 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
                       {c.thumbUrl
                         ? <img src={c.thumbUrl} alt={c.label} loading="lazy" />
                         : <div className="item-card-skeleton" />}
-                      <span className={`ootd-link-badge ${c.kind}`}>{c.label}</span>
+                      <span className={`ootd-link-badge ${c.kind}`}>{t(`ootdLinkKind_${c.kind}`)}</span>
                     </div>
-                    <span className="ootd-link-label">{c.kind === 'board' ? c.label : t('tryOnBadge')}</span>
+                    <span className="ootd-link-label">{c.label}</span>
                   </button>
                 );
               })}

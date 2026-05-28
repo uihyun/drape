@@ -579,6 +579,64 @@ exports.analyzeOotd = onCall(
   }
 );
 
+// Try-on analysis — same palette / composition / notes read OOTDs get,
+// applied to a generated try-on result so the result page carries the
+// editorial breakdown. Fired by the client (GenerationDetail) once the
+// generation is 'ready' and has no palette yet. Reuses the OOTD schema +
+// sanitizers; does NOT touch the user-set `title`.
+exports.analyzeGeneration = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const { generationId } = request.data || {};
+    if (!generationId || typeof generationId !== 'string') {
+      throw new HttpsError('invalid-argument', 'generationId required');
+    }
+
+    const genRef = admin.firestore().collection('generations').doc(generationId);
+    const snap = await genRef.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'generation missing');
+    const gen = snap.data();
+    if (gen.userId !== uid) throw new HttpsError('permission-denied', 'not yours');
+    const url = Array.isArray(gen.variantUrls) ? gen.variantUrls[0] : null;
+    if (!url) throw new HttpsError('failed-precondition', 'no result image');
+
+    // Generation results live as download URLs, not a known storage path
+    // — fetch the bytes server-side (no CORS server-side).
+    const res0 = await fetch(url);
+    if (!res0.ok) throw new HttpsError('internal', `image fetch ${res0.status}`);
+    const base64 = Buffer.from(await res0.arrayBuffer()).toString('base64');
+
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    const model = genAI.getGenerativeModel({
+      model: VISION,
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+
+    try {
+      const res = await model.generateContent([
+        { inlineData: { data: base64, mimeType: 'image/png' } },
+        { text: ootdAnalysisPrompt() },
+      ]);
+      const parsed = safeParseJson(res?.response?.text() || '');
+      if (!parsed) throw new HttpsError('internal', 'parse_failed');
+      const patch = {
+        palette: sanitizePalette(parsed.palette),
+        composition: sanitizeComposition(parsed.composition),
+        notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
+        analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      await genRef.set(patch, { merge: true });
+      return { ok: true };
+    } catch (err) {
+      console.warn('analyzeGeneration failed:', err?.message);
+      throw new HttpsError('internal', err?.message || 'analyze_failed');
+    }
+  }
+);
+
 // Identity reference background removal — segmentation cutout. The
 // previous implementation asked Gemini Image to "crop on white" then
 // chroma-keyed the bg out, but Gemini re-rendered the face / body /

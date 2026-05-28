@@ -176,6 +176,7 @@ exports.virtualTryOn = onCall(
     const {
       itemIds,
       modelTier = 'pro',
+      title = '',
       prompt = '',
       backgroundDesc = '',
       variants = null,
@@ -234,6 +235,7 @@ exports.virtualTryOn = onCall(
     await genRef.set({
       userId: uid,
       itemIds,
+      title: (title || '').slice(0, 80),
       identityRefCount: referenceCount,
       customPhotoPath: customPhotoPath || null,
       modelTier: 'pro',

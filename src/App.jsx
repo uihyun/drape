@@ -118,6 +118,19 @@ const HIDE_NAV = [
 
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
+
+  // Reset scroll to the top on every route change. React Router keeps the
+  // window scroll offset across navigations, so jumping from a scrolled
+  // Calendar to Try-on (or any page → any page) used to land mid-screen.
+  // Keyed on pathname only — query-param changes (sheets, tabs that use
+  // ?param) shouldn't yank the scroll. Covers window + the main scroll
+  // container in case either is the scroller on a given platform.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.scrollingElement?.scrollTo?.(0, 0);
+    document.querySelector('.main')?.scrollTo?.(0, 0);
+  }, [location.pathname]);
+
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
   const hideNav = isFullBleed || HIDE_NAV.some(re => re.test(location.pathname));
   // Pick the right "home" for `/` based on auth: signed-in users land on
