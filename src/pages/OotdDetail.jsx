@@ -9,6 +9,7 @@ import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
+import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Editorial page for a single OOTD. Mirrors the Lekondo capture:
@@ -67,7 +68,10 @@ export function OotdDetail({ user, onSignIn }) {
     if (!isOwner || busy) return;
     setBusy(true);
     try {
+      // Pass id so we update *this* OOTD instead of accidentally
+      // creating a fresh one for the same date.
       await OotdService.upsertOotd({
+        id: ootd.id,
         date: ootd.date,
         isPublic: !ootd.isPublic,
       });
@@ -79,7 +83,7 @@ export function OotdDetail({ user, onSignIn }) {
     if (!confirm(t('ootdConfirmDelete'))) return;
     setBusy(true);
     try {
-      await OotdService.deleteOotd({ uid: ootd.userId, date: ootd.date });
+      await OotdService.deleteOotd({ id: ootd.id });
       navigate('/profile/calendar');
     } finally { setBusy(false); }
   };
@@ -209,6 +213,9 @@ export function OotdDetail({ user, onSignIn }) {
           </button>
         )}
       </div>
+
+      <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+      <Comments parentColl="ootds" parentId={ootd.id} ownerId={ootd.userId} user={user} onSignInRequest={onSignIn} />
     </div>
   );
 }

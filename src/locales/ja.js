@@ -36,6 +36,7 @@ export const ja = {
   ootdNoteLabel: 'メモ',
   ootdNotePlaceholder: '今日の覚え書き。',
   ootdConfirmDelete: 'この日の OOTD を削除しますか?',
+  ootdAddNew: '新しく追加',
   ootdPublishLabel: 'Discover に公開',
   ootdPublishHint: '公開フィードで他の人にも表示されます。',
   ootdNotFound: 'この OOTD は表示できません。',

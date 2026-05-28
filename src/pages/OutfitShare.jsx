@@ -57,7 +57,7 @@ export function OutfitShare({ user, onSignIn }) {
       {outfit.notes && <p style={{ marginTop: '1rem' }}>{outfit.notes}</p>}
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
-      <Comments outfitId={outfit.id} outfitOwnerId={outfit.userId} user={user} onSignInRequest={onSignIn} />
+      <Comments parentColl="outfits" parentId={outfit.id} ownerId={outfit.userId} user={user} onSignInRequest={onSignIn} />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   collection,
   doc,
   setDoc,
+  addDoc,
   getDoc,
   getDocs,
   query,
@@ -30,19 +31,21 @@ import { db, storage, auth, functions } from '../firebase.js';
 
 const OOTDS = 'ootds';
 
-function ootdDocId(uid, dateStr) {
-  return `${uid}_${dateStr}`;
-}
-
 function isValidDate(s) {
   return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
 
-/** Create or update today's (or any date's) OOTD entry.
+/** Create a new OOTD entry, or update an existing one when `id` is given.
+ *
+ *  Multiple OOTDs per day are allowed — pass no id to always create, pass
+ *  an existing id to update that specific entry. The legacy `${uid}_${date}`
+ *  doc ids continue to work; new docs use auto-id so a day can hold many.
+ *
  *  `linkedType` disambiguates what `outfitId` points at — 'outfit' (legacy
  *  outfits collection), 'board', or 'tryon' (generations). Older docs have
  *  no linkedType; treat as 'outfit'. */
 async function upsertOotd({
+  id = null,
   date,
   outfitId = null,
   linkedType = null,
@@ -58,11 +61,13 @@ async function upsertOotd({
   if (!user) throw new Error('not_signed_in');
   if (!isValidDate(date)) throw new Error('bad_date');
 
-  const id = ootdDocId(user.uid, date);
   let photoUrl = null;
   let photoPath = null;
   if (photoBlob) {
-    const path = `ootds/${user.uid}/${date}.jpg`;
+    // Per-photo path so a day's second / third OOTD upload doesn't
+    // overwrite the first one's blob. Timestamp suffix is enough —
+    // collisions only matter within the same millisecond per user.
+    const path = `ootds/${user.uid}/${date}-${Date.now()}.jpg`;
     const r = ref(storage, path);
     await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
     photoUrl = await getDownloadURL(r);
@@ -72,9 +77,7 @@ async function upsertOotd({
     photoPath = null; // not owned by this OOTD; deleting the OOTD doesn't touch the variant
   }
 
-  // setDoc(..., { merge: true }) is intentional — an OOTD often grows over
-  // the day: morning logs the outfit, evening adds a selfie + note.
-  await setDoc(doc(db, OOTDS, id), {
+  const payload = {
     userId: user.uid,
     date,
     outfitId,
@@ -83,8 +86,23 @@ async function upsertOotd({
     note,
     ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
-  }, { merge: true });
+  };
+
+  let savedId;
+  if (id) {
+    // Update path — preserve original createdAt; merge:true lets a single
+    // OOTD grow over the day (morning logs the outfit, evening adds a
+    // selfie + note) without clobbering unchanged fields.
+    await setDoc(doc(db, OOTDS, id), payload, { merge: true });
+    savedId = id;
+  } else {
+    // Create path — auto-id so a date can hold N independent OOTDs.
+    const ref_ = await addDoc(collection(db, OOTDS), {
+      ...payload,
+      createdAt: serverTimestamp(),
+    });
+    savedId = ref_.id;
+  }
 
   // Trigger AI analysis + background-removal whenever the OOTD got a
   // new photo source — direct upload OR reused try-on variant URL.
@@ -92,9 +110,9 @@ async function upsertOotd({
   // processOotdPhoto produces photoCutUrl which the Calendar prefers
   // over the raw photoUrl, so the cell always shows a clean cutout.
   if (photoBlob || photoUrlFromTryon) {
-    httpsCallable(functions, 'analyzeOotd')({ ootdId: id })
+    httpsCallable(functions, 'analyzeOotd')({ ootdId: savedId })
       .catch(e => console.warn('analyzeOotd skipped:', e?.message));
-    httpsCallable(functions, 'processOotdPhoto')({ ootdId: id })
+    httpsCallable(functions, 'processOotdPhoto')({ ootdId: savedId })
       .catch(e => console.warn('processOotdPhoto skipped:', e?.message));
   }
 
@@ -115,19 +133,29 @@ async function upsertOotd({
       }
       if (itemIds.length) {
         const { ItemService } = await import('./item-service.js');
-        await ItemService.recordWear({ itemIds, date, ootdId: id, outfitId });
+        await ItemService.recordWear({ itemIds, date, ootdId: savedId, outfitId });
       }
     } catch (e) {
       console.warn('wear log recording failed:', e?.message);
     }
   }
 
-  return { id };
+  return { id: savedId };
 }
 
-async function getOotd({ uid, date }) {
-  const snap = await getDoc(doc(db, OOTDS, ootdDocId(uid, date)));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+/** Every OOTD the user has logged for a specific local date (newest first).
+ *  Replaces the old getOotd({uid,date}) — with multi-OOTD per day there's
+ *  no single canonical entry; callers pick the representative (entries[0])
+ *  or surface them all. */
+async function listForDate({ uid, date }) {
+  const snap = await getDocs(query(
+    collection(db, OOTDS),
+    where('userId', '==', uid),
+    where('date', '==', date),
+  ));
+  const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  rows.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+  return rows;
 }
 
 /** Fetch one OOTD by doc id ({uid}_{YYYY-MM-DD}). Used by /ootd/:id. */
@@ -157,8 +185,9 @@ async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' 
   };
 }
 
-async function deleteOotd({ uid, date }) {
-  await deleteDoc(doc(db, OOTDS, ootdDocId(uid, date)));
+async function deleteOotd({ id }) {
+  if (!id) throw new Error('id required');
+  await deleteDoc(doc(db, OOTDS, id));
 }
 
 /** Bookmark / unbookmark a feed OOTD. Stored under the viewer's own
@@ -261,6 +290,9 @@ async function listPublicByUser({ uid, pageSize = 200 } = {}) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+/** Bucket a month's OOTDs by date. With multi-OOTD per day each bucket
+ *  is an array, newest first; the caller picks bucket[0] as the calendar
+ *  cell's representative and exposes the rest via the day-picker. */
 async function listMonth({ uid, monthStart, monthEnd }) {
   const snap = await getDocs(query(
     collection(db, OOTDS),
@@ -272,14 +304,18 @@ async function listMonth({ uid, monthStart, monthEnd }) {
   const byDate = {};
   for (const d of snap.docs) {
     const data = { id: d.id, ...d.data() };
-    byDate[data.date] = data;
+    if (!byDate[data.date]) byDate[data.date] = [];
+    byDate[data.date].push(data);
+  }
+  for (const k of Object.keys(byDate)) {
+    byDate[k].sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
   }
   return byDate;
 }
 
 export const OotdService = {
   upsertOotd,
-  getOotd,
+  listForDate,
   getOotdById,
   deleteOotd,
   listMonth,

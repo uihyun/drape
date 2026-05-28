@@ -107,13 +107,22 @@ export function Thread({ user }) {
         <button type="button" className="thread-back" onClick={() => navigate(-1)} aria-label={t('back')}>
           <ChevronLeft size={20} strokeWidth={1.6} />
         </button>
-        <Avatar src={other?.photoURL} name={other?.displayName || other?.handle} size={32} />
-        <div className="thread-head-meta">
-          <span className="thread-head-name">
-            {other?.displayName || (other?.handle ? `@${other.handle}` : t('unknownUser'))}
-          </span>
-          {thread.itemName && <span className="thread-head-item">{thread.itemName}</span>}
-        </div>
+        {/* Tap avatar / name to inspect the other party's profile —
+            critical for vetting buyers and reporting from PublicProfile's
+            ⋯ menu if the conversation goes sideways. */}
+        <Link
+          to={other?.handle ? `/u/${other.handle}` : '#'}
+          className="thread-head-author"
+          onClick={(e) => { if (!other?.handle) e.preventDefault(); }}
+        >
+          <Avatar src={other?.photoURL} name={other?.displayName || other?.handle} size={32} />
+          <div className="thread-head-meta">
+            <span className="thread-head-name">
+              {other?.displayName || (other?.handle ? `@${other.handle}` : t('unknownUser'))}
+            </span>
+            {thread.itemName && <span className="thread-head-item">{thread.itemName}</span>}
+          </div>
+        </Link>
       </header>
 
       <Link to={`/i/${thread.itemId}`} className="thread-listing-card">

@@ -155,9 +155,11 @@ service cloud.firestore {
       // (isPublic == true) — this is what powers the Discovery feed.
       allow read: if (resource.data.isPublic == true)
         || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Doc id is no longer constrained to ${uid}_${date} — multi-OOTD
+      // per day requires auto-id docs. Existing ${uid}_${date} docs
+      // still validate (userId + date checks unchanged).
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid
-        && ootdId == request.auth.uid + '_' + request.resource.data.date
         && request.resource.data.date is string;
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
@@ -177,6 +179,27 @@ service cloud.firestore {
           (!request.resource.data.likedBy.hasAll([request.auth.uid])
             && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1)
         );
+
+      // Comments — same shape as outfits. Public-readable; signed-in users
+      // can post; comment owner OR OOTD owner can delete.
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text', 'updatedAt']);
+        allow delete: if request.auth != null
+          && (
+            resource.data.userId == request.auth.uid
+            || get(/databases/$(database)/documents/ootds/$(ootdId)).data.userId == request.auth.uid
+          );
+      }
     }
 
     // ── Generations (virtual try-on + feedback loop) ───────────────────
@@ -222,6 +245,26 @@ service cloud.firestore {
         );
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
+
+      // Comments — same shape as outfits / ootds.
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text', 'updatedAt']);
+        allow delete: if request.auth != null
+          && (
+            resource.data.userId == request.auth.uid
+            || get(/databases/$(database)/documents/boards/$(boardId)).data.userId == request.auth.uid
+          );
+      }
     }
 
     // ── Threads + messages (marketplace DM) ────────────────────────────

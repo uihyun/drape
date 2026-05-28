@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { Edit3, Eye, EyeOff } from 'lucide-react';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { Edit3, Eye, EyeOff, Heart } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
+import { ShareButton } from '../components/ShareButton.jsx';
+import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only board view at /b/:boardId. Anyone can hit this URL but
@@ -23,14 +25,18 @@ export function BoardDetail({ user, onSignIn }) {
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(false);
 
-  const refresh = () => {
+  // Live subscription — needed so the Like button reflects realtime
+  // count changes (someone else's like flips the heart immediately).
+  // togglePublic also stops needing an explicit refresh because the
+  // snapshot streams the updated isPublic back.
+  useEffect(() => {
     if (!boardId) return;
-    BoardService.getBoard(boardId)
-      .then(b => setBoard(b || null))
-      .catch(() => setBoard(null));
-  };
-
-  useEffect(refresh, [boardId]);
+    return onSnapshot(
+      doc(db, 'boards', boardId),
+      (snap) => setBoard(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+      () => setBoard(null),
+    );
+  }, [boardId]);
 
   useEffect(() => {
     if (!board?.userId) return;
@@ -71,7 +77,6 @@ export function BoardDetail({ user, onSignIn }) {
     setBusy(true);
     try {
       await BoardService.updateBoard(board.id, { isPublic: !board.isPublic });
-      refresh();
     } finally { setBusy(false); }
   };
 
@@ -113,11 +118,23 @@ export function BoardDetail({ user, onSignIn }) {
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
-      {isOwner && (
-        <Link to={`/boards/${board.id}/edit`} className="btn btn-secondary board-detail-edit">
-          <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
-        </Link>
-      )}
+      <div className="controls" style={{ padding: '0 1rem' }}>
+        <BoardLikeButton board={board} user={user} onSignIn={onSignIn} t={t} />
+        <ShareButton
+          className="btn btn-secondary"
+          title={board.name || t('untitledBoard')}
+          text=""
+          url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
+        />
+        {isOwner && (
+          <Link to={`/boards/${board.id}/edit`} className="btn btn-secondary">
+            <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
+          </Link>
+        )}
+      </div>
+
+      <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+      <Comments parentColl="boards" parentId={board.id} ownerId={board.userId} user={user} onSignInRequest={onSignIn} />
 
       {items.length > 0 && (
         <section className="board-items">
@@ -142,6 +159,30 @@ export function BoardDetail({ user, onSignIn }) {
         </section>
       )}
     </div>
+  );
+}
+
+function BoardLikeButton({ board, user, onSignIn, t }) {
+  const liked = !!(user && Array.isArray(board.likedBy) && board.likedBy.includes(user.uid));
+  const count = board.likeCount || 0;
+  const onClick = async () => {
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    try {
+      await BoardService.toggleLike(board.id, user.uid, liked);
+    } catch (err) {
+      console.warn('board like failed:', err.message);
+    }
+  };
+  return (
+    <button
+      type="button"
+      className={`btn btn-secondary${liked ? ' is-liked' : ''}`}
+      onClick={onClick}
+      aria-pressed={liked}
+    >
+      <Heart size={14} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
+      {count > 0 ? count : t('like')}
+    </button>
   );
 }
 

@@ -143,6 +143,9 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
         photoUrlFromTryon = gen?.variantUrls?.[0] || null;
       }
       await OotdService.upsertOotd({
+        // existing.id present → update that specific OOTD; absent →
+        // addDoc creates a brand-new entry for the date (multi-OOTD).
+        id: existing?.id || null,
         date,
         outfitId: linkedId || null,
         linkedType: linkedId ? linkedType : null,
@@ -159,11 +162,11 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   };
 
   const remove = async () => {
-    if (!existing) { onClose?.(); return; }
+    if (!existing?.id) { onClose?.(); return; }
     if (!confirm(t('ootdConfirmDelete'))) return;
     setSaving(true);
     try {
-      await OotdService.deleteOotd({ uid: user.uid, date });
+      await OotdService.deleteOotd({ id: existing.id });
       onSaved?.();
       onClose?.();
     } finally { setSaving(false); }

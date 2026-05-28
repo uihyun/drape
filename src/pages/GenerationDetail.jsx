@@ -95,11 +95,8 @@ export function GenerationDetail({ user }) {
     setSavingOotd(true);
     try {
       const date = todayLocalISO();
-      const existing = await OotdService.getOotd({ uid: user.uid, date });
-      if (existing?.photoUrl && !confirm(t('ootdReplaceConfirm'))) {
-        setSavingOotd(false);
-        return;
-      }
+      // Multi-OOTD per day: always create a new entry rather than
+      // overwriting today's existing one. No replace-confirm needed.
       const blob = await fetch(url).then(r => r.blob());
       await OotdService.upsertOotd({
         date,

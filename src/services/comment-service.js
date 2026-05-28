@@ -1,7 +1,8 @@
-// Comments on an outfit. Per-outfit subcollection:
-//   outfits/{outfitId}/comments/{commentId}
-// commentCount on the parent outfit is maintained by a Cloud Function
-// trigger (functions/comment-counter.js), not from the client.
+// Comments live in a `comments` subcollection on any parent doc:
+//   {parentColl}/{parentId}/comments/{commentId}
+// Supports outfits / ootds / boards uniformly — the only varying piece
+// is the parent collection name. commentCount on the parent doc is
+// maintained by a Cloud Function trigger (functions/comment-counter.js).
 
 import {
   collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot,
@@ -10,12 +11,20 @@ import {
 import { db, auth } from '../firebase.js';
 
 export const COMMENT_MAX_LEN = 500;
+const ALLOWED_PARENTS = new Set(['outfits', 'ootds', 'boards']);
+
+function checkParent(parentColl) {
+  if (!ALLOWED_PARENTS.has(parentColl)) {
+    throw new Error(`unsupported_parent: ${parentColl}`);
+  }
+}
 
 export const CommentService = {
-  subscribe(outfitId, cb) {
-    if (!outfitId) return () => {};
+  subscribe(parentColl, parentId, cb) {
+    if (!parentId) return () => {};
+    checkParent(parentColl);
     const q = query(
-      collection(db, 'outfits', outfitId, 'comments'),
+      collection(db, parentColl, parentId, 'comments'),
       orderBy('createdAt', 'asc'),
     );
     return onSnapshot(q, (snap) => {
@@ -26,7 +35,8 @@ export const CommentService = {
     });
   },
 
-  async addComment(outfitId, text) {
+  async addComment(parentColl, parentId, text) {
+    checkParent(parentColl);
     const user = auth.currentUser;
     if (!user || user.isAnonymous) throw new Error('AUTH_REQUIRED');
     const trimmed = (text || '').trim().slice(0, COMMENT_MAX_LEN);
@@ -45,7 +55,7 @@ export const CommentService = {
     } catch (e) {
       console.warn('comment addComment: profile read failed', e?.message);
     }
-    return addDoc(collection(db, 'outfits', outfitId, 'comments'), {
+    return addDoc(collection(db, parentColl, parentId, 'comments'), {
       userId: user.uid,
       displayName: profileDisplayName || user.displayName || '',
       handle: handle || null,
@@ -55,7 +65,8 @@ export const CommentService = {
     });
   },
 
-  async deleteComment(outfitId, commentId) {
-    return deleteDoc(doc(db, 'outfits', outfitId, 'comments', commentId));
+  async deleteComment(parentColl, parentId, commentId) {
+    checkParent(parentColl);
+    return deleteDoc(doc(db, parentColl, parentId, 'comments', commentId));
   },
 };

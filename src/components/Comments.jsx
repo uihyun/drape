@@ -20,7 +20,9 @@ function timeAgo(ts) {
   return d.toLocaleDateString();
 }
 
-export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
+// `parentColl` is the parent collection name — 'outfits' | 'ootds' | 'boards'.
+// Lets the same UI mount under any feed item without duplicating layout.
+export function Comments({ parentColl = 'outfits', parentId, ownerId, user, onSignInRequest }) {
   const { t } = useLocale();
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
@@ -30,12 +32,12 @@ export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
   const blockedUids = useBlockedUids(user);
 
   useEffect(() => {
-    if (!outfitId) return;
-    return CommentService.subscribe(outfitId, setComments);
-  }, [outfitId]);
+    if (!parentId) return;
+    return CommentService.subscribe(parentColl, parentId, setComments);
+  }, [parentColl, parentId]);
 
   const isLoggedIn = user && !user.isAnonymous;
-  const isOwner = isLoggedIn && outfitOwnerId === user.uid;
+  const isOwner = isLoggedIn && ownerId === user.uid;
   const visibleComments = blockedUids.size > 0
     ? comments.filter(c => !blockedUids.has(c.userId))
     : comments;
@@ -46,8 +48,8 @@ export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
     setError(null);
     setPosting(true);
     try {
-      await CommentService.addComment(outfitId, text);
-      logEvent(analytics, 'comment_posted', { outfitId });
+      await CommentService.addComment(parentColl, parentId, text);
+      logEvent(analytics, 'comment_posted', { parentColl, parentId });
       setText('');
     } catch (err) {
       console.error('comment post failed:', err);
@@ -60,8 +62,8 @@ export function Comments({ outfitId, outfitOwnerId, user, onSignInRequest }) {
   const handleDelete = async (c) => {
     if (!window.confirm(t('commentDeleteConfirm'))) return;
     try {
-      await CommentService.deleteComment(outfitId, c.id);
-      logEvent(analytics, 'comment_deleted', { outfitId });
+      await CommentService.deleteComment(parentColl, parentId, c.id);
+      logEvent(analytics, 'comment_deleted', { parentColl, parentId });
     } catch (err) {
       console.error('comment delete failed:', err);
     }

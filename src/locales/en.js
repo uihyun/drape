@@ -34,6 +34,7 @@ export const en = {
   ootdNoteLabel: 'Note',
   ootdNotePlaceholder: 'Anything you want to remember about today.',
   ootdConfirmDelete: 'Delete this day’s OOTD?',
+  ootdAddNew: 'Add new',
   ootdPublishLabel: 'Publish to Discover',
   ootdPublishHint: 'Others can see this OOTD in the public feed.',
   ootdNotFound: 'This OOTD is unavailable.',

@@ -2978,6 +2978,15 @@ body.is-native {
   cursor: pointer;
   padding: 0.3rem;
 }
+.thread-head-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
 .thread-head-meta { display: flex; flex-direction: column; min-width: 0; }
 .thread-head-name { font-weight: 600; color: var(--text-primary); }
 .thread-head-item { font-size: 0.78rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3295,6 +3304,59 @@ body.is-native {
   font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+}
+
+/* "+N" pill on a cell that holds multiple OOTDs for one day. */
+.calendar-multi-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+/* DayPicker sheet — pick which of a day's OOTDs to view/edit. */
+.day-picker { padding-bottom: 1.5rem; }
+.day-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem 0 0;
+}
+.day-picker-card {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  cursor: pointer;
+  text-align: center;
+}
+.day-picker-thumb {
+  aspect-ratio: 3/4;
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.day-picker-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 6%; }
+.day-picker-add-thumb {
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+}
+.day-picker-note {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Try-on ─────────────────────────────────────────────────────────── */

@@ -34,6 +34,7 @@ export const ko = {
   ootdNoteLabel: '메모',
   ootdNotePlaceholder: '오늘 기억할 만한 한 줄.',
   ootdConfirmDelete: '이 날 OOTD 를 삭제할까요?',
+  ootdAddNew: '새로 추가',
   ootdPublishLabel: 'Discover 에 공개',
   ootdPublishHint: '다른 사람들이 피드에서 볼 수 있어요.',
   ootdNotFound: '이 OOTD 는 볼 수 없어요.',

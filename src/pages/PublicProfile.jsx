@@ -261,10 +261,17 @@ function PublicCalendar({ ootds, t }) {
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
 
+  // Multi-OOTD per day: keep only the representative per date for the
+  // mini calendar (most recent createdAt). The Outfits grid above
+  // already shows the full list separately.
   const byDate = useMemo(() => {
     const m = {};
     for (const o of ootds || []) {
-      if (o.date) m[o.date] = o;
+      if (!o.date) continue;
+      const prev = m[o.date];
+      const prevMs = prev?.createdAt?.toMillis?.() ?? 0;
+      const curMs = o.createdAt?.toMillis?.() ?? 0;
+      if (!prev || curMs > prevMs) m[o.date] = o;
     }
     return m;
   }, [ootds]);

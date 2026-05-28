@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
 import { OotdService } from '../services/ootd-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -19,8 +19,12 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  // byDate is now { [date]: ootd[] } — multi-OOTD per day. Calendar
+  // cell renders entries[0] (most recent) as the representative.
   const [byDate, setByDate] = useState({});
   const [sheetDate, setSheetDate] = useState(null); // 'YYYY-MM-DD' or null
+  const [sheetExisting, setSheetExisting] = useState(null); // ootd doc or null = create new
+  const [pickerDate, setPickerDate] = useState(null); // day with N>1 entries
   const [search, setSearch] = useSearchParams();
 
   // Deep-link entry: /profile/calendar?ootd=today (or ?ootd=YYYY-MM-DD)
@@ -99,27 +103,42 @@ export function Calendar({ user, onSignIn, embedded = false }) {
         {cells.map((d, i) => {
           if (d === null) return <div key={i} className="calendar-cell empty" />;
           const dateStr = ymd(new Date(year, month0, d));
-          const entry = byDate[dateStr];
+          const entries = byDate[dateStr] || [];
+          const rep = entries[0]; // most-recent = the calendar representative
           const isToday = ymd(today) === dateStr;
+          const openCell = () => {
+            if (entries.length === 0) {
+              setSheetExisting(null);
+              setSheetDate(dateStr);
+            } else if (entries.length === 1) {
+              setSheetExisting(entries[0]);
+              setSheetDate(dateStr);
+            } else {
+              setPickerDate(dateStr);
+            }
+          };
           return (
             <button
               type="button"
               key={i}
               className={`calendar-cell ${isToday ? 'today' : ''}`}
-              onClick={() => setSheetDate(dateStr)}
-              aria-label={`${dateStr}${entry ? ' (logged)' : ''}`}
+              onClick={openCell}
+              aria-label={`${dateStr}${entries.length ? ' (logged)' : ''}`}
             >
               <span className="calendar-day-num">{d}</span>
-              {(entry?.photoCutUrl || entry?.photoUrl) && (
+              {(rep?.photoCutUrl || rep?.photoUrl) && (
                 <img
-                  src={entry.photoCutUrl || entry.photoUrl}
+                  src={rep.photoCutUrl || rep.photoUrl}
                   alt=""
-                  className={`calendar-thumb${entry.photoCutUrl ? ' is-cut' : ''}`}
+                  className={`calendar-thumb${rep.photoCutUrl ? ' is-cut' : ''}`}
                   loading="lazy"
                 />
               )}
-              {entry?.outfitId && !entry.photoUrl && (
+              {rep?.outfitId && !rep.photoUrl && (
                 <span className="calendar-pill">OOTD</span>
+              )}
+              {entries.length > 1 && (
+                <span className="calendar-multi-badge">+{entries.length - 1}</span>
               )}
             </button>
           );
@@ -130,10 +149,64 @@ export function Calendar({ user, onSignIn, embedded = false }) {
         open={!!sheetDate}
         date={sheetDate}
         user={user}
-        existing={sheetDate ? byDate[sheetDate] : null}
-        onClose={() => setSheetDate(null)}
+        existing={sheetExisting}
+        onClose={() => { setSheetDate(null); setSheetExisting(null); }}
         onSaved={refetch}
       />
+
+      {pickerDate && (
+        <DayPicker
+          date={pickerDate}
+          entries={byDate[pickerDate] || []}
+          onClose={() => setPickerDate(null)}
+          onPick={(entry) => {
+            setSheetExisting(entry);
+            setSheetDate(pickerDate);
+            setPickerDate(null);
+          }}
+          onAddNew={() => {
+            setSheetExisting(null);
+            setSheetDate(pickerDate);
+            setPickerDate(null);
+          }}
+          t={t}
+        />
+      )}
+    </div>
+  );
+}
+
+// Small sheet shown when a day has 2+ OOTDs — choose which to edit or
+// add a brand-new one. Tapping a card opens OotdSheet in edit mode for
+// that specific OOTD; tapping "Add new" opens an empty OotdSheet.
+function DayPicker({ date, entries, onClose, onPick, onAddNew, t }) {
+  return (
+    <div className="create-sheet-overlay" onClick={onClose}>
+      <div className="create-sheet day-picker" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" />
+        <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
+          <X size={18} />
+        </button>
+        <h3 className="create-sheet-title">{date}</h3>
+        <div className="day-picker-grid">
+          {entries.map(e => (
+            <button key={e.id} type="button" className="day-picker-card" onClick={() => onPick(e)}>
+              <div className="day-picker-thumb">
+                {(e.photoCutUrl || e.photoUrl)
+                  ? <img src={e.photoCutUrl || e.photoUrl} alt="" />
+                  : <div className="item-card-skeleton" />}
+              </div>
+              {e.note && <span className="day-picker-note">{e.note}</span>}
+            </button>
+          ))}
+          <button type="button" className="day-picker-card day-picker-add" onClick={onAddNew}>
+            <div className="day-picker-thumb day-picker-add-thumb">
+              <Plus size={24} strokeWidth={1.5} />
+            </div>
+            <span className="day-picker-note">{t('ootdAddNew')}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
