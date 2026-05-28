@@ -25,6 +25,9 @@ export function BoardDetail({ user, onSignIn }) {
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(false);
 
+  // Open at the top — don't inherit the feed's scroll offset.
+  useEffect(() => { window.scrollTo(0, 0); }, [boardId]);
+
   // Live subscription — needed so the Like button reflects realtime
   // count changes (someone else's like flips the heart immediately).
   // togglePublic also stops needing an explicit refresh because the

@@ -24,7 +24,6 @@ export function TryOn({ user, onSignIn }) {
     return new Set(ids ? ids.split(',') : []);
   });
   const [pickedOutfitId, setPickedOutfitId] = useState(null);
-  const [tier, setTier] = useState('pro');
   const [whatTab, setWhatTab] = useState('items'); // 'items' | 'outfits'
   // Optional scene description sent to the model — empty = default
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
@@ -139,7 +138,6 @@ export function TryOn({ user, onSignIn }) {
     try {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
-        modelTier: tier,
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
@@ -229,16 +227,6 @@ export function TryOn({ user, onSignIn }) {
           </div>
         )}
       </section>
-
-      {/* ── Tier toggle ───────────────────────────────────────────── */}
-      <div className="tier-toggle">
-        <button type="button" className={`chip ${tier === 'pro' ? 'active' : ''}`} onClick={() => setTier('pro')}>
-          {t('tierPro')} <span className="muted">· {t('tierProHint')}</span>
-        </button>
-        <button type="button" className={`chip ${tier === 'flash' ? 'active' : ''}`} onClick={() => setTier('flash')}>
-          {t('tierFlash')} <span className="muted">· {t('tierFlashHint')}</span>
-        </button>
-      </div>
 
       {/* Optional scene — only relevant in identity-refs mode (custom
           photos already carry their own background, which we preserve). */}

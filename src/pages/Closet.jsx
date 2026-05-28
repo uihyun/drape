@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
-import { CATEGORIES } from '../services/taxonomy.js';
+import { CATEGORIES, SEASONS, STYLES, COLORS, FITS } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
@@ -10,7 +10,46 @@ import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-const VIEWS = ['all', 'categories', 'brands', 'usage'];
+const VIEWS = ['all', 'categories', 'seasons', 'styles', 'brands', 'usage'];
+
+// Facet views map to a tag dimension + its vocab. Picking a view reveals
+// a chip row of that dimension's values; selecting one filters the grid.
+const FACETS = {
+  categories: { field: 'category', values: CATEGORIES, label: 'categories', multi: false },
+  seasons: { field: 'seasons', values: SEASONS, label: 'seasons', multi: true },
+  styles: { field: 'styles', values: STYLES, label: 'styles', multi: true },
+};
+
+// Build one lowercase haystack per item covering name, brand, and every
+// tag dimension in BOTH the raw enum token and its localized label — so
+// "여름"/"summer", "navy", "미니멀"/"minimal" all hit. t() resolves the
+// active locale, so a Korean user searching "겨울" matches season:winter.
+function searchableText(item, t) {
+  const tags = item.tags || {};
+  const parts = [item.name || '', tags.brand || ''];
+  const push = (dim, val) => {
+    if (!val) return;
+    parts.push(val);
+    const label = t(`taxonomy.${dim}.${val}`);
+    if (label && label !== `taxonomy.${dim}.${val}`) parts.push(label);
+  };
+  push('categories', tags.category);
+  push('fits', tags.fit);
+  (Array.isArray(tags.colors) ? tags.colors : []).forEach(c => push('colors', c));
+  (Array.isArray(tags.seasons) ? tags.seasons : []).forEach(s => push('seasons', s));
+  (Array.isArray(tags.styles) ? tags.styles : []).forEach(s => push('styles', s));
+  if (Array.isArray(item.wearLog)) item.wearLog.forEach(e => e.date && parts.push(e.date));
+  return parts.join(' ').toLowerCase();
+}
+
+// Does an item match the active facet selection? Single-value dims
+// (category) check equality; array dims (seasons/styles) check inclusion.
+function matchesFacet(item, view, value) {
+  const facet = FACETS[view];
+  if (!facet || !value) return true;
+  const tagVal = item?.tags?.[facet.field];
+  return Array.isArray(tagVal) ? tagVal.includes(value) : tagVal === value;
+}
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
@@ -20,7 +59,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   // "categories" reveals a second row of category chips that drive the
   // actual filter; otherwise filter stays 'all'.
   const [view, setView] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState(null);
+  // One active facet value at a time (per the current single-view model).
+  // Keyed by view so switching facet tabs resets cleanly.
+  const [facetValue, setFacetValue] = useState(null);
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef(null);
@@ -38,25 +79,19 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const filtered = useMemo(() => {
     if (!items) return null;
     let live = items.filter(i => !i.isArchived);
-    if (view === 'categories' && categoryFilter) {
-      live = live.filter(i => i?.tags?.category === categoryFilter);
+    if (FACETS[view] && facetValue) {
+      live = live.filter(i => matchesFacet(i, view, facetValue));
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      live = live.filter(i =>
-        (i.name || '').toLowerCase().includes(q) ||
-        (i.tags?.category || '').toLowerCase().includes(q) ||
-        (i.tags?.brand || '').toLowerCase().includes(q) ||
-        // Wear log dates ("2026-05" matches anything worn in May 2026)
-        (Array.isArray(i.wearLog) && i.wearLog.some(e => e.date?.includes(q)))
-      );
+      live = live.filter(i => searchableText(i, t).includes(q));
     }
     return live;
-  }, [items, view, categoryFilter, search]);
+  }, [items, view, facetValue, search, t]);
 
   const onViewChange = (v) => {
     setView(v);
-    if (v !== 'categories') setCategoryFilter(null);
+    setFacetValue(null); // each facet view starts unfiltered
   };
 
   if (!authReady) {
@@ -130,23 +165,23 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         </div>
       )}
 
-      {view === 'categories' && (
+      {FACETS[view] && (
         <div className="closet-cat-row">
           <button
             type="button"
-            className={`chip-pill${!categoryFilter ? ' active' : ''}`}
-            onClick={() => setCategoryFilter(null)}
+            className={`chip-pill${!facetValue ? ' active' : ''}`}
+            onClick={() => setFacetValue(null)}
           >
             {t('filterAll')}
           </button>
-          {CATEGORIES.map(c => (
+          {FACETS[view].values.map(v => (
             <button
-              key={c}
+              key={v}
               type="button"
-              className={`chip-pill${categoryFilter === c ? ' active' : ''}`}
-              onClick={() => setCategoryFilter(c)}
+              className={`chip-pill${facetValue === v ? ' active' : ''}`}
+              onClick={() => setFacetValue(facetValue === v ? null : v)}
             >
-              {t(`taxonomy.categories.${c}`)}
+              {t(`taxonomy.${FACETS[view].label}.${v}`)}
             </button>
           ))}
         </div>

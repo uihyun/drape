@@ -220,7 +220,9 @@ exports.virtualTryOn = onCall(
     }
     const referenceCount = customPhotoPath ? 1 : identityRefs.length;
 
-    const modelId = modelTier === 'flash' ? IMAGE_FLASH : IMAGE_PRO;
+    // Pro-only — the Flash tier was dropped (quality wasn't worth the
+    // split). `modelTier` may still arrive from older clients; ignore it.
+    const modelId = IMAGE_PRO;
     const n = variants ?? 1;
 
     // ── Pre-write the generation doc EARLY ─────────────────────────────
@@ -234,7 +236,7 @@ exports.virtualTryOn = onCall(
       itemIds,
       identityRefCount: referenceCount,
       customPhotoPath: customPhotoPath || null,
-      modelTier,
+      modelTier: 'pro',
       modelId,
       prompt: prompt || null,
       regenerateOf: regenerateOf || null,

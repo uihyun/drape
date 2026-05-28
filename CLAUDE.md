@@ -25,12 +25,12 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 
 - React 18 + Vite + react-router-dom v7 + Firebase v11 + Capacitor 7.
 - Cloud Functions runtime: Node 22, v2 SDK. `onCall` for new endpoints (gives auth + CORS for free); `onRequest` only when we need raw HTTP.
-- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`). Model ids: `gemini-3-pro-image-preview` (Pro / Nano Banana Pro), `gemini-3-flash-image-preview` (Flash / Nano Banana 2), `gemini-3-flash-preview` (vision tagging).
+- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`). Model ids: `gemini-3-pro-image-preview` (try-on — Pro only, the Flash image tier was removed), `gemini-3-flash-preview` (vision tagging + OOTD analysis). The vision/tagging Flash use is unrelated to the dropped image tier.
 
 ## Don't
 
 - Don't reintroduce voda's interior-design helpers (`paint-match`, `shopping-links`, `EditRegionModal`, the 38 interior styles). They were deliberately removed.
-- Don't add a 4th tier of model routing. Two tiers (Pro / Flash) is enough until we hear from users.
+- Don't reintroduce a Flash try-on tier or any model-tier selector. Try-on is Pro-only — the split wasn't worth the quality drop. `virtualTryOn` ignores any `modelTier` param older clients still send.
 - Don't write planning / spec docs unless asked — keep notes in `PROGRESS.md`.
 - Don't commit secrets. `GEMINI_API_KEY` lives in a Firebase secret; the dev value is in `.env` (gitignored).
 

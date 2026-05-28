@@ -25,6 +25,9 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editName, setEditName] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
+  // Open at the top — don't inherit the feed's scroll offset.
+  useEffect(() => { window.scrollTo(0, 0); }, [outfitId]);
+
   useEffect(() => {
     if (!outfitId) return;
     return onSnapshot(doc(db, 'outfits', outfitId), snap => {

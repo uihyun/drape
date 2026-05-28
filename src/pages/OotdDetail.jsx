@@ -5,6 +5,7 @@ import { ChevronRight, Eye, EyeOff, Trash2, Heart } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
 import { OutfitService } from '../services/outfit-service.js';
+import { GenerationService } from '../services/generation-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
@@ -26,6 +27,10 @@ export function OotdDetail({ user, onSignIn }) {
   const [outfit, setOutfit] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  // Open at the top — otherwise the page inherits the feed's scroll
+  // offset and lands the user mid-content.
+  useEffect(() => { window.scrollTo(0, 0); }, [ootdId]);
+
   useEffect(() => {
     if (!ootdId) return;
     return onSnapshot(doc(db, 'ootds', ootdId), snap => {
@@ -38,10 +43,49 @@ export function OotdDetail({ user, onSignIn }) {
     ProfileService.getByUid(ootd.userId).then(setOwner).catch(() => setOwner(null));
   }, [ootd?.userId]);
 
+  // Resolve the linked thing by its type — OOTDs can link an outfit, a
+  // try-on (generation), or a board. Previously this always hit
+  // OutfitService, so try-on / board links silently rendered nothing.
   useEffect(() => {
-    if (!ootd?.outfitId) { setOutfit(null); return; }
-    OutfitService.getOutfit(ootd.outfitId).then(setOutfit).catch(() => setOutfit(null));
-  }, [ootd?.outfitId]);
+    const id = ootd?.outfitId;
+    if (!id) { setOutfit(null); return; }
+    const type = ootd.linkedType || 'outfit';
+    let cancelled = false;
+    const resolve = async () => {
+      try {
+        if (type === 'tryon') {
+          const g = await GenerationService.getGeneration(id);
+          return g && {
+            kind: 'tryon',
+            to: `/tryon/${id}`,
+            label: g.title || t('tryOnBadge'),
+            thumbUrl: g.variantUrls?.[0] || null,
+          };
+        }
+        if (type === 'board') {
+          const { BoardService } = await import('../services/board-service.js');
+          const b = await BoardService.getBoard(id);
+          return b && {
+            kind: 'board',
+            to: `/boards/${id}`,
+            label: b.name || t('untitledBoard'),
+            thumbUrl: b.coverUrl || null,
+          };
+        }
+        const o = await OutfitService.getOutfit(id);
+        return o && {
+          kind: 'outfit',
+          to: `/o/${id}`,
+          label: o.name || t('untitledOutfit'),
+          thumbUrl: o.coverUrl || null,
+        };
+      } catch {
+        return null;
+      }
+    };
+    resolve().then(v => { if (!cancelled) setOutfit(v); });
+    return () => { cancelled = true; };
+  }, [ootd?.outfitId, ootd?.linkedType, t]);
 
   if (ootd === null) {
     return (
@@ -191,9 +235,15 @@ export function OotdDetail({ user, onSignIn }) {
 
       {outfit && (
         <section className="outfit-items">
-          <header><h2>{t('itemsInOutfit')}</h2></header>
-          <Link to={`/o/${outfit.id}`} className="ootd-outfit-link">
-            <span>{outfit.name || t('untitledOutfit')}</span>
+          <header><h2>{t('ootdLinkedHead')}</h2></header>
+          <Link to={outfit.to} className="ootd-outfit-link">
+            {outfit.thumbUrl && (
+              <img src={outfit.thumbUrl} alt="" className="ootd-outfit-link-thumb" />
+            )}
+            <span className="ootd-outfit-link-label">
+              <span className="ootd-outfit-link-kind">{t(`ootdLinkKind_${outfit.kind}`)}</span>
+              {outfit.label}
+            </span>
             <ChevronRight size={16} strokeWidth={1.5} />
           </Link>
         </section>

@@ -11,15 +11,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const isMobileUA = typeof navigator !== 'undefined'
   && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
 
-// Half-open [startMs, endMs) for the local day at YYYY-MM-DD. Local TZ
-// is intentional — the OOTD date the user typed matches their wall clock,
-// not UTC.
-function dayBounds(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const start = new Date(y, m - 1, d, 0, 0, 0, 0).getTime();
-  return [start, start + 24 * 60 * 60 * 1000];
-}
-
 // Sheet that opens when the user taps a Calendar cell. Lets them log
 // today's (or that date's) OOTD — pick a photo, optionally link a board
 // or try-on they made that same day, leave a quick note. Same date can
@@ -71,37 +62,30 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     return () => URL.revokeObjectURL(url);
   }, [photoBlob]);
 
-  // Today-bound link candidates: ready try-ons (createdAt in-day) +
-  // boards (updatedAt or createdAt in-day). Newest first.
+  // Link candidates: every ready try-on + every board, newest first.
+  // NOT day-bound — a try-on or board is usually made ahead of time to
+  // plan a look, then worn (and logged) on a later day, possibly more
+  // than once. Restricting to same-day creations hid exactly the items
+  // the user wants to attach.
   const candidates = useMemo(() => {
-    if (!date) return [];
-    const [startMs, endMs] = dayBounds(date);
-    const inDay = (ts) => {
-      const ms = ts?.toMillis?.() ?? 0;
-      return ms >= startMs && ms < endMs;
-    };
     const tryonCards = tryons
-      .filter(g => g.status === 'ready'
-        && (g.variantUrls?.length ?? 0) > 0
-        && inDay(g.createdAt))
+      .filter(g => g.status === 'ready' && (g.variantUrls?.length ?? 0) > 0)
       .map(g => ({
         kind: 'tryon',
         id: g.id,
-        label: t('tryOnBadge'),
+        label: g.title || t('tryOnBadge'),
         thumbUrl: g.variantUrls?.[0] || null,
         sortMs: g.createdAt?.toMillis?.() ?? 0,
       }));
-    const boardCards = boards
-      .filter(b => inDay(b.updatedAt) || inDay(b.createdAt))
-      .map(b => ({
-        kind: 'board',
-        id: b.id,
-        label: b.name || t('untitledBoard'),
-        thumbUrl: b.coverUrl || null,
-        sortMs: b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0,
-      }));
+    const boardCards = boards.map(b => ({
+      kind: 'board',
+      id: b.id,
+      label: b.name || t('untitledBoard'),
+      thumbUrl: b.coverUrl || null,
+      sortMs: b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0,
+    }));
     return [...tryonCards, ...boardCards].sort((a, b) => b.sortMs - a.sortMs);
-  }, [boards, tryons, date, t]);
+  }, [boards, tryons, t]);
 
   if (!open) return null;
 
