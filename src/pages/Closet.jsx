@@ -24,7 +24,7 @@ const FILTER_DIMS = [
 ];
 
 function emptyFilters() {
-  return { category: [], colors: [], seasons: [], styles: [], fits: [] };
+  return { category: [], colors: [], seasons: [], styles: [], fits: [], forSale: [] };
 }
 function countFilters(f) {
   return Object.values(f).reduce((n, arr) => n + arr.length, 0);
@@ -43,6 +43,9 @@ function matchesFilters(item, filters) {
     const has = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
     if (!has) return false;
   }
+  // For-sale is a boolean off the item (not a tag); selecting it keeps
+  // only listed items.
+  if (filters.forSale?.length && !item.forSale) return false;
   return true;
 }
 
@@ -175,6 +178,16 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
               </button>
             ))
           )}
+          {(filters.forSale || []).length > 0 && (
+            <button
+              type="button"
+              className="closet-active-chip"
+              onClick={() => toggleDim('forSale', 'yes')}
+            >
+              {t('filterForSale')}
+              <X size={12} strokeWidth={2} />
+            </button>
+          )}
           <button
             type="button"
             className="closet-active-clear"
@@ -297,6 +310,19 @@ function DetailFilterSheet({ filters, onToggle, onClear, onClose, count, resultC
               </div>
             </div>
           ))}
+          {/* Marketplace status — boolean, not a tag dimension. */}
+          <div className="detail-filter-dim">
+            <span className="detail-filter-dim-label">{t('saleSection')}</span>
+            <div className="detail-filter-chips">
+              <button
+                type="button"
+                className={`chip-pill${(filters.forSale || []).length ? ' active' : ''}`}
+                onClick={() => onToggle('forSale', 'yes')}
+              >
+                {t('filterForSale')}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="detail-filter-actions">

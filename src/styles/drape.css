@@ -531,8 +531,8 @@ body.is-native {
 .tryon-history-empty.status-pending { color: var(--text-secondary); }
 .tryon-history-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.05rem;
   padding: 0.45rem 0.65rem;
   font-size: 0.78rem;
   color: var(--text-secondary);

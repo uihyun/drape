@@ -240,6 +240,7 @@ export const ko = {
   addItem: '옷 추가',
   addFirstItem: '첫 옷 등록하기',
   filterAll: '전체',
+  filterForSale: '판매 중',
 
   // ── Add item ───────────────────────────────────────────────────────
   uploadPhoto: '사진 업로드',

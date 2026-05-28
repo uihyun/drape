@@ -240,6 +240,7 @@ export const en = {
   addItem: 'Add item',
   addFirstItem: 'Add your first item',
   filterAll: 'All',
+  filterForSale: 'For sale',
 
   // ── Add item ───────────────────────────────────────────────────────
   uploadPhoto: 'Upload photo',

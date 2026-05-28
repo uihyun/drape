@@ -102,9 +102,10 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                     : <div className={`tryon-history-empty status-${status}`}>{t(`tryOnStatus.${status}`) || status}</div>}
                 </div>
                 <div className="tryon-history-meta">
-                  {g.title
-                    ? <span className="tryon-history-title">{g.title}</span>
-                    : <span className="tryon-history-date">{g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}</span>}
+                  {g.title && <span className="tryon-history-title">{g.title}</span>}
+                  <span className="tryon-history-date">
+                    {g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}
+                  </span>
                 </div>
               </Link>
             );

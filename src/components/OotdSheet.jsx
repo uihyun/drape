@@ -221,7 +221,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
 
           {/* Outfit linker — try-ons + boards (newest first, any date) */}
           <label className="ootd-sheet-label">{t('ootdLinkOutfit')}</label>
-          {candidates.length > 6 && (
+          {candidates.length > 10 && (
             <div className="closet-search-bar ootd-link-search">
               <Search size={15} strokeWidth={1.6} />
               <input

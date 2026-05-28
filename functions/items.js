@@ -628,6 +628,11 @@ exports.analyzeGeneration = onCall(
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
+      // Auto-title only when the user didn't set one — every try-on then
+      // carries a name so history cards / the picker read consistently.
+      if (!gen.title && typeof parsed.title === 'string' && parsed.title.trim()) {
+        patch.title = parsed.title.slice(0, 80);
+      }
       await genRef.set(patch, { merge: true });
       return { ok: true };
     } catch (err) {

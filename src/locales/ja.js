@@ -242,6 +242,7 @@ export const ja = {
   addItem: 'アイテム追加',
   addFirstItem: '最初のアイテムを追加',
   filterAll: 'すべて',
+  filterForSale: '販売中',
 
   // ── Add item ───────────────────────────────────────────────────────
   uploadPhoto: '写真をアップロード',
