@@ -210,6 +210,8 @@ export const ja = {
   comingSoon: '近日対応',
   search: '検索',
   searchPlaceholder: 'クローゼットを検索…',
+  detailedFilter: '詳細検索',
+  detailedFilterApply: '{n}件を表示',
   clear: 'クリア',
   closetView: { all: 'すべて', usage: '使用頻度', brands: 'ブランド', categories: 'カテゴリー', seasons: '季節', styles: 'スタイル' },
   usageWorn: '着用済み',

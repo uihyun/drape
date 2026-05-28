@@ -208,6 +208,8 @@ export const ko = {
   comingSoon: '곧 추가됩니다',
   search: '검색',
   searchPlaceholder: '내 옷장에서 검색…',
+  detailedFilter: '상세 찾기',
+  detailedFilterApply: '{n}개 보기',
   clear: '지우기',
   closetView: { all: '전체', usage: '사용도', brands: '브랜드', categories: '카테고리', seasons: '계절', styles: '스타일' },
   usageWorn: '입은 옷',

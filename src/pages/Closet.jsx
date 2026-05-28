@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
-import { CATEGORIES } from '../services/taxonomy.js';
+import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
@@ -10,63 +10,52 @@ import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-const VIEWS = ['all', 'categories', 'brands', 'usage'];
+const VIEWS = ['all', 'brands', 'usage'];
 
-// Facet views map to a tag dimension + its vocab. Picking a view reveals
-// a chip row of that dimension's values; selecting one filters the grid.
-// Seasons/styles/colors/fit are intentionally NOT tabs — six tabs
-// overflowed the row. They're reachable via search (which matches every
-// localized tag label), and a dedicated multi-facet filter sheet is the
-// planned home for them.
-const FACETS = {
-  categories: { field: 'category', values: CATEGORIES, label: 'categories', multi: false },
-};
+// Tag dimensions exposed in the detailed filter sheet. Each maps a tag
+// field to its vocab + the locale namespace for chip labels. `multi`
+// flags array-valued tags (an item can be summer AND spring) vs scalar.
+const FILTER_DIMS = [
+  { key: 'category', field: 'category', values: CATEGORIES, ns: 'categories', labelKey: 'tagCategory', multi: false },
+  { key: 'colors',   field: 'colors',   values: COLORS,     ns: 'colors',     labelKey: 'tagColors',   multi: true },
+  { key: 'seasons',  field: 'seasons',  values: SEASONS,    ns: 'seasons',    labelKey: 'tagSeasons',  multi: true },
+  { key: 'styles',   field: 'styles',   values: STYLES,     ns: 'styles',     labelKey: 'tagStyles',   multi: true },
+  { key: 'fits',     field: 'fit',      values: FITS,       ns: 'fits',       labelKey: 'tagFit',      multi: false },
+];
 
-// Build one lowercase haystack per item covering name, brand, and every
-// tag dimension in BOTH the raw enum token and its localized label — so
-// "여름"/"summer", "navy", "미니멀"/"minimal" all hit. t() resolves the
-// active locale, so a Korean user searching "겨울" matches season:winter.
-function searchableText(item, t) {
-  const tags = item.tags || {};
-  const parts = [item.name || '', tags.brand || ''];
-  const push = (dim, val) => {
-    if (!val) return;
-    parts.push(val);
-    const label = t(`taxonomy.${dim}.${val}`);
-    if (label && label !== `taxonomy.${dim}.${val}`) parts.push(label);
-  };
-  push('categories', tags.category);
-  push('fits', tags.fit);
-  (Array.isArray(tags.colors) ? tags.colors : []).forEach(c => push('colors', c));
-  (Array.isArray(tags.seasons) ? tags.seasons : []).forEach(s => push('seasons', s));
-  (Array.isArray(tags.styles) ? tags.styles : []).forEach(s => push('styles', s));
-  if (Array.isArray(item.wearLog)) item.wearLog.forEach(e => e.date && parts.push(e.date));
-  return parts.join(' ').toLowerCase();
+function emptyFilters() {
+  return { category: [], colors: [], seasons: [], styles: [], fits: [] };
+}
+function countFilters(f) {
+  return Object.values(f).reduce((n, arr) => n + arr.length, 0);
 }
 
-// Does an item match the active facet selection? Single-value dims
-// (category) check equality; array dims (seasons/styles) check inclusion.
-function matchesFacet(item, view, value) {
-  const facet = FACETS[view];
-  if (!facet || !value) return true;
-  const tagVal = item?.tags?.[facet.field];
-  return Array.isArray(tagVal) ? tagVal.includes(value) : tagVal === value;
+// An item passes if, for every dimension that has selections, its tag
+// value intersects the selection. Across dimensions = AND; within a
+// dimension = OR. Tag enums are language-agnostic, so selecting "summer"
+// matches regardless of the user's locale (no cross-language text issue).
+function matchesFilters(item, filters) {
+  const tags = item.tags || {};
+  for (const dim of FILTER_DIMS) {
+    const sel = filters[dim.key];
+    if (!sel?.length) continue;
+    const v = tags[dim.field];
+    const has = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
+    if (!has) return false;
+  }
+  return true;
 }
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
   const [items, setItems] = useState(null);
-  // Top-row view (Lekondo: All / Usage / Brands / Categories). Picking
-  // "categories" reveals a second row of category chips that drive the
-  // actual filter; otherwise filter stays 'all'.
+  // Top-row view: All (grid) / Brands (alpha groups) / Usage (recency).
   const [view, setView] = useState('all');
-  // One active facet value at a time (per the current single-view model).
-  // Keyed by view so switching facet tabs resets cleanly.
-  const [facetValue, setFacetValue] = useState(null);
-  const [search, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const searchInputRef = useRef(null);
+  // Multi-facet tag filters (Set-like arrays per dimension). The All-view
+  // category chip row and the detailed-filter sheet both write here.
+  const [filters, setFilters] = useState(emptyFilters);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!authReady) return;
@@ -74,26 +63,21 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
     return ItemService.subscribeMyCloset(user.uid, setItems);
   }, [user, authReady]);
 
-  useEffect(() => {
-    if (searchOpen) searchInputRef.current?.focus();
-  }, [searchOpen]);
+  const filterCount = countFilters(filters);
 
   const filtered = useMemo(() => {
     if (!items) return null;
     let live = items.filter(i => !i.isArchived);
-    if (FACETS[view] && facetValue) {
-      live = live.filter(i => matchesFacet(i, view, facetValue));
-    }
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      live = live.filter(i => searchableText(i, t).includes(q));
-    }
+    if (filterCount > 0) live = live.filter(i => matchesFilters(i, filters));
     return live;
-  }, [items, view, facetValue, search, t]);
+  }, [items, filters, filterCount]);
 
-  const onViewChange = (v) => {
-    setView(v);
-    setFacetValue(null); // each facet view starts unfiltered
+  const toggleDim = (key, value) => {
+    setFilters(prev => {
+      const cur = prev[key] || [];
+      const next = cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value];
+      return { ...prev, [key]: next };
+    });
   };
 
   if (!authReady) {
@@ -132,7 +116,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
               role="tab"
               aria-selected={view === v}
               className={`chip${view === v ? ' active' : ''}`}
-              onClick={() => onViewChange(v)}
+              onClick={() => setView(v)}
             >
               {t(`closetView.${v}`)}
             </button>
@@ -140,53 +124,77 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         </nav>
         <button
           type="button"
-          className="closet-search-btn"
-          aria-label={t('search')}
-          onClick={() => setSearchOpen(o => !o)}
+          className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}
+          aria-label={t('detailedFilter')}
+          onClick={() => setSheetOpen(true)}
         >
-          {searchOpen ? <X size={18} strokeWidth={1.7} /> : <Search size={18} strokeWidth={1.7} />}
+          <SlidersHorizontal size={18} strokeWidth={1.7} />
+          {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
         </button>
       </div>
 
-      {searchOpen && (
-        <div className="closet-search-bar">
-          <Search size={16} strokeWidth={1.6} />
-          <input
-            ref={searchInputRef}
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="closet-search-input"
-          />
-          {search && (
-            <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
-              <X size={16} strokeWidth={1.7} />
-            </button>
-          )}
-        </div>
-      )}
-
-      {FACETS[view] && (
+      {/* All view: category chips as the representative quick filter
+          (the old Categories tab folded into All). Multi-select; writes
+          the same filters.category the detailed sheet uses. */}
+      {view === 'all' && (
         <div className="closet-cat-row">
           <button
             type="button"
-            className={`chip-pill${!facetValue ? ' active' : ''}`}
-            onClick={() => setFacetValue(null)}
+            className={`chip-pill${filters.category.length === 0 ? ' active' : ''}`}
+            onClick={() => setFilters(prev => ({ ...prev, category: [] }))}
           >
             {t('filterAll')}
           </button>
-          {FACETS[view].values.map(v => (
+          {CATEGORIES.map(c => (
             <button
-              key={v}
+              key={c}
               type="button"
-              className={`chip-pill${facetValue === v ? ' active' : ''}`}
-              onClick={() => setFacetValue(facetValue === v ? null : v)}
+              className={`chip-pill${filters.category.includes(c) ? ' active' : ''}`}
+              onClick={() => toggleDim('category', c)}
             >
-              {t(`taxonomy.${FACETS[view].label}.${v}`)}
+              {t(`taxonomy.categories.${c}`)}
             </button>
           ))}
         </div>
+      )}
+
+      {/* Active non-category filters from the sheet, shown as removable
+          chips so the user always sees what's narrowing the grid. */}
+      {filterCount - filters.category.length > 0 && (
+        <div className="closet-active-filters">
+          {FILTER_DIMS.filter(d => d.key !== 'category').flatMap(d =>
+            (filters[d.key] || []).map(v => (
+              <button
+                key={`${d.key}-${v}`}
+                type="button"
+                className="closet-active-chip"
+                onClick={() => toggleDim(d.key, v)}
+              >
+                {t(`taxonomy.${d.ns}.${v}`)}
+                <X size={12} strokeWidth={2} />
+              </button>
+            ))
+          )}
+          <button
+            type="button"
+            className="closet-active-clear"
+            onClick={() => setFilters(emptyFilters())}
+          >
+            {t('clear')}
+          </button>
+        </div>
+      )}
+
+      {sheetOpen && (
+        <DetailFilterSheet
+          filters={filters}
+          onToggle={toggleDim}
+          onClear={() => setFilters(emptyFilters())}
+          onClose={() => setSheetOpen(false)}
+          count={filterCount}
+          resultCount={filtered?.length ?? 0}
+          t={t}
+        />
       )}
 
       {filtered === null ? (
@@ -247,11 +255,61 @@ function groupByBrand(items, t) {
     if (!map.has(key)) map.set(key, { label: raw, items: [] });
     map.get(key).items.push(it);
   }
+  // Pure alphabetical (case-insensitive). Unbranded always last.
   const sorted = [...map.values()].sort((a, b) =>
-    b.items.length - a.items.length || a.label.localeCompare(b.label)
+    a.label.localeCompare(b.label, undefined, { sensitivity: 'base' })
   );
   if (unbranded.length) sorted.push({ label: t('brandUnbranded'), items: unbranded });
   return sorted;
+}
+
+// Detailed filter sheet — every tag dimension as multi-select chips.
+// Selecting tags filters by enum value (language-agnostic), sidestepping
+// the cross-language text-search problem. Across dims = AND, within = OR.
+function DetailFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount, t }) {
+  return (
+    <div className="create-sheet-overlay" onClick={onClose}>
+      <div className="create-sheet detail-filter" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" />
+        <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
+          <X size={18} />
+        </button>
+        <h3 className="create-sheet-title">{t('detailedFilter')}</h3>
+
+        <div className="detail-filter-body">
+          {FILTER_DIMS.map(dim => (
+            <div key={dim.key} className="detail-filter-dim">
+              <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
+              <div className="detail-filter-chips">
+                {dim.values.map(v => {
+                  const on = (filters[dim.key] || []).includes(v);
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`chip-pill${on ? ' active' : ''}`}
+                      onClick={() => onToggle(dim.key, v)}
+                    >
+                      {t(`taxonomy.${dim.ns}.${v}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="detail-filter-actions">
+          <button type="button" className="btn btn-secondary" onClick={onClear} disabled={count === 0}>
+            {t('clear')}
+          </button>
+          <button type="button" className="btn btn-primary" onClick={onClose}>
+            {t('detailedFilterApply', { n: resultCount })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function GroupedList({ groups, cols, t, showElapsed = false }) {

@@ -208,6 +208,8 @@ export const en = {
   comingSoon: 'Coming soon',
   search: 'Search',
   searchPlaceholder: 'Search your closet…',
+  detailedFilter: 'Filter',
+  detailedFilterApply: 'Show {n}',
   clear: 'Clear',
   closetView: { all: 'All', usage: 'Usage', brands: 'Brands', categories: 'Categories', seasons: 'Seasons', styles: 'Styles' },
   usageWorn: 'Worn',

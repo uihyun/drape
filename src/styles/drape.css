@@ -1905,6 +1905,7 @@ body.is-native {
   border-bottom: 1px solid var(--border);
 }
 .closet-search-btn {
+  position: relative;
   background: none;
   border: none;
   padding: 0.4rem;
@@ -1914,8 +1915,77 @@ body.is-native {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .closet-search-btn:hover { color: var(--text-primary); background: var(--surface-elevated); }
+.closet-search-btn.has-filters { color: var(--text-primary); }
+.closet-filter-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Active sheet-set filters surfaced as removable chips under the tabs. */
+.closet-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0 0 0.75rem;
+}
+.closet-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: none;
+  background: var(--text-primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.closet-active-clear {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Detailed filter sheet — grouped multi-select tag chips. */
+.detail-filter { max-height: 85vh; display: flex; flex-direction: column; }
+.detail-filter-body { overflow-y: auto; flex: 1; padding: 0.5rem 0 1rem; }
+.detail-filter-dim { margin-bottom: 1.1rem; }
+.detail-filter-dim-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+.detail-filter-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.detail-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.detail-filter-actions .btn { flex: 1; }
 .closet-search-bar {
   display: flex;
   align-items: center;
