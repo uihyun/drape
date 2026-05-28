@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { X, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
@@ -62,6 +62,52 @@ export function ItemDetail({ user, onSignIn }) {
       .then(p => setOwnerCurrency(currencyForCountry(cityCountry(p?.location))))
       .catch(() => setOwnerCurrency('KRW'));
   }, [item?.userId, item?.currency]);
+
+  // "Used in" — lazy-load generations/outfits/boards that include this
+  // item, shown only to the owner. Board stickers are object arrays, so
+  // we load the user's boards and filter client-side.
+  const [usedIn, setUsedIn] = useState(null);
+  useEffect(() => {
+    if (!user || !itemId) return;
+    let cancelled = false;
+    async function load() {
+      const uid = user.uid;
+      const [genSnap, outfitSnap, boardSnap] = await Promise.all([
+        getDocs(query(
+          collection(db, 'generations'),
+          where('userId', '==', uid),
+          where('itemIds', 'array-contains', itemId),
+          orderBy('createdAt', 'desc'),
+          limit(6),
+        )).catch(() => null),
+        getDocs(query(
+          collection(db, 'outfits'),
+          where('userId', '==', uid),
+          where('itemIds', 'array-contains', itemId),
+          orderBy('createdAt', 'desc'),
+          limit(6),
+        )).catch(() => null),
+        getDocs(query(
+          collection(db, 'boards'),
+          where('userId', '==', uid),
+          orderBy('updatedAt', 'desc'),
+          limit(40),
+        )).catch(() => null),
+      ]);
+      if (cancelled) return;
+      const gens = genSnap ? genSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+      const outfits = outfitSnap ? outfitSnap.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+      const boards = boardSnap
+        ? boardSnap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(b => (b.stickers || []).some(s => s.itemId === itemId))
+            .slice(0, 6)
+        : [];
+      setUsedIn({ gens, outfits, boards });
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [user?.uid, itemId]);
 
   if (!item) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && item.userId === user.uid;
@@ -350,6 +396,55 @@ export function ItemDetail({ user, onSignIn }) {
           </>
         )}
       </footer>
+      {isOwner && usedIn && (usedIn.gens.length > 0 || usedIn.outfits.length > 0 || usedIn.boards.length > 0) && (
+        <div className="item-used-in">
+          {usedIn.gens.length > 0 && (
+            <div className="item-used-in-section">
+              <span className="item-used-in-label">{t('usedInTryOns')}</span>
+              <div className="item-used-in-row">
+                {usedIn.gens.map(g => {
+                  const cover = (g.variantUrls || [])[0];
+                  return (
+                    <Link key={g.id} to={`/tryon/${g.id}`} className="item-used-in-card">
+                      {cover
+                        ? <img src={cover} alt="" loading="lazy" />
+                        : <div className="item-card-skeleton" />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {usedIn.outfits.length > 0 && (
+            <div className="item-used-in-section">
+              <span className="item-used-in-label">{t('usedInOutfits')}</span>
+              <div className="item-used-in-row">
+                {usedIn.outfits.map(o => (
+                  <Link key={o.id} to={`/o/${o.id}`} className="item-used-in-card">
+                    {o.coverUrl
+                      ? <img src={o.coverUrl} alt="" loading="lazy" />
+                      : <div className="item-card-skeleton" />}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {usedIn.boards.length > 0 && (
+            <div className="item-used-in-section">
+              <span className="item-used-in-label">{t('usedInBoards')}</span>
+              <div className="item-used-in-row">
+                {usedIn.boards.map(b => (
+                  <Link key={b.id} to={`/boards/${b.id}`} className="item-used-in-card">
+                    {b.coverUrl
+                      ? <img src={b.coverUrl} alt="" loading="lazy" />
+                      : <div className="item-card-skeleton" />}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

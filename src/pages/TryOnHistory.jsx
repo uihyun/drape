@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Search, X } from 'lucide-react';
+import { Sparkles, Search, X, Heart } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
+import { STYLES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // All of the user's try-on results in one grid. Each cell shows the
@@ -12,6 +13,8 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
   const [search, setSearch] = useState('');
+  const [filterLiked, setFilterLiked] = useState(false);
+  const [filterStyle, setFilterStyle] = useState(null);
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
@@ -21,19 +24,26 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
   }, [user]);
 
-  // Filter by title or creation date — once there are hundreds of
-  // try-ons, scrolling isn't enough. Title is user-set; date matches
-  // the locale-formatted string ("5/28/2026" or "2026").
   const visible = useMemo(() => {
     if (!gens) return null;
+    let list = gens;
     const q = search.trim().toLowerCase();
-    if (!q) return gens;
-    return gens.filter(g => {
-      const title = (g.title || '').toLowerCase();
-      const date = (g.createdAt?.toDate?.()?.toLocaleDateString?.() || '').toLowerCase();
-      return title.includes(q) || date.includes(q);
-    });
-  }, [gens, search]);
+    if (q) {
+      list = list.filter(g => {
+        const title = (g.title || '').toLowerCase();
+        const date = (g.createdAt?.toDate?.()?.toLocaleDateString?.() || '').toLowerCase();
+        return title.includes(q) || date.includes(q);
+      });
+    }
+    if (filterLiked) list = list.filter(g => g.liked);
+    if (filterStyle) {
+      list = list.filter(g =>
+        Array.isArray(g.composition) &&
+        g.composition.some(c => c.label === filterStyle && (c.level || 0) >= 1),
+      );
+    }
+    return list;
+  }, [gens, search, filterLiked, filterStyle]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -59,21 +69,43 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       )}
 
       {gens && gens.length > 0 && (
-        <div className="closet-search-bar tryon-search-bar">
-          <Search size={16} strokeWidth={1.6} />
-          <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('tryOnSearchPlaceholder')}
-            className="closet-search-input"
-          />
-          {search && (
-            <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
-              <X size={16} strokeWidth={1.7} />
+        <>
+          <div className="closet-search-bar tryon-search-bar">
+            <Search size={16} strokeWidth={1.6} />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={t('tryOnSearchPlaceholder')}
+              className="closet-search-input"
+            />
+            {search && (
+              <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
+                <X size={16} strokeWidth={1.7} />
+              </button>
+            )}
+          </div>
+          <div className="filter-chips filter-chips--text tryon-filter-chips">
+            <button
+              type="button"
+              className={`chip${filterLiked ? ' active' : ''}`}
+              onClick={() => setFilterLiked(f => !f)}
+            >
+              <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
+              {t('filterLiked')}
             </button>
-          )}
-        </div>
+            {STYLES.map(s => (
+              <button
+                key={s}
+                type="button"
+                className={`chip${filterStyle === s ? ' active' : ''}`}
+                onClick={() => setFilterStyle(f => f === s ? null : s)}
+              >
+                {t(`taxonomy.styles.${s}`)}
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       {visible === null ? (

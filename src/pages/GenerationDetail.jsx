@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { ThumbsUp, ThumbsDown, RefreshCw, Trash2, CalendarPlus, ChevronRight } from 'lucide-react';
+import { Heart, RefreshCw, Trash2, CalendarPlus, ChevronRight } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OotdService } from '../services/ootd-service.js';
+import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function todayLocalISO() {
@@ -74,8 +75,8 @@ export function GenerationDetail({ user }) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
   }
 
-  const rate = async (v) => {
-    await GenerationService.rateGeneration(gen.id, gen.rating === v ? 0 : v);
+  const toggleLike = async () => {
+    await GenerationService.toggleLike(gen.id, !gen.liked);
   };
 
   // Same async pattern as the initial try-on: kick off in the background,
@@ -270,31 +271,20 @@ export function GenerationDetail({ user }) {
             </button>
           )}
 
-          <div className="rate-block">
-            <span className="rate-label">{t('rateThis')}</span>
-            <div className="rate-thumbs">
-              <button
-                type="button"
-                className={`rate-thumb${gen.rating === 1 ? ' active' : ''}`}
-                onClick={() => rate(1)}
-                aria-label={t('good')}
-              >
-                <ThumbsUp size={16} strokeWidth={1.7} />
-                <span>{t('good')}</span>
-              </button>
-              <button
-                type="button"
-                className={`rate-thumb${gen.rating === -1 ? ' active' : ''}`}
-                onClick={() => rate(-1)}
-                aria-label={t('bad')}
-              >
-                <ThumbsDown size={16} strokeWidth={1.7} />
-                <span>{t('bad')}</span>
-              </button>
-            </div>
+          <div className="gen-actions">
             <button
               type="button"
-              className="btn btn-primary rate-regen"
+              className={`btn btn-secondary gen-like-btn${gen.liked ? ' is-liked' : ''}`}
+              onClick={toggleLike}
+              aria-pressed={!!gen.liked}
+              aria-label={gen.liked ? t('selfUnlike') : t('selfLike')}
+            >
+              <Heart size={15} strokeWidth={1.7} fill={gen.liked ? 'currentColor' : 'none'} />
+              {gen.liked ? t('selfUnlike') : t('selfLike')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
               onClick={regen}
               disabled={regenerating}
             >
@@ -303,12 +293,21 @@ export function GenerationDetail({ user }) {
             </button>
             <button
               type="button"
-              className="btn btn-secondary danger-btn rate-delete"
+              className="btn btn-secondary danger-btn"
               onClick={remove}
             >
               <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
           </div>
+
+          <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+          <Comments
+            parentColl="generations"
+            parentId={gen.id}
+            ownerId={gen.userId}
+            user={user}
+            onSignInRequest={() => {}}
+          />
         </>
       )}
     </div>

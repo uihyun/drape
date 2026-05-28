@@ -102,6 +102,7 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
                       'isPublic', 'isListed', 'listedAt', 'updatedAt',
+                      'selfLiked', 'selfLikedAt',
                       'likeCount', 'likedBy',
                       'kind', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath',
                       'mood', 'stylingTips', 'palette', 'composition'])
@@ -210,9 +211,29 @@ service cloud.firestore {
       allow update: if request.auth != null
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['rating', 'ratedAt']);
+            .hasOnly(['liked', 'likedAt']);
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if request.auth != null
+          && get(/databases/$(database)/documents/generations/$(generationId)).data.userId == request.auth.uid;
+        allow create: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text', 'updatedAt']);
+        allow delete: if request.auth != null
+          && (
+            resource.data.userId == request.auth.uid
+            || get(/databases/$(database)/documents/generations/$(generationId)).data.userId == request.auth.uid
+          );
+      }
     }
 
     // ── Boards (sticker-board: clothing items arranged on a canvas) ────
@@ -229,6 +250,7 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'stickers', 'coverUrl', 'updatedAt', 'isPublic',
+                      'selfLiked', 'selfLikedAt',
                       'likeCount', 'likedBy']);
       // Like / unlike — any signed-in user on a public board, only the
       // likedBy + likeCount keys, must include themselves +1 / -1.

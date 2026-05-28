@@ -6,7 +6,7 @@
 
 import {
   collection, doc, addDoc, getDoc, getDocs, deleteDoc,
-  query, where, orderBy, limit, onSnapshot, setDoc, serverTimestamp,
+  query, where, orderBy, limit, onSnapshot, setDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase.js';
 
@@ -177,6 +177,14 @@ function subscribeMyBoards(cb) {
   );
 }
 
+/** Personal ❤️ self-favorite on the owner's own board. */
+async function toggleSelfLike(boardId, selfLiked) {
+  await updateDoc(doc(db, BOARDS, boardId), {
+    selfLiked: !!selfLiked,
+    selfLikedAt: serverTimestamp(),
+  });
+}
+
 export const BoardService = {
   createBoard,
   getBoard,
@@ -190,6 +198,7 @@ export const BoardService = {
   subscribeMyBoards,
   toggleBookmark,
   toggleLike,
+  toggleSelfLike,
 };
 
 export default BoardService;

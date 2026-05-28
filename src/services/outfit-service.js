@@ -198,6 +198,14 @@ async function toggleLike(outfitId, uid, currentlyLiked) {
   });
 }
 
+/** Personal ❤️ self-favorite on the owner's own analyzed outfit. */
+async function toggleSelfLike(outfitId, selfLiked) {
+  await updateDoc(doc(db, OUTFITS, outfitId), {
+    selfLiked: !!selfLiked,
+    selfLikedAt: serverTimestamp(),
+  });
+}
+
 export const OutfitService = {
   createAnalyzedOutfit,
   createOutfit,
@@ -207,6 +215,7 @@ export const OutfitService = {
   listMyOutfits,
   getFeedOutfits,
   toggleLike,
+  toggleSelfLike,
 };
 
 export default OutfitService;

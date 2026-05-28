@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Heart } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { OotdService } from '../services/ootd-service.js';
+import { STYLES } from '../services/taxonomy.js';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -45,6 +46,8 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   const [itemsById, setItemsById] = useState({});
   // 'mine' (my OOTDs) | 'saved' (OOTDs I bookmarked from feed) | 'analyzed'
   const [tab, setTab] = useState('mine');
+  const [filterLiked, setFilterLiked] = useState(false);
+  const [filterStyle, setFilterStyle] = useState(null);
 
   // Each tab populates a different source:
   //   mine     → OotdService.listMyOotds
@@ -168,7 +171,40 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
           </Link>
         </div>
       ) : (
-        <AnalyzedGrid outfits={outfits} itemsById={itemsById} t={t} />
+        <>
+          <div className="filter-chips filter-chips--text tryon-filter-chips">
+            <button
+              type="button"
+              className={`chip${filterLiked ? ' active' : ''}`}
+              onClick={() => setFilterLiked(f => !f)}
+            >
+              <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
+              {t('filterLiked')}
+            </button>
+            {STYLES.map(s => (
+              <button
+                key={s}
+                type="button"
+                className={`chip${filterStyle === s ? ' active' : ''}`}
+                onClick={() => setFilterStyle(f => f === s ? null : s)}
+              >
+                {t(`taxonomy.styles.${s}`)}
+              </button>
+            ))}
+          </div>
+          <AnalyzedGrid
+            outfits={outfits.filter(o => {
+              if (filterLiked && !o.selfLiked) return false;
+              if (filterStyle && !(
+                Array.isArray(o.composition) &&
+                o.composition.some(c => c.label === filterStyle && (c.level || 0) >= 1)
+              )) return false;
+              return true;
+            })}
+            itemsById={itemsById}
+            t={t}
+          />
+        </>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight } from 'lucide-react';
+import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -259,6 +259,20 @@ export function OutfitDetail({ user, onSignIn }) {
         <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="btn btn-primary">
           <Sparkles size={16} strokeWidth={1.6} /> {t('tryThisOn')}
         </Link>
+        {isOwner && (
+          <button
+            type="button"
+            className={`btn btn-secondary${outfit.selfLiked ? ' is-liked' : ''}`}
+            onClick={async () => {
+              try { await OutfitService.toggleSelfLike(outfit.id, !outfit.selfLiked); }
+              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+            }}
+            aria-pressed={!!outfit.selfLiked}
+          >
+            <Heart size={15} strokeWidth={1.7} fill={outfit.selfLiked ? 'currentColor' : 'none'} />
+            {outfit.selfLiked ? t('selfUnlike') : t('selfLike')}
+          </button>
+        )}
         <ShareButton
           className="btn btn-secondary"
           title={outfit.name || t('untitledOutfit')}

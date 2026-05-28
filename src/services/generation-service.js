@@ -84,12 +84,11 @@ async function getGeneration(generationId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-/** Rate a generation: -1 (👎), +1 (👍), 0 (clear). */
-async function rateGeneration(generationId, rating) {
-  if (![-1, 0, 1].includes(rating)) throw new Error('bad_rating');
+/** Personal ❤️ bookmark on a try-on. Replaces the old 👍/👎 rating. */
+async function toggleLike(generationId, liked) {
   await updateDoc(doc(db, GENERATIONS, generationId), {
-    rating,
-    ratedAt: serverTimestamp(),
+    liked: !!liked,
+    likedAt: serverTimestamp(),
   });
 }
 
@@ -145,7 +144,7 @@ export const GenerationService = {
   startTryOn,
   analyzeGeneration,
   getGeneration,
-  rateGeneration,
+  toggleLike,
   listMyGenerations,
   subscribeMyGenerations,
   deleteGeneration,

@@ -43,3 +43,13 @@ exports.onBoardCommentDeleted = onDocumentDeleted('boards/{boardId}/comments/{co
     try { await bump('boards', event.params.boardId, -1); }
     catch (err) { console.warn('onBoardCommentDeleted failed:', err.message); }
 });
+
+// Generations (try-on results)
+exports.onGenerationCommentCreated = onDocumentCreated('generations/{generationId}/comments/{commentId}', async (event) => {
+    try { await bump('generations', event.params.generationId, 1); }
+    catch (err) { console.warn('onGenerationCommentCreated failed:', err.message); }
+});
+exports.onGenerationCommentDeleted = onDocumentDeleted('generations/{generationId}/comments/{commentId}', async (event) => {
+    try { await bump('generations', event.params.generationId, -1); }
+    catch (err) { console.warn('onGenerationCommentDeleted failed:', err.message); }
+});

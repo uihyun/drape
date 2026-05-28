@@ -119,7 +119,22 @@ export function BoardDetail({ user, onSignIn }) {
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
       <div className="controls" style={{ padding: '0 1rem' }}>
-        <BoardLikeButton board={board} user={user} onSignIn={onSignIn} t={t} />
+        {isOwner ? (
+          <button
+            type="button"
+            className={`btn btn-secondary${board.selfLiked ? ' is-liked' : ''}`}
+            onClick={async () => {
+              try { await BoardService.toggleSelfLike(board.id, !board.selfLiked); }
+              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+            }}
+            aria-pressed={!!board.selfLiked}
+          >
+            <Heart size={14} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
+            {board.selfLiked ? t('selfUnlike') : t('selfLike')}
+          </button>
+        ) : (
+          <BoardLikeButton board={board} user={user} onSignIn={onSignIn} t={t} />
+        )}
         <ShareButton
           className="btn btn-secondary"
           title={board.name || t('untitledBoard')}

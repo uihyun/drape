@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Heart } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
@@ -16,6 +16,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
   const [mine, setMine] = useState(null);
   const [saved, setSaved] = useState(null);
+  const [filterLiked, setFilterLiked] = useState(false);
   const [items, setItems] = useState([]);
   const itemsById = useMemo(
     () => Object.fromEntries(items.map(i => [i.id, i])),
@@ -56,7 +57,10 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     );
   }
 
-  const list = tab === 'saved' ? saved : mine;
+  const rawList = tab === 'saved' ? saved : mine;
+  const list = (rawList && filterLiked && tab === 'mine')
+    ? rawList.filter(b => b.selfLiked)
+    : rawList;
 
   return (
     <div className={embedded ? '' : 'page'}>
@@ -82,6 +86,16 @@ export function BoardList({ user, onSignIn, embedded = false }) {
             {t(`boardsTabs.${key}`)}
           </button>
         ))}
+        {tab === 'mine' && (
+          <button
+            type="button"
+            className={`chip${filterLiked ? ' active' : ''}`}
+            onClick={() => setFilterLiked(f => !f)}
+          >
+            <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
+            {t('filterLiked')}
+          </button>
+        )}
       </nav>
 
       {list === null ? (

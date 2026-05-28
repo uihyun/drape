@@ -550,7 +550,8 @@ body.is-native {
   white-space: nowrap;
 }
 /* Search bars reused from the closet pattern in the try-on contexts. */
-.tryon-search-bar { margin: 0 0 0.9rem; }
+.tryon-search-bar { margin: 0 0 0.5rem; }
+.tryon-filter-chips { margin: 0 0 0.9rem; }
 .ootd-link-search { margin: 0 0 0.6rem; }
 
 /* ── Analyze photo ─────────────────────────────────────────────────── */
@@ -3319,6 +3320,44 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-secondary);
 }
 .item-viewer-wear-count { color: var(--text-muted); }
+
+/* "Used in" section — shows try-ons / outfits / boards that include
+   this item. Owner-only, rendered below the wear-log bar. */
+.item-used-in {
+  padding: 0.75rem 1rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.item-used-in-section { display: flex; flex-direction: column; gap: 0.35rem; }
+.item-used-in-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.item-used-in-row {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.item-used-in-row::-webkit-scrollbar { display: none; }
+.item-used-in-card {
+  flex: 0 0 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-elevated);
+  display: block;
+}
+.item-used-in-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .feed-card-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--surface-elevated);
@@ -3860,52 +3899,23 @@ input[type="search"]::-webkit-search-decoration {
    full-width below. Width matches the variant image above (parent
    .page container caps to 600px on desktop, full-width on phone) so the
    action area lines up with the photo instead of floating narrower. */
-.rate-block {
+.gen-actions {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   margin: 1.25rem 0 0;
 }
-.rate-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  text-align: center;
-}
-.rate-thumbs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-.rate-thumb {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 999px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.rate-thumb:hover { border-color: var(--border-hover); }
-.rate-thumb.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.btn.rate-regen,
-.btn.rate-delete {
+.gen-actions .btn {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  align-self: stretch;
   justify-content: center;
 }
-.btn.rate-delete { margin-top: 0.4rem; }
+.gen-like-btn.is-liked {
+  color: #e03e5a;
+  border-color: #e03e5a;
+}
+.is-liked svg { color: #e03e5a; }
 
 /* Row of item thumbs shown under the try-on variant — reminds the
    user which clothes they picked for this generation. Each thumb
