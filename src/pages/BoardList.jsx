@@ -73,7 +73,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
         </div>
       )}
 
-      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '0.75rem' }}>
+      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '1.25rem' }}>
         {['mine', 'saved'].map(key => (
           <button
             key={key}

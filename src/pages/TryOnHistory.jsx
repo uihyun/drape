@@ -68,21 +68,9 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       {!embedded && (
         <div className="closet-header">
           <h1 className="page-h1" style={{ margin: 0 }}>{t('tryOnHistory')}</h1>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {gens && gens.length > 0 && (
-              <button
-                type="button"
-                className={`closet-search-btn${(showSearch || search) ? ' has-filters' : ''}`}
-                aria-label={t('search')}
-                onClick={toggleSearch}
-              >
-                {(showSearch || search) ? <X size={18} strokeWidth={1.7} /> : <Search size={18} strokeWidth={1.7} />}
-              </button>
-            )}
-            <Link to="/tryon" className="btn btn-primary">
-              <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
-            </Link>
-          </div>
+          <Link to="/tryon" className="btn btn-primary">
+            <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
+          </Link>
         </div>
       )}
 
@@ -106,7 +94,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
               )}
             </div>
           )}
-          <div className="filter-chips filter-chips--text tryon-filter-chips">
+          <div className="filter-chips filter-chips--text tryon-filter-chips" style={{ alignItems: 'center' }}>
             <button
               type="button"
               className={`chip${filterLiked ? ' active' : ''}`}
@@ -120,6 +108,17 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
               onClick={() => setCompOpen(o => !o)}
             >
               {t('filterComposition')} {compOpen ? '▴' : '▾'}
+            </button>
+            <button
+              type="button"
+              className={`closet-search-btn${(showSearch || search) ? ' has-filters' : ''}`}
+              style={{ marginLeft: 'auto', flexShrink: 0 }}
+              aria-label={t('search')}
+              onClick={toggleSearch}
+            >
+              {(showSearch || search)
+                ? <X size={18} strokeWidth={1.7} />
+                : <Search size={18} strokeWidth={1.7} />}
             </button>
           </div>
           {compOpen && (
