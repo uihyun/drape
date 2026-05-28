@@ -82,7 +82,10 @@ async function upsertOotd({
     date,
     outfitId,
     linkedType: outfitId ? (linkedType || 'outfit') : null,
-    ...(photoUrl ? { photoUrl, photoPath } : {}),
+    // When the photo source changes, drop the stale segmented cutout so
+    // the calendar falls back to the fresh raw photo immediately — the
+    // fire-and-forget processOotdPhoto below regenerates photoCutUrl.
+    ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null } : {}),
     note,
     ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),

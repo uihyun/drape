@@ -128,19 +128,20 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
       let photoUrlFromTryon = null;
       if (photoBlob) {
         blob = await CameraService.compressImage(photoBlob);
-      } else if (
-        // No user-uploaded photo + no existing OOTD photo + linked
-        // a try-on → reuse the try-on variant URL as the OOTD
-        // photoUrl. Both live in the same public Storage bucket so
-        // no fetch/re-upload is needed (fetch hit CORS on localhost
-        // anyway). Without this the calendar cell and feed card
-        // render empty for link-only OOTDs.
-        linkedType === 'tryon' &&
-        linkedId &&
-        !existing?.photoUrl
-      ) {
+      } else if (linkedType === 'tryon' && linkedId) {
+        // Derive the OOTD photo from the linked try-on variant UNLESS a
+        // user-uploaded photo already owns the slot. We key off photoPath
+        // (set only for uploaded blobs) instead of photoUrl — a try-on-
+        // derived photo has photoUrl but no photoPath, so switching the
+        // linked try-on on such an OOTD correctly swaps the image.
         const gen = tryons.find(g => g.id === linkedId);
-        photoUrlFromTryon = gen?.variantUrls?.[0] || null;
+        const variantUrl = gen?.variantUrls?.[0] || null;
+        const userUploaded = !!existing?.photoPath;
+        // Only push a new URL when it actually changes the current photo —
+        // avoids a needless re-process when the same try-on stays linked.
+        if (variantUrl && !userUploaded && variantUrl !== existing?.photoUrl) {
+          photoUrlFromTryon = variantUrl;
+        }
       }
       await OotdService.upsertOotd({
         // existing.id present → update that specific OOTD; absent →
