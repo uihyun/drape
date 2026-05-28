@@ -550,8 +550,9 @@ body.is-native {
   white-space: nowrap;
 }
 /* Search bars reused from the closet pattern in the try-on contexts. */
-.tryon-search-bar { margin: 0 0 0.5rem; }
-.tryon-filter-chips { margin: 0 0 0.9rem; }
+.tryon-search-bar { margin: 0 0 0.75rem; }
+.tryon-filter-chips { margin: 0 0 0.75rem; }
+.tryon-style-chips { margin-top: -0.25rem; }
 .ootd-link-search { margin: 0 0 0.6rem; }
 
 /* ── Analyze photo ─────────────────────────────────────────────────── */

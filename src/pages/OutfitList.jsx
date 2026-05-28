@@ -179,7 +179,6 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
               className={`chip${filterLiked ? ' active' : ''}`}
               onClick={() => setFilterLiked(f => !f)}
             >
-              <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
               {t('filterLiked')}
             </button>
             <button

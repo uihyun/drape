@@ -1,27 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Search, X, Heart } from 'lucide-react';
+import { Sparkles, Search, X } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
 import { STYLES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// All of the user's try-on results in one grid. Each cell shows the
-// first variant URL as a thumbnail and routes to /tryon/:id for the
-// full result + ratings. Renders as a Profile tab when `embedded`,
-// or standalone at /tryons.
 export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
   const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const [filterLiked, setFilterLiked] = useState(false);
   const [filterStyle, setFilterStyle] = useState(null);
   const [compOpen, setCompOpen] = useState(false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
-    // Live subscription so a just-started 'pending' run appears here
-    // immediately while the user browses other tabs, and flips to
-    // 'ready' (cover thumb) when the Cloud Function finishes.
     return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
   }, [user]);
 
@@ -46,6 +41,16 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     return list;
   }, [gens, search, filterLiked, filterStyle]);
 
+  const toggleSearch = () => {
+    if (showSearch) {
+      setSearch('');
+      setShowSearch(false);
+    } else {
+      setShowSearch(true);
+      setTimeout(() => searchRef.current?.focus(), 50);
+    }
+  };
+
   if (!user || user.isAnonymous) {
     return (
       <div className={embedded ? '' : 'page'}>
@@ -63,36 +68,50 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       {!embedded && (
         <div className="closet-header">
           <h1 className="page-h1" style={{ margin: 0 }}>{t('tryOnHistory')}</h1>
-          <Link to="/tryon" className="btn btn-primary">
-            <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
-          </Link>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {gens && gens.length > 0 && (
+              <button
+                type="button"
+                className={`closet-search-btn${(showSearch || search) ? ' has-filters' : ''}`}
+                aria-label={t('search')}
+                onClick={toggleSearch}
+              >
+                {(showSearch || search) ? <X size={18} strokeWidth={1.7} /> : <Search size={18} strokeWidth={1.7} />}
+              </button>
+            )}
+            <Link to="/tryon" className="btn btn-primary">
+              <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
+            </Link>
+          </div>
         </div>
       )}
 
       {gens && gens.length > 0 && (
         <>
-          <div className="closet-search-bar tryon-search-bar">
-            <Search size={16} strokeWidth={1.6} />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={t('tryOnSearchPlaceholder')}
-              className="closet-search-input"
-            />
-            {search && (
-              <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
-                <X size={16} strokeWidth={1.7} />
-              </button>
-            )}
-          </div>
+          {showSearch && (
+            <div className="closet-search-bar tryon-search-bar">
+              <Search size={16} strokeWidth={1.6} />
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder={t('tryOnSearchPlaceholder')}
+                className="closet-search-input"
+              />
+              {search && (
+                <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
+                  <X size={16} strokeWidth={1.7} />
+                </button>
+              )}
+            </div>
+          )}
           <div className="filter-chips filter-chips--text tryon-filter-chips">
             <button
               type="button"
               className={`chip${filterLiked ? ' active' : ''}`}
               onClick={() => setFilterLiked(f => !f)}
             >
-              <Heart size={12} strokeWidth={1.7} fill={filterLiked ? 'currentColor' : 'none'} />
               {t('filterLiked')}
             </button>
             <button
