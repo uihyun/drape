@@ -40,6 +40,23 @@ export function Thread({ user }) {
     MessageService.markThreadRead(threadId);
   }, [threadId, user?.uid, messages.length]);
 
+  // Presence flag → sendMessage uses it to skip bumping unread for the
+  // other party while we're both watching the room. Tab-hide also
+  // counts as "left" so a backgrounded tab still gets badges.
+  useEffect(() => {
+    if (!threadId || !user || user.isAnonymous) return;
+    MessageService.setActive(threadId, true);
+    const onVisibility = () => {
+      MessageService.setActive(threadId, !document.hidden);
+      if (!document.hidden) MessageService.markThreadRead(threadId);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      MessageService.setActive(threadId, false);
+    };
+  }, [threadId, user?.uid]);
+
   useEffect(() => {
     if (!thread || !user) return;
     const otherUid = thread.participants.find(p => p !== user.uid);

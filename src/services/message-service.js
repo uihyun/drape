@@ -96,17 +96,21 @@ export const MessageService = {
       text: trimmed,
       createdAt: serverTimestamp(),
     });
-    // Bump unread for the *other* participant + reset mine. Stored as a
-    // map { [uid]: count } so the inbox can render a badge per row and
-    // a hook can sum across threads for a global icon badge.
-    // Done client-side for v1; move to a Cloud Function if abuse pops up.
+    // Bump unread for participants who *aren't currently in the room*.
+    // activeIn[uid] is set true by Thread.jsx on mount and false on
+    // unmount / tab-hide, so a back-and-forth conversation while both
+    // sides have the chat open never raises a badge. Sender's count
+    // always resets — they just typed it.
     try {
       const snap = await getDoc(doc(db, THREADS, threadId));
       const data = snap.data() || {};
       const others = (data.participants || []).filter(u => u !== user.uid);
       const prev = (data.unreadFor && typeof data.unreadFor === 'object') ? data.unreadFor : {};
+      const active = (data.activeIn && typeof data.activeIn === 'object') ? data.activeIn : {};
       const next = { ...prev, [user.uid]: 0 };
-      for (const o of others) next[o] = (prev[o] || 0) + 1;
+      for (const o of others) {
+        next[o] = active[o] ? 0 : (prev[o] || 0) + 1;
+      }
       await setDoc(
         doc(db, THREADS, threadId),
         {
@@ -118,6 +122,25 @@ export const MessageService = {
       );
     } catch (err) {
       console.warn('thread updatedAt patch failed:', err.message);
+    }
+  },
+
+  // Presence flag — Thread.jsx flips this on mount / off on unmount.
+  // sendMessage reads it to decide whether to bump unread on the
+  // recipient. Best-effort: if the tab closes abruptly the stale 'true'
+  // means the other party briefly doesn't get a badge until they
+  // re-enter — acceptable trade-off vs. server-side presence.
+  async setActive(threadId, isActive) {
+    const user = auth.currentUser;
+    if (!user || user.isAnonymous) return;
+    try {
+      await setDoc(
+        doc(db, THREADS, threadId),
+        { activeIn: { [user.uid]: !!isActive } },
+        { merge: true },
+      );
+    } catch (err) {
+      console.warn('setActive failed:', err.message);
     }
   },
 
