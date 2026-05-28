@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
+import { PushService } from './services/push-service.js';
 import { useLocale } from './hooks/useLocale.jsx';
 
 import { MobileHeader } from './components/MobileHeader.jsx';
@@ -54,6 +55,10 @@ export default function App() {
       setAuthReady(true);
       if (u && !u.isAnonymous) {
         try { await AuthService.initializeIfNeeded?.(u); } catch (e) { console.warn('init failed', e?.message); }
+        // No-op on web; on iOS/Android registers for FCM and persists
+        // the token to /users/{uid}/fcmTokens/{token} for the
+        // sendNewMessagePush function to fan out to.
+        PushService.ensureRegistered();
       }
     });
   }, []);
@@ -64,6 +69,9 @@ export default function App() {
   const handleSignIn = () => setSignInModalOpen(true);
 
   const handleSignOut = async () => {
+    try {
+      await PushService.unregister(auth.currentUser?.uid);
+    } catch (e) { console.warn('push unregister failed', e?.message); }
     try { await AuthService.signOut(); }
     catch (e) { console.warn('signout failed', e?.message); }
   };

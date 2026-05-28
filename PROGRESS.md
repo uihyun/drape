@@ -840,3 +840,103 @@ The original `outfits` (item-combo) surface overlapped with `boards`
   local Gemini→segmentation A/B testing without needing to deploy.
 - Repo convention: don't append `Co-Authored-By: Claude …` trailers
   to commit messages.
+
+## Cycle: 2026-05-27 — marketplace v1 + DM + safety + push wiring
+
+Reference inspirations: 열다 (KR secondhand) for the "list from your
+closet" flow, Cloey for cost-per-wear / dormant-item detection.
+Direction set with user: Karrot-style — no escrow, no platform
+payment, just listings + DM between buyer/seller. Drape's edge is
+that the existing try-on / boards / item photos *are* the product
+photos, and wearLog is a built-in seller trust signal.
+
+### Sale fields on items
+- `items` schema gained `forSale` (bool), `priceOriginal` (optional),
+  `priceAsking` (required when listed), `conditionGrade` (S/A/B/C
+  required), `currency` (KRW/JPY/USD/EUR, stamped from seller's
+  profile.location.country at list time — viewer locale ≠ listing
+  currency), `listedAt`. Firestore rule allowlist + ItemService
+  updateItem allowed-keys list synced.
+- New `utils/currency.js` — `cityCountry()` → currency code + symbol,
+  `formatPrice(n, currency)` (JPY/KRW no decimals).
+- SaleBlock inside the item editor: checkbox → fields. Save guards:
+  no asking price or no grade → alert and don't persist.
+
+### Marketplace surface
+- No separate `/listings/` collection; query `items where forSale ==
+  true order by listedAt desc`. New composite indexes:
+  `forSale ↓ listedAt`, `forSale ↓ conditionGrade ↓ listedAt`,
+  `userId ↓ forSale ↓ listedAt`.
+- `/market` (Marketplace.jsx) — grid + condition filter pills.
+  Added to Feed kind-tabs as the third option after OOTDs / Boards.
+- items list rule now allows public list when forSale==true (in
+  addition to owner-scoped lists). Visitor item detail also opened up
+  in this cycle so clicking a listing actually loads.
+
+### DM (threads + messages)
+- `threads/{threadId}` where id = `${sortedUidPair}_${itemId}` so
+  reopening the same listing always lands on one canonical thread.
+- Fields: participants[2], itemId/itemName/itemCover/priceAsking/
+  currency denormalized, sellerUid/buyerUid, updatedAt, lastMessage,
+  unreadFor map, activeIn map.
+- Subcollection `threads/{tid}/messages/{mid}` for the actual texts.
+- Rules: participant-only read on threads + message subcollection;
+  message create gated on `fromUid == auth.uid` and text length cap.
+- MessageService — openThread is idempotent setDoc-with-merge (no
+  getDoc, because the read rule denies on non-existent docs); sendMessage
+  bumps `unreadFor[other]` and resets sender's; markThreadRead clears
+  mine; setActive(true/false) flips presence so an in-room recipient
+  doesn't get a badge while they're typing back.
+- Inbox + Thread pages. Thread is `position:fixed inset:0` so the
+  input docks to the viewport edge instead of falling under the
+  MobileHeader chrome.
+- New `useUnreadMessages` hook + red dot on Profile's inbox icon.
+
+### Report + Block UI exposure
+- Backend (`reports`, `blocks` collections + services) already existed
+  but had zero entry points. Built reusable `MoreMenu` (Flag, optional
+  Block, optional Bookmark) and dropped it into ItemDetail / OotdDetail /
+  BoardDetail (visitor view) and PublicProfile. Reports rule allowlist
+  extended to `ootd`/`board`/`profile` target types.
+- Bookmark for OOTD / Board visitor moved *inside* the ⋯ popover —
+  byline stays clean, the feed cards still expose bookmark inline.
+
+### Usage tab elapsed buckets
+- `groupByUsage` now buckets by `daysSince(lastWornAt)`: this week,
+  this month, ≤3mo, ≤6mo, dormant (>180d, warning tone), never.
+  Each card shows "3w ago" via `utils/elapsed.js`. Dormant items
+  are the obvious listing candidates — wires marketplace into the
+  closet without a separate flow.
+
+### Push notification scaffold (Sprint C — code done, keys pending)
+- `@capacitor/push-notifications@^7` installed.
+- `src/services/push-service.js` — Capacitor-native-only register;
+  saves token to `users/{uid}/fcmTokens/{token}` subcollection.
+  Tap on push deep-links to `/messages/{tid}`. No-op on web.
+- App.jsx calls `PushService.ensureRegistered()` on auth and
+  `unregister(uid)` on sign-out.
+- firestore.rules — fcmTokens self-write only, client read blocked
+  (admin SDK fans out).
+- `functions/messages.js` — `onMessageCreated` trigger reads parent
+  thread, skips when `activeIn[recipient] === true`, fetches the
+  recipient's tokens, sends via `admin.messaging().sendEachForMulticast`,
+  prunes dead tokens. iOS thread-id + Android collapseKey so a chatty
+  thread coalesces in the lock screen.
+
+### Pending user actions before push actually flies
+1. Firebase Console → Project settings → Cloud Messaging: confirm V1 API enabled.
+2. iOS: Apple Developer → Keys → APNs key (.p8) → upload to Firebase Cloud Messaging (Team ID `WG75TG59NJ`). Xcode: add Push Notifications + Background Modes (Remote notifications) capabilities.
+3. Android: download `google-services.json` from Firebase, drop under `android/app/`. Confirm `google-services` Gradle plugin applied.
+4. `npx cap sync ios && npx cap sync android`, then run on a real device (simulator can't receive push).
+Full checklist: CAPACITOR_SETUP.md §8-3.
+
+### Deferred to future cycles
+- Like notifications, follow notifications, weekly digest, OOTD
+  reminder — same `messages.js` pattern, different triggers.
+- Per-user notification settings UI (`/settings/notifications`).
+- Marketplace v2: location-based filter (denormalize sellerCity onto
+  the item), price-range filter, escrow / 합배송 (Toss Payments + CJ
+  방문수거).
+- Multi OOTD per day — schema migration (doc id `${uid}_${date}` →
+  auto-id + date field). Calendar picks one representative.
+- Board likes UI on BoardDetail (Feed card has it; detail doesn't).

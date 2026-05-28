@@ -261,6 +261,16 @@ service cloud.firestore {
       }
     }
 
+    // ── FCM device tokens (push) ───────────────────────────────────────
+    // Self-write only. The sendNewMessagePush function reads these via
+    // admin SDK (which bypasses rules), so we don't allow client reads.
+    match /users/{userId}/fcmTokens/{token} {
+      allow read: if false;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
     // ── Bookmarks (saved outfits) ──────────────────────────────────────
     match /users/{userId}/bookmarks/{outfitId} {
       allow read, write: if request.auth != null

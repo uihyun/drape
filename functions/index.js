@@ -124,3 +124,7 @@ exports.onOutfitDeletedDecrement = profileFns.onOutfitDeletedDecrement;
 // ── Account deletion ───────────────────────────────────────────────────
 const accountFns = require('./account.js');
 exports.deleteAccount = accountFns.deleteAccount;
+
+// ── Push notifications for marketplace DMs ─────────────────────────────
+const messageFns = require('./messages.js');
+exports.onMessageCreated = messageFns.onMessageCreated;
