@@ -164,10 +164,9 @@ export function BoardDetail({ user, onSignIn }) {
           <span className="outfit-byline-handle">{author?.handle ? `@${author.handle}` : ''}</span>
         </Link>
         {isOwner && (
-          <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
-            {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
-            {board.isPublic ? t('unlist') : t('publishToFeed')}
-          </button>
+          <Link to={`/boards/${board.id}/edit`} className="btn-edit">
+            <Edit3 size={14} strokeWidth={1.6} /> {t('edit')}
+          </Link>
         )}
       </header>
 
@@ -181,9 +180,10 @@ export function BoardDetail({ user, onSignIn }) {
           url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
         />
         {isOwner && (
-          <Link to={`/boards/${board.id}/edit`} className="btn btn-secondary">
-            <Edit3 size={14} strokeWidth={1.7} /> {t('edit')}
-          </Link>
+          <button type="button" className="btn btn-secondary" onClick={togglePublic} disabled={busy}>
+            {board.isPublic ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
+            {board.isPublic ? t('unlist') : t('publishToFeed')}
+          </button>
         )}
       </div>
 
