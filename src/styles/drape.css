@@ -1017,7 +1017,7 @@ body.is-native {
   padding: 0 1rem;
 }
 
-/* Editorial sections under the style card — palette, composition, tips. */
+/* Editorial sections under the style card — palette, tips. */
 .analyze-mood {
   font-size: 0.82rem;
   letter-spacing: 0.08em;
@@ -1035,12 +1035,9 @@ body.is-native {
   margin: 0 0 0.7rem;
 }
 .analyze-palette,
-.analyze-composition,
 .analyze-tips {
   padding: 1rem 1rem 0;
 }
-.analyze-palette + .analyze-composition,
-.analyze-composition + .analyze-tips,
 .analyze-palette + .analyze-tips {
   margin-top: 0.25rem;
 }
@@ -1048,14 +1045,6 @@ body.is-native {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 0.6rem;
-}
-.analyze-composition-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
 }
 .analyze-tips-list {
   list-style: none;
@@ -4961,31 +4950,31 @@ input[type="search"]::-webkit-search-decoration {
   opacity: 0.5;
 }
 
-.outfit-composition {
+.outfit-style-bars {
   margin-bottom: 1.5rem;
 }
-.outfit-composition header {
+.outfit-style-bars header {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
   margin-bottom: 0.6rem;
 }
-.outfit-composition h2 {
+.outfit-style-bars h2 {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
-.composition-sub {
+.style-bars-sub {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-style: italic;
   letter-spacing: 0;
   text-transform: none;
 }
-.outfit-composition ul { list-style: none; padding: 0; margin: 0; }
-.composition-row {
+.outfit-style-bars ul { list-style: none; padding: 0; margin: 0; }
+.style-bars-row {
   display: grid;
   grid-template-columns: 90px 1fr 20px;
   align-items: center;
@@ -4993,9 +4982,9 @@ input[type="search"]::-webkit-search-decoration {
   padding: 0.65rem 0;
   border-bottom: 1px solid var(--border);
 }
-.composition-row:last-child { border-bottom: none; }
-.composition-label { font-size: 0.95rem; color: var(--text-primary); }
-.composition-bar {
+.style-bars-row:last-child { border-bottom: none; }
+.style-bars-label { font-size: 0.95rem; color: var(--text-primary); }
+.style-bars-bar {
   /* Lekondo capture 6: continuous bar (not discrete cells), filled
      portion is a light → dark green gradient. Track stays light grey. */
   position: relative;
@@ -5004,13 +4993,13 @@ input[type="search"]::-webkit-search-decoration {
   background: var(--surface-elevated);
   overflow: hidden;
 }
-.composition-bar-fill {
+.style-bars-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #C4D2C4 0%, var(--accent) 70%, var(--accent-strong) 100%);
   border-radius: 999px;
   transition: width 0.25s ease;
 }
-.composition-chev { color: var(--text-muted); }
+.style-bars-chev { color: var(--text-muted); }
 
 .outfit-notes { margin-bottom: 1.5rem; }
 .outfit-notes header h2 {

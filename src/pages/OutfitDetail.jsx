@@ -13,7 +13,7 @@ import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
-// editorial title, then the palette / composition / notes blocks. Each
+// editorial title, then the palette / style / notes blocks. Each
 // editorial block renders only when its data is present — outfits created
 // before the auto-analysis pipeline lands still render fine, just sparser.
 export function OutfitDetail({ user, onSignIn }) {
@@ -116,7 +116,7 @@ export function OutfitDetail({ user, onSignIn }) {
     ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
     : '';
   const palette = Array.isArray(outfit.palette) ? outfit.palette.slice(0, 3) : [];
-  const composition = Array.isArray(outfit.style) ? outfit.style : [];
+  const styleBars = Array.isArray(outfit.style) ? outfit.style : [];
   const notes = outfit.notes || '';
 
   // Hero collage: lay every item out as a sticker (offset / rotation
@@ -299,29 +299,29 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
-      {composition.length > 0 && (
-        <section className="outfit-composition">
+      {styleBars.length > 0 && (
+        <section className="outfit-style-bars">
           <header>
-            <h2>{t('aestheticComposition')}</h2>
-            <span className="composition-sub">{t('aestheticCompositionSub')}</span>
+            <h2>{t('styleSection')}</h2>
+            <span className="style-bars-sub">{t('styleSectionSub')}</span>
           </header>
           <ul>
-            {composition.map((c, i) => {
+            {styleBars.map((c, i) => {
               const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
               return (
-                <li key={i} className="composition-row">
-                  <span className="composition-label">{c.label}</span>
+                <li key={i} className="style-bars-row">
+                  <span className="style-bars-label">{c.label}</span>
                   <div
-                    className="composition-bar"
+                    className="style-bars-bar"
                     role="meter"
                     aria-valuemin="0"
                     aria-valuemax="5"
                     aria-valuenow={c.level || 0}
                     aria-label={c.label}
                   >
-                    <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
+                    <div className="style-bars-bar-fill" style={{ width: `${pct}%` }} />
                   </div>
-                  <ChevronRight size={14} strokeWidth={1.5} className="composition-chev" />
+                  <ChevronRight size={14} strokeWidth={1.5} className="style-bars-chev" />
                 </li>
               );
             })}

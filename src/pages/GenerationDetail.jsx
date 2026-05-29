@@ -36,7 +36,7 @@ export function GenerationDetail({ user }) {
   }, [generationId]);
 
   // Once a try-on is ready and the viewer owns it, run the palette /
-  // composition analysis (once) — same editorial read OOTDs get. Guard
+  // style analysis (once) — same editorial read dated outfits get. Guard
   // on !palette so it fires exactly once per generation.
   useEffect(() => {
     if (!gen || gen.status !== 'ready') return;
@@ -170,19 +170,19 @@ export function GenerationDetail({ user }) {
           )}
 
           {Array.isArray(gen.style) && gen.style.length > 0 && (
-            <section className="outfit-composition">
+            <section className="outfit-style-bars">
               <header>
-                <h2>{t('aestheticComposition')}</h2>
-                <span className="composition-sub">{t('aestheticCompositionSub')}</span>
+                <h2>{t('styleSection')}</h2>
+                <span className="style-bars-sub">{t('styleSectionSub')}</span>
               </header>
               <ul>
                 {gen.style.map((c, i) => {
                   const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
                   return (
-                    <li key={i} className="composition-row">
-                      <span className="composition-label">{t(`taxonomy.styles.${c.label}`) || c.label}</span>
-                      <div className="composition-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0} aria-label={c.label}>
-                        <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
+                    <li key={i} className="style-bars-row">
+                      <span className="style-bars-label">{t(`taxonomy.styles.${c.label}`) || c.label}</span>
+                      <div className="style-bars-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0} aria-label={c.label}>
+                        <div className="style-bars-bar-fill" style={{ width: `${pct}%` }} />
                       </div>
                     </li>
                   );

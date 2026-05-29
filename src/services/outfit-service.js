@@ -73,12 +73,12 @@ async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, t
  */
 async function createAnalyzedOutfit({
   photoBlob,
-  style = '',
+  name = '',
   mood = '',
   notes = '',
   stylingTips = [],
   palette = [],
-  composition = [],
+  style = [],
   detectedItems = [],
   itemIds = [],
 }) {
@@ -99,12 +99,12 @@ async function createAnalyzedOutfit({
     kind: 'analyzed',
     itemIds, // any pieces user already pulled into their closet
     detectedItems, // raw detect output for the rest
-    name: style || '',
+    name: name || '',
     mood,
     notes,
     stylingTips,
     palette,
-    style: composition, // [{label, level}] style breakdown (renamed from composition)
+    style, // [{label, level}] style breakdown
     sourcePhotoUrl: photoUrl,
     sourcePhotoPath: photoPath,
     coverUrl: photoUrl, // the source photo doubles as the card cover

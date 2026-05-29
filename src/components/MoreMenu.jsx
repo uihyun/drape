@@ -44,7 +44,7 @@ export function MoreMenu({
   }, [showBlock, targetUid]);
 
   // Bookmark state lives under the viewer's own /users/{uid}/bookmarks/{targetId}
-  // (same convention OotdService/BoardService use), so a single onSnapshot on
+  // (same convention OutfitService/BoardService use), so a single onSnapshot on
   // that doc tracks the current state — stays in sync if the user bookmarks
   // the same item from the feed in another tab.
   useEffect(() => {

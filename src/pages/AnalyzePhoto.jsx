@@ -144,12 +144,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
     try {
       const { id } = await OutfitService.createAnalyzedOutfit({
         photoBlob: batch.blob,
-        style: batch.style || '',
-        mood: batch.mood || '',
+        name: batch.style || '',
         notes: batch.notes || '',
-        stylingTips: batch.stylingTips || [],
-        palette: batch.palette || [],
-        composition: batch.composition || [],
         detectedItems: batch.items || [],
         itemIds: [],
       });
@@ -313,28 +309,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
                         </div>
                       ))}
                     </div>
-                  </section>
-                )}
-
-                {/* Composition — 4 style axes with 0-5 level bars. */}
-                {Array.isArray(b.composition) && b.composition.length > 0 && (
-                  <section className="analyze-composition">
-                    <h3 className="analyze-section-head">{t('aestheticComposition')}</h3>
-                    <ul className="analyze-composition-list">
-                      {b.composition.map((c, i) => {
-                        const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
-                        return (
-                          <li key={i} className="composition-row">
-                            <span className="composition-label">
-                              {t(`taxonomy.styles.${c.label}`) || c.label}
-                            </span>
-                            <div className="composition-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0}>
-                              <div className="composition-bar-fill" style={{ width: `${pct}%` }} />
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
                   </section>
                 )}
 

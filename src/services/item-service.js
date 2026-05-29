@@ -143,11 +143,11 @@ async function updateItem(itemId, patch) {
 }
 
 /**
- * Push a wear entry onto each item's wearLog. Called by OotdService after
- * an OOTD is upserted with an outfitId. Idempotent: if the same date
+ * Push a wear entry onto each item's wearLog. Called by OutfitService after
+ * a dated outfit is upserted with linked items. Idempotent: if the same date
  * already exists in the log, we replace it instead of duplicating. Cap
  * the log at 60 entries (most recent kept) so old items don't bloat
- * forever — full history still derivable from the OOTDs collection.
+ * forever — full history still derivable from the outfits collection.
  */
 const WEAR_LOG_CAP = 60;
 async function recordWear({ itemIds, date, ootdId, outfitId }) {
