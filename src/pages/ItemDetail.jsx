@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
 import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { ShareButton } from '../components/ShareButton.jsx';
-import { MoreMenu } from '../components/MoreMenu.jsx';
+import { ReportModal } from '../components/ReportModal.jsx';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { shareOrDownloadImage } from '../services/share-service.js';
@@ -33,6 +33,7 @@ export function ItemDetail({ user, onSignIn }) {
   const [saving, setSaving] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const [ownerCurrency, setOwnerCurrency] = useState(null);
   const changeInputRef = useRef(null);
 
@@ -282,13 +283,14 @@ export function ItemDetail({ user, onSignIn }) {
             <MoreHorizontal size={20} strokeWidth={1.6} />
           </button>
         ) : (
-          <MoreMenu
-            className="item-rail-more"
-            target={{ type: 'item', id: item.id }}
-            targetUid={item.userId}
-            user={user}
-            onSignIn={onSignIn}
-          />
+          <button
+            type="button"
+            className="item-rail-btn"
+            onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+            aria-label={t('report')}
+          >
+            <Flag size={20} strokeWidth={1.6} />
+          </button>
         )}
         {isOwner && menuOpen && (
           <div className="item-rail-menu" onMouseLeave={() => setMenuOpen(false)}>
@@ -444,6 +446,9 @@ export function ItemDetail({ user, onSignIn }) {
             </div>
           )}
         </div>
+      )}
+      {reporting && (
+        <ReportModal target={{ type: 'item', id: item.id }} user={user} onClose={() => setReporting(false)} />
       )}
     </div>
   );
