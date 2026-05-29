@@ -4654,10 +4654,14 @@ input[type="search"]::-webkit-search-decoration {
    (outfits / followers / following) side-by-side with breathing room. */
 .profile-stats {
   display: flex;
-  gap: 1.4rem;
+  gap: 0.5rem;
   margin-top: 0.35rem;
 }
 .profile-stat {
+  /* Equal min-width per cell so the bold numbers fall on a regular
+     interval — keeps the gaps even even though the labels (outfits /
+     followers / following) differ in width, the way IG's row reads. */
+  min-width: 4.25rem;
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
