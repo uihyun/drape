@@ -282,6 +282,62 @@ body.is-native {
   text-align: center;
   padding: 1rem;
 }
+/* Board backdrop picker — horizontal swatch strip. Inner padding keeps the
+   active outline from being clipped at the scroll edges. */
+.board-bg-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 4px 4px 0.5rem;
+  margin-bottom: 0.85rem;
+  scrollbar-width: none;
+}
+.board-bg-row::-webkit-scrollbar { display: none; }
+.board-bg-swatch {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+  background-clip: padding-box;
+}
+.board-bg-swatch.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+/* Board shape (aspect-ratio) picker. */
+.board-ratio-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.board-ratio-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.board-ratio-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.board-ratio-icon {
+  width: 14px;
+  height: auto;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
 .board-sticker {
   position: absolute;
   width: 60%;
@@ -438,6 +494,7 @@ body.is-native {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.85rem;
+  align-items: start; /* variable-ratio board cards don't stretch to match */
 }
 .board-card {
   text-decoration: none;
@@ -1849,12 +1906,11 @@ body.is-native {
   background: var(--surface-elevated);
   text-decoration: none;
   color: inherit;
-  aspect-ratio: 3 / 4;
+  /* No fixed ratio — the BoardThumbnail sets its own (portrait/square/
+     landscape) via inline aspect-ratio. */
 }
 .board-feed-thumb {
   width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
   border: none;
   border-radius: 0;
   margin: 0;
@@ -1904,8 +1960,8 @@ body.is-native {
 .board-detail-hero {
   width: 100%;
   border-radius: 14px;
-  aspect-ratio: 3 / 4;
   display: block;
+  /* aspect-ratio set inline by BoardThumbnail from the board's own ratio. */
 }
 /* Action overlay — shared by board detail and outfit detail hero images.
    z-index: 1000 ensures these appear above all board stickers/clothing. */

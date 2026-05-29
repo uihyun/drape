@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
+import { boardBgStyle, boardRatioCss } from '../data/boardBackgrounds.js';
 
 // Replays a board's stickers at their stored 0..1 coordinates so the
 // thumbnail matches what the editor shows, just shrunk to whatever
@@ -32,10 +33,12 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
   }, [board?.id, itemsById]);
 
   const lookup = itemsById ?? fetched ?? {};
+  // Background + the board's own aspect ratio (portrait/square/landscape).
+  const style = { ...boardBgStyle(board?.background), aspectRatio: boardRatioCss(board?.ratio) };
 
   if (stickers.length === 0) {
     return (
-      <div className={`board-card-cover ${className}`}>
+      <div className={`board-card-cover ${className}`} style={style}>
         <div className="board-card-cover-empty">◇</div>
       </div>
     );
@@ -43,7 +46,7 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
 
   const sorted = [...stickers].sort((a, b) => (a.z || 0) - (b.z || 0));
   return (
-    <div className={`board-card-cover board-card-canvas ${className}`}>
+    <div className={`board-card-cover board-card-canvas ${className}`} style={style}>
       {sorted.map((s, i) => {
         const item = lookup[s.itemId];
         const cover = item?.croppedUrl || item?.originalUrl;

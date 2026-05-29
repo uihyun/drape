@@ -15,27 +15,25 @@ function formatCardDate(ts) {
   return d ? d.toLocaleDateString() : '';
 }
 
+// 2-col grid of natural-ratio look photos — matches the discovery feed.
 function OotdGrid({ ootds, t }) {
-  const { cols, ref } = usePinchColumns('outfits', { min: 1, max: 3, def: 1 });
   return (
-    <div
-      ref={ref}
-      className="outfit-grid pinch-grid"
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-    >
-      {ootds.map(o => (
-        <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
-          <div className="outfit-card-cover">
-            {o.photoUrl
-              ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-              : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
-          </div>
-          <div className="outfit-card-meta">
-            <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
-            <span className="card-meta-date">{o.date || ''}</span>
-          </div>
-        </Link>
-      ))}
+    <div className="ootd-feed">
+      {ootds.map(o => {
+        const photo = o.photoCutUrl || o.photoUrl;
+        return (
+          <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
+            {photo
+              ? <img src={photo} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              : <div className="ootd-card-empty">◇</div>}
+            {(o.note || o.name) && (
+              <div className="ootd-card-overlay">
+                <h3 className="ootd-card-title">{o.note || o.name}</h3>
+              </div>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }

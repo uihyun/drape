@@ -12,7 +12,7 @@ import { db, auth } from '../firebase.js';
 
 const BOARDS = 'boards';
 
-async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic = false } = {}) {
+async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic = false, background = 'paper', ratio = 'portrait' } = {}) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   const ref = await addDoc(collection(db, BOARDS), {
@@ -21,6 +21,8 @@ async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic
     stickers: Array.isArray(stickers) ? stickers : [],
     coverUrl,
     isPublic: !!isPublic,
+    background: String(background).slice(0, 24),
+    ratio: String(ratio).slice(0, 12),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -33,7 +35,7 @@ async function getBoard(boardId) {
 }
 
 async function updateBoard(boardId, patch) {
-  const allowed = ['name', 'stickers', 'coverUrl', 'isPublic'];
+  const allowed = ['name', 'stickers', 'coverUrl', 'isPublic', 'background', 'ratio'];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))
   );

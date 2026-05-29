@@ -243,7 +243,7 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'stickers', 'coverUrl', 'updatedAt', 'isPublic',
-                      'selfLiked', 'selfLikedAt',
+                      'background', 'ratio', 'selfLiked', 'selfLikedAt',
                       'likeCount', 'likedBy']);
       // Like / unlike — any signed-in user on a public board, only the
       // likedBy + likeCount keys, must include themselves +1 / -1.

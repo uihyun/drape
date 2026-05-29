@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Plus, Trash2, Sparkles, Eye, Calendar as CalIcon, Check, X, AlertTriangle } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
+import { BOARD_BACKGROUNDS, boardBgStyle, DEFAULT_BOARD_BG, BOARD_RATIOS, boardRatioCss, DEFAULT_BOARD_RATIO } from '../data/boardBackgrounds.js';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -25,6 +26,8 @@ export function BoardEditor({ user, onSignIn }) {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [stickers, setStickers] = useState([]); // { itemId, x, y, scale, rotation, z }
+  const [background, setBackground] = useState(DEFAULT_BOARD_BG);
+  const [ratio, setRatio] = useState(DEFAULT_BOARD_RATIO);
   const [isPublic, setIsPublic] = useState(false);
   const [selectedSticker, setSelectedSticker] = useState(null); // index
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -97,6 +100,8 @@ export function BoardEditor({ user, onSignIn }) {
       if (b) {
         setName(b.name || '');
         setStickers(Array.isArray(b.stickers) ? b.stickers : []);
+        setBackground(b.background || DEFAULT_BOARD_BG);
+        setRatio(b.ratio || DEFAULT_BOARD_RATIO);
         setIsPublic(b.isPublic === true);
       }
       setLoaded(true);
@@ -165,10 +170,10 @@ export function BoardEditor({ user, onSignIn }) {
       const coverItem = top ? itemsById[top.itemId] : null;
       const coverUrl = coverItem?.croppedUrl || coverItem?.originalUrl || null;
       if (isNew) {
-        const { id } = await BoardService.createBoard({ name: name.trim(), stickers, coverUrl, isPublic });
+        const { id } = await BoardService.createBoard({ name: name.trim(), stickers, coverUrl, isPublic, background, ratio });
         navigate(`/boards/${id}`, { replace: true });
       } else {
-        await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic });
+        await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic, background, ratio });
         // replace so the back button from the board detail exits to the
         // list, not back into the editor we just left.
         navigate(`/boards/${boardId}`, { replace: true });
@@ -205,8 +210,43 @@ export function BoardEditor({ user, onSignIn }) {
         onStickerChange={onStickerChange}
         onLongPress={(idx) => setMenuFor(idx)}
         onBringToFront={bringToFront}
+        background={background}
+        ratio={ratio}
         t={t}
       />
+
+      {/* Shape picker — board canvas aspect ratio */}
+      <div className="board-ratio-row" role="radiogroup" aria-label={t('boardShape')}>
+        {BOARD_RATIOS.map(r => (
+          <button
+            key={r.key}
+            type="button"
+            role="radio"
+            aria-checked={ratio === r.key}
+            className={`board-ratio-chip${ratio === r.key ? ' active' : ''}`}
+            onClick={() => setRatio(r.key)}
+          >
+            <span className="board-ratio-icon" style={{ aspectRatio: r.css }} />
+            {t(`boardShape_${r.key}`)}
+          </button>
+        ))}
+      </div>
+
+      {/* Backdrop picker — swatches of color / texture for the board canvas */}
+      <div className="board-bg-row" role="radiogroup" aria-label={t('boardBackground')}>
+        {BOARD_BACKGROUNDS.map(bg => (
+          <button
+            key={bg.key}
+            type="button"
+            role="radio"
+            aria-checked={background === bg.key}
+            className={`board-bg-swatch${background === bg.key ? ' active' : ''}`}
+            style={boardBgStyle(bg.key)}
+            onClick={() => setBackground(bg.key)}
+            aria-label={bg.key}
+          />
+        ))}
+      </div>
 
       {boardItems.length > 0 && (
         <section className="board-items">
@@ -333,6 +373,8 @@ function BoardCanvas({
   onStickerChange,
   onLongPress,
   onBringToFront,
+  background,
+  ratio,
   t,
 }) {
   const canvasRef = useRef(null);
@@ -449,7 +491,7 @@ function BoardCanvas({
     <div
       ref={canvasRef}
       className="board-canvas"
-      style={{ aspectRatio: `${CANVAS_RATIO}` }}
+      style={{ aspectRatio: boardRatioCss(ratio), ...boardBgStyle(background) }}
       onClick={() => setSelectedSticker(null)}
     >
       {stickers.length === 0 && (

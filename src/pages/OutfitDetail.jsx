@@ -89,7 +89,9 @@ export function OutfitDetail({ user, onSignIn }) {
   };
 
   const openEdit = () => {
-    setEditName(outfit.name || '');
+    // A dated OOTD uses `note` as its title (no separate name); a built/
+    // analyzed outfit uses `name` + a longer `notes` body.
+    setEditName(outfit.date ? (outfit.note || '') : (outfit.name || ''));
     setEditNotes(outfit.notes || '');
     setEditing(true);
   };
@@ -97,7 +99,10 @@ export function OutfitDetail({ user, onSignIn }) {
   const saveEdit = async () => {
     setBusy(true);
     try {
-      await OutfitService.updateOutfit(outfit.id, { name: editName.trim(), notes: editNotes.trim() });
+      const patch = outfit.date
+        ? { note: editName.trim() }
+        : { name: editName.trim(), notes: editNotes.trim() };
+      await OutfitService.updateOutfit(outfit.id, patch);
       setEditing(false);
     } finally { setBusy(false); }
   };
@@ -246,15 +251,17 @@ export function OutfitDetail({ user, onSignIn }) {
             className="input"
             value={editName}
             onChange={e => setEditName(e.target.value)}
-            placeholder={t('untitledOutfit')}
+            placeholder={outfit.date ? t('ootdNotePlaceholder') : t('untitledOutfit')}
           />
-          <textarea
-            className="input"
-            value={editNotes}
-            onChange={e => setEditNotes(e.target.value)}
-            rows={4}
-            placeholder={t('notesPlaceholder')}
-          />
+          {!outfit.date && (
+            <textarea
+              className="input"
+              value={editNotes}
+              onChange={e => setEditNotes(e.target.value)}
+              rows={4}
+              placeholder={t('notesPlaceholder')}
+            />
+          )}
           <div className="outfit-edit-actions">
             <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={busy}>
               {t('cancel')}
@@ -265,7 +272,9 @@ export function OutfitDetail({ user, onSignIn }) {
           </div>
         </div>
       ) : (
-        <h1 className="outfit-title">{outfit.name || t('untitledOutfit')}</h1>
+        (outfit.name || outfit.note) ? (
+          <h1 className="outfit-title">{outfit.name || outfit.note}</h1>
+        ) : null
       )}
 
       {palette.length > 0 && (
