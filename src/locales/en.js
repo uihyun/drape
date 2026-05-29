@@ -276,6 +276,9 @@ export const en = {
   tagFit: 'Fit',
   tagBrand: 'Brand',
   tagBrandPlaceholder: 'e.g. Miu Miu, Acne Studios, Stüssy',
+  tagShopUrl: 'Shop link',
+  tagShopUrlPlaceholder: 'Paste a product URL (optional)',
+  viewProduct: 'View product',
   tagBrandNone: 'No brand',
   notFound: 'Not found.',
 

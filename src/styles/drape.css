@@ -3405,6 +3405,24 @@ input[type="search"]::-webkit-search-decoration {
   padding-bottom: 1rem;
 }
 .item-viewer-meta { flex: 1; min-width: 0; }
+.item-shop-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.item-shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+}
+.item-shop-link:hover { border-color: var(--border-hover); color: var(--text-primary); }
 .item-viewer-cat {
   font-size: 0.7rem;
   letter-spacing: 0.1em;

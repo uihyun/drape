@@ -276,6 +276,9 @@ export const ko = {
   tagFit: '핏',
   tagBrand: '브랜드',
   tagBrandPlaceholder: '예: 미우미우, 아크네, 스투시',
+  tagShopUrl: '쇼핑 링크',
+  tagShopUrlPlaceholder: '상품 URL 붙여넣기 (선택)',
+  viewProduct: '상품 보기',
   tagBrandNone: '브랜드 없음',
   notFound: '찾을 수 없습니다.',
 

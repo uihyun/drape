@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
@@ -367,6 +367,30 @@ export function ItemDetail({ user, onSignIn }) {
                   </span>
                 )}
               </h1>
+              {/* Shopping: owner-set product link (recommend / remember) +
+                  a Google Shopping search from brand + description. */}
+              <div className="item-shop-row">
+                {item.tags?.shopUrl && (
+                  <a
+                    className="item-shop-link"
+                    href={item.tags.shopUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    <ExternalLink size={13} strokeWidth={1.8} /> {t('viewProduct')}
+                  </a>
+                )}
+                {(item.tags?.brand || item.tags?.description || item.name) && (
+                  <a
+                    className="item-shop-link"
+                    href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent([item.tags?.brand, item.tags?.description || item.name].filter(Boolean).join(' '))}`}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    <ShoppingBag size={13} strokeWidth={1.8} /> {t('findSimilar')}
+                  </a>
+                )}
+              </div>
             </div>
             {isOwner ? (
               <button
@@ -519,6 +543,20 @@ function TagsBlock({ tags, editing, onChange, t }) {
           </span>
         )}
       </Row>
+      {editing && (
+        <Row label={t('tagShopUrl')}>
+          <input
+            type="url"
+            inputMode="url"
+            className="tag-brand-input"
+            value={tags?.shopUrl || ''}
+            onChange={e => set('shopUrl', e.target.value.slice(0, 500))}
+            placeholder={t('tagShopUrlPlaceholder')}
+            autoCapitalize="none"
+            autoCorrect="off"
+          />
+        </Row>
+      )}
     </div>
   );
 }

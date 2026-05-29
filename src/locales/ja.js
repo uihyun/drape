@@ -278,6 +278,9 @@ export const ja = {
   tagFit: 'フィット',
   tagBrand: 'ブランド',
   tagBrandPlaceholder: '例: Miu Miu、Acne Studios、Stüssy',
+  tagShopUrl: 'ショップリンク',
+  tagShopUrlPlaceholder: '商品URLを貼り付け (任意)',
+  viewProduct: '商品を見る',
   tagBrandNone: 'ブランドなし',
   notFound: '見つかりません。',
 
