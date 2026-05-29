@@ -4660,7 +4660,7 @@ input[type="search"]::-webkit-search-decoration {
 .profile-stat {
   display: inline-flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.05rem;
   background: none;
   border: 0;
@@ -4668,7 +4668,7 @@ input[type="search"]::-webkit-search-decoration {
   font-family: inherit;
   color: inherit;
   cursor: pointer;
-  text-align: center;
+  text-align: left;
 }
 .profile-stat strong {
   color: var(--text-primary);
@@ -4680,6 +4680,7 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-muted);
   font-size: 0.78rem;
   letter-spacing: 0.01em;
+  text-transform: lowercase;
 }
 .profile-location {
   display: flex;
