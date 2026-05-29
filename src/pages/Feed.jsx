@@ -371,7 +371,6 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
           />
           <span className="ootd-card-handle">@{author?.handle || '—'}</span>
         </div>
-        {ootd.title && <h3 className="ootd-card-title">{ootd.title}</h3>}
       </div>
     </Link>
   );
