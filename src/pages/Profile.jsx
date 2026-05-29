@@ -14,7 +14,6 @@ import { ClaimHandleModal } from '../components/ClaimHandleModal.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
-import { shareLink } from '../services/share-service.js';
 import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
