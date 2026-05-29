@@ -7,10 +7,12 @@ import { OotdService } from '../services/ootd-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { GenerationService } from '../services/generation-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { ItemService } from '../services/item-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
+import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Editorial page for a single OOTD. Mirrors the Lekondo capture:
