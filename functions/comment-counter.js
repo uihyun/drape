@@ -24,15 +24,8 @@ exports.onCommentDeleted = onDocumentDeleted('outfits/{outfitId}/comments/{comme
     catch (err) { console.warn('onCommentDeleted outfits failed:', err.message); }
 });
 
-// OOTDs
-exports.onOotdCommentCreated = onDocumentCreated('ootds/{ootdId}/comments/{commentId}', async (event) => {
-    try { await bump('ootds', event.params.ootdId, 1); }
-    catch (err) { console.warn('onOotdCommentCreated failed:', err.message); }
-});
-exports.onOotdCommentDeleted = onDocumentDeleted('ootds/{ootdId}/comments/{commentId}', async (event) => {
-    try { await bump('ootds', event.params.ootdId, -1); }
-    catch (err) { console.warn('onOotdCommentDeleted failed:', err.message); }
-});
+// (OOTD comment triggers removed — OOTDs are now `outfits` docs, covered by
+//  the onComment* outfit triggers above.)
 
 // Boards
 exports.onBoardCommentCreated = onDocumentCreated('boards/{boardId}/comments/{commentId}', async (event) => {

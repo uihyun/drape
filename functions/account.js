@@ -52,25 +52,21 @@ async function deleteOutfitAndChildren(outfitDoc, bucket) {
     // comments subcollection (could include other users' comments — they go
     // with the outfit).
     await deleteCollectionByQuery(outfitDoc.ref.collection('comments'));
-    if (data.coverPath) {
-        await bucket.file(data.coverPath).delete().catch(() => {});
-    }
+    // Storage owned by this outfit: cover, analyzed source, and — for a
+    // dated look (OOTD) — the worn-look photo + its segmented cutout.
+    const paths = [data.coverPath, data.sourcePhotoPath, data.photoPath, data.photoCutPath]
+        .filter(Boolean);
+    await Promise.allSettled(paths.map(p => bucket.file(p).delete().catch(() => {})));
     await outfitDoc.ref.delete();
 }
 
 async function deleteGenerationAndStorage(genDoc, bucket) {
     const data = genDoc.data() || {};
-    const paths = data.variantPaths || [];
+    const paths = [...(data.variantPaths || []), data.customPhotoPath].filter(Boolean);
     await Promise.allSettled(paths.map(p =>
         bucket.file(p).delete().catch(() => {})
     ));
     await genDoc.ref.delete();
-}
-
-async function deleteOotdAndStorage(ootdDoc, bucket) {
-    const data = ootdDoc.data() || {};
-    if (data.photoPath) await bucket.file(data.photoPath).delete().catch(() => {});
-    await ootdDoc.ref.delete();
 }
 
 exports.deleteAccount = onRequest({ timeoutSeconds: 540 }, async (req, res) => {
@@ -109,16 +105,13 @@ exports.deleteAccount = onRequest({ timeoutSeconds: 540 }, async (req, res) => {
         summary.items = itemsSnap.size;
 
         // 2) Outfits (+ comments subcollection)
+        // OOTDs are now `outfits` docs (date-stamped), so this one query
+        // covers both saved outfits and daily looks.
         const outfitsSnap = await db.collection('outfits').where('userId', '==', uid).get();
         for (const d of outfitsSnap.docs) await deleteOutfitAndChildren(d, bucket);
         summary.outfits = outfitsSnap.size;
 
-        // 3) OOTDs
-        const ootdsSnap = await db.collection('ootds').where('userId', '==', uid).get();
-        for (const d of ootdsSnap.docs) await deleteOotdAndStorage(d, bucket);
-        summary.ootds = ootdsSnap.size;
-
-        // 4) Generations (+ variants in storage)
+        // Generations (+ variants in storage)
         const gensSnap = await db.collection('generations').where('userId', '==', uid).get();
         for (const d of gensSnap.docs) await deleteGenerationAndStorage(d, bucket);
         summary.generations = gensSnap.size;

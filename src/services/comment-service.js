@@ -11,7 +11,7 @@ import {
 import { db, auth } from '../firebase.js';
 
 export const COMMENT_MAX_LEN = 500;
-const ALLOWED_PARENTS = new Set(['outfits', 'ootds', 'boards', 'generations']);
+const ALLOWED_PARENTS = new Set(['outfits', 'boards', 'generations']);
 
 function checkParent(parentColl) {
   if (!ALLOWED_PARENTS.has(parentColl)) {

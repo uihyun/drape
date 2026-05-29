@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar as CalendarIcon, Heart } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, SlidersHorizontal } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { OotdService } from '../services/ootd-service.js';
-import { STYLES } from '../services/taxonomy.js';
+import {
+  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
+} from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -47,8 +49,16 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   // 'mine' (my OOTDs) | 'saved' (OOTDs I bookmarked from feed) | 'analyzed'
   const [tab, setTab] = useState('mine');
   const [filterLiked, setFilterLiked] = useState(false);
-  const [filterStyle, setFilterStyle] = useState(null);
-  const [compOpen, setCompOpen] = useState(false);
+  const [filters, setFilters] = useState(emptyLookFilters());
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const filterCount = countLookFilters(filters);
+  const toggleFilter = (dim, value) => {
+    setFilters(prev => {
+      const cur = prev[dim] || [];
+      const next = cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value];
+      return { ...prev, [dim]: next };
+    });
+  };
 
   // Each tab populates a different source:
   //   mine     → OotdService.listMyOotds
@@ -173,48 +183,49 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         </div>
       ) : (
         <>
-          <div className="filter-chips filter-chips--text tryon-filter-chips">
+          <div className="closet-header" style={{ marginBottom: '1.25rem' }}>
+            <nav className="filter-chips filter-chips--text" style={{ margin: 0 }}>
+              <button
+                type="button"
+                className={`chip${filterLiked ? ' active' : ''}`}
+                onClick={() => setFilterLiked(f => !f)}
+              >
+                {t('filterLiked')}
+              </button>
+            </nav>
             <button
               type="button"
-              className={`chip${filterLiked ? ' active' : ''}`}
-              onClick={() => setFilterLiked(f => !f)}
+              className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}
+              aria-label={t('detailedFilter')}
+              onClick={() => setSheetOpen(true)}
             >
-              {t('filterLiked')}
-            </button>
-            <button
-              type="button"
-              className={`chip${(compOpen || filterStyle) ? ' active' : ''}`}
-              onClick={() => setCompOpen(o => !o)}
-            >
-              {t('filterComposition')} {compOpen ? '▴' : '▾'}
+              <SlidersHorizontal size={18} strokeWidth={1.7} />
+              {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
             </button>
           </div>
-          {compOpen && (
-            <div className="filter-chips filter-chips--text tryon-filter-chips tryon-style-chips">
-              {STYLES.map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  className={`chip${filterStyle === s ? ' active' : ''}`}
-                  onClick={() => setFilterStyle(f => f === s ? null : s)}
-                >
-                  {t(`taxonomy.styles.${s}`)}
-                </button>
-              ))}
-            </div>
-          )}
           <AnalyzedGrid
             outfits={outfits.filter(o => {
               if (filterLiked && !o.selfLiked) return false;
-              if (filterStyle && !(
-                Array.isArray(o.style) &&
-                o.style.some(c => c.label === filterStyle && (c.level || 0) >= 1)
-              )) return false;
+              if (filterCount > 0 && !lookMatches(o, filters, {})) return false;
               return true;
             })}
             itemsById={itemsById}
             t={t}
           />
+          {sheetOpen && (
+            <LookFilterSheet
+              filters={filters}
+              onToggle={toggleFilter}
+              onClear={() => setFilters(emptyLookFilters())}
+              onClose={() => setSheetOpen(false)}
+              count={filterCount}
+              resultCount={outfits.filter(o => {
+                if (filterLiked && !o.selfLiked) return false;
+                if (filterCount > 0 && !lookMatches(o, filters, {})) return false;
+                return true;
+              }).length}
+            />
+          )}
         </>
       )}
     </div>
