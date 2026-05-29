@@ -23,7 +23,7 @@ function OotdGrid({ ootds, t }) {
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {ootds.map(o => (
-        <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+        <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
           <div className="outfit-card-cover">
             {o.photoUrl
               ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />

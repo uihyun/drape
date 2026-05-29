@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
@@ -29,7 +29,11 @@ import { BoardDetail } from './pages/BoardDetail.jsx';
 // editor is /boards/:boardId/edit (matches /boards/new).
 import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
 import { TryOnHistory } from './pages/TryOnHistory.jsx';
-import { OotdDetail } from './pages/OotdDetail.jsx';
+// OotdDetail removed — /ootd/:id now redirects to the unified /o/:id.
+function OotdRedirect() {
+  const { outfitId } = useParams();
+  return <Navigate to={`/o/${outfitId}`} replace />;
+}
 import { TryOn } from './pages/TryOn.jsx';
 import { GenerationDetail } from './pages/GenerationDetail.jsx';
 import { Feed } from './pages/Feed.jsx';
@@ -179,7 +183,9 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/market" element={<Marketplace />} />
           <Route path="/messages" element={<Inbox user={user} />} />
           <Route path="/messages/:threadId" element={<Thread user={user} />} />
-          <Route path="/ootd/:ootdId" element={<OotdDetail user={user} onSignIn={handleSignIn} />} />
+          {/* Unified: an OOTD is just a dated outfit. Old /ootd/:id links
+              redirect to the canonical outfit detail. */}
+          <Route path="/ootd/:outfitId" element={<OotdRedirect />} />
 
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
 

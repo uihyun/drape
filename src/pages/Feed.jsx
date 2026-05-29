@@ -357,7 +357,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
   };
 
   return (
-    <Link to={`/ootd/${ootd.id}`} className="ootd-card">
+    <Link to={`/o/${ootd.id}`} className="ootd-card">
       {ootd.photoUrl
         ? <img src={ootd.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}

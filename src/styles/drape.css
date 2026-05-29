@@ -4836,6 +4836,17 @@ input[type="search"]::-webkit-search-decoration {
 .outfit-hero-single img {
   width: 100%; height: 100%; object-fit: cover;
 }
+/* Worn-look photo (OOTD) hero — show the whole photo, natural ratio. */
+.outfit-hero.outfit-hero-photo {
+  aspect-ratio: auto;
+}
+.outfit-hero-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+}
 /* Collage hero: each item is a free-floating sticker, positioned via
    inline style. Soft drop-shadow keeps the layered feel from getting
    muddy on light backgrounds. */

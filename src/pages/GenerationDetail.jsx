@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { Heart, RefreshCw, Trash2, CalendarPlus } from 'lucide-react';
+import { Heart, RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
-import { OotdService } from '../services/ootd-service.js';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-
-function todayLocalISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
@@ -33,8 +27,6 @@ export function GenerationDetail({ user }) {
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
   const [items, setItems] = useState([]);
-  const [savingOotd, setSavingOotd] = useState(false);
-  const [savedOotdDate, setSavedOotdDate] = useState('');
 
   useEffect(() => {
     if (!generationId) return;
@@ -107,33 +99,6 @@ export function GenerationDetail({ user }) {
     } finally { setRegenerating(false); }
   };
 
-  // Save this try-on result as today's OOTD: copy the first variant
-  // into the OOTD slot for today, with linkedType='tryon' so the
-  // calendar card + OOTD detail stay attributable. If today already
-  // has a photo we confirm before overwriting.
-  const saveAsOotd = async () => {
-    if (savingOotd) return;
-    const url = gen.variantUrls?.[0];
-    if (!url) return;
-    setSavingOotd(true);
-    try {
-      const date = todayLocalISO();
-      // Multi-OOTD per day: always create a new entry rather than
-      // overwriting today's existing one. No replace-confirm needed.
-      const blob = await fetch(url).then(r => r.blob());
-      await OotdService.upsertOotd({
-        date,
-        outfitId: gen.id,
-        linkedType: 'tryon',
-        photoBlob: blob,
-      });
-      setSavedOotdDate(date);
-    } catch (e) {
-      console.warn('saveAsOotd failed', e.message);
-      alert(e.message || 'save_failed');
-    } finally { setSavingOotd(false); }
-  };
-
   const remove = async () => {
     if (!confirm(t('confirmDeleteGeneration'))) return;
     try {
@@ -185,7 +150,6 @@ export function GenerationDetail({ user }) {
             </div>
           )}
 
-          {gen.title && <h2 className="outfit-title">{gen.title}</h2>}
 
           {Array.isArray(gen.palette) && gen.palette.length > 0 && (
             <section className="outfit-palette">
@@ -252,23 +216,6 @@ export function GenerationDetail({ user }) {
                 })}
               </div>
             </section>
-          )}
-
-          {savedOotdDate ? (
-            <p className="gen-saved-msg">
-              {t('savedToCalendar')}{' '}
-              <Link to="/profile/calendar">{t('viewCalendar')}</Link>
-            </p>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-primary gen-save-ootd"
-              onClick={saveAsOotd}
-              disabled={savingOotd}
-            >
-              <CalendarPlus size={14} strokeWidth={1.7} />
-              {savingOotd ? t('saving') : t('saveAsTodaysOutfit')}
-            </button>
           )}
 
           <div className="gen-actions">

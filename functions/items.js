@@ -598,7 +598,7 @@ exports.analyzeOotd = onCall(
         : [];
 
       const patch = {
-        title: typeof parsed.title === 'string' ? parsed.title.slice(0, 120) : '',
+        // No auto-title — date + tags identify a look now, not a name.
         palette: sanitizePalette(parsed.palette),
         composition: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
@@ -667,11 +667,9 @@ exports.analyzeGeneration = onCall(
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
-      // Auto-title only when the user didn't set one — every try-on then
-      // carries a name so history cards / the picker read consistently.
-      if (!gen.title && typeof parsed.title === 'string' && parsed.title.trim()) {
-        patch.title = parsed.title.slice(0, 80);
-      }
+      // No auto-title — try-ons/outfits aren't titled anymore (date +
+      // tag search replace it). The analysis prompt may still return a
+      // title; we just ignore it.
       await genRef.set(patch, { merge: true });
       return { ok: true };
     } catch (err) {

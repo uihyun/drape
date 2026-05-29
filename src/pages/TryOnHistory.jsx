@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Search, X } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
+import { ItemService } from '../services/item-service.js';
 import { STYLES } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
+  const [closet, setCloset] = useState({});
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [filterLiked, setFilterLiked] = useState(false);
@@ -20,17 +22,41 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
   }, [user]);
 
+  // Closet (keyed by id) lets the search match a try-on by the tags of the
+  // items it used — category / colors / styles / brand — same vocabulary as
+  // the closet's own tag search. No titles anymore; tags + style are how you
+  // find a look.
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setCloset({}); return; }
+    return ItemService.subscribeMyCloset(user.uid, list =>
+      setCloset(Object.fromEntries(list.map(i => [i.id, i]))));
+  }, [user?.uid]);
+
+  // Build the searchable tag text for one generation: its style/composition
+  // labels (en + localized) + every linked item's tags.
+  const tagTextFor = (g) => {
+    const parts = [];
+    for (const c of (g.composition || [])) {
+      if (c.label) { parts.push(c.label, t(`taxonomy.styles.${c.label}`)); }
+    }
+    for (const id of (g.itemIds || [])) {
+      const it = closet[id];
+      if (!it) continue;
+      const tg = it.tags || {};
+      if (it.name) parts.push(it.name);
+      if (tg.category) { parts.push(tg.category, t(`taxonomy.categories.${tg.category}`)); }
+      if (tg.brand) parts.push(tg.brand);
+      for (const col of (tg.colors || [])) parts.push(col, t(`taxonomy.colors.${col}`));
+      for (const st of (tg.styles || [])) parts.push(st, t(`taxonomy.styles.${st}`));
+    }
+    return parts.join(' ').toLowerCase();
+  };
+
   const visible = useMemo(() => {
     if (!gens) return null;
     let list = gens;
     const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter(g => {
-        const title = (g.title || '').toLowerCase();
-        const date = (g.createdAt?.toDate?.()?.toLocaleDateString?.() || '').toLowerCase();
-        return title.includes(q) || date.includes(q);
-      });
-    }
+    if (q) list = list.filter(g => tagTextFor(g).includes(q));
     if (filterLiked) list = list.filter(g => g.liked);
     if (filterStyle) {
       list = list.filter(g =>
@@ -39,7 +65,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       );
     }
     return list;
-  }, [gens, search, filterLiked, filterStyle]);
+  }, [gens, closet, search, filterLiked, filterStyle]);
 
   const toggleSearch = () => {
     if (showSearch) {
@@ -164,7 +190,6 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                     : <div className={`tryon-history-empty status-${status}`}>{t(`tryOnStatus.${status}`) || status}</div>}
                 </div>
                 <div className="tryon-history-meta">
-                  {g.title && <span className="tryon-history-title">{g.title}</span>}
                   <span className="tryon-history-date">
                     {g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}
                   </span>

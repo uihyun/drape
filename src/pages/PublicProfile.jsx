@@ -220,7 +220,7 @@ function PublicOutfitsGrid({ ootds, t }) {
   return (
     <div className="outfit-grid">
       {items.map(o => (
-        <Link key={o.id} to={`/ootd/${o.id}`} className="outfit-card">
+        <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
           <div className="outfit-card-cover">
             {o.photoUrl
               ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
@@ -332,7 +332,7 @@ function PublicCalendar({ ootds, t }) {
           return entry ? (
             <Link
               key={i}
-              to={`/ootd/${entry.id}`}
+              to={`/o/${entry.id}`}
               className={`calendar-cell ${isToday ? 'today' : ''}`}
               aria-label={dateStr}
             >{inner}</Link>

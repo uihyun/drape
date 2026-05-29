@@ -24,7 +24,6 @@ export function TryOn({ user, onSignIn }) {
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
   // photo mode preserves the photo's background regardless).
   const [backgroundDesc, setBackgroundDesc] = useState('');
-  const [title, setTitle] = useState('');
   const [customBlob, setCustomBlob] = useState(null);
   const [customPreview, setCustomPreview] = useState(null);
   const [removeCustomBg, setRemoveCustomBg] = useState(false);
@@ -111,16 +110,6 @@ export function TryOn({ user, onSignIn }) {
     if (selected.size === 0) return;
     setSubmitting(true);
     setError(null);
-    // Auto-name from the chosen pieces when the user left the title blank —
-    // simple + intuitive, e.g. "White Tee + Linen Pants" (no model call).
-    const chosen = Array.from(selected)
-      .map(id => items.find(i => i.id === id))
-      .filter(Boolean);
-    const autoTitle = chosen
-      .slice(0, 2)
-      .map(i => i.name || (i.tags?.category ? t(`taxonomy.categories.${i.tags.category}`) : t('untitledItem')))
-      .join(' + ') + (chosen.length > 2 ? ` +${chosen.length - 2}` : '');
-    const finalTitle = title.trim() || autoTitle;
     // Kick off in the background so the user can browse other tabs while
     // the model runs. The cloud function writes a 'pending' generation
     // doc early, then TryOnHistory's live subscription shows it as a
@@ -130,7 +119,6 @@ export function TryOn({ user, onSignIn }) {
     try {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
-        title: finalTitle,
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
@@ -237,21 +225,6 @@ export function TryOn({ user, onSignIn }) {
           />
         </div>
       )}
-
-      {/* Optional title — names the look so it's findable later in the
-          OOTD link picker + history (which can hold hundreds). */}
-      <div className="tryon-bg-row">
-        <label htmlFor="tryon-title" className="tryon-bg-label">{t('tryOnTitleLabel')}</label>
-        <input
-          id="tryon-title"
-          type="text"
-          className="page-input tryon-bg-input"
-          value={title}
-          onChange={e => setTitle(e.target.value.slice(0, 80))}
-          placeholder={t('tryOnTitlePlaceholder')}
-          maxLength={80}
-        />
-      </div>
 
       {/* ── Pick items from your closet ───────────────────────────── */}
       <div style={{ marginTop: '0.75rem' }} />

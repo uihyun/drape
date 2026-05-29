@@ -6,9 +6,11 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { OotdService } from '../services/ootd-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { ItemService } from '../services/item-service.js';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
+import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
@@ -28,6 +30,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editNotes, setEditNotes] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [closet, setCloset] = useState([]);
 
   useEffect(() => {
     if (!outfitId) return;
@@ -35,6 +38,13 @@ export function OutfitDetail({ user, onSignIn }) {
       setOutfit(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [outfitId]);
+
+  // Owner's closet powers the "from your closet" piece-match strip.
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setCloset([]); return; }
+    return ItemService.subscribeMyCloset(user.uid, list =>
+      setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!outfit?.itemIds?.length) { setItems([]); return; }
@@ -64,10 +74,12 @@ export function OutfitDetail({ user, onSignIn }) {
   if (!outfit) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && outfit.userId === user.uid;
 
+  // Unified visibility = isPublic (with legacy isListed as fallback read).
+  const isPublic = outfit.isPublic === true || outfit.isListed === true;
   const togglePublish = async () => {
     setBusy(true);
     try {
-      await OutfitService.updateOutfit(outfit.id, { isListed: !outfit.isListed, isPublic: true });
+      await OutfitService.updateOutfit(outfit.id, { isPublic: !isPublic, isListed: !isPublic });
     } finally { setBusy(false); }
   };
 
@@ -91,9 +103,13 @@ export function OutfitDetail({ user, onSignIn }) {
     } finally { setBusy(false); }
   };
 
-  const date = outfit.createdAt?.toDate?.() || (outfit.createdAt ? new Date(outfit.createdAt) : null);
-  const dateLabel = date
-    ? date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
+  // A dated outfit (worn-on day) shows its date; undated saved outfits fall
+  // back to created date.
+  const dateObj = outfit.date
+    ? new Date(outfit.date)
+    : (outfit.createdAt?.toDate?.() || (outfit.createdAt ? new Date(outfit.createdAt) : null));
+  const dateLabel = dateObj
+    ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
     : '';
   const palette = Array.isArray(outfit.palette) ? outfit.palette.slice(0, 3) : [];
   const composition = Array.isArray(outfit.composition) ? outfit.composition : [];
@@ -103,7 +119,13 @@ export function OutfitDetail({ user, onSignIn }) {
    // varies per index). Reads as a moodboard of the look instead of one
    // lone t-shirt. Falls back to coverUrl for the single-item case.
   const heroItems = items.filter(it => it.croppedUrl || it.originalUrl);
+  // A worn-look photo (OOTD photo upload) is the truest hero — show it
+  // uncropped, no collage.
+  const wornPhoto = outfit.photoCutUrl || outfit.photoUrl || null;
   const renderHero = () => {
+    if (wornPhoto) {
+      return <div className="outfit-hero outfit-hero-photo"><img src={wornPhoto} alt="" referrerPolicy="no-referrer" /></div>;
+    }
     if (heroItems.length === 0 && outfit.coverUrl) {
       return <div className="outfit-hero outfit-hero-single"><img src={outfit.coverUrl} alt="" /></div>;
     }
@@ -321,10 +343,21 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
+      {isOwner && Array.isArray(outfit.pieces) && outfit.pieces.length > 0 && (
+        <section className="outfit-pieces">
+          <header><h2>{t('piecesInLook')}</h2></header>
+          {outfit.pieces.map((piece, i) => (
+            <PieceMatchRow key={i} piece={piece} closet={closet} t={t} />
+          ))}
+        </section>
+      )}
+
       <div className="controls">
-        <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="btn btn-primary">
-          <Sparkles size={16} strokeWidth={1.6} /> {t('tryThisOn')}
-        </Link>
+        {(outfit.itemIds || []).length > 0 && (
+          <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="btn btn-primary">
+            <Sparkles size={16} strokeWidth={1.6} /> {t('tryThisOn')}
+          </Link>
+        )}
         <ShareButton
           className="btn btn-secondary"
           title={outfit.name || t('untitledOutfit')}
@@ -334,8 +367,8 @@ export function OutfitDetail({ user, onSignIn }) {
         {isOwner && (
           <>
             <button type="button" className="btn btn-secondary" onClick={togglePublish} disabled={busy}>
-              {outfit.isListed ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
-              {outfit.isListed ? t('unlist') : t('publishToFeed')}
+              {isPublic ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
+              {isPublic ? t('unlist') : t('publishToFeed')}
             </button>
             <button type="button" className="btn btn-secondary danger-btn" onClick={remove}>
               <Trash2 size={16} strokeWidth={1.6} /> {t('delete')}
@@ -346,6 +379,43 @@ export function OutfitDetail({ user, onSignIn }) {
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
       <Comments parentColl="outfits" parentId={outfit.id} ownerId={outfit.userId} user={user} onSignInRequest={onSignIn} />
+    </div>
+  );
+}
+
+// One detected piece + closet items that tag-match it ("from your closet").
+function PieceMatchRow({ piece, closet, t }) {
+  const matches = matchCloset(piece, closet);
+  const label = piece.name
+    || [(piece.colors || [])[0], piece.category].filter(Boolean).join(' ')
+    || t('untitledItem');
+  return (
+    <div className="piece-match-row">
+      <div className="piece-match-head">
+        <span className="piece-match-name">{label}</span>
+        {piece.category && (
+          <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
+        )}
+      </div>
+      {matches.length > 0 ? (
+        <div className="analyze-match-strip">
+          <span className="analyze-match-label">{t('fromYourCloset')}</span>
+          <div className="analyze-match-row">
+            {matches.map(({ item }) => {
+              const cover = item.croppedUrl || item.originalUrl;
+              return (
+                <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
+                  {cover
+                    ? <img src={cover} alt={item.name || ''} loading="lazy" />
+                    : <div className="item-card-skeleton" />}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <span className="piece-match-empty">{t('noClosetMatch')}</span>
+      )}
     </div>
   );
 }
