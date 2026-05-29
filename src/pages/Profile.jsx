@@ -102,31 +102,11 @@ export function Profile({ user, authReady, onSignIn }) {
   // fresh account shows an empty avatar and gets nudged to upload.
   const photoURL = profile?.photoURL || null;
 
-  // "Invite" = friend invite. Shares a referral link back to the user's
-  // own public profile (so the recipient lands on their look first),
-  // else just the app URL if no handle yet.
-  const onInvite = async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://drape-9e532.web.app';
-    const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
-    try {
-      await shareLink({
-        title: t('inviteShareTitle'),
-        text: t('inviteShareText'),
-        url,
-      });
-    } catch (err) {
-      console.warn('invite share failed', err?.message);
-    }
-  };
-
   return (
     <div className="profile">
       <header className="profile-topbar">
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
-          <button type="button" className="btn-invite" onClick={onInvite}>
-            {t('invite')}
-          </button>
           <InboxIconLink user={user} t={t} />
           <button type="button" className="icon-btn" aria-label={t('notifications')}>
             <Bell size={20} strokeWidth={1.6} />

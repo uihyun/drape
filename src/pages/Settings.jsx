@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
+import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2 } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
+import { shareLink } from '../services/share-service.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
@@ -43,6 +44,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
       <IdentitySection user={user} t={t} />
       <AccountSection
         user={user}
+        profile={profile}
         lang={lang}
         setLang={setLang}
         onSignOut={onSignOut}
@@ -477,7 +479,19 @@ function IdentitySection({ user, t }) {
   );
 }
 
-function AccountSection({ user, lang, setLang, onSignOut, t }) {
+function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
+  // Invite = share a referral link to the user's public profile (or the
+  // app URL if no handle yet). Same behavior the old Profile button had.
+  const onInvite = async () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://drape-9e532.web.app';
+    const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
+    try {
+      await shareLink({ title: t('inviteShareTitle'), text: t('inviteShareText'), url });
+    } catch (err) {
+      console.warn('invite share failed', err?.message);
+    }
+  };
+
   return (
     <section className="settings-card">
       <h2 className="settings-h2">{t('account')}</h2>
@@ -486,6 +500,14 @@ function AccountSection({ user, lang, setLang, onSignOut, t }) {
         <span className="settings-row-label">{t('signedInAs')}</span>
         <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
       </div>
+
+      <button type="button" className="settings-row settings-row-action" onClick={onInvite}>
+        <span className="settings-row-label">
+          <Share2 size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
+          {t('invite')}
+        </span>
+        <ChevronRight size={16} strokeWidth={1.5} className="muted" />
+      </button>
 
       <div className="settings-row">
         <span className="settings-row-label">{t('langLabel')}</span>

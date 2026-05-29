@@ -79,9 +79,6 @@ export function ListingCard({ item, t }) {
         {cover
           ? <img src={cover} alt={item.name || ''} loading="lazy" />
           : <div className="listing-card-skeleton" />}
-        {item.conditionGrade && (
-          <span className="listing-card-grade">{item.conditionGrade}</span>
-        )}
       </div>
       <div className="listing-card-meta">
         {item.tags?.brand && <span className="listing-card-brand">{item.tags.brand}</span>}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { addDoc, collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, logEvent, analytics } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -38,7 +39,7 @@ export function ReportModal({ target, user, onClose }) {
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <h3>{t('reportTitle')}</h3>
@@ -78,7 +79,8 @@ export function ReportModal({ target, user, onClose }) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
