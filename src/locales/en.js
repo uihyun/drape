@@ -70,7 +70,7 @@ export const en = {
   changePhoto: 'Change photo',
   removePhoto: 'Remove',
   location: 'Location',
-  locationPlaceholder: 'City, country',
+  locationPlaceholder: 'City',
   instagram: 'Instagram',
   instagramPlaceholder: 'your_handle',
   saved: 'Saved',

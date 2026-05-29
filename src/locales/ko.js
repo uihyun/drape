@@ -70,7 +70,7 @@ export const ko = {
   changePhoto: '사진 변경',
   removePhoto: '제거',
   location: '위치',
-  locationPlaceholder: '도시, 국가',
+  locationPlaceholder: '도시',
   instagram: '인스타그램',
   instagramPlaceholder: 'your_handle',
   saved: '저장됨',

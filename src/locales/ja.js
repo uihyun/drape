@@ -72,7 +72,7 @@ export const ja = {
   changePhoto: '写真を変更',
   removePhoto: '削除',
   location: '場所',
-  locationPlaceholder: '都市、国',
+  locationPlaceholder: '都市',
   instagram: 'Instagram',
   instagramPlaceholder: 'your_handle',
   saved: '保存済み',
