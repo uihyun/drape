@@ -169,14 +169,14 @@ export function GenerationDetail({ user }) {
             </section>
           )}
 
-          {Array.isArray(gen.composition) && gen.composition.length > 0 && (
+          {Array.isArray(gen.style) && gen.style.length > 0 && (
             <section className="outfit-composition">
               <header>
                 <h2>{t('aestheticComposition')}</h2>
                 <span className="composition-sub">{t('aestheticCompositionSub')}</span>
               </header>
               <ul>
-                {gen.composition.map((c, i) => {
+                {gen.style.map((c, i) => {
                   const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
                   return (
                     <li key={i} className="composition-row">

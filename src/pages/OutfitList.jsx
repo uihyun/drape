@@ -207,8 +207,8 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
             outfits={outfits.filter(o => {
               if (filterLiked && !o.selfLiked) return false;
               if (filterStyle && !(
-                Array.isArray(o.composition) &&
-                o.composition.some(c => c.label === filterStyle && (c.level || 0) >= 1)
+                Array.isArray(o.style) &&
+                o.style.some(c => c.label === filterStyle && (c.level || 0) >= 1)
               )) return false;
               return true;
             })}

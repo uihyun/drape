@@ -28,7 +28,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { ref as storageRef, uploadBytes } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, functions, auth, storage } from '../firebase.js';
 
 const GENERATIONS = 'generations';
@@ -130,6 +130,18 @@ async function listMyGenerations({ uid, pageSize = 30, cursor = null } = {}) {
 }
 
 async function deleteGeneration(generationId) {
+  // Storage cleanup — best effort. Remove the generated variant images +
+  // any one-shot custom input photo so they don't orphan in the bucket.
+  try {
+    const snap = await getDoc(doc(db, GENERATIONS, generationId));
+    const data = snap.exists() ? snap.data() : null;
+    const paths = [
+      ...(Array.isArray(data?.variantPaths) ? data.variantPaths : []),
+      data?.customPhotoPath || null,
+    ].filter(Boolean);
+    await Promise.all(paths.map(p =>
+      deleteObject(storageRef(storage, p)).catch(() => {})));
+  } catch { /* ignore — doc removal below is the source of truth */ }
   await deleteDoc(doc(db, GENERATIONS, generationId));
 }
 

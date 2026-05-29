@@ -103,7 +103,7 @@ service cloud.firestore {
                       'mood', 'stylingTips', 'palette', 'composition',
                       // OOTD fields now on the unified doc:
                       'date', 'outfitId', 'linkedType', 'photoUrl', 'photoPath',
-                      'photoCutUrl', 'pieces', 'isCalendarRep', 'analyzedAt'])
+                      'photoCutUrl', 'photoCutPath', 'pieces', 'isCalendarRep', 'analyzedAt', 'style'])
       ) || (
         // Like / unlike — any signed-in user, only the likedBy + count keys.
         request.auth != null

@@ -112,7 +112,7 @@ export function OutfitDetail({ user, onSignIn }) {
     ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
     : '';
   const palette = Array.isArray(outfit.palette) ? outfit.palette.slice(0, 3) : [];
-  const composition = Array.isArray(outfit.composition) ? outfit.composition : [];
+  const composition = Array.isArray(outfit.style) ? outfit.style : [];
   const notes = outfit.notes || '';
 
   // Hero collage: lay every item out as a sticker (offset / rotation

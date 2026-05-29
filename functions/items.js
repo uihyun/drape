@@ -600,7 +600,7 @@ exports.analyzeOotd = onCall(
       const patch = {
         // No auto-title — date + tags identify a look now, not a name.
         palette: sanitizePalette(parsed.palette),
-        composition: sanitizeComposition(parsed.composition),
+        style: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
         pieces,
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -662,7 +662,7 @@ exports.analyzeGeneration = onCall(
       if (!parsed) throw new HttpsError('internal', 'parse_failed');
       const patch = {
         palette: sanitizePalette(parsed.palette),
-        composition: sanitizeComposition(parsed.composition),
+        style: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -837,7 +837,7 @@ exports.detectItems = onCall(
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 800) : '',
         stylingTips,
         palette: sanitizePalette(parsed.palette),
-        composition: sanitizeComposition(parsed.composition),
+        style: sanitizeComposition(parsed.composition),
         items,
       };
     } catch (err) {

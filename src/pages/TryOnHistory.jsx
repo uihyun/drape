@@ -36,7 +36,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   // labels (en + localized) + every linked item's tags.
   const tagTextFor = (g) => {
     const parts = [];
-    for (const c of (g.composition || [])) {
+    for (const c of (g.style || [])) {
       if (c.label) { parts.push(c.label, t(`taxonomy.styles.${c.label}`)); }
     }
     for (const id of (g.itemIds || [])) {
@@ -60,8 +60,8 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     if (filterLiked) list = list.filter(g => g.liked);
     if (filterStyle) {
       list = list.filter(g =>
-        Array.isArray(g.composition) &&
-        g.composition.some(c => c.label === filterStyle && (c.level || 0) >= 1),
+        Array.isArray(g.style) &&
+        g.style.some(c => c.label === filterStyle && (c.level || 0) >= 1),
       );
     }
     return list;

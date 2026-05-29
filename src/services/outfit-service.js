@@ -22,7 +22,7 @@ import {
   deleteDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from '../firebase.js';
 
 const OUTFITS = 'outfits';
@@ -99,7 +99,7 @@ async function createAnalyzedOutfit({
     notes,
     stylingTips,
     palette,
-    composition,
+    style: composition, // [{label, level}] style breakdown (renamed from composition)
     sourcePhotoUrl: photoUrl,
     sourcePhotoPath: photoPath,
     coverUrl: photoUrl, // the source photo doubles as the card cover
@@ -132,6 +132,16 @@ async function updateOutfit(outfitId, patch) {
 }
 
 async function deleteOutfit(outfitId) {
+  // Storage cleanup — best effort. An outfit may own an uploaded worn-look
+  // photo (photoPath), its segmented cutout, an analyzed source photo, or a
+  // cover. Item images are NOT touched (they belong to the closet).
+  try {
+    const snap = await getDoc(doc(db, OUTFITS, outfitId));
+    const d = snap.exists() ? snap.data() : null;
+    const paths = [d?.photoPath, d?.photoCutPath, d?.sourcePhotoPath, d?.coverPath].filter(Boolean);
+    await Promise.all(paths.map(p =>
+      deleteObject(storageRef(storage, p)).catch(() => {})));
+  } catch { /* ignore */ }
   await deleteDoc(doc(db, OUTFITS, outfitId));
 }
 

@@ -25,7 +25,7 @@ import {
   serverTimestamp,
   deleteDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, auth, functions } from '../firebase.js';
 
@@ -201,6 +201,16 @@ async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' 
 
 async function deleteOotd({ id }) {
   if (!id) throw new Error('id required');
+  // Storage cleanup — best effort. Remove the uploaded worn-look photo +
+  // its segmented cutout if this OOTD owns them (photoPath set only for
+  // user uploads). Item images stay (closet-owned).
+  try {
+    const snap = await getDoc(doc(db, OOTDS, id));
+    const d = snap.exists() ? snap.data() : null;
+    const paths = [d?.photoPath, d?.photoCutPath, d?.coverPath].filter(Boolean);
+    await Promise.all(paths.map(p =>
+      deleteObject(ref(storage, p)).catch(() => {})));
+  } catch { /* ignore */ }
   await deleteDoc(doc(db, OOTDS, id));
 }
 
