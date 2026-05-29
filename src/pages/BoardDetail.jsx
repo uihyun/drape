@@ -174,9 +174,6 @@ export function BoardDetail({ user, onSignIn }) {
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
       <div className="controls" style={{ padding: '0 1rem' }}>
-        {!isOwner && (
-          <BoardLikeButton board={board} user={user} onSignIn={onSignIn} t={t} />
-        )}
         <ShareButton
           className="btn btn-secondary"
           title={board.name || t('untitledBoard')}
