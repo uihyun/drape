@@ -137,6 +137,7 @@ export const ja = {
   savedToCloset: '追加済み',
   saveAnalysis: '解析を保存',
   itemsInPhoto: 'この写真のアイテム',
+  fromYourCloset: 'クローゼットから',
   analysisSaved: '保存済み',
   outfitsMine: 'マイ',
   outfitsSaved: '保存',

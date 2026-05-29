@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
+import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // "What's in this photo?" — pick one or more photos (OOTD selfies,
@@ -31,6 +32,14 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
+  // Closet items power the "from your closet" match strip under each
+  // detected piece (tag-based, no model call). Ready + non-archived only.
+  const [closet, setCloset] = useState([]);
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setCloset([]); return; }
+    return ItemService.subscribeMyCloset(user.uid, list =>
+      setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
+  }, [user]);
 
   // Object URLs on each batch — revoke when batches list changes / unmounts.
   useEffect(() => {
@@ -388,6 +397,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
                                 : <><Plus size={13} strokeWidth={1.9} /> {t('saveToCloset')}</>}
                             </button>
                           </div>
+                          <ClosetMatchStrip piece={it} closet={closet} t={t} />
                         </div>
                       );
                     })}
@@ -411,6 +421,31 @@ export function AnalyzePhoto({ user, onSignIn }) {
         onClose={() => setCameraOpen(false)}
         onCapture={(blob) => { setCameraOpen(false); addFiles([blob]); }}
       />
+    </div>
+  );
+}
+
+// "From your closet" — tag-matched items the user already owns for this
+// detected piece. Pure tag scoring (utils/itemMatch). Tapping a card opens
+// the item; the strip only renders when there's at least one decent match.
+function ClosetMatchStrip({ piece, closet, t }) {
+  const matches = matchCloset(piece, closet);
+  if (matches.length === 0) return null;
+  return (
+    <div className="analyze-match-strip">
+      <span className="analyze-match-label">{t('fromYourCloset')}</span>
+      <div className="analyze-match-row">
+        {matches.map(({ item }) => {
+          const cover = item.croppedUrl || item.originalUrl;
+          return (
+            <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
+              {cover
+                ? <img src={cover} alt={item.name || ''} loading="lazy" />
+                : <div className="item-card-skeleton" />}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

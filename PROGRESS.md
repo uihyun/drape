@@ -1020,3 +1020,142 @@ during their first end-to-end DM test.
   CJ방문수거 — full transactional layer.
 - Stock comments on items (not just ootd/outfit/board).
 - Marketplace + DM analytics surface (admin-only).
+
+## Cycle: 2026-05-29 — detail-page action overlay consolidation + cleanup
+
+### Detail action overlay (board / outfit / ootd)
+- All three detail pages now show like/bookmark/report as a dark-circle
+  overlay column at the **photo's top-right** (`.board-detail-hero-actions`,
+  shared class), z-index 1000 so it sits above board stickers / clothing.
+  - Visitor: ❤️ social like (+count) · 🔖 bookmark · 🚩 report.
+  - Owner: ❤️ self-like only (separate `selfLiked` field, not the social
+    likeCount).
+  - **Like = red (#ff5a6e), bookmark = green (var(--accent))** — consistent
+    with feed cards.
+- Feed cards (OOTD + board) had their own top-right like/bookmark buttons
+  **removed** — actions live in the detail view only. Feed is photo-only now.
+- ItemDetail keeps its side-rail design (try-on / share / report). The ···
+  MoreMenu was dropped in favor of a direct 🚩 report rail button (report
+  was the only entry). ReportModal now renders via `createPortal` to
+  `document.body` so it isn't clipped by ancestor transforms.
+- Market listing cards: condition-grade chip removed from the card; grade
+  shows on the item detail only.
+
+### Detail cleanup
+- Removed duplicate owner self-like button from OutfitDetail (was in both
+  overlay AND bottom controls).
+- Deleted dead `BoardLikeButton` component (BoardDetail) — replaced by the
+  overlay.
+- Removed unused `ChevronRight` import (GenerationDetail), unused `shareLink`
+  import (Profile).
+- Invite moved from Profile topbar → Settings > Account row.
+- try-on title: when the user leaves it blank, auto-name from the chosen
+  pieces ("White Tee + Linen Pants") with no model call, instead of the
+  shared poetic OOTD title.
+
+### Known gap (not yet done)
+- GenerationDetail (try-on result) has NO top-right overlay — its actions
+  live in a bottom `gen-actions` row (self-like / regenerate / delete).
+  Decide later whether try-on detail should match the overlay pattern.
+- OotdDetail overlay: owner currently sees NO self-like in the overlay
+  (only visitor gets the buttons via `!isOwner`). If we want owner self-like
+  parity, add an owner branch like board/outfit.
+
+## FUTURE FEATURE (designed, NOT built) — "Outfit → wardrobe match + Shop ideas"
+
+User intent (verbatim-ish): when a user uploads an outfit photo, analyze the
+look, split it into the worn pieces (auto-tagged), and for each piece show
+**suggestions** — (a) similar items the user ALREADY owns (tag-based match
+from their closet), and (b) Pinterest-style "shopping ideas" (visually/tag
+similar buyable products). User picks the exact match if one fits. Same
+"complete the look / shop the look" surface should also appear on OOTD detail.
+
+### What ALREADY exists we can reuse
+- `functions/items.js → detectItems` (onCall): vision-only analysis of any
+  photo. Returns `{ style, mood, notes, stylingTips, palette, composition,
+  items[] }` where each item = `{ name, category, subcategory, colors[],
+  description, brand, searchQuery }`. THIS IS THE OUTFIT-DECOMPOSITION STEP —
+  no new model work needed for Phase 1.
+- `src/services/taxonomy.js` — closed vocab (CATEGORIES, SUBCATEGORIES,
+  COLORS, STYLES) used for both item tags and detect output, so matching is
+  apples-to-apples.
+- Items in closet already carry `tags: { category, subcategory, colors[],
+  seasons[], styles[], fit, brand }` (set by processItem auto-tag).
+- The analyze page (`/analyze`, AnalyzeView) already calls detectItems and
+  renders detected pieces with "Add to closet" / "Find similar". Reuse that
+  card UI.
+
+### Phase 1 — closet match (NO external API, build first)
+For each detected piece, score every closet item by tag overlap and show the
+top N as "From your closet" suggestions; user taps to confirm the real piece
+(links it into the outfit's `itemIds`).
+- New pure util `src/utils/itemMatch.js`:
+  `scoreMatch(detectedPiece, closetItem) -> 0..1`
+  weighted: category exact (mandatory gate) · subcategory +0.3 ·
+  color Jaccard +0.4 · style overlap +0.2 · brand exact +0.1.
+  Return sorted closet items above a threshold (~0.45), cap 6.
+- Where it lives: OutfitBuilder / the outfit-upload flow. After detectItems
+  returns, render per-piece a horizontal strip: detected piece thumb (from
+  source crop) + name/tags, then a row of matched closet item cards + an
+  "Add as new item" fallback. Selection writes the closet itemId into the
+  outfit. Pure client-side; no cost.
+- Also surface the same strip on OutfitDetail / OotdDetail for the OWNER
+  ("pieces in this look" → matched closet items), read-only-ish.
+
+### Phase 2 — auto-tag the detected pieces (mostly done)
+detectItems already returns tags per piece; just persist them on the outfit
+doc as `pieces[]` (denormalized) so the match strip doesn't re-run vision on
+every view. Add `pieces` to the outfit/ootd doc on create; allow in rules.
+
+### Phase 3 — Shop ideas (IN-APP PRODUCT CARDS — chosen direction, build LAST)
+Goal: Pinterest "Shop the Look / Complete the Look" parity — for each piece,
+a feed of buyable product cards (image + price + merchant) shown INSIDE the
+app, not just an outbound search link.
+
+Pinterest research (how they do it, for reference):
+- Decompose scene with an object-detection model → per-object category +
+  embedding. (We substitute Gemini detectItems: category + searchQuery +
+  color/desc instead of raw embeddings — good enough for v1 matching.)
+- Match each object against a shopping catalog using visual-similarity
+  scoring over embeddings; restrict search by category annotation first.
+- "Shop the Look" = white dots on the image you tap → feed of visually
+  similar shoppable Pins. "Complete the Look" = recommend compatible OTHER
+  pieces (outfit-level), using scene context (season, indoor/outdoor, body).
+- "Lens Your Look" = add a closet photo to a text query to find ideas.
+- Refinement bar: filter results by style / color / fabric / occasion.
+- Sources:
+  - https://medium.com/pinterest-engineering/automating-shop-the-look-on-pinterest-a17aeff0eae2
+  - https://medium.com/pinterest-engineering/introducing-automatic-object-detection-to-visual-search-e57c29191c30
+  - https://newsroom-archive.pinterest.com/introducing-the-next-wave-of-visual-search-and-shopping
+  - https://www.socialmediatoday.com/news/pinterests-working-on-a-new-complete-the-look-option-to-help-users-find/556952/
+
+Implementation options for OUR in-app product cards (decide at build time):
+1. **Affiliate product-search API** feeding card UI. Candidates:
+   - Google Shopping via SerpAPI / Shopping Content API (broad, paid).
+   - Rakuten / CJ / Coupang Partners / 무신사 affiliate (KR-relevant,
+     commission revenue — aligns with the marketplace monetization).
+   - Per piece, query with detectItems `searchQuery` + color; cache results
+     in a `productSuggestions/{hash}` Firestore doc (TTL) so repeat views
+     don't re-hit the paid API. Hash = normalized(category+colors+brand).
+2. **Our own marketplace listings first**, external API as fallback — i.e.
+   "shop ideas" surfaces other users' for-sale items that tag-match before
+   showing external products. Zero API cost for the in-app portion, drives
+   marketplace GMV. Likely the right v1: reuse `MarketplaceService` with a
+   tag query (needs a composite index on forSale + category + colors).
+3. **Hybrid (recommended end state):** Phase-1 closet match + Phase-3a our
+   marketplace match (free, internal) + Phase-3b external affiliate cards
+   (paid, revenue) — three stacked rows under each detected piece:
+   "In your closet" · "For sale on Drape" · "Shop similar".
+
+Cost / approval notes:
+- External shopping APIs need keys, billing, and (for affiliate) program
+  approval — gate behind a Firebase secret + a feature flag.
+- Cache aggressively (Firestore doc per query hash, ~7-day TTL) — product
+  search calls are the expensive part; the same outfit viewed by many users
+  must hit cache.
+- Keep all model/API calls server-side (functions), never client, per repo
+  invariant.
+
+Build order when we pick this up: Phase 1 (closet match, free) → Phase 2
+(persist pieces) → Phase 3a (marketplace match, free) → Phase 3b (external
+affiliate cards, paid + revenue).
