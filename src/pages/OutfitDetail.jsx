@@ -177,7 +177,7 @@ export function OutfitDetail({ user, onSignIn }) {
               </button>
               <button
                 type="button"
-                className={`board-hero-action${bookmarked ? ' active' : ''}`}
+                className={`board-hero-action${bookmarked ? ' bookmarked' : ''}`}
                 onClick={async () => {
                   if (!user || user.isAnonymous) { onSignIn?.(); return; }
                   try { await OotdService.toggleBookmark(outfit.id, bookmarked); }

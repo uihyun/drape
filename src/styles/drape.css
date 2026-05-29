@@ -1873,7 +1873,8 @@ body.is-native {
   border-radius: 999px;
   cursor: pointer;
 }
-.board-hero-action.active { color: #ff5a6e; }
+.board-hero-action.active { color: #ff5a6e; }       /* like = red */
+.board-hero-action.bookmarked { color: var(--accent); } /* bookmark = green */
 /* OOTD detail hero needs a positioning context for its action overlay. */
 .ootd-hero { position: relative; }
 .board-hero-count {

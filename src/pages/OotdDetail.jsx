@@ -171,7 +171,7 @@ export function OotdDetail({ user, onSignIn }) {
               <>
                 <button
                   type="button"
-                  className={`board-hero-action${bookmarked ? ' active' : ''}`}
+                  className={`board-hero-action${bookmarked ? ' bookmarked' : ''}`}
                   onClick={toggleBookmark}
                 >
                   <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
