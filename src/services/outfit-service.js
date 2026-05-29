@@ -319,10 +319,13 @@ async function deleteOotd({ id }) {
 /** Public OOTD feed — dated public outfits. orderBy date excludes undated
  *  (built/analyzed) outfits, so only "today's look" posts surface. */
 async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' } = {}) {
-  const orderField = sortBy === 'popular' ? 'likeCount' : 'date';
+  // Popular = likeCount desc, but ties (e.g. everything at 0) fall back to
+  // date desc so the order is stable, not arbitrary.
   const constraints = [
     where('isPublic', '==', true),
-    orderBy(orderField, 'desc'),
+    ...(sortBy === 'popular'
+      ? [orderBy('likeCount', 'desc'), orderBy('date', 'desc')]
+      : [orderBy('date', 'desc')]),
     limit(pageSize),
   ];
   let q = query(collection(db, OUTFITS), ...constraints);
