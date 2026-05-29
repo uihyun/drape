@@ -365,6 +365,9 @@ export function OutfitDetail({ user, onSignIn }) {
         />
         {isOwner && (
           <>
+            <Link to={`/o/${outfit.id}/link`} className="btn btn-secondary">
+              <Pencil size={15} strokeWidth={1.6} /> {t('linkItemsCta')}
+            </Link>
             <button type="button" className="btn btn-secondary" onClick={togglePublish} disabled={busy}>
               {isPublic ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
               {isPublic ? t('unlist') : t('publishToFeed')}

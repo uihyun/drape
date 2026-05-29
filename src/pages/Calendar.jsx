@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
@@ -18,6 +18,7 @@ function ymd(d) {
 
 export function Calendar({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
+  const navigate = useNavigate();
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   // byDate is now { [date]: ootd[] } — multi-OOTD per day. Calendar
@@ -153,7 +154,12 @@ export function Calendar({ user, onSignIn, embedded = false }) {
         user={user}
         existing={sheetExisting}
         onClose={() => { setSheetDate(null); setSheetExisting(null); }}
-        onSaved={refetch}
+        onSaved={(savedId) => {
+          refetch();
+          // New OOTD (no prior items linked) → go straight to the
+          // closet-sized item-link page so the user attaches what they wore.
+          if (savedId && !sheetExisting) navigate(`/o/${savedId}/link`);
+        }}
       />
 
       {pickerDate && (

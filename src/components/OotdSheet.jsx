@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Image as ImageIcon, Camera as CameraIcon, Trash2, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Image as ImageIcon, Camera as CameraIcon, Trash2 } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { OutfitService } from '../services/outfit-service.js';
-import { BoardService } from '../services/board-service.js';
 import { CameraService } from '../services/camera.js';
 import { CameraCaptureModal } from './CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
@@ -11,47 +10,31 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const isMobileUA = typeof navigator !== 'undefined'
   && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
 
-// Sheet that opens when the user taps a Calendar cell. Lets them log
-// today's (or that date's) OOTD — pick a photo, optionally link a board
-// or try-on they made that same day, leave a quick note. Same date can
-// be re-saved later to add more (OutfitService.upsertOotd merges).
+// Sheet that opens when the user taps a Calendar cell. Logs that date's
+// OOTD — a photo of what they wore + a quick note. Linking the actual
+// closet items / boards happens on a separate, closet-sized page after
+// save (onSaved receives the saved id). Same date can hold multiple OOTDs.
 export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const { t } = useLocale();
   const { sheetStyle: ootdSheetStyle, handleProps: ootdHandleProps } = useSheetDrag(onClose);
   const fileRef = useRef();
-  const [boards, setBoards] = useState([]);
   const [photoBlob, setPhotoBlob] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [linkedId, setLinkedId] = useState('');
-  const [linkedType, setLinkedType] = useState('');
   const [note, setNote] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [linkSearch, setLinkSearch] = useState('');
 
   // Seed from existing OOTD on open (edit case).
   useEffect(() => {
     if (!open) return;
     setPhotoBlob(null);
     setPhotoPreview(existing?.photoUrl || null);
-    setLinkedId(existing?.outfitId || '');
-    setLinkedType(existing?.linkedType || (existing?.outfitId ? 'outfit' : ''));
     setNote(existing?.note || '');
     setIsPublic(existing?.isPublic === true);
-    setLinkSearch('');
     setError(null);
   }, [open, existing?.id]);
-
-  useEffect(() => {
-    if (!open || !user || user.isAnonymous) return;
-    let cancelled = false;
-    BoardService.listMyBoards({ pageSize: 30 })
-      .then(b => { if (!cancelled) setBoards(b || []); })
-      .catch(() => setBoards([]));
-    return () => { cancelled = true; };
-  }, [open, user]);
 
   // Local object URL preview when a fresh blob is staged.
   useEffect(() => {
@@ -61,55 +44,12 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     return () => URL.revokeObjectURL(url);
   }, [photoBlob]);
 
-  // Link candidates: every ready try-on + every board, newest first.
-  // NOT day-bound — a try-on or board is usually made ahead of time to
-  // plan a look, then worn (and logged) on a later day, possibly more
-  // than once. Restricting to same-day creations hid exactly the items
-  // the user wants to attach.
-  const candidates = useMemo(() => {
-    const dateStr = ms => (ms ? new Date(ms).toLocaleDateString() : '');
-    // Try-ons can no longer be linked as an OOTD (unification decision —
-    // only an outfit/board worn that day becomes the day's look).
-    const tryonCards = [];
-    const boardCards = boards.map(b => {
-      const ms = b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
-      return {
-        kind: 'board',
-        id: b.id,
-        label: b.name || t('untitledBoard'),
-        thumbUrl: b.coverUrl || null,
-        sortMs: ms,
-        dateStr: dateStr(ms),
-      };
-    });
-    return [...tryonCards, ...boardCards].sort((a, b) => b.sortMs - a.sortMs);
-  }, [boards, t]);
-
-  // Filter the picker by label (try-on title / board name) OR date —
-  // once a user has many saved looks the horizontal strip isn't enough.
-  const visibleCandidates = useMemo(() => {
-    const q = linkSearch.trim().toLowerCase();
-    if (!q) return candidates;
-    return candidates.filter(c =>
-      (c.label || '').toLowerCase().includes(q) ||
-      (c.dateStr || '').toLowerCase().includes(q)
-    );
-  }, [candidates, linkSearch]);
-
   if (!open) return null;
 
   const stagePicked = (file) => {
     if (!file) return;
     setError(null);
     setPhotoBlob(file);
-  };
-
-  const toggleCard = (c) => {
-    if (linkedId === c.id && linkedType === c.kind) {
-      setLinkedId(''); setLinkedType('');
-    } else {
-      setLinkedId(c.id); setLinkedType(c.kind);
-    }
   };
 
   const save = async () => {
@@ -121,18 +61,14 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
       if (photoBlob) {
         blob = await CameraService.compressImage(photoBlob);
       }
-      await OutfitService.upsertOotd({
-        // existing.id present → update that specific OOTD; absent →
-        // addDoc creates a brand-new entry for the date (multi-OOTD).
+      const { id } = await OutfitService.upsertOotd({
         id: existing?.id || null,
         date,
-        outfitId: linkedId || null,
-        linkedType: linkedId ? linkedType : null,
         photoBlob: blob, // only re-uploads if a new blob is staged
         note: note.trim(),
         isPublic,
       });
-      onSaved?.();
+      onSaved?.(id);
       onClose?.();
     } catch (e) {
       setError(e.message || 'save_failed');
@@ -202,58 +138,8 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             )}
           </div>
 
-          {/* Outfit linker — try-ons + boards (newest first, any date) */}
-          <label className="ootd-sheet-label">{t('ootdLinkOutfit')}</label>
-          {candidates.length > 10 && (
-            <div className="closet-search-bar ootd-link-search">
-              <Search size={15} strokeWidth={1.6} />
-              <input
-                type="text"
-                value={linkSearch}
-                onChange={e => setLinkSearch(e.target.value)}
-                placeholder={t('ootdLinkSearchPlaceholder')}
-                className="closet-search-input"
-              />
-              {linkSearch && (
-                <button type="button" className="icon-btn" onClick={() => setLinkSearch('')} aria-label={t('clear')}>
-                  <X size={15} strokeWidth={1.7} />
-                </button>
-              )}
-            </div>
-          )}
-          {candidates.length > 0 ? (
-            <div className="ootd-link-row">
-              <button
-                type="button"
-                className={`ootd-link-card none${!linkedId ? ' selected' : ''}`}
-                onClick={() => { setLinkedId(''); setLinkedType(''); }}
-              >
-                <div className="ootd-link-thumb ootd-link-thumb-none"><span>—</span></div>
-                <span className="ootd-link-label">{t('ootdNoOutfit')}</span>
-              </button>
-              {visibleCandidates.map(c => {
-                const selected = linkedId === c.id && linkedType === c.kind;
-                return (
-                  <button
-                    key={`${c.kind}-${c.id}`}
-                    type="button"
-                    className={`ootd-link-card${selected ? ' selected' : ''}`}
-                    onClick={() => toggleCard(c)}
-                  >
-                    <div className="ootd-link-thumb">
-                      {c.thumbUrl
-                        ? <img src={c.thumbUrl} alt={c.label} loading="lazy" />
-                        : <div className="item-card-skeleton" />}
-                      <span className={`ootd-link-badge ${c.kind}`}>{t(`ootdLinkKind_${c.kind}`)}</span>
-                    </div>
-                    <span className="ootd-link-label">{c.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="ootd-link-empty">{t('ootdLinkEmpty')}</p>
-          )}
+          {/* Item / board linking moved to a dedicated closet-sized page
+              opened after save (so search + multi-select fit). */}
 
           {/* Note */}
           <label className="ootd-sheet-label">{t('ootdNoteLabel')}</label>
@@ -295,7 +181,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               type="button"
               className="btn btn-primary"
               onClick={save}
-              disabled={saving || (!photoBlob && !existing?.photoUrl && !linkedId && !note.trim())}
+              disabled={saving || (!photoBlob && !existing?.photoUrl && !note.trim())}
             >
               {saving ? t('saving') : t('save')}
             </button>

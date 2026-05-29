@@ -17,6 +17,7 @@ import { ItemDetail } from './pages/ItemDetail.jsx';
 import { OutfitList } from './pages/OutfitList.jsx';
 import { OutfitBuilder } from './pages/OutfitBuilder.jsx';
 import { OutfitDetail } from './pages/OutfitDetail.jsx';
+import { OutfitLink } from './pages/OutfitLink.jsx';
 import { OutfitShare } from './pages/OutfitShare.jsx';
 import { Calendar } from './pages/Calendar.jsx';
 import { Profile } from './pages/Profile.jsx';
@@ -174,6 +175,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
           <Route path="/outfits/new" element={<OutfitBuilder user={user} onSignIn={handleSignIn} />} />
           <Route path="/o/:outfitId" element={<OutfitDetail user={user} onSignIn={handleSignIn} />} />
+          <Route path="/o/:outfitId/link" element={<OutfitLink user={user} onSignIn={handleSignIn} />} />
           <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} />} />
