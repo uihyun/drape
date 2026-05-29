@@ -61,7 +61,6 @@ export function ClaimHandleModal({ open, onClose }) {
             maxLength={20}
             autoCapitalize="none"
             autoCorrect="off"
-            autoFocus
             onKeyDown={e => { if (e.key === 'Enter') submit(); }}
           />
         </div>

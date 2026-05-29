@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { X, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
@@ -240,7 +240,7 @@ export function ItemDetail({ user, onSignIn }) {
         onClick={close}
         aria-label={t('close')}
       >
-        <X size={20} strokeWidth={1.8} />
+        <ChevronLeft size={22} strokeWidth={2} />
       </button>
 
       <div

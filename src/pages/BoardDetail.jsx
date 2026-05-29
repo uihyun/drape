@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Edit3, Eye, EyeOff, Heart } from 'lucide-react';
+import { Edit3, Eye, EyeOff, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
-import { MoreMenu } from '../components/MoreMenu.jsx';
+import { ReportModal } from '../components/ReportModal.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -24,6 +24,8 @@ export function BoardDetail({ user, onSignIn }) {
   const [author, setAuthor] = useState(null);
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   // Live subscription — needed so the Like button reflects realtime
   // count changes (someone else's like flips the heart immediately).
@@ -57,6 +59,16 @@ export function BoardDetail({ user, onSignIn }) {
     return () => { cancelled = true; };
   }, [board?.id, (board?.stickers || []).length]);
 
+  // Bookmark state for non-owners
+  useEffect(() => {
+    if (!user || user.isAnonymous || !boardId) { setBookmarked(false); return; }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', boardId),
+      s => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [user?.uid, boardId]);
+
   if (board === undefined) return <div className="loading"><div className="spinner" /></div>;
   if (board === null) {
     return (
@@ -87,6 +99,7 @@ export function BoardDetail({ user, onSignIn }) {
         <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
         <div className="board-detail-hero-actions">
           {isOwner ? (
+            // Owner: self-like (personal favorite)
             <button
               type="button"
               className={`board-hero-action${board.selfLiked ? ' active' : ''}`}
@@ -95,22 +108,57 @@ export function BoardDetail({ user, onSignIn }) {
                 catch (e) { console.warn('toggleSelfLike failed', e?.message); }
               }}
               aria-pressed={!!board.selfLiked}
-              aria-label={board.selfLiked ? t('selfUnlike') : t('selfLike')}
             >
               <Heart size={16} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
             </button>
           ) : (
-            <MoreMenu
-              className="board-hero-more"
-              target={{ type: 'board', id: board.id }}
-              targetUid={board.userId}
-              user={user}
-              onSignIn={onSignIn}
-              showBookmark
-              buttonSize={16}
-            />
+            // Visitor: social like + bookmark + report — all as icon buttons
+            <>
+              <button
+                type="button"
+                className={`board-hero-action${(board.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
+                  catch (err) { console.warn('board like failed', err?.message); }
+                }}
+              >
+                <Heart size={16} strokeWidth={1.6} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+                {(board.likeCount || 0) > 0 && <span className="board-hero-count">{board.likeCount}</span>}
+              </button>
+              <button
+                type="button"
+                className={`board-hero-action${bookmarked ? ' active bookmarked' : ''}`}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await BoardService.toggleBookmark(board.id, bookmarked); }
+                  catch (err) { console.warn('board bookmark failed', err?.message); }
+                }}
+              >
+                <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                type="button"
+                className="board-hero-action"
+                onClick={() => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  setReporting(true);
+                }}
+              >
+                <Flag size={15} strokeWidth={1.6} />
+              </button>
+            </>
           )}
         </div>
+        {reporting && (
+          <ReportModal
+            target={{ type: 'board', id: board.id }}
+            user={user}
+            onClose={() => setReporting(false)}
+          />
+        )}
       </div>
 
       <header className="outfit-byline">

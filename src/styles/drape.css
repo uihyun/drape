@@ -1,5 +1,16 @@
 /* Drape-specific component styles — layered on top of main.css. */
 
+/* iOS auto-zoom prevention: inputs with font-size < 16px trigger the
+   browser to zoom on focus. Enforce 1rem minimum so every focused field
+   stays at native scale. touch-action: manipulation kills double-tap zoom
+   on buttons without removing pinch-to-zoom for accessibility. */
+input, textarea, select {
+  font-size: max(1rem, 16px);
+}
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
 /* ── Safe-area pattern (voda parity) ───────────────────────────────── */
 /* iOS notch / Dynamic Island clearance. Native (Capacitor) wrappers
    sometimes report env(safe-area-inset-top) as 0; we fall back to a
@@ -1853,6 +1864,12 @@ body.is-native {
   cursor: pointer;
 }
 .board-hero-action.active { color: #ff5a6e; }
+.board-hero-action.bookmarked { color: #fff; }
+.board-hero-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+}
 .board-hero-more .more-menu-trigger {
   width: 36px;
   height: 36px;
