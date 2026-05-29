@@ -89,6 +89,7 @@ export function GenerationDetail({ user }) {
       const promise = GenerationService.startTryOn({
         itemIds: gen.itemIds,
         modelTier: gen.modelTier,
+        title: gen.title || '',
         regenerateOf: gen.id,
       });
       const result = await Promise.race([

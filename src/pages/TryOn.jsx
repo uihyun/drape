@@ -111,6 +111,16 @@ export function TryOn({ user, onSignIn }) {
     if (selected.size === 0) return;
     setSubmitting(true);
     setError(null);
+    // Auto-name from the chosen pieces when the user left the title blank —
+    // simple + intuitive, e.g. "White Tee + Linen Pants" (no model call).
+    const chosen = Array.from(selected)
+      .map(id => items.find(i => i.id === id))
+      .filter(Boolean);
+    const autoTitle = chosen
+      .slice(0, 2)
+      .map(i => i.name || (i.tags?.category ? t(`taxonomy.categories.${i.tags.category}`) : t('untitledItem')))
+      .join(' + ') + (chosen.length > 2 ? ` +${chosen.length - 2}` : '');
+    const finalTitle = title.trim() || autoTitle;
     // Kick off in the background so the user can browse other tabs while
     // the model runs. The cloud function writes a 'pending' generation
     // doc early, then TryOnHistory's live subscription shows it as a
@@ -120,7 +130,7 @@ export function TryOn({ user, onSignIn }) {
     try {
       const promise = GenerationService.startTryOn({
         itemIds: Array.from(selected),
-        title: title.trim(),
+        title: finalTitle,
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
