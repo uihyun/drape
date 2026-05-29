@@ -29,7 +29,12 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, auth, functions } from '../firebase.js';
 
-const OOTDS = 'ootds';
+// UNIFIED: an "OOTD" is just an outfit with a `date` set, living in the
+// single `outfits` collection. This service keeps the OotdService name +
+// API (so calendar/feed/profile call sites don't churn) but reads/writes
+// `outfits`. Visibility is the single `isPublic` flag (no isListed for
+// dated outfits). See PROGRESS.md "UNIFY ootds + outfits".
+const OOTDS = 'outfits';
 
 function isValidDate(s) {
   return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -80,6 +85,9 @@ async function upsertOotd({
   const payload = {
     userId: user.uid,
     date,
+    source: 'photo',
+    // itemIds lives on the same doc now (unified outfit). A photo-OOTD has
+    // none unless a linked outfit's items get copied in below.
     outfitId,
     linkedType: outfitId ? (linkedType || 'outfit') : null,
     // When the photo source changes, drop the stale segmented cutout so
@@ -172,7 +180,10 @@ async function getOotdById(ootdId) {
  *  Like infra for OOTDs lands in a follow-up commit; until then 'popular'
  *  silently sorts by a non-existent field and matches latest as fallback. */
 async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' } = {}) {
-  const orderField = sortBy === 'popular' ? 'likeCount' : 'updatedAt';
+  // Order by `date` (not updatedAt) so the OOTD feed only surfaces dated
+  // outfits — Firestore excludes docs missing the orderBy field, so plain
+  // (built/analyzed, no date) outfits never leak into the "today's look" feed.
+  const orderField = sortBy === 'popular' ? 'likeCount' : 'date';
   const constraints = [
     where('isPublic', '==', true),
     orderBy(orderField, 'desc'),
@@ -200,11 +211,12 @@ async function deleteOotd({ id }) {
 async function listFollowingFeed({ followingIds, pageSize = 24 } = {}) {
   if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
   const ids = followingIds.slice(0, 30);
+  // orderBy date => only dated (OOTD) outfits surface in the following feed.
   const snap = await getDocs(query(
     collection(db, OOTDS),
     where('isPublic', '==', true),
     where('userId', 'in', ids),
-    orderBy('updatedAt', 'desc'),
+    orderBy('date', 'desc'),
     limit(pageSize),
   ));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -291,7 +303,8 @@ async function listMyOotds({ uid, pageSize = 60 } = {}) {
     where('userId', '==', uid),
     limit(pageSize),
   ));
-  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .filter(o => !!o.date); // dated outfits only = the user's OOTDs
   ootds.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   return { ootds };
 }

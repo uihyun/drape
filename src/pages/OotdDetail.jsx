@@ -34,7 +34,7 @@ export function OotdDetail({ user, onSignIn }) {
 
   useEffect(() => {
     if (!ootdId) return;
-    return onSnapshot(doc(db, 'ootds', ootdId), snap => {
+    return onSnapshot(doc(db, 'outfits', ootdId), snap => {
       setOotd(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [ootdId]);
@@ -327,7 +327,7 @@ export function OotdDetail({ user, onSignIn }) {
       </div>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
-      <Comments parentColl="ootds" parentId={ootd.id} ownerId={ootd.userId} user={user} onSignInRequest={onSignIn} />
+      <Comments parentColl="outfits" parentId={ootd.id} ownerId={ootd.userId} user={user} onSignInRequest={onSignIn} />
     </div>
   );
 }

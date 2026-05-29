@@ -1159,3 +1159,54 @@ Cost / approval notes:
 Build order when we pick this up: Phase 1 (closet match, free) → Phase 2
 (persist pieces) → Phase 3a (marketplace match, free) → Phase 3b (external
 affiliate cards, paid + revenue).
+
+## Cycle: 2026-05-29 — UNIFY ootds + outfits into a single `outfits` collection
+
+Decision (user): everything is an Outfit. "OOTD" is just an outfit the user
+posted as today's look (gets a `date`, shows on calendar + feed). The old
+`analyzed` distinction was only "someone analyzed a photo that wasn't their
+own" — still an outfit. Try-ons (generations) stay separate and can NOT
+become OOTDs anymore. Data reset approved: wipe content, KEEP items (closet)
++ user/profile/follow/handle data.
+
+### Target schema — single `outfits` collection
+- userId, itemIds[], name, coverUrl
+- photoUrl / photoPath / photoCutUrl  (when it's a worn-look photo upload)
+- palette[], composition[], notes, pieces[]  (analysis output)
+- tags[], isPublic, likedBy[], likeCount, commentCount, selfLiked
+- date (YYYY-MM-DD | null) — set => appears on calendar + is an "OOTD"
+- isCalendarRep (bool) — representative for that date's calendar cell
+- source: 'built' | 'analyzed' | 'photo'  (replaces kind; 'analyzed' = from
+  someone else's photo)
+- createdAt, updatedAt, listedAt
+- DROP the `ootds` collection entirely. DROP linkedType/outfitId cross-ref
+  (try-on is no longer linkable as an OOTD).
+
+### Migration / build order (each step ships + is testable)
+1. DONE-ish: data reset script (scripts/reset-content.js) — delete ootds,
+   outfits, generations, boards, users/*/bookmarks; KEEP items, users,
+   profiles, follows, blocks, handles. Run once, manually.
+2. outfit-service: absorb calendar/feed/bookmark/date methods from
+   ootd-service (listMonth, listForDate, setCalendarRepresentative,
+   listPublicFeed, listFollowingFeed, listBookmarked, toggleBookmark,
+   upsert-with-date). Keep ootd-service as a thin re-export shim during
+   transition, then delete.
+3. Calendar.jsx + OotdSheet.jsx → write/read outfits with `date`.
+4. Feed.jsx ootds tab → outfits where isPublic && date != null (the
+   "today's look" feed). Keep boards/market tabs as-is.
+5. Profile OutfitList → one grid of the user's outfits (date-stamped =
+   OOTD). Drop the Mine/Saved/Analyzed sub-tab confusion; Saved(bookmarks)
+   can stay as a filter.
+6. Routes: collapse /ootd/:id into /o/:id (OutfitDetail handles both;
+   redirect /ootd/:id → /o/:id). Delete OotdDetail.jsx once parity reached.
+7. functions: analyzeOotd → fold into a single analyzeOutfit (or keep both
+   pointing at outfits). account.js deletion: drop ootds line. moderation.js
+   already targets outfits.
+8. firestore.rules + indexes: move ootds rules/indexes onto outfits
+   (date-based queries, public+date feed, calendar rep). Remove ootds block.
+9. TryOn / OotdSheet: remove the "link a try-on as OOTD" path.
+
+### Reset — collections to wipe (KEEP items + user data)
+WIPE: ootds, outfits, generations, boards, users/{uid}/bookmarks
+KEEP: items, users, profiles, follows, blocks, handles
+Comments/likes live as subcollections under the wiped docs → cascade.

@@ -80,36 +80,30 @@ service cloud.firestore {
     }
 
     // ── Outfits ───────────────────────────────────────────────────────
-    // An outfit references item ids the user owns. Public if isListed=true.
+    // UNIFIED outfits: a "look". Public if isPublic (or legacy isListed)=true.
+    // A dated outfit (date set) is an "OOTD" — surfaced on calendar + feed.
     match /outfits/{outfitId} {
-      allow read: if resource.data.isListed == true
+      allow read: if resource.data.isPublic == true
+        || resource.data.isListed == true
         || (request.auth != null && resource.data.userId == request.auth.uid);
 
+      // itemIds optional (photo-OOTDs and analyzed captures can have none).
       allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.itemIds is list
-        // Analyzed outfits (kind='analyzed') save the source photo +
-        // detected pieces and may legitimately have 0 itemIds when none
-        // of the detected pieces are in the user's closet yet.
-        && (
-          request.resource.data.itemIds.size() > 0
-          || ('kind' in request.resource.data && request.resource.data.kind == 'analyzed')
-        );
+        && request.resource.data.userId == request.auth.uid;
 
       allow update: if (
         request.auth != null
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['name', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
+            .hasOnly(['name', 'notes', 'note', 'itemIds', 'tags', 'coverUrl', 'coverPath',
                       'isPublic', 'isListed', 'listedAt', 'updatedAt',
                       'selfLiked', 'selfLikedAt',
                       'likeCount', 'likedBy',
-                      'kind', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath',
-                      'mood', 'stylingTips', 'palette', 'composition'])
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['notes'])
-            || !('notes' in request.resource.data)
-            || request.resource.data.notes == null
-            || (request.resource.data.notes is string && request.resource.data.notes.size() <= 280))
+                      'kind', 'source', 'detectedItems', 'sourcePhotoUrl', 'sourcePhotoPath',
+                      'mood', 'stylingTips', 'palette', 'composition',
+                      // OOTD fields now on the unified doc:
+                      'date', 'outfitId', 'linkedType', 'photoUrl', 'photoPath',
+                      'photoCutUrl', 'pieces', 'isCalendarRep', 'analyzedAt'])
       ) || (
         // Like / unlike — any signed-in user, only the likedBy + count keys.
         request.auth != null

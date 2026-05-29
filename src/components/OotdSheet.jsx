@@ -3,7 +3,6 @@ import { X, Image as ImageIcon, Camera as CameraIcon, Trash2, Search } from 'luc
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
-import { GenerationService } from '../services/generation-service.js';
 import { CameraService } from '../services/camera.js';
 import { CameraCaptureModal } from './CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
@@ -21,7 +20,6 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const { sheetStyle: ootdSheetStyle, handleProps: ootdHandleProps } = useSheetDrag(onClose);
   const fileRef = useRef();
   const [boards, setBoards] = useState([]);
-  const [tryons, setTryons] = useState([]);
   const [photoBlob, setPhotoBlob] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [linkedId, setLinkedId] = useState('');
@@ -52,9 +50,6 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     BoardService.listMyBoards({ pageSize: 30 })
       .then(b => { if (!cancelled) setBoards(b || []); })
       .catch(() => setBoards([]));
-    GenerationService.listMyGenerations({ uid: user.uid, pageSize: 30 })
-      .then(({ generations }) => { if (!cancelled) setTryons(generations || []); })
-      .catch(() => setTryons([]));
     return () => { cancelled = true; };
   }, [open, user]);
 
@@ -73,19 +68,9 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   // the user wants to attach.
   const candidates = useMemo(() => {
     const dateStr = ms => (ms ? new Date(ms).toLocaleDateString() : '');
-    const tryonCards = tryons
-      .filter(g => g.status === 'ready' && (g.variantUrls?.length ?? 0) > 0)
-      .map(g => {
-        const ms = g.createdAt?.toMillis?.() ?? 0;
-        return {
-          kind: 'tryon',
-          id: g.id,
-          label: g.title || t('tryOnBadge'),
-          thumbUrl: g.variantUrls?.[0] || null,
-          sortMs: ms,
-          dateStr: dateStr(ms),
-        };
-      });
+    // Try-ons can no longer be linked as an OOTD (unification decision —
+    // only an outfit/board worn that day becomes the day's look).
+    const tryonCards = [];
     const boardCards = boards.map(b => {
       const ms = b.updatedAt?.toMillis?.() ?? b.createdAt?.toMillis?.() ?? 0;
       return {
@@ -98,7 +83,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
       };
     });
     return [...tryonCards, ...boardCards].sort((a, b) => b.sortMs - a.sortMs);
-  }, [boards, tryons, t]);
+  }, [boards, t]);
 
   // Filter the picker by label (try-on title / board name) OR date —
   // once a user has many saved looks the horizontal strip isn't enough.
@@ -133,23 +118,8 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     setError(null);
     try {
       let blob = null;
-      let photoUrlFromTryon = null;
       if (photoBlob) {
         blob = await CameraService.compressImage(photoBlob);
-      } else if (linkedType === 'tryon' && linkedId) {
-        // Derive the OOTD photo from the linked try-on variant UNLESS a
-        // user-uploaded photo already owns the slot. We key off photoPath
-        // (set only for uploaded blobs) instead of photoUrl — a try-on-
-        // derived photo has photoUrl but no photoPath, so switching the
-        // linked try-on on such an OOTD correctly swaps the image.
-        const gen = tryons.find(g => g.id === linkedId);
-        const variantUrl = gen?.variantUrls?.[0] || null;
-        const userUploaded = !!existing?.photoPath;
-        // Only push a new URL when it actually changes the current photo —
-        // avoids a needless re-process when the same try-on stays linked.
-        if (variantUrl && !userUploaded && variantUrl !== existing?.photoUrl) {
-          photoUrlFromTryon = variantUrl;
-        }
       }
       await OotdService.upsertOotd({
         // existing.id present → update that specific OOTD; absent →
@@ -159,7 +129,6 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
         outfitId: linkedId || null,
         linkedType: linkedId ? linkedType : null,
         photoBlob: blob, // only re-uploads if a new blob is staged
-        photoUrlFromTryon,
         note: note.trim(),
         isPublic,
       });

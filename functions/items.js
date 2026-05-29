@@ -556,7 +556,7 @@ exports.analyzeOotd = onCall(
       throw new HttpsError('invalid-argument', 'ootdId required');
     }
 
-    const ootdRef = admin.firestore().collection('ootds').doc(ootdId);
+    const ootdRef = admin.firestore().collection('outfits').doc(ootdId);
     const snap = await ootdRef.get();
     if (!snap.exists) throw new HttpsError('not-found', 'ootd missing');
     const ootd = snap.data();
@@ -748,7 +748,7 @@ exports.processOotdPhoto = onCall(
     }
 
     const db = admin.firestore();
-    const ootdRef = db.collection('ootds').doc(ootdId);
+    const ootdRef = db.collection('outfits').doc(ootdId);
     const snap = await ootdRef.get();
     if (!snap.exists) throw new HttpsError('not-found', 'ootd missing');
     const ootd = snap.data();
