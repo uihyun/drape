@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { FollowService } from '../services/follow-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from './Avatar.jsx';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Slide-up sheet listing the people who follow / are followed by `uid`.
@@ -32,12 +33,14 @@ export function FollowListSheet({ open, uid, kind, onClose }) {
     return () => { cancelled = true; };
   }, [open, uid, kind]);
 
+  const { sheetStyle, handleProps } = useSheetDrag(onClose);
+
   if (!open) return null;
 
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet follow-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="create-sheet-handle" />
+      <div className="create-sheet follow-sheet" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>

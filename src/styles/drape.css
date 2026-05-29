@@ -1819,11 +1819,49 @@ body.is-native {
   max-width: 600px;
   margin: 0 auto;
 }
+.board-detail-hero-wrap {
+  position: relative;
+  margin: 0 0 0.85rem;
+}
 .board-detail-hero {
   width: 100%;
-  margin: 0 0 0.85rem;
   border-radius: 14px;
   aspect-ratio: 3 / 4;
+  display: block;
+}
+.board-detail-hero-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 2;
+}
+.board-hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.board-hero-action.active { color: #ff5a6e; }
+.board-hero-more .more-menu-trigger {
+  width: 36px;
+  height: 36px;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
 }
 .board-detail-title {
   font-size: 1.4rem;
@@ -2809,6 +2847,17 @@ input[type="search"]::-webkit-search-decoration {
 }
 .item-rail-menu button:hover { background: var(--surface-elevated); }
 .item-rail-menu .danger { color: var(--error); }
+
+/* item-rail-more: the visitor MoreMenu on ItemDetail uses the same
+   white-circle style as other rail buttons so it's visible over any photo. */
+.item-rail-more .more-menu-trigger {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
 
 /* MoreMenu (Report / Block popover used by visitor surfaces). */
 .more-menu { position: relative; display: inline-flex; }
@@ -4697,10 +4746,13 @@ input[type="search"]::-webkit-search-decoration {
 .outfit-detail {
   max-width: 600px;
   margin: 0 auto;
-  padding: 0 0 2rem;
+  padding: 0 1rem 2rem;
 }
 .outfit-hero {
-  width: 100%;
+  /* Negative margins to keep the hero full-bleed while the container
+     has 1rem padding — byline/title now align with the photo edges. */
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
   aspect-ratio: 4 / 3;
   background: var(--surface-elevated);
   overflow: hidden;
@@ -4729,7 +4781,6 @@ input[type="search"]::-webkit-search-decoration {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
   margin-bottom: 0.75rem;
 }
 .outfit-byline-author {
@@ -4783,14 +4834,12 @@ input[type="search"]::-webkit-search-decoration {
 .btn-edit:hover { color: var(--text-primary); border-color: var(--border-hover); }
 
 .outfit-date {
-  padding: 0 1rem;
   margin-bottom: 0.4rem;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   color: var(--text-muted);
 }
 .outfit-title {
-  padding: 0 1rem;
   font-size: 1.6rem;
   font-weight: 500;
   line-height: 1.2;
@@ -4803,7 +4852,6 @@ input[type="search"]::-webkit-search-decoration {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 0 1rem;
   margin-bottom: 1.4rem;
 }
 .outfit-edit-form .input {
@@ -4822,7 +4870,6 @@ input[type="search"]::-webkit-search-decoration {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
-  padding: 0 1rem;
   margin-bottom: 1.5rem;
 }
 .palette-card {
@@ -4850,7 +4897,6 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 .outfit-composition {
-  padding: 0 1rem;
   margin-bottom: 1.5rem;
 }
 .outfit-composition header {
@@ -4901,7 +4947,7 @@ input[type="search"]::-webkit-search-decoration {
 }
 .composition-chev { color: var(--text-muted); }
 
-.outfit-notes { padding: 0 1rem; margin-bottom: 1.5rem; }
+.outfit-notes { margin-bottom: 1.5rem; }
 .outfit-notes header h2 {
   font-size: 0.72rem;
   font-weight: 600;
@@ -4916,7 +4962,7 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-primary);
 }
 
-.outfit-items { padding: 0 1rem; margin-bottom: 1.5rem; }
+.outfit-items { margin-bottom: 1.5rem; }
 .outfit-items header h2 {
   font-size: 0.72rem;
   font-weight: 600;
@@ -4926,7 +4972,6 @@ input[type="search"]::-webkit-search-decoration {
   margin-bottom: 0.6rem;
 }
 .outfit-detail .controls {
-  padding: 0 1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;

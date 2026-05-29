@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Image as ImageIcon, Camera as CameraIcon, Trash2, Search } from 'lucide-react';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { OotdService } from '../services/ootd-service.js';
 import { BoardService } from '../services/board-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -17,6 +18,7 @@ const isMobileUA = typeof navigator !== 'undefined'
 // be re-saved later to add more (OotdService.upsertOotd merges).
 export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const { t } = useLocale();
+  const { sheetStyle: ootdSheetStyle, handleProps: ootdHandleProps } = useSheetDrag(onClose);
   const fileRef = useRef();
   const [boards, setBoards] = useState([]);
   const [tryons, setTryons] = useState([]);
@@ -182,8 +184,8 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   return (
     <>
       <div className="create-sheet-overlay" onClick={onClose}>
-        <div className="create-sheet ootd-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-          <div className="create-sheet-handle" />
+        <div className="create-sheet ootd-sheet" style={ootdSheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div className="create-sheet-handle" {...ootdHandleProps} style={{ cursor: 'grab' }} />
           <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
             <X size={18} />
           </button>

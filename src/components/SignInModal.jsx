@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { AuthService } from '../services/auth-service.js';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Sign-in chooser shown when any in-app CTA hits an "auth required"
@@ -11,6 +12,8 @@ export function SignInModal({ open, onClose, onSignedIn }) {
   const { t } = useLocale();
   const [busy, setBusy] = useState(null); // 'google' | 'apple' | null
   const [error, setError] = useState(null);
+
+  const { sheetStyle, handleProps } = useSheetDrag(onClose ?? (() => {}));
 
   if (!open) return null;
 
@@ -46,8 +49,8 @@ export function SignInModal({ open, onClose, onSignedIn }) {
 
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet signin-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="create-sheet-handle" />
+      <div className="create-sheet signin-sheet" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>

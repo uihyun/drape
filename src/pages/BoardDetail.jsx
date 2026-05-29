@@ -82,7 +82,36 @@ export function BoardDetail({ user, onSignIn }) {
 
   return (
     <div className="page board-detail">
-      <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
+      {/* Hero + action overlay — like/bookmark/report always top-right */}
+      <div className="board-detail-hero-wrap">
+        <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
+        <div className="board-detail-hero-actions">
+          {isOwner ? (
+            <button
+              type="button"
+              className={`board-hero-action${board.selfLiked ? ' active' : ''}`}
+              onClick={async () => {
+                try { await BoardService.toggleSelfLike(board.id, !board.selfLiked); }
+                catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+              }}
+              aria-pressed={!!board.selfLiked}
+              aria-label={board.selfLiked ? t('selfUnlike') : t('selfLike')}
+            >
+              <Heart size={16} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
+            </button>
+          ) : (
+            <MoreMenu
+              className="board-hero-more"
+              target={{ type: 'board', id: board.id }}
+              targetUid={board.userId}
+              user={user}
+              onSignIn={onSignIn}
+              showBookmark
+              buttonSize={16}
+            />
+          )}
+        </div>
+      </div>
 
       <header className="outfit-byline">
         <Link
@@ -98,41 +127,18 @@ export function BoardDetail({ user, onSignIn }) {
           />
           <span className="outfit-byline-handle">{author?.handle ? `@${author.handle}` : ''}</span>
         </Link>
-        <div className="outfit-byline-actions">
-          {isOwner ? (
-            <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
-              {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
-              {board.isPublic ? t('unlist') : t('publishToFeed')}
-            </button>
-          ) : (
-            <MoreMenu
-              target={{ type: 'board', id: board.id }}
-              targetUid={board.userId}
-              user={user}
-              onSignIn={onSignIn}
-              showBookmark
-            />
-          )}
-        </div>
+        {isOwner && (
+          <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
+            {board.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
+            {board.isPublic ? t('unlist') : t('publishToFeed')}
+          </button>
+        )}
       </header>
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
       <div className="controls" style={{ padding: '0 1rem' }}>
-        {isOwner ? (
-          <button
-            type="button"
-            className={`btn btn-secondary${board.selfLiked ? ' is-liked' : ''}`}
-            onClick={async () => {
-              try { await BoardService.toggleSelfLike(board.id, !board.selfLiked); }
-              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
-            }}
-            aria-pressed={!!board.selfLiked}
-          >
-            <Heart size={14} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
-            {board.selfLiked ? t('selfUnlike') : t('selfLike')}
-          </button>
-        ) : (
+        {!isOwner && (
           <BoardLikeButton board={board} user={user} onSignIn={onSignIn} t={t} />
         )}
         <ShareButton

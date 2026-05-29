@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Some Google profile photos throw CORS / 403 in third-party contexts.
@@ -32,6 +33,7 @@ export function MobileTabBar({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { sheetStyle: createSheetStyle, handleProps: createHandleProps } = useSheetDrag(() => setSheetOpen(false));
 
   const isLoggedIn = user && !user.isAnonymous;
   const onHome = location.pathname === '/' || location.pathname.startsWith('/feed');
@@ -81,8 +83,8 @@ export function MobileTabBar({ user }) {
 
       {sheetOpen && (
         <div className="create-sheet-overlay" onClick={() => setSheetOpen(false)}>
-          <div className="create-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div className="create-sheet-handle" />
+          <div className="create-sheet" style={createSheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="create-sheet-handle" {...createHandleProps} style={{ cursor: 'grab' }} />
             <button type="button" className="create-sheet-close" onClick={() => setSheetOpen(false)} aria-label={t('close')}>
               <X size={18} />
             </button>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Heart, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
@@ -20,8 +20,11 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // /ootd/:id for the editorial breakdown.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [scope, setScope] = useState('forYou'); // 'forYou' | 'following'
-  const [kind, setKind] = useState('ootds'); // 'ootds' | 'boards' | 'market'
+  const VALID_KINDS = new Set(['ootds', 'boards', 'market']);
+  const rawKind = searchParams.get('kind');
+  const [kind, setKind] = useState(VALID_KINDS.has(rawKind) ? rawKind : 'ootds');
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [listings, setListings] = useState(null);
@@ -126,6 +129,7 @@ export function Feed({ user, onSignIn }) {
 
   const setKindAnd = (k) => {
     setKind(k);
+    setSearchParams(p => { p.set('kind', k); return p; }, { replace: true });
     if (k === 'market') setScope('forYou'); // market has no following view
   };
 
