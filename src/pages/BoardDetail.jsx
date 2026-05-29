@@ -215,28 +215,4 @@ export function BoardDetail({ user, onSignIn }) {
   );
 }
 
-function BoardLikeButton({ board, user, onSignIn, t }) {
-  const liked = !!(user && Array.isArray(board.likedBy) && board.likedBy.includes(user.uid));
-  const count = board.likeCount || 0;
-  const onClick = async () => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    try {
-      await BoardService.toggleLike(board.id, user.uid, liked);
-    } catch (err) {
-      console.warn('board like failed:', err.message);
-    }
-  };
-  return (
-    <button
-      type="button"
-      className={`btn btn-secondary${liked ? ' is-liked' : ''}`}
-      onClick={onClick}
-      aria-pressed={liked}
-    >
-      <Heart size={14} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
-      {count > 0 ? count : t('like')}
-    </button>
-  );
-}
-
 export default BoardDetail;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { Heart, RefreshCw, Trash2, CalendarPlus, ChevronRight } from 'lucide-react';
+import { Heart, RefreshCw, Trash2, CalendarPlus } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OotdService } from '../services/ootd-service.js';
