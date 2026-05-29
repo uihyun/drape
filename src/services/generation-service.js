@@ -145,9 +145,9 @@ async function deleteGeneration(generationId) {
   await deleteDoc(doc(db, GENERATIONS, generationId));
 }
 
-/** Fire-and-forget palette/composition analysis for a ready try-on.
- *  Mirrors how OOTDs are analyzed; safe to call repeatedly (the caller
- *  guards on !palette). */
+/** Fire-and-forget palette/style analysis for a ready try-on.
+ *  Mirrors how dated outfits are analyzed; safe to call repeatedly (the
+ *  caller guards on !palette). */
 async function analyzeGeneration(generationId) {
   return httpsCallable(functions, 'analyzeGeneration')({ generationId });
 }
