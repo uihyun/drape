@@ -1739,12 +1739,13 @@ body.is-native {
   background: var(--surface-elevated);
 }
 
-/* ── OOTD feed (full-bleed Lekondo-style cards) ─────────────────────── */
+/* ── OOTD feed — 2-col masonry-ish grid, photos at natural ratio ────── */
 .ootd-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
   margin-top: 1rem;
+  align-items: start;
 }
 .ootd-card {
   position: relative;
@@ -1754,16 +1755,18 @@ body.is-native {
   background: var(--surface-elevated);
   text-decoration: none;
   color: inherit;
-  aspect-ratio: 3 / 4;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .ootd-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+/* Width fixed by the grid column; height follows the image's own ratio. */
 .ootd-card img {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   display: block;
 }
+/* No-photo placeholder still needs a height. */
+.ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
 .ootd-card-empty {
   position: absolute;
   inset: 0;
@@ -1830,12 +1833,13 @@ body.is-native {
   letter-spacing: -0.01em;
 }
 
-/* ── Public boards feed — same full-bleed card scale as OOTDs ──────── */
+/* ── Public boards feed — 2-col grid, matching the OOTD feed ───────── */
 .board-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
   margin-top: 1rem;
+  align-items: start;
 }
 .board-feed-card {
   position: relative;
@@ -4139,7 +4143,6 @@ input[type="search"]::-webkit-search-decoration {
 }
 .ootd-sheet-photo {
   width: 100%;
-  aspect-ratio: 3 / 4;
   background: var(--surface-elevated);
   border-radius: 12px;
   overflow: hidden;
@@ -4148,7 +4151,10 @@ input[type="search"]::-webkit-search-decoration {
   align-items: center;
   justify-content: center;
 }
-.ootd-sheet-photo img { width: 100%; height: 100%; object-fit: cover; }
+/* Show the photo at its natural ratio (width fixed, height follows) — no
+   crop. Cap so an extreme-portrait shot doesn't run off the sheet. */
+.ootd-sheet-photo img { width: 100%; height: auto; max-height: 60vh; object-fit: contain; display: block; }
+.ootd-sheet-photo:has(.ootd-sheet-photo-empty) { aspect-ratio: 3 / 4; }
 .ootd-sheet-photo-empty {
   font-size: 0.85rem;
   color: var(--text-muted);
