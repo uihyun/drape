@@ -128,7 +128,7 @@ async function listPublicBoards({ pageSize = 24, sortBy = 'latest' } = {}) {
 }
 
 /** Following feed — public boards from the given set of authors,
- *  newest first. Mirrors OotdService.listFollowingFeed. Firestore `in`
+ *  newest first. Mirrors OutfitService.listFollowingFeed. Firestore `in`
  *  caps at 30. */
 async function listFollowingBoards({ followingIds, pageSize = 24 } = {}) {
   if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
@@ -143,7 +143,7 @@ async function listFollowingBoards({ followingIds, pageSize = 24 } = {}) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-/** Like / unlike a public board. Mirrors OotdService.toggleLike. */
+/** Like / unlike a public board. Mirrors OutfitService.toggleLike. */
 async function toggleLike(boardId, uid, currentlyLiked) {
   const ref_ = doc(db, BOARDS, boardId);
   const snap = await getDoc(ref_);
