@@ -380,9 +380,19 @@ a redesign.`;
     };
     if (croppedUrl)  { patch.croppedUrl = croppedUrl; patch.croppedPath = croppedPath; }
     if (tags)        { patch.tags = tags; }
-    // Auto-populate the display name from Gemini only if the user
-    // hasn't already typed one — never clobber a manual edit.
-    if (tags?.name && !item.name) { patch.name = tags.name; }
+    // Auto-populate the display name only if the user hasn't typed one —
+    // never clobber a manual edit. Prefer Gemini's name; if it's missing
+    // but we have tags, fall back to a simple "<Color> <Category>" label
+    // so every item still carries an intuitive name instead of "Untitled".
+    if (!item.name) {
+      let autoName = tags?.name || null;
+      if (!autoName && tags?.category) {
+        const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+        const color = Array.isArray(tags.colors) && tags.colors[0] ? cap(tags.colors[0]) : '';
+        autoName = `${color ? `${color} ` : ''}${cap(tags.category)}`.trim();
+      }
+      if (autoName) patch.name = autoName;
+    }
     await docRef.update(patch);
 
     return { ok: true, tags, croppedUrl };
