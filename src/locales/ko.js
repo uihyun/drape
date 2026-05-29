@@ -136,6 +136,8 @@ export const ko = {
   saveAnalysis: '분석 저장',
   itemsInPhoto: '이 사진의 아이템들',
   fromYourCloset: '내 옷장에서',
+  piecesInLook: '이 룩의 아이템',
+  noClosetMatch: '옷장에 비슷한 게 없어요',
   analysisSaved: '저장됨',
   outfitsMine: '내거',
   outfitsSaved: '저장한 것',

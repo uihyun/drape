@@ -495,12 +495,24 @@ exact schema:
   ],
   "notes": "1-3 sentence English reading of the look — what anchors it,
   how the pieces interact, the overall mood. Editorial tone, not
-  generic. Avoid clichés."
+  generic. Avoid clichés.",
+  "items": [
+    {
+      "name":        short 2-4 word title (e.g. "Taupe knit tee", "Dark indigo denim"). Color + garment, title case, no brand,
+      "category":    one of [${TAXONOMY.CATEGORIES.join(', ')}],
+      "subcategory": one of the subcategories valid for that category,
+      "colors":      array of 1-3 from [${TAXONOMY.COLORS.join(', ')}],
+      "searchQuery": 3-8 word search query that would find this piece online
+    }
+    ... one entry per distinct visible garment/accessory, max 8
+  ]
 }
 
 Rules: only describe what's visible. Skip the wearer's identity / face.
 Percentages of palette entries should sum close to 100. Composition
-must use exactly 4 entries from the enum.`;
+must use exactly 4 entries from the enum. For items, list each distinct
+worn piece (top, bottom, outerwear, shoes, bag, etc.) — these power a
+"shop your closet" match, so the category + colors must be accurate.`;
 }
 
 function sanitizePalette(raw) {
@@ -569,11 +581,28 @@ exports.analyzeOotd = onCall(
       const parsed = safeParseJson(res?.response?.text() || '');
       if (!parsed) throw new HttpsError('internal', 'parse_failed');
 
+      // Decompose worn pieces (category + colors per garment) so OotdDetail
+      // can match them against the user's closet ("from your closet"). Reuse
+      // the detect-item sanitizer; keep only the fields the match needs.
+      const pieces = Array.isArray(parsed.items)
+        ? parsed.items.map(sanitizeDetectItem).filter(Boolean)
+            .filter(p => p.category)
+            .slice(0, 8)
+            .map(p => ({
+              name: p.name || '',
+              category: p.category,
+              subcategory: p.subcategory || null,
+              colors: p.colors || [],
+              searchQuery: p.searchQuery || '',
+            }))
+        : [];
+
       const patch = {
         title: typeof parsed.title === 'string' ? parsed.title.slice(0, 120) : '',
         palette: sanitizePalette(parsed.palette),
         composition: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
+        pieces,
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };

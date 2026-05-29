@@ -28,6 +28,7 @@ export function OotdDetail({ user, onSignIn }) {
   const [busy, setBusy] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [closet, setCloset] = useState([]);
 
   useEffect(() => {
     if (!ootdId) return;
@@ -35,6 +36,14 @@ export function OotdDetail({ user, onSignIn }) {
       setOotd(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [ootdId]);
+
+  // Owner's closet powers the "from your closet" match under each detected
+  // piece. Only the owner sees it (it's their wardrobe). Tag-only, no cost.
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setCloset([]); return; }
+    return ItemService.subscribeMyCloset(user.uid, list =>
+      setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
+  }, [user?.uid]);
 
   // Keep bookmark state in sync (own /users/{uid}/bookmarks/{ootdId} doc).
   useEffect(() => {
@@ -276,6 +285,15 @@ export function OotdDetail({ user, onSignIn }) {
         </section>
       )}
 
+      {isOwner && Array.isArray(ootd.pieces) && ootd.pieces.length > 0 && (
+        <section className="outfit-pieces">
+          <header><h2>{t('piecesInLook')}</h2></header>
+          {ootd.pieces.map((piece, i) => (
+            <PieceMatchRow key={i} piece={piece} closet={closet} t={t} />
+          ))}
+        </section>
+      )}
+
       {outfit && (
         <section className="outfit-items">
           <header><h2>{t('ootdLinkedHead')}</h2></header>
@@ -308,6 +326,45 @@ export function OotdDetail({ user, onSignIn }) {
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
       <Comments parentColl="ootds" parentId={ootd.id} ownerId={ootd.userId} user={user} onSignInRequest={onSignIn} />
+    </div>
+  );
+}
+
+// One detected piece + the closet items that tag-match it. Renders the
+// piece label and a horizontal strip of "from your closet" matches; the
+// strip is omitted when nothing in the closet matches.
+function PieceMatchRow({ piece, closet, t }) {
+  const matches = matchCloset(piece, closet);
+  const label = piece.name
+    || [(piece.colors || [])[0], piece.category].filter(Boolean).join(' ')
+    || t('untitledItem');
+  return (
+    <div className="piece-match-row">
+      <div className="piece-match-head">
+        <span className="piece-match-name">{label}</span>
+        {piece.category && (
+          <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
+        )}
+      </div>
+      {matches.length > 0 ? (
+        <div className="analyze-match-strip">
+          <span className="analyze-match-label">{t('fromYourCloset')}</span>
+          <div className="analyze-match-row">
+            {matches.map(({ item }) => {
+              const cover = item.croppedUrl || item.originalUrl;
+              return (
+                <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
+                  {cover
+                    ? <img src={cover} alt={item.name || ''} loading="lazy" />
+                    : <div className="item-card-skeleton" />}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <span className="piece-match-empty">{t('noClosetMatch')}</span>
+      )}
     </div>
   );
 }

@@ -136,6 +136,8 @@ export const en = {
   saveAnalysis: 'Save analysis',
   itemsInPhoto: 'Items in this photo',
   fromYourCloset: 'From your closet',
+  piecesInLook: 'Pieces in this look',
+  noClosetMatch: 'No match in your closet',
   analysisSaved: 'Saved',
   outfitsMine: 'Mine',
   outfitsSaved: 'Saved',

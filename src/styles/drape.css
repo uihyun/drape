@@ -926,6 +926,35 @@ body.is-native {
   border: 1px solid var(--border);
 }
 .analyze-match-card img { width: 100%; height: 100%; object-fit: cover; }
+
+/* "Pieces in this look" — OOTD/outfit detail: each detected garment + its
+   closet matches. Reuses .analyze-match-strip/.analyze-match-row above. */
+.outfit-pieces { padding: 0 1rem; margin-bottom: 1.5rem; }
+.outfit-pieces > header h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+.piece-match-row {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+}
+.piece-match-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.piece-match-name { font-size: 0.9rem; color: var(--text-primary); }
+.piece-match-cat {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.piece-match-empty { font-size: 0.8rem; color: var(--text-muted); }
 .analyze-result-v2 .analyze-footer {
   padding: 0 1rem;
 }
@@ -1902,8 +1931,6 @@ body.is-native {
 }
 .board-hero-action.active { color: #ff5a6e; }       /* like = red */
 .board-hero-action.bookmarked { color: var(--accent); } /* bookmark = green */
-/* OOTD detail hero needs a positioning context for its action overlay. */
-.ootd-hero { position: relative; }
 .board-hero-count {
   font-size: 0.78rem;
   font-weight: 600;

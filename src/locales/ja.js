@@ -138,6 +138,8 @@ export const ja = {
   saveAnalysis: '解析を保存',
   itemsInPhoto: 'この写真のアイテム',
   fromYourCloset: 'クローゼットから',
+  piecesInLook: 'このルックのアイテム',
+  noClosetMatch: 'クローゼットに類似なし',
   analysisSaved: '保存済み',
   outfitsMine: 'マイ',
   outfitsSaved: '保存',
