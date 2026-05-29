@@ -344,9 +344,9 @@ export const ko = {
   // ── Settings ───────────────────────────────────────────────────────
   account: '계정',
   identityRefsTitle: '내 정체성 레퍼런스 사진',
-  identityRefsHint: '전신 사진 최대 {max}장. 배경은 자동 제거, 손에 든 것 (가방, 폰 등) 은 컷아웃에 남을 수 있어요.',
-  identityRefsPrimary: '첫 번째 사진이 피팅 결과의 포즈와 구도를 결정해요. 나머지는 얼굴과 몸을 다른 각도에서 더 정확히 보존하는 데 사용됩니다.',
-  identityRefsPrimaryDragHint: '첫 사진이 포즈 기준. 드래그로 순서 바꾸기, 탭하면 미리보기.',
+  identityRefsHint: '나를 찍은 전신 사진 최대 {max}장. 첫 번째 사진이 주 레퍼런스로, 모든 피팅 결과의 포즈·구도·체형을 결정해요. 손에 든 물건 (가방, 폰, 음료 등) 이 컷아웃에 남을 수 있어요 — 배경 제거 AI가 손과 손에 든 물체를 구분하지 못하기 때문이에요.',
+  identityRefsPrimary: '두 번째·세 번째 사진은 보조 레퍼런스예요. 포즈에는 영향을 주지 않고, AI가 다양한 각도와 조명에서 내 얼굴·체형을 더 정확히 인식하도록 도와줘요. 포즈의 출처가 아닌 일관성 확보용이에요.',
+  identityRefsPrimaryDragHint: '드래그로 순서 변경 · 탭하면 미리보기',
   identityRefsPrimaryBadge: '메인',
   identityRefsReprocess: '배경 다시 잘라내기',
   addRef: '사진 추가',

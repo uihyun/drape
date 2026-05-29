@@ -346,9 +346,9 @@ export const ja = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'アカウント',
   identityRefsTitle: 'アイデンティティ用写真',
-  identityRefsHint: '全身写真 最大 {max} 枚。背景は自動削除、手に持っているもの (バッグ、スマホなど) はカットアウトに残る場合があります。',
-  identityRefsPrimary: '1 枚目がメインで、試着結果のポーズと構図を決めます。残りは別角度で顔と体をより正確に保存するために使われます。',
-  identityRefsPrimaryDragHint: '1 枚目がポーズの基準。ドラッグで並べ替え、タップでプレビュー。',
+  identityRefsHint: '全身写真 最大 {max} 枚。1 枚目がメイン参照写真として、すべての試着結果のポーズ・構図・体型を決定します。手に持っているもの (バッグ、スマホ、飲み物など) がカットアウトに残る場合があります — 背景除去 AI が手と持ち物を区別できないためです。',
+  identityRefsPrimary: '2・3 枚目はサポート参照写真です。ポーズには影響せず、様々な角度・照明条件で顔や体型をより正確に認識するために使われます。ポーズの源ではなく、一貫性を高めるための補助です。',
+  identityRefsPrimaryDragHint: 'ドラッグで並び替え · タップでプレビュー',
   identityRefsPrimaryBadge: 'メイン',
   identityRefsReprocess: '背景を再切り抜き',
   addRef: '写真を追加',

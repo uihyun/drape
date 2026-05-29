@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart } from 'lucide-react';
+import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
+import { OotdService } from '../services/ootd-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -24,6 +26,8 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [bookmarked, setBookmarked] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     if (!outfitId) return;
@@ -47,6 +51,15 @@ export function OutfitDetail({ user, onSignIn }) {
     if (!outfit?.userId) { setOwner(null); return; }
     ProfileService.getByUid(outfit.userId).then(setOwner).catch(() => setOwner(null));
   }, [outfit?.userId]);
+
+  useEffect(() => {
+    if (!user || user.isAnonymous || !outfitId) { setBookmarked(false); return; }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', outfitId),
+      s => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [user?.uid, outfitId]);
 
   if (!outfit) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && outfit.userId === user.uid;
@@ -133,6 +146,61 @@ export function OutfitDetail({ user, onSignIn }) {
 
   return (
     <div className="outfit-detail">
+      {/* Action buttons at page top-right, above the hero image */}
+      <div className="detail-page-actions">
+        {isOwner ? (
+          <button
+            type="button"
+            className={`detail-page-action${outfit.selfLiked ? ' liked' : ''}`}
+            onClick={async () => {
+              try { await OutfitService.toggleSelfLike(outfit.id, !outfit.selfLiked); }
+              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+            }}
+          >
+            <Heart size={16} strokeWidth={1.6} fill={outfit.selfLiked ? 'currentColor' : 'none'} />
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className={`detail-page-action${(outfit.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+                catch (e) { console.warn('outfit like failed', e?.message); }
+              }}
+            >
+              <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+              {(outfit.likeCount || 0) > 0 && <span className="detail-page-action-count">{outfit.likeCount}</span>}
+            </button>
+            <button
+              type="button"
+              className={`detail-page-action${bookmarked ? ' bookmarked' : ''}`}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await OotdService.toggleBookmark(outfit.id, bookmarked); }
+                catch (e) { console.warn('outfit bookmark failed', e?.message); }
+              }}
+            >
+              <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+            </button>
+            <button
+              type="button"
+              className="detail-page-action"
+              onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+            >
+              <Flag size={15} strokeWidth={1.6} />
+            </button>
+          </>
+        )}
+      </div>
+      {reporting && (
+        <ReportModal
+          target={{ type: 'outfit', id: outfit.id }}
+          user={user}
+          onClose={() => setReporting(false)}
+        />
+      )}
       {renderHero()}
 
       <header className="outfit-byline">

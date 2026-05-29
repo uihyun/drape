@@ -1830,8 +1830,46 @@ body.is-native {
   max-width: 600px;
   margin: 0 auto;
 }
+/* Page-level action column (❤️🔖🚩) — positioned at the very top-right
+   of the page, ABOVE the hero image, same row as the back arrow. */
+.board-detail { position: relative; }
+.outfit-detail { position: relative; }
+
+.detail-page-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  z-index: 100;
+}
+.detail-page-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.6rem;
+  background: rgba(255,255,255,0.93);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-primary);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.detail-page-action.liked { color: #ff5a6e; border-color: #ff5a6e; }
+.detail-page-action.bookmarked { color: var(--accent); border-color: var(--accent); }
+.detail-page-action-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .board-detail-hero-wrap {
-  position: relative;
   margin: 0 0 0.85rem;
 }
 .board-detail-hero {
@@ -1839,46 +1877,6 @@ body.is-native {
   border-radius: 14px;
   aspect-ratio: 3 / 4;
   display: block;
-}
-.board-detail-hero-actions {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  z-index: 2;
-}
-.board-hero-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: rgba(0,0,0,0.42);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-}
-.board-hero-action.active { color: #ff5a6e; }
-.board-hero-action.bookmarked { color: #fff; }
-.board-hero-count {
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1;
-}
-.board-hero-more .more-menu-trigger {
-  width: 36px;
-  height: 36px;
-  background: rgba(0,0,0,0.42);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
 }
 .board-detail-title {
   font-size: 1.4rem;

@@ -56,6 +56,11 @@ export const CITIES = [
   { id: 'jakarta-id',        country: 'ID', names: { en: 'Jakarta',        ko: '자카르타',    ja: 'ジャカルタ' } },
   { id: 'hanoi-vn',          country: 'VN', names: { en: 'Hanoi',          ko: '하노이',      ja: 'ハノイ' } },
   { id: 'bali-id',           country: 'ID', names: { en: 'Bali',           ko: '발리',        ja: 'バリ' } },
+  { id: 'phuket-th',         country: 'TH', names: { en: 'Phuket',         ko: '푸켓',        ja: 'プーケット' } },
+  { id: 'chiangmai-th',      country: 'TH', names: { en: 'Chiang Mai',     ko: '치앙마이',    ja: 'チェンマイ' } },
+  { id: 'cebu-ph',           country: 'PH', names: { en: 'Cebu',           ko: '세부',        ja: 'セブ' } },
+  { id: 'yangon-mm',         country: 'MM', names: { en: 'Yangon',         ko: '양곤',        ja: 'ヤンゴン' } },
+  { id: 'surabaya-id',       country: 'ID', names: { en: 'Surabaya',       ko: '수라바야',    ja: 'スラバヤ' } },
 
   // ── North America ─────────────────────────────────────────────────
   { id: 'newyork-us',        country: 'US', names: { en: 'New York',       ko: '뉴욕',        ja: 'ニューヨーク' } },
@@ -154,6 +159,21 @@ export const CITIES = [
   { id: 'marseille-fr',      country: 'FR', names: { en: 'Marseille',      ko: '마르세유',    ja: 'マルセイユ' } },
   { id: 'geneva-ch',         country: 'CH', names: { en: 'Geneva',         ko: '제네바',      ja: 'ジュネーブ' } },
   { id: 'porto-pt',          country: 'PT', names: { en: 'Porto',          ko: '포르투',      ja: 'ポルト' } },
+  { id: 'kyiv-ua',           country: 'UA', names: { en: 'Kyiv',           ko: '키이우',      ja: 'キーウ' } },
+  { id: 'bucharest-ro',      country: 'RO', names: { en: 'Bucharest',      ko: '부쿠레슈티',  ja: 'ブカレスト' } },
+  { id: 'sofia-bg',          country: 'BG', names: { en: 'Sofia',          ko: '소피아',      ja: 'ソフィア' } },
+  { id: 'krakow-pl',         country: 'PL', names: { en: 'Kraków',         ko: '크라쿠프',    ja: 'クラクフ' } },
+  { id: 'dubrovnik-hr',      country: 'HR', names: { en: 'Dubrovnik',      ko: '두브로브니크', ja: 'ドゥブロヴニク' } },
+  { id: 'tallinn-ee',        country: 'EE', names: { en: 'Tallinn',        ko: '탈린',        ja: 'タリン' } },
+  { id: 'riga-lv',           country: 'LV', names: { en: 'Riga',           ko: '리가',        ja: 'リガ' } },
+  { id: 'vilnius-lt',        country: 'LT', names: { en: 'Vilnius',        ko: '빌뉴스',      ja: 'ヴィリニュス' } },
+  { id: 'tbilisi-ge',        country: 'GE', names: { en: 'Tbilisi',        ko: '트빌리시',    ja: 'トビリシ' } },
+  { id: 'thessaloniki-gr',   country: 'GR', names: { en: 'Thessaloniki',   ko: '데살로니키',  ja: 'テッサロニキ' } },
+  { id: 'rotterdam-nl',      country: 'NL', names: { en: 'Rotterdam',      ko: '로테르담',    ja: 'ロッテルダム' } },
+  { id: 'seville-es',        country: 'ES', names: { en: 'Seville',        ko: '세비야',      ja: 'セビリア' } },
+  { id: 'valencia-es',       country: 'ES', names: { en: 'Valencia',       ko: '발렌시아',    ja: 'バレンシア' } },
+  { id: 'nice-fr',           country: 'FR', names: { en: 'Nice',           ko: '니스',        ja: 'ニース' } },
+  { id: 'bruges-be',         country: 'BE', names: { en: 'Bruges',         ko: '브뤼헤',      ja: 'ブルージュ' } },
 
   // ── Other ─────────────────────────────────────────────────────────
   { id: 'sydney-au',         country: 'AU', names: { en: 'Sydney',         ko: '시드니',      ja: 'シドニー' } },

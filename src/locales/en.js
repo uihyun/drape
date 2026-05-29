@@ -344,9 +344,9 @@ export const en = {
   // ── Settings ───────────────────────────────────────────────────────
   account: 'Account',
   identityRefsTitle: 'Identity reference photos',
-  identityRefsHint: 'Up to {max} full-body photos. Backgrounds removed; anything held (bags, phones) could stay in the cutout.',
-  identityRefsPrimary: 'The first photo sets the pose and framing for try-on results. Others help preserve your face and body from different angles.',
-  identityRefsPrimaryDragHint: 'First photo sets the pose. Drag to reorder, tap to preview.',
+  identityRefsHint: 'Up to {max} full-body photos of yourself. The first photo is your primary reference — it determines the pose, framing, and body position in every try-on result. Anything you\'re holding (bag, phone, coffee cup) may appear in the cutout since background removal can\'t tell apart your hand from what it holds.',
+  identityRefsPrimary: 'Photos 2 and 3 are supporting references — they don\'t influence the pose, but help the AI recognize your face and body shape more accurately across different angles and lighting. Think of them as consistency checks, not additional pose sources.',
+  identityRefsPrimaryDragHint: 'Drag to reorder · tap to preview',
   identityRefsPrimaryBadge: 'Primary',
   identityRefsReprocess: 'Re-cut background',
   addRef: 'Add photo',
