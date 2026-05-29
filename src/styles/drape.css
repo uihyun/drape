@@ -1830,46 +1830,14 @@ body.is-native {
   max-width: 600px;
   margin: 0 auto;
 }
-/* Page-level action column (❤️🔖🚩) — positioned at the very top-right
-   of the page, ABOVE the hero image, same row as the back arrow. */
-.board-detail { position: relative; }
-.outfit-detail { position: relative; }
-
-.detail-page-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  z-index: 100;
-}
-.detail-page-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 0.6rem;
-  background: rgba(255,255,255,0.93);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--text-primary);
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.detail-page-action.liked { color: #ff5a6e; border-color: #ff5a6e; }
-.detail-page-action.bookmarked { color: var(--accent); border-color: var(--accent); }
-.detail-page-action-count {
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1;
+/* Outfit hero wrapper — needs position:relative so the action overlay
+   can be positioned inside it (same pattern as board-detail-hero-wrap). */
+.outfit-hero-wrap {
+  position: relative;
 }
 
 .board-detail-hero-wrap {
+  position: relative;
   margin: 0 0 0.85rem;
 }
 .board-detail-hero {
@@ -1878,6 +1846,40 @@ body.is-native {
   aspect-ratio: 3 / 4;
   display: block;
 }
+/* Action overlay — shared by board detail and outfit detail hero images.
+   z-index: 1000 ensures these appear above all board stickers/clothing. */
+.board-detail-hero-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 1000;
+}
+.board-hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.5rem;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.board-hero-action.active { color: #ff5a6e; }
+.board-hero-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .board-detail-title {
   font-size: 1.4rem;
   font-weight: 600;

@@ -1,30 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Sparkles, Upload, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
-import { OutfitService } from '../services/outfit-service.js';
 import { GenerationService } from '../services/generation-service.js';
 import { CameraService } from '../services/camera.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Try-on entry. Two axes to pick:
-//   - WHO: identityRefs (default) OR a one-shot custom photo
-//   - WHAT: individual items OR a saved outfit (set)
-// When you submit, navigates to /tryon/:generationId for the variant gallery.
+// Try-on entry. Pick WHO (saved identity refs, or a one-shot custom photo)
+// and WHAT (one or more closet items). On submit, navigates to
+// /tryon/:generationId for the variant gallery.
 export function TryOn({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const [search] = useSearchParams();
   const [refs, setRefs] = useState(null);
   const [items, setItems] = useState([]);
-  const [outfits, setOutfits] = useState([]);
   const [selected, setSelected] = useState(() => {
     const ids = search.get('items');
     return new Set(ids ? ids.split(',') : []);
   });
-  const [pickedOutfitId, setPickedOutfitId] = useState(null);
-  const [whatTab, setWhatTab] = useState('items'); // 'items' | 'outfits'
   // Optional scene description sent to the model — empty = default
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
   // photo mode preserves the photo's background regardless).
@@ -42,9 +37,6 @@ export function TryOn({ user, onSignIn }) {
     const unsub = ItemService.subscribeMyCloset(user.uid, list => {
       setItems(list.filter(i => i.status === 'ready'));
     });
-    OutfitService.listMyOutfits({ uid: user.uid, kind: 'mine' })
-      .then(({ outfits }) => setOutfits(outfits))
-      .catch(() => setOutfits([]));
     return unsub;
   }, [user]);
 
@@ -55,11 +47,6 @@ export function TryOn({ user, onSignIn }) {
     setCustomPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [customBlob]);
-
-  const itemsById = useMemo(
-    () => Object.fromEntries(items.map(i => [i.id, i])),
-    [items],
-  );
 
   if (!user || user.isAnonymous) {
     return (
@@ -107,17 +94,11 @@ export function TryOn({ user, onSignIn }) {
   }
 
   const toggleItem = (id) => {
-    setPickedOutfitId(null);
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  };
-
-  const pickOutfit = (o) => {
-    setPickedOutfitId(o.id);
-    setSelected(new Set((o.itemIds || []).filter(id => itemsById[id]?.status === 'ready')));
   };
 
   const onCustomFile = async (file) => {
@@ -262,29 +243,9 @@ export function TryOn({ user, onSignIn }) {
         />
       </div>
 
-      {/* ── What to wear: items OR outfit ─────────────────────────── */}
-      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginTop: '0.75rem' }}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={whatTab === 'items'}
-          className={`chip${whatTab === 'items' ? ' active' : ''}`}
-          onClick={() => setWhatTab('items')}
-        >
-          {t('tryOnItems')}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={whatTab === 'outfits'}
-          className={`chip${whatTab === 'outfits' ? ' active' : ''}`}
-          onClick={() => setWhatTab('outfits')}
-        >
-          {t('tryOnOutfits')}
-        </button>
-      </nav>
-
-      {whatTab === 'items' && (
+      {/* ── Pick items from your closet ───────────────────────────── */}
+      <div style={{ marginTop: '0.75rem' }} />
+      {(
         items.length === 0 ? (
           <div className="empty-state empty-state-card" style={{ marginTop: '1rem' }}>
             <p>{t('tryOnEmptyCloset')}</p>
@@ -310,52 +271,6 @@ export function TryOn({ user, onSignIn }) {
                         <Check size={14} strokeWidth={2.4} />
                       </span>
                     )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )
-      )}
-
-      {whatTab === 'outfits' && (
-        outfits.length === 0 ? (
-          <div className="empty-state empty-state-card" style={{ marginTop: '1rem' }}>
-            <p>{t('tryOnEmptyOutfits')}</p>
-            <Link to="/outfits/new" className="btn btn-primary">{t('createOutfit')}</Link>
-          </div>
-        ) : (
-          <div className="tryon-outfit-grid">
-            {outfits.map(o => {
-              const isSel = pickedOutfitId === o.id;
-              const thumbs = (o.itemIds || [])
-                .slice(0, 4)
-                .map(id => itemsById[id])
-                .filter(Boolean)
-                .map(it => it.croppedUrl || it.originalUrl)
-                .filter(Boolean);
-              return (
-                <button
-                  key={o.id}
-                  type="button"
-                  className={`tryon-outfit-card${isSel ? ' selected' : ''}`}
-                  onClick={() => pickOutfit(o)}
-                >
-                  <div className="tryon-outfit-thumbs">
-                    {thumbs.length === 0
-                      ? <div className="muted" style={{ padding: '1rem' }}>{t('untitledOutfit')}</div>
-                      : thumbs.map((url, i) => (
-                          <img key={i} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" />
-                        ))}
-                    {isSel && (
-                      <span className="item-card-check">
-                        <Check size={14} strokeWidth={2.4} />
-                      </span>
-                    )}
-                  </div>
-                  <div className="tryon-outfit-meta">
-                    <span className="card-meta-name">{o.name || t('untitledOutfit')}</span>
-                    <span className="card-meta-date">{(o.itemIds || []).length} {t('itemsShort')}</span>
                   </div>
                 </button>
               );

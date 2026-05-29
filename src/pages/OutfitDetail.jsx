@@ -146,62 +146,60 @@ export function OutfitDetail({ user, onSignIn }) {
 
   return (
     <div className="outfit-detail">
-      {/* Action buttons at page top-right, above the hero image */}
-      <div className="detail-page-actions">
-        {isOwner ? (
-          <button
-            type="button"
-            className={`detail-page-action${outfit.selfLiked ? ' liked' : ''}`}
-            onClick={async () => {
-              try { await OutfitService.toggleSelfLike(outfit.id, !outfit.selfLiked); }
-              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
-            }}
-          >
-            <Heart size={16} strokeWidth={1.6} fill={outfit.selfLiked ? 'currentColor' : 'none'} />
-          </button>
-        ) : (
-          <>
+      {/* Hero + overlay actions — same dark-circle style as boards */}
+      <div className="outfit-hero-wrap">
+        {renderHero()}
+        <div className="board-detail-hero-actions">
+          {isOwner ? (
             <button
               type="button"
-              className={`detail-page-action${(outfit.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
+              className={`board-hero-action${outfit.selfLiked ? ' active' : ''}`}
               onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
-                catch (e) { console.warn('outfit like failed', e?.message); }
+                try { await OutfitService.toggleSelfLike(outfit.id, !outfit.selfLiked); }
+                catch (e) { console.warn('toggleSelfLike failed', e?.message); }
               }}
             >
-              <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(outfit.likeCount || 0) > 0 && <span className="detail-page-action-count">{outfit.likeCount}</span>}
+              <Heart size={16} strokeWidth={1.6} fill={outfit.selfLiked ? 'currentColor' : 'none'} />
             </button>
-            <button
-              type="button"
-              className={`detail-page-action${bookmarked ? ' bookmarked' : ''}`}
-              onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await OotdService.toggleBookmark(outfit.id, bookmarked); }
-                catch (e) { console.warn('outfit bookmark failed', e?.message); }
-              }}
-            >
-              <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              type="button"
-              className="detail-page-action"
-              onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
-            >
-              <Flag size={15} strokeWidth={1.6} />
-            </button>
-          </>
-        )}
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`board-hero-action${(outfit.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
+                onClick={async () => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+                  catch (e) { console.warn('outfit like failed', e?.message); }
+                }}
+              >
+                <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+                {(outfit.likeCount || 0) > 0 && <span className="board-hero-count">{outfit.likeCount}</span>}
+              </button>
+              <button
+                type="button"
+                className={`board-hero-action${bookmarked ? ' active' : ''}`}
+                onClick={async () => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await OotdService.toggleBookmark(outfit.id, bookmarked); }
+                  catch (e) { console.warn('outfit bookmark failed', e?.message); }
+                }}
+              >
+                <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                type="button"
+                className="board-hero-action"
+                onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+              >
+                <Flag size={15} strokeWidth={1.6} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
       {reporting && (
-        <ReportModal
-          target={{ type: 'outfit', id: outfit.id }}
-          user={user}
-          onClose={() => setReporting(false)}
-        />
+        <ReportModal target={{ type: 'outfit', id: outfit.id }} user={user} onClose={() => setReporting(false)} />
       )}
-      {renderHero()}
 
       <header className="outfit-byline">
         <div className="outfit-byline-author">

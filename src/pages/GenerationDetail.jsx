@@ -246,7 +246,6 @@ export function GenerationDetail({ user }) {
                           ? <img src={cover} alt={it.name || ''} loading="lazy" />
                           : <div className="item-card-skeleton" />}
                       </div>
-                      {it.name && <span className="gen-item-name">{it.name}</span>}
                     </Link>
                   );
                 })}

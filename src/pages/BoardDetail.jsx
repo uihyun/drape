@@ -94,69 +94,60 @@ export function BoardDetail({ user, onSignIn }) {
 
   return (
     <div className="page board-detail">
-      {/* Action buttons — page top-right, ABOVE the image (not inside it) */}
-      <div className="detail-page-actions">
-        {isOwner ? (
-          <button
-            type="button"
-            className={`detail-page-action${board.selfLiked ? ' active' : ''}`}
-            onClick={async () => {
-              try { await BoardService.toggleSelfLike(board.id, !board.selfLiked); }
-              catch (e) { console.warn('toggleSelfLike failed', e?.message); }
-            }}
-            aria-pressed={!!board.selfLiked}
-          >
-            <Heart size={16} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
-          </button>
-        ) : (
-          <>
-            <button
-              type="button"
-              className={`detail-page-action${(board.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
-              onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
-                catch (err) { console.warn('board like failed', err?.message); }
-              }}
-            >
-              <Heart size={16} strokeWidth={1.6} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(board.likeCount || 0) > 0 && <span className="detail-page-action-count">{board.likeCount}</span>}
-            </button>
-            <button
-              type="button"
-              className={`detail-page-action${bookmarked ? ' bookmarked' : ''}`}
-              onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await BoardService.toggleBookmark(board.id, bookmarked); }
-                catch (err) { console.warn('board bookmark failed', err?.message); }
-              }}
-            >
-              <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              type="button"
-              className="detail-page-action"
-              onClick={() => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                setReporting(true);
-              }}
-            >
-              <Flag size={15} strokeWidth={1.6} />
-            </button>
-          </>
-        )}
-      </div>
-      {reporting && (
-        <ReportModal
-          target={{ type: 'board', id: board.id }}
-          user={user}
-          onClose={() => setReporting(false)}
-        />
-      )}
-
       <div className="board-detail-hero-wrap">
         <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
+        {/* Overlay actions — inside image, z-index 1000 so they're above all board stickers */}
+        <div className="board-detail-hero-actions">
+          {isOwner ? (
+            <button
+              type="button"
+              className={`board-hero-action${board.selfLiked ? ' active' : ''}`}
+              onClick={async () => {
+                try { await BoardService.toggleSelfLike(board.id, !board.selfLiked); }
+                catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+              }}
+            >
+              <Heart size={16} strokeWidth={1.6} fill={board.selfLiked ? 'currentColor' : 'none'} />
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`board-hero-action${(board.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
+                onClick={async () => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
+                  catch (err) { console.warn('board like failed', err?.message); }
+                }}
+              >
+                <Heart size={16} strokeWidth={1.6} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+                {(board.likeCount || 0) > 0 && <span className="board-hero-count">{board.likeCount}</span>}
+              </button>
+              <button
+                type="button"
+                className={`board-hero-action${bookmarked ? ' active' : ''}`}
+                onClick={async () => {
+                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  try { await BoardService.toggleBookmark(board.id, bookmarked); }
+                  catch (err) { console.warn('board bookmark failed', err?.message); }
+                }}
+              >
+                <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                type="button"
+                className="board-hero-action"
+                onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+              >
+                <Flag size={15} strokeWidth={1.6} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
+      {reporting && (
+        <ReportModal target={{ type: 'board', id: board.id }} user={user} onClose={() => setReporting(false)} />
+      )}
 
       <header className="outfit-byline">
         <Link
@@ -217,7 +208,6 @@ export function BoardDetail({ user, onSignIn }) {
                       ? <img src={cover} alt={it.name || ''} loading="lazy" />
                       : <div className="item-card-skeleton" />}
                   </div>
-                  {it.name && <span className="item-card-name">{it.name}</span>}
                 </Link>
               );
             })}
