@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { formatPrice } from '../utils/currency.js';
@@ -280,10 +281,11 @@ function groupByBrand(items, t) {
 // Selecting tags filters by enum value (language-agnostic), sidestepping
 // the cross-language text-search problem. Across dims = AND, within = OR.
 function DetailFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount, t }) {
+  const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet detail-filter" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="create-sheet-handle" />
+      <div className="create-sheet detail-filter" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>

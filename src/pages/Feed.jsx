@@ -4,7 +4,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { Heart, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { Users } from 'lucide-react';
-import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
 import { MarketplaceService } from '../services/marketplace-service.js';
@@ -57,7 +57,7 @@ export function Feed({ user, onSignIn }) {
     if (isFollowingScope) {
       // Wait for followingIds to resolve so we don't fire an empty query.
       if (followingIds === null) return;
-      OotdService.listFollowingFeed({ followingIds, pageSize: 24 })
+      OutfitService.listFollowingFeed({ followingIds, pageSize: 24 })
         .then(rows => setOotds(rows))
         .catch(err => {
           console.warn('following ootd query failed:', err?.code, err?.message);
@@ -65,7 +65,7 @@ export function Feed({ user, onSignIn }) {
         });
       return;
     }
-    OotdService.listPublicFeed({ pageSize: 24, sortBy: sort })
+    OutfitService.listPublicFeed({ pageSize: 24, sortBy: sort })
       .then(({ ootds }) => setOotds(ootds))
       .catch((err) => {
         console.warn('ootd feed query failed:', err?.code, err?.message);
@@ -335,7 +335,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     const nextCount = Math.max(0, (ootd.likeCount || 0) + (nextLiked ? 1 : -1));
     onLikeChange?.({ likedBy: nextLikedBy, likeCount: nextCount });
     try {
-      await OotdService.toggleLike(ootd.id, user.uid, liked);
+      await OutfitService.toggleLike(ootd.id, user.uid, liked);
     } catch (err) {
       console.warn('like failed', err.message);
       onLikeChange?.({ likedBy: ootd.likedBy || [], likeCount: ootd.likeCount || 0 });
@@ -349,7 +349,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     const prev = bookmarked;
     setBookmarked(!prev); // optimistic
     try {
-      await OotdService.toggleBookmark(ootd.id, prev);
+      await OutfitService.toggleBookmark(ootd.id, prev);
     } catch (err) {
       console.warn('bookmark failed', err.message);
       setBookmarked(prev);

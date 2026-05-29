@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Image as ImageIcon, Camera as CameraIcon, Trash2, Search } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
-import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { CameraService } from '../services/camera.js';
 import { CameraCaptureModal } from './CameraCaptureModal.jsx';
@@ -14,7 +14,7 @@ const isMobileUA = typeof navigator !== 'undefined'
 // Sheet that opens when the user taps a Calendar cell. Lets them log
 // today's (or that date's) OOTD — pick a photo, optionally link a board
 // or try-on they made that same day, leave a quick note. Same date can
-// be re-saved later to add more (OotdService.upsertOotd merges).
+// be re-saved later to add more (OutfitService.upsertOotd merges).
 export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const { t } = useLocale();
   const { sheetStyle: ootdSheetStyle, handleProps: ootdHandleProps } = useSheetDrag(onClose);
@@ -121,7 +121,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
       if (photoBlob) {
         blob = await CameraService.compressImage(photoBlob);
       }
-      await OotdService.upsertOotd({
+      await OutfitService.upsertOotd({
         // existing.id present → update that specific OOTD; absent →
         // addDoc creates a brand-new entry for the date (multi-OOTD).
         id: existing?.id || null,
@@ -144,7 +144,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     if (!confirm(t('ootdConfirmDelete'))) return;
     setSaving(true);
     try {
-      await OotdService.deleteOotd({ id: existing.id });
+      await OutfitService.deleteOotd({ id: existing.id });
       onSaved?.();
       onClose?.();
     } finally { setSaving(false); }

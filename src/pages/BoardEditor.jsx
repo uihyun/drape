@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Plus, Trash2, Sparkles, Eye, Calendar as CalIcon, Check, X, AlertTriangle } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Diary-style sticker board. Pick items from the closet, drop them on
@@ -524,10 +525,11 @@ function ItemPickerSheet({ items, onPick, onClose, t }) {
       return next;
     });
   };
+  const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet board-picker" onClick={e => e.stopPropagation()}>
-        <div className="create-sheet-handle" />
+      <div className="create-sheet board-picker" style={sheetStyle} onClick={e => e.stopPropagation()}>
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>
@@ -577,11 +579,12 @@ function ItemPickerSheet({ items, onPick, onClose, t }) {
 }
 
 function StickerMenu({ sticker, item, onClose, onRemove, t }) {
+  const { sheetStyle, handleProps } = useSheetDrag(onClose);
   if (!item) return null;
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet sticker-menu" onClick={e => e.stopPropagation()}>
-        <div className="create-sheet-handle" />
+      <div className="create-sheet sticker-menu" style={sheetStyle} onClick={e => e.stopPropagation()}>
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <h3 className="create-sheet-title">{item.name || t('untitledItem')}</h3>
         <Link to={`/i/${item.id}`} className="create-sheet-row" onClick={onClose}>
           <span className="create-sheet-icon"><Eye size={18} strokeWidth={1.6} /></span>

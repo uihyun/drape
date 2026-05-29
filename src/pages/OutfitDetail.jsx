@@ -4,7 +4,6 @@ import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
-import { OotdService } from '../services/ootd-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
 import { ReportModal } from '../components/ReportModal.jsx';
@@ -202,7 +201,7 @@ export function OutfitDetail({ user, onSignIn }) {
                 className={`board-hero-action${bookmarked ? ' bookmarked' : ''}`}
                 onClick={async () => {
                   if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                  try { await OotdService.toggleBookmark(outfit.id, bookmarked); }
+                  try { await OutfitService.toggleBookmark(outfit.id, bookmarked); }
                   catch (e) { console.warn('outfit bookmark failed', e?.message); }
                 }}
               >

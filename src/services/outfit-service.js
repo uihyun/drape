@@ -23,9 +23,14 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, auth, storage } from '../firebase.js';
+import { httpsCallable } from 'firebase/functions';
+import { db, auth, storage, functions } from '../firebase.js';
 
 const OUTFITS = 'outfits';
+
+function isValidDate(s) {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
 // kind: 'mine' = user composed from their closet items,
 //       'analyzed' = AnalyzePhoto save (source photo + detected pieces, may
 //                    not all be in the user's closet),
@@ -216,6 +221,226 @@ async function toggleSelfLike(outfitId, selfLiked) {
   });
 }
 
+// ── OOTD / calendar / feed ─────────────────────────────────────────────
+// A dated outfit (date set) is an "OOTD": it appears on the calendar and,
+// when public, in the discovery feed. These methods were formerly a
+// separate OotdService; merged here since an OOTD is just an outfit.
+
+/** Create/update a dated (OOTD) outfit. Pass an id to update a specific one,
+ *  omit to create a new entry for the date (multiple OOTDs per day OK). */
+async function upsertOotd({
+  id = null, date, outfitId = null, linkedType = null,
+  photoBlob = null, note = '', isPublic = undefined,
+}) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  if (!isValidDate(date)) throw new Error('bad_date');
+
+  let photoUrl = null;
+  let photoPath = null;
+  if (photoBlob) {
+    const path = `ootds/${user.uid}/${date}-${Date.now()}.jpg`;
+    const r = storageRef(storage, path);
+    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
+    photoUrl = await getDownloadURL(r);
+    photoPath = path;
+  }
+
+  const payload = {
+    userId: user.uid,
+    date,
+    source: 'photo',
+    outfitId,
+    linkedType: outfitId ? (linkedType || 'outfit') : null,
+    ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null } : {}),
+    note,
+    ...(isPublic !== undefined ? { isPublic } : {}),
+    updatedAt: serverTimestamp(),
+  };
+
+  let savedId;
+  if (id) {
+    await setDoc(doc(db, OUTFITS, id), payload, { merge: true });
+    savedId = id;
+  } else {
+    const ref = await addDoc(collection(db, OUTFITS), {
+      ...payload,
+      itemIds: [],
+      likedBy: [], likeCount: 0, commentCount: 0,
+      createdAt: serverTimestamp(),
+    });
+    savedId = ref.id;
+  }
+
+  if (photoBlob) {
+    httpsCallable(functions, 'analyzeOotd')({ ootdId: savedId })
+      .catch(e => console.warn('analyzeOotd skipped:', e?.message));
+    httpsCallable(functions, 'processOotdPhoto')({ ootdId: savedId })
+      .catch(e => console.warn('processOotdPhoto skipped:', e?.message));
+  }
+
+  // Wear history: stamp linked outfit's items with this date.
+  if (outfitId) {
+    try {
+      const effectiveType = linkedType || 'outfit';
+      let itemIds = [];
+      if (effectiveType === 'outfit') {
+        const o = await getOutfit(outfitId);
+        itemIds = o?.itemIds || [];
+      }
+      if (itemIds.length) {
+        const { ItemService } = await import('./item-service.js');
+        await ItemService.recordWear({ itemIds, date, ootdId: savedId, outfitId });
+      }
+    } catch (e) {
+      console.warn('wear log recording failed:', e?.message);
+    }
+  }
+  return { id: savedId };
+}
+
+async function listForDate({ uid, date }) {
+  const snap = await getDocs(query(
+    collection(db, OUTFITS),
+    where('userId', '==', uid),
+    where('date', '==', date),
+  ));
+  const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  rows.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+  return rows;
+}
+
+async function deleteOotd({ id }) {
+  if (!id) throw new Error('id required');
+  // deleteOutfit already cleans the doc's storage (photoPath/photoCutPath/etc).
+  await deleteOutfit(id);
+}
+
+/** Public OOTD feed — dated public outfits. orderBy date excludes undated
+ *  (built/analyzed) outfits, so only "today's look" posts surface. */
+async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' } = {}) {
+  const orderField = sortBy === 'popular' ? 'likeCount' : 'date';
+  const constraints = [
+    where('isPublic', '==', true),
+    orderBy(orderField, 'desc'),
+    limit(pageSize),
+  ];
+  let q = query(collection(db, OUTFITS), ...constraints);
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  return {
+    ootds: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
+}
+
+async function listFollowingFeed({ followingIds, pageSize = 24 } = {}) {
+  if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
+  const ids = followingIds.slice(0, 30);
+  const snap = await getDocs(query(
+    collection(db, OUTFITS),
+    where('isPublic', '==', true),
+    where('userId', 'in', ids),
+    orderBy('date', 'desc'),
+    limit(pageSize),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/** Bookmark / unbookmark — stored under /users/{uid}/bookmarks/{outfitId}. */
+async function toggleBookmark(outfitId, currentlyBookmarked) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('not_signed_in');
+  const ref = doc(db, 'users', user.uid, 'bookmarks', outfitId);
+  if (currentlyBookmarked) {
+    await deleteDoc(ref);
+  } else {
+    await setDoc(ref, { type: 'ootd', ootdId: outfitId, createdAt: serverTimestamp() });
+  }
+}
+
+async function listBookmarkedOotds({ uid, pageSize = 60 } = {}) {
+  const snap = await getDocs(collection(db, 'users', uid, 'bookmarks'));
+  const rows = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(r => (r.type || 'ootd') === 'ootd');
+  rows.sort((a, b) =>
+    (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+  const ids = rows.slice(0, pageSize).map(r => r.ootdId || r.id).filter(Boolean);
+  if (!ids.length) return { ootds: [] };
+  const hydrated = await Promise.all(
+    ids.map(id => getDoc(doc(db, OUTFITS, id))
+      .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
+      .catch(() => null)));
+  return { ootds: hydrated.filter(Boolean) };
+}
+
+/** All the user's dated outfits (OOTDs), newest date first. */
+async function listMyOotds({ uid, pageSize = 60 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, OUTFITS),
+    where('userId', '==', uid),
+    limit(pageSize),
+  ));
+  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .filter(o => !!o.date);
+  ootds.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return { ootds };
+}
+
+/** Public dated outfits by a user (PublicProfile). */
+async function listPublicByUser({ uid, pageSize = 200 } = {}) {
+  const snap = await getDocs(query(
+    collection(db, OUTFITS),
+    where('userId', '==', uid),
+    where('isPublic', '==', true),
+    orderBy('date', 'desc'),
+    limit(pageSize),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/** Month of dated outfits, bucketed by date with the calendar rep first. */
+async function listMonth({ uid, monthStart, monthEnd }) {
+  const snap = await getDocs(query(
+    collection(db, OUTFITS),
+    where('userId', '==', uid),
+    where('date', '>=', monthStart),
+    where('date', '<=', monthEnd),
+    orderBy('date', 'asc'),
+  ));
+  const byDate = {};
+  for (const d of snap.docs) {
+    const data = { id: d.id, ...d.data() };
+    if (!byDate[data.date]) byDate[data.date] = [];
+    byDate[data.date].push(data);
+  }
+  for (const k of Object.keys(byDate)) {
+    byDate[k].sort((a, b) => {
+      if (!!a.isCalendarRep !== !!b.isCalendarRep) return a.isCalendarRep ? -1 : 1;
+      return (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0);
+    });
+  }
+  return byDate;
+}
+
+/** Mark one dated outfit as the calendar cover for its date. */
+async function setCalendarRepresentative({ uid, date, id }) {
+  const user = auth.currentUser;
+  if (!user || user.uid !== uid) throw new Error('not_authorized');
+  if (!id || !isValidDate(date)) throw new Error('bad_args');
+  const peers = await listForDate({ uid, date });
+  await Promise.all(peers.map(p => {
+    const shouldBe = p.id === id;
+    if (!!p.isCalendarRep === shouldBe) return null;
+    return setDoc(doc(db, OUTFITS, p.id), {
+      isCalendarRep: shouldBe,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }).filter(Boolean));
+}
+
 export const OutfitService = {
   createAnalyzedOutfit,
   createOutfit,
@@ -226,6 +451,18 @@ export const OutfitService = {
   getFeedOutfits,
   toggleLike,
   toggleSelfLike,
+  // OOTD / calendar / feed (merged from OotdService):
+  upsertOotd,
+  deleteOotd,
+  listForDate,
+  listMonth,
+  listMyOotds,
+  listPublicByUser,
+  listPublicFeed,
+  listFollowingFeed,
+  toggleBookmark,
+  listBookmarkedOotds,
+  setCalendarRepresentative,
 };
 
 export default OutfitService;

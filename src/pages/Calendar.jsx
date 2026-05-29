@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
-import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
+import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function monthDays(year, month0) {
@@ -53,7 +54,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
 
   const refetch = () => {
     if (!user || user.isAnonymous) return;
-    OotdService.listMonth({ uid: user.uid, monthStart, monthEnd })
+    OutfitService.listMonth({ uid: user.uid, monthStart, monthEnd })
       .then(setByDate)
       .catch(() => setByDate({}));
   };
@@ -172,7 +173,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           }}
           onSetRep={async (entry) => {
             try {
-              await OotdService.setCalendarRepresentative({
+              await OutfitService.setCalendarRepresentative({
                 uid: user.uid,
                 date: pickerDate,
                 id: entry.id,
@@ -200,10 +201,11 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
   // The cover/check affordance only matters with 2+ entries — a single
   // OOTD is trivially the cover, so we skip the hint + check there.
   const multi = entries.length > 1;
+  const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
     <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet day-picker" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="create-sheet-handle" />
+      <div className="create-sheet day-picker" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>

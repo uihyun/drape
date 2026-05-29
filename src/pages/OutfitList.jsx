@@ -4,7 +4,6 @@ import { Plus, Calendar as CalendarIcon, SlidersHorizontal } from 'lucide-react'
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
-import { OotdService } from '../services/ootd-service.js';
 import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
@@ -61,19 +60,19 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   };
 
   // Each tab populates a different source:
-  //   mine     → OotdService.listMyOotds
-  //   saved    → OotdService.listBookmarkedOotds (feed bookmarks)
+  //   mine     → OutfitService.listMyOotds
+  //   saved    → OutfitService.listBookmarkedOotds (feed bookmarks)
   //   analyzed → OutfitService.listMyOutfits (kind='analyzed')
   useEffect(() => {
     if (!user || user.isAnonymous) { setOutfits([]); setOotds([]); return; }
     if (tab === 'mine') {
       setOotds(null);
-      OotdService.listMyOotds({ uid: user.uid, pageSize: 60 })
+      OutfitService.listMyOotds({ uid: user.uid, pageSize: 60 })
         .then(({ ootds }) => setOotds(ootds))
         .catch(() => setOotds([]));
     } else if (tab === 'saved') {
       setOotds(null);
-      OotdService.listBookmarkedOotds({ uid: user.uid })
+      OutfitService.listBookmarkedOotds({ uid: user.uid })
         .then(({ ootds }) => setOotds(ootds))
         .catch((err) => {
           console.warn('saved bookmarks query failed:', err?.code, err?.message);

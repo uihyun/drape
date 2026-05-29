@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
-import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowButton } from '../components/FollowButton.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
@@ -61,7 +61,7 @@ export function PublicProfile({ user, onSignIn }) {
   // them once when the profile resolves rather than per-tab.
   useEffect(() => {
     if (!profile?.uid) { setOotds(null); return; }
-    OotdService.listPublicByUser({ uid: profile.uid, pageSize: 200 })
+    OutfitService.listPublicByUser({ uid: profile.uid, pageSize: 200 })
       .then(setOotds)
       .catch((err) => {
         console.warn('public ootds failed:', err?.code, err?.message);

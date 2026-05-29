@@ -4,7 +4,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { ReportModal } from './ReportModal.jsx';
 import { BlockService } from '../services/block-service.js';
-import { OotdService } from '../services/ootd-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -97,7 +97,7 @@ export function MoreMenu({
   const onToggleBookmark = async () => {
     setOpen(false);
     if (!requireAuth() || !target?.id) return;
-    const svc = target.type === 'ootd' ? OotdService
+    const svc = (target.type === 'ootd' || target.type === 'outfit') ? OutfitService
       : target.type === 'board' ? BoardService
       : null;
     if (!svc) return;
