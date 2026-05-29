@@ -167,6 +167,11 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
 
           {error && <p className="settings-error" style={{ margin: '0.5rem 0' }}>{error}</p>}
 
+          {/* New OOTD → next step is linking the items worn; tell the user. */}
+          {!existing && (
+            <p className="ootd-sheet-next-hint">{t('ootdNextStepHint')}</p>
+          )}
+
           <div className="ootd-sheet-actions">
             {existing && (
               <button type="button" className="btn btn-secondary danger-btn" onClick={remove} disabled={saving}>
@@ -183,7 +188,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               onClick={save}
               disabled={saving || (!photoBlob && !existing?.photoUrl && !note.trim())}
             >
-              {saving ? t('saving') : t('save')}
+              {saving ? t('saving') : (existing ? t('save') : t('continueNext'))}
             </button>
           </div>
         </div>

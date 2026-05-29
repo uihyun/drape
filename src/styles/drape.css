@@ -143,6 +143,7 @@ body.is-native {
   margin-top: 1.25rem;
   padding: 0 0.25rem;
   display: flex;
+  gap: 0.6rem;
   justify-content: center;
 }
 .builder-cta .btn {
@@ -4274,6 +4275,11 @@ input[type="search"]::-webkit-search-decoration {
 }
 .ootd-sheet-public-label strong { font-size: 0.92rem; color: var(--text-primary); }
 .ootd-sheet-public-label small { font-size: 0.78rem; color: var(--text-muted); }
+.ootd-sheet-next-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.75rem 0 0;
+}
 .ootd-sheet-actions {
   display: flex;
   gap: 0.5rem;

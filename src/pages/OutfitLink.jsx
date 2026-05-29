@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Check, SlidersHorizontal, Search, X } from 'lucide-react';
+import { Check, SlidersHorizontal } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
@@ -26,7 +26,6 @@ export function OutfitLink({ user, onSignIn }) {
   const [closet, setCloset] = useState([]);
   const [boards, setBoards] = useState([]);
   const [selected, setSelected] = useState(new Set());
-  const [search, setSearch] = useState('');
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -80,36 +79,22 @@ export function OutfitLink({ user, onSignIn }) {
     });
   };
 
-  // Closet grid filtered by search text (name/brand/category/colors) + tag
-  // filter chips (category/colors/seasons/styles/fits).
+  // Closet grid filtered by tag chips only (no text search — same as the
+  // closet itself; the closed tag vocab sidesteps cross-language search).
   const visibleCloset = useMemo(() => {
-    let list = closet;
-    const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter(it => {
-        const tg = it.tags || {};
-        const hay = [
-          it.name, tg.category, tg.brand,
-          ...(tg.colors || []), ...(tg.styles || []),
-        ].filter(Boolean).join(' ').toLowerCase();
-        return hay.includes(q);
-      });
-    }
-    if (filterCount > 0) {
-      list = list.filter(it => {
-        const tg = it.tags || {};
-        for (const [dim, sel] of Object.entries(filters)) {
-          if (!sel.length) continue;
-          const field = dim === 'fits' ? 'fit' : dim === 'category' ? 'category' : dim;
-          const v = tg[field];
-          const ok = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
-          if (!ok) return false;
-        }
-        return true;
-      });
-    }
-    return list;
-  }, [closet, search, filters, filterCount]);
+    if (filterCount === 0) return closet;
+    return closet.filter(it => {
+      const tg = it.tags || {};
+      for (const [dim, sel] of Object.entries(filters)) {
+        if (!sel.length) continue;
+        const field = dim === 'fits' ? 'fit' : dim === 'category' ? 'category' : dim;
+        const v = tg[field];
+        const ok = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
+        if (!ok) return false;
+      }
+      return true;
+    });
+  }, [closet, filters, filterCount]);
 
   const save = async () => {
     if (saving || !outfit) return;
@@ -228,21 +213,6 @@ export function OutfitLink({ user, onSignIn }) {
             <SlidersHorizontal size={18} strokeWidth={1.7} />
             {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
           </button>
-        </div>
-        <div className="closet-search-bar" style={{ marginBottom: '0.85rem' }}>
-          <Search size={16} strokeWidth={1.6} />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="closet-search-input"
-          />
-          {search && (
-            <button type="button" className="icon-btn" onClick={() => setSearch('')} aria-label={t('clear')}>
-              <X size={16} strokeWidth={1.7} />
-            </button>
-          )}
         </div>
         <div className="closet-grid">
           {visibleCloset.map(it => {
