@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { ChevronRight, Eye, EyeOff, Trash2, Heart } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff, Trash2, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OotdService } from '../services/ootd-service.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -9,7 +9,7 @@ import { GenerationService } from '../services/generation-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
-import { MoreMenu } from '../components/MoreMenu.jsx';
+import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -26,6 +26,8 @@ export function OotdDetail({ user, onSignIn }) {
   const [owner, setOwner] = useState(null);
   const [outfit, setOutfit] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     if (!ootdId) return;
@@ -33,6 +35,16 @@ export function OotdDetail({ user, onSignIn }) {
       setOotd(snap.exists() ? { id: snap.id, ...snap.data() } : null);
     });
   }, [ootdId]);
+
+  // Keep bookmark state in sync (own /users/{uid}/bookmarks/{ootdId} doc).
+  useEffect(() => {
+    if (!user || user.isAnonymous || !ootdId) { setBookmarked(false); return; }
+    return onSnapshot(
+      doc(db, 'users', user.uid, 'bookmarks', ootdId),
+      s => setBookmarked(s.exists()),
+      () => setBookmarked(false),
+    );
+  }, [user?.uid, ootdId]);
 
   useEffect(() => {
     if (!ootd?.userId) { setOwner(null); return; }
@@ -128,12 +140,56 @@ export function OotdDetail({ user, onSignIn }) {
     } finally { setBusy(false); }
   };
 
+  const liked = !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid));
+  const toggleLike = async () => {
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    try { await OotdService.toggleLike(ootd.id, user.uid, liked); }
+    catch (e) { console.warn('ootd like failed', e?.message); }
+  };
+  const toggleBookmark = async () => {
+    if (!user || user.isAnonymous) { onSignIn?.(); return; }
+    try { await OotdService.toggleBookmark(ootd.id, bookmarked); }
+    catch (e) { console.warn('ootd bookmark failed', e?.message); }
+  };
+
   return (
     <div className="ootd-detail">
       {ootd.photoUrl && (
         <div className="ootd-hero">
           <img src={ootd.photoUrl} alt="" referrerPolicy="no-referrer" />
+          {/* Detail-only actions, photo top-right (z-index above content) */}
+          <div className="board-detail-hero-actions">
+            <button
+              type="button"
+              className={`board-hero-action${liked ? ' active' : ''}`}
+              onClick={toggleLike}
+            >
+              <Heart size={16} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
+              {(ootd.likeCount || 0) > 0 && <span className="board-hero-count">{ootd.likeCount}</span>}
+            </button>
+            {!isOwner && (
+              <>
+                <button
+                  type="button"
+                  className={`board-hero-action${bookmarked ? ' active' : ''}`}
+                  onClick={toggleBookmark}
+                >
+                  <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
+                </button>
+                <button
+                  type="button"
+                  className="board-hero-action"
+                  onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+                >
+                  <Flag size={15} strokeWidth={1.6} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
+      )}
+      {reporting && (
+        <ReportModal target={{ type: 'ootd', id: ootd.id }} user={user} onClose={() => setReporting(false)} />
       )}
 
       <header className="outfit-byline">
@@ -150,23 +206,14 @@ export function OotdDetail({ user, onSignIn }) {
           />
           <span className="outfit-byline-handle">{owner?.handle ? `@${owner.handle}` : ''}</span>
         </Link>
-        <div className="outfit-byline-actions">
-          {isOwner && (
+        {isOwner && (
+          <div className="outfit-byline-actions">
             <button type="button" className="btn-edit" onClick={togglePublic} disabled={busy}>
               {ootd.isPublic ? <EyeOff size={14} strokeWidth={1.6} /> : <Eye size={14} strokeWidth={1.6} />}
               {ootd.isPublic ? t('unlist') : t('publishToFeed')}
             </button>
-          )}
-          {!isOwner && (
-            <MoreMenu
-              target={{ type: 'ootd', id: ootd.id }}
-              targetUid={ootd.userId}
-              user={user}
-              onSignIn={onSignIn}
-              showBookmark
-            />
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       {dateLabel && <div className="outfit-date">{dateLabel}</div>}
@@ -246,7 +293,6 @@ export function OotdDetail({ user, onSignIn }) {
       )}
 
       <div className="controls" style={{ padding: '0 1rem' }}>
-        <LikeButton ootd={ootd} user={user} />
         <ShareButton
           className="btn btn-secondary"
           title={title || t('ootdSheetTitle')}
@@ -263,45 +309,6 @@ export function OotdDetail({ user, onSignIn }) {
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
       <Comments parentColl="ootds" parentId={ootd.id} ownerId={ootd.userId} user={user} onSignInRequest={onSignIn} />
     </div>
-  );
-}
-
-function LikeButton({ ootd, user }) {
-  const { t } = useLocale();
-  const [liked, setLiked] = useState(
-    !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid))
-  );
-  const [count, setCount] = useState(ootd.likeCount || 0);
-  // Re-sync from props when the live doc updates.
-  useEffect(() => {
-    setLiked(!!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid)));
-    setCount(ootd.likeCount || 0);
-  }, [ootd.likedBy, ootd.likeCount, user?.uid]);
-
-  const onClick = async () => {
-    if (!user || user.isAnonymous) return;
-    const next = !liked;
-    setLiked(next);
-    setCount(c => Math.max(0, c + (next ? 1 : -1)));
-    try {
-      await OotdService.toggleLike(ootd.id, user.uid, liked);
-    } catch (err) {
-      setLiked(!next);
-      setCount(c => Math.max(0, c + (next ? -1 : 1)));
-      console.warn('like failed', err.message);
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      className={`btn btn-secondary${liked ? ' is-liked' : ''}`}
-      onClick={onClick}
-      aria-pressed={liked}
-    >
-      <Heart size={14} strokeWidth={1.6} fill={liked ? 'currentColor' : 'none'} />
-      {count > 0 ? count : t('like')}
-    </button>
   );
 }
 

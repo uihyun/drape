@@ -1874,6 +1874,8 @@ body.is-native {
   cursor: pointer;
 }
 .board-hero-action.active { color: #ff5a6e; }
+/* OOTD detail hero needs a positioning context for its action overlay. */
+.ootd-hero { position: relative; }
 .board-hero-count {
   font-size: 0.78rem;
   font-weight: 600;
