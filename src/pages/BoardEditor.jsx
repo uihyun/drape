@@ -168,7 +168,9 @@ export function BoardEditor({ user, onSignIn }) {
         navigate(`/boards/${id}`, { replace: true });
       } else {
         await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic });
-        navigate(`/boards/${boardId}`);
+        // replace so the back button from the board detail exits to the
+        // list, not back into the editor we just left.
+        navigate(`/boards/${boardId}`, { replace: true });
       }
     } catch (e) {
       console.warn('save board failed', e?.message);
