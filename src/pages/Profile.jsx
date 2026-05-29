@@ -91,10 +91,9 @@ export function Profile({ user, authReady, onSignIn }) {
   const following = profile?.followingCount ?? 0;
   const bio = profile?.bio || '';
   const location = cityDisplay(profile?.location, lang);
-  // Avatar badge: number of outfits this user has saved. Server-side
-  // counter trigger maintains profile.outfitCount; we render the small
-  // pill in the corner of the avatar like the "14" in the Lekondo
-  // capture. Hidden when 0 (would otherwise be visual noise).
+  // Instagram-style stat: outfit count sits in the posts/followers/
+  // following row next to the avatar. Server-side counter trigger
+  // maintains profile.outfitCount.
   const outfitCount = profile?.outfitCount ?? 0;
   // Only the user-uploaded photo counts. We deliberately don't fall
   // back to the auth provider's avatar (Google profile pic etc) so a
@@ -124,11 +123,6 @@ export function Profile({ user, authReady, onSignIn }) {
             size={76}
             className="profile-avatar"
           />
-          {outfitCount > 0 && (
-            <span className="profile-avatar-badge" aria-label={`${outfitCount} outfits`}>
-              {outfitCount}
-            </span>
-          )}
         </div>
 
         <div className="profile-meta">
@@ -147,6 +141,10 @@ export function Profile({ user, authReady, onSignIn }) {
             )}
           </div>
           <div className="profile-stats">
+            <button type="button" className="profile-stat" onClick={() => navigate('/profile/outfits')}>
+              <strong>{formatCount(outfitCount, lang)}</strong>
+              <span>{t('navOutfits')}</span>
+            </button>
             <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
               <strong>{formatCount(followers, lang)}</strong>
               <span>{t('followers')}</span>

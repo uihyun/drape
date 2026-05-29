@@ -130,11 +130,6 @@ export function PublicProfile({ user, onSignIn }) {
             size={76}
             className="profile-avatar"
           />
-          {outfitCount > 0 && (
-            <span className="profile-avatar-badge" aria-label={`${outfitCount} outfits`}>
-              {outfitCount}
-            </span>
-          )}
         </div>
 
         <div className="profile-meta">
@@ -153,6 +148,10 @@ export function PublicProfile({ user, onSignIn }) {
             )}
           </div>
           <div className="profile-stats">
+            <button type="button" className="profile-stat" onClick={() => setTab('outfits')}>
+              <strong>{formatCount(outfitCount, lang)}</strong>
+              <span>{t('navOutfits')}</span>
+            </button>
             <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
               <strong>{formatCount(followers, lang)}</strong>
               <span>{t('followers')}</span>
