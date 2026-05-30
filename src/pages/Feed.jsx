@@ -11,6 +11,8 @@ import { MarketplaceService } from '../services/marketplace-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { CardQuickActions } from '../components/CardQuickActions.jsx';
+import { useLongPressQuickActions } from '../hooks/useLongPressQuickActions.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -290,9 +292,7 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
     );
   }, [user?.uid, board.id]);
 
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleLike = async () => {
     if (!user || user.isAnonymous) { onSignIn?.(); return; }
     const nextLiked = !liked;
     const nextLikedBy = nextLiked
@@ -308,9 +308,7 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
     }
   };
 
-  const handleBookmark = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleBookmark = async () => {
     if (!user || user.isAnonymous) { onSignIn?.(); return; }
     const prev = bookmarked;
     setBookmarked(!prev); // optimistic
@@ -318,9 +316,29 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
     catch (err) { console.warn('board bookmark failed:', err.message); setBookmarked(prev); }
   };
 
+  const quickActions = [
+    { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
+    { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
+  ];
+  const lp = useLongPressQuickActions({
+    actions: quickActions,
+    onFire: (key) => { if (key === 'like') handleLike(); else if (key === 'save') handleBookmark(); },
+  });
+
   return (
-    <Link to={`/boards/${board.id}`} className="board-feed-card">
+    <Link
+      to={`/boards/${board.id}`}
+      className={`board-feed-card${lp.active ? ' is-pressed' : ''}`}
+      {...lp.bind}
+    >
       <BoardThumbnail board={board} className="board-feed-thumb" />
+      {lp.active && (
+        <CardQuickActions
+          actions={quickActions}
+          focusedKey={lp.focusedKey}
+          registerButton={lp.registerButton}
+        />
+      )}
     </Link>
   );
 }
@@ -340,9 +358,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     );
   }, [user?.uid, ootd.id]);
 
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleLike = async () => {
     if (!user || user.isAnonymous) { onSignIn?.(); return; }
     const nextLiked = !liked;
     const nextLikedBy = nextLiked
@@ -358,9 +374,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     }
   };
 
-  const handleBookmark = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleBookmark = async () => {
     if (!user || user.isAnonymous) { onSignIn?.(); return; }
     const prev = bookmarked;
     setBookmarked(!prev); // optimistic
@@ -372,11 +386,31 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     }
   };
 
+  const quickActions = [
+    { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
+    { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
+  ];
+  const lp = useLongPressQuickActions({
+    actions: quickActions,
+    onFire: (key) => { if (key === 'like') handleLike(); else if (key === 'save') handleBookmark(); },
+  });
+
   return (
-    <Link to={`/o/${ootd.id}`} className="ootd-card">
+    <Link
+      to={`/o/${ootd.id}`}
+      className={`ootd-card${lp.active ? ' is-pressed' : ''}`}
+      {...lp.bind}
+    >
       {outfitCardPhoto(ootd)
         ? <img src={outfitCardPhoto(ootd)} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}
+      {lp.active && (
+        <CardQuickActions
+          actions={quickActions}
+          focusedKey={lp.focusedKey}
+          registerButton={lp.registerButton}
+        />
+      )}
     </Link>
   );
 }

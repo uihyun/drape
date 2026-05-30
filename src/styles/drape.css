@@ -5513,6 +5513,50 @@ input[type="search"]::-webkit-search-decoration {
 .ootd-card img { height: auto; }
 .ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
 
+/* ── Press-and-hold quick actions (mobile) ─────────────────────────────
+   Holding a feed card lifts it and floats like/save buttons; slide the
+   finger to one and release to fire. */
+.ootd-card, .board-feed-card {
+  position: relative;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transform-origin: center;
+}
+.ootd-card.is-pressed, .board-feed-card.is-pressed {
+  transform: scale(1.06);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+  z-index: 60;
+}
+.card-quick-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 61;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: inherit;
+  pointer-events: none; /* gesture owns hit-testing */
+}
+.card-quick-actions {
+  display: flex;
+  gap: 1.1rem;
+}
+.card-quick-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.82);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.card-quick-btn.focused {
+  transform: scale(1.28);
+  background: #1a1a1a;
+}
+
 /* ── Add-item sheet (photo + product URL) ─────────────────────────────── */
 .add-sheet-pickers {
   display: flex;
