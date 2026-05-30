@@ -34,6 +34,7 @@ const SEASONS = ['spring', 'summer', 'fall', 'winter'];
 const STYLES = [
   'minimal', 'classic', 'street', 'casual', 'preppy',
   'sporty', 'workwear', 'romantic', 'y2k', 'gorpcore', 'avant-garde',
+  'vintage', 'chic', 'grunge', 'bohemian', 'techwear', 'normcore',
 ];
 
 const FITS = ['slim', 'regular', 'oversized', 'tailored'];

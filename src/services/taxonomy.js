@@ -86,6 +86,12 @@ export const STYLES = [
   'y2k',
   'gorpcore',
   'avant-garde',
+  'vintage',
+  'chic',
+  'grunge',
+  'bohemian',
+  'techwear',
+  'normcore',
 ];
 
 // Fit + length structural attributes that affect how try-on composites the

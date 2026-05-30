@@ -5,7 +5,8 @@ import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layer
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
-import { CATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
+import { CATEGORIES, SUBCATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
+import { BrandInput } from '../components/BrandInput.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { MessageService } from '../services/message-service.js';
@@ -526,6 +527,18 @@ function TagsBlock({ tags, editing, onChange, t }) {
           </Chip>
         ))}
       </Row>
+      {/* Subcategory — only the ones valid for the chosen category. Lets the
+          user fix "Top" → "Shirt" so labels/search read specifically. */}
+      {tags?.category && (SUBCATEGORIES[tags.category] || []).length > 0 && (
+        <Row label={t('tagSubcategory')}>
+          {SUBCATEGORIES[tags.category].map(s => (
+            <Chip key={s} active={tags?.subcategory === s} editable={editing}
+              onClick={() => editing && set('subcategory', tags?.subcategory === s ? null : s)}>
+              {t(`taxonomy.subcategories.${s}`)}
+            </Chip>
+          ))}
+        </Row>
+      )}
       <Row label={t('tagColors')}>
         {COLORS.map(c => (
           <Chip key={c} active={(tags?.colors || []).includes(c)} editable={editing}
@@ -560,13 +573,10 @@ function TagsBlock({ tags, editing, onChange, t }) {
       </Row>
       <Row label={t('tagBrand')}>
         {editing ? (
-          <input
-            type="text"
-            className="tag-brand-input"
+          <BrandInput
             value={tags?.brand || ''}
-            onChange={e => set('brand', e.target.value.slice(0, 60))}
+            onChange={(v) => set('brand', v.slice(0, 60))}
             placeholder={t('tagBrandPlaceholder')}
-            maxLength={60}
           />
         ) : (
           <span className="tag-brand-display">

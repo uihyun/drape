@@ -14,6 +14,18 @@ import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// After an optimistic like patch, the popular feed must re-order so the
+// just-liked card moves to its new rank (the list is a one-shot query, not
+// live — without this the count changes but the position doesn't). Mirrors
+// the server sort: likeCount desc, then date desc as a stable tiebreak.
+// Latest feed keeps its fetched order untouched.
+function resortByLikes(list, sort) {
+  if (sort !== 'popular') return list;
+  return [...list].sort((a, b) =>
+    (b.likeCount || 0) - (a.likeCount || 0)
+    || String(b.date || '').localeCompare(String(a.date || '')));
+}
+
 // Discovery — published OOTDs from every user, newest first. Each
 // card is a full-bleed OOTD photo with the author chip + title
 // overlay on the bottom (Lekondo capture 1 read). Tapping opens
@@ -231,7 +243,9 @@ export function Feed({ user, onSignIn }) {
               author={authorMap.get(b.userId)}
               user={user}
               onSignIn={onSignIn}
-              onLikeChange={(patch) => setBoards(prev => prev.map(x => x.id === b.id ? { ...x, ...patch } : x))}
+              onLikeChange={(patch) => setBoards(prev => resortByLikes(
+                prev.map(x => x.id === b.id ? { ...x, ...patch } : x), sort,
+              ))}
               t={t}
             />
           ))}
@@ -244,7 +258,9 @@ export function Feed({ user, onSignIn }) {
               ootd={o}
               author={authorMap.get(o.userId)}
               user={user}
-              onLikeChange={(patch) => setOotds(prev => prev.map(x => x.id === o.id ? { ...x, ...patch } : x))}
+              onLikeChange={(patch) => setOotds(prev => resortByLikes(
+                prev.map(x => x.id === o.id ? { ...x, ...patch } : x), sort,
+              ))}
               onSignIn={onSignIn}
               t={t}
             />
