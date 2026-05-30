@@ -6,14 +6,11 @@ import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
 
-// Three platforms, three camera paths:
+// Two camera paths:
 // - Native (Capacitor): @capacitor/camera plugin via CameraService
-// - Mobile web: <input capture="environment"> as a real user-gesture
-//   click — iOS Safari opens the system camera UI, Android Chrome too
-// - Desktop web: getUserMedia in an in-page modal — laptops have
-//   webcams; previously we hid the button which read as broken
-const isMobileUA = typeof navigator !== 'undefined'
-  && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
+// - All web (mobile + desktop): getUserMedia in an in-page modal —
+//   <input capture> degrades to a plain file picker in many browsers,
+//   so we always use the modal on web
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Add a clothing item. Two-step flow: pick (gallery or camera) → preview →
@@ -23,7 +20,6 @@ export function AddItem({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const fileInputRef = useRef();
-  const cameraInputRef = useRef();
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -99,45 +95,25 @@ export function AddItem({ user, onSignIn }) {
             onChange={e => stagePicked(e.target.files?.[0])}
           />
 
-          {isNativeApp() ? (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={async () => {
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={async () => {
+              if (isNativeApp()) {
                 try {
                   const blob = await CameraService.takePhoto();
                   if (blob) stagePicked(blob);
                 } catch (err) {
                   setError(err.message);
                 }
-              }}
-              disabled={uploading}
-            >
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-            </button>
-          ) : isMobileUA ? (
-            <label className={`btn btn-secondary ${uploading ? 'is-disabled' : ''}`}>
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={e => stagePicked(e.target.files?.[0])}
-                disabled={uploading}
-              />
-            </label>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setCameraModalOpen(true)}
-              disabled={uploading}
-            >
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-            </button>
-          )}
+              } else {
+                setCameraModalOpen(true);
+              }
+            }}
+            disabled={uploading}
+          >
+            <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+          </button>
         </div>
 
         {error && <p style={{ color: 'var(--error)' }}>{error}</p>}

@@ -16,8 +16,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // candidate list with the source photo shown next to each row, so the
 // user picks-and-saves in one pass instead of repeating the flow per
 // photo. This is the Magic Upload variant of the analyze flow.
-const isMobileUA = typeof navigator !== 'undefined'
-  && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
 
 // Analyze results live only in memory until explicitly saved. Keep them in
 // a module-level cache so navigating away (tapping a closet match, opening
@@ -238,41 +236,24 @@ export function AnalyzePhoto({ user, onSignIn }) {
               className="hidden"
               onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
             />
-            {isNativeApp() ? (
-              <button
-                type="button"
-                className="btn btn-secondary analyze-input-btn"
-                onClick={async () => {
+            <button
+              type="button"
+              className="btn btn-secondary analyze-input-btn"
+              onClick={async () => {
+                if (isNativeApp()) {
                   try {
                     const blob = await CameraService.takePhoto();
                     if (blob) addFiles([blob]);
                   } catch (err) {
                     setError(err.message);
                   }
-                }}
-              >
-                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-              </button>
-            ) : isMobileUA ? (
-              <label className="btn btn-secondary analyze-input-btn">
-                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
-                />
-              </label>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-secondary analyze-input-btn"
-                onClick={() => setCameraOpen(true)}
-              >
-                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-              </button>
-            )}
+                } else {
+                  setCameraOpen(true);
+                }
+              }}
+            >
+              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+            </button>
           </div>
 
           {batches.length > 0 && (

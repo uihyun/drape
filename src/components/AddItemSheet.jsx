@@ -7,9 +7,6 @@ import { CameraCaptureModal } from './CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-const isMobileUA = typeof navigator !== 'undefined'
-  && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
-
 // Quick closet-add as a bottom sheet (photo + an optional shop URL to jump
 // straight to where it's sold). Mirrors OotdSheet so the create menu feels
 // consistent; the heavy flows (try-on, analyze, builders) stay full pages.
@@ -105,22 +102,9 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
               <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
                 <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
               </button>
-              {isMobileUA && !isNativeApp() ? (
-                <label className="btn btn-secondary add-sheet-take">
-                  <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={e => { pick(e.target.files?.[0]); e.target.value = ''; }}
-                  />
-                </label>
-              ) : (
-                <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
-                  <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-                </button>
-              )}
+              <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              </button>
             </div>
           )}
           <input

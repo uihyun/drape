@@ -7,9 +7,6 @@ import { CameraCaptureModal } from './CameraCaptureModal.jsx';
 import { isNativeApp } from '../services/platform-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-const isMobileUA = typeof navigator !== 'undefined'
-  && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
-
 // Sheet that opens when the user taps a Calendar cell. Logs that date's
 // OOTD — a photo of what they wore + a quick note. Linking the actual
 // closet items / boards happens on a separate, closet-sized page after
@@ -120,37 +117,24 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               className="hidden"
               onChange={e => stagePicked(e.target.files?.[0])}
             />
-            {isNativeApp() ? (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={async () => {
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={async () => {
+                if (isNativeApp()) {
                   try {
                     const blob = await CameraService.takePhoto();
                     if (blob) stagePicked(blob);
                   } catch (err) {
                     setError(err.message);
                   }
-                }}
-              >
-                <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
-              </button>
-            ) : isMobileUA ? (
-              <label className="btn btn-secondary">
-                <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={e => stagePicked(e.target.files?.[0])}
-                />
-              </label>
-            ) : (
-              <button type="button" className="btn btn-secondary" onClick={() => setCameraOpen(true)}>
-                <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
-              </button>
-            )}
+                } else {
+                  setCameraOpen(true);
+                }
+              }}
+            >
+              <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
+            </button>
           </div>
 
           {/* Item / board linking moved to a dedicated closet-sized page
