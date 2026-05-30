@@ -168,9 +168,10 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           entries={byDate[pickerDate] || []}
           onClose={() => setPickerDate(null)}
           onPick={(entry) => {
-            setSheetExisting(entry);
-            setSheetDate(pickerDate);
+            // Tapping an existing look opens its full detail page (not the
+            // edit sheet) — photo change / linking lives on the detail.
             setPickerDate(null);
+            navigate(`/o/${entry.id}`);
           }}
           onAddNew={() => {
             setSheetExisting(null);
