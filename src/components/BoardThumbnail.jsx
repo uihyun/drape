@@ -16,10 +16,15 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
   const stickers = Array.isArray(board?.stickers) ? board.stickers : [];
   const [fetched, setFetched] = useState(null);
 
+  // Key the self-hydration on the actual sticker item ids (stable string),
+  // not the board object identity — so a parent re-render with a new board
+  // reference doesn't retrigger a fetch that briefly blanks the thumbnail.
+  const idKey = Array.from(new Set(stickers.map(s => s.itemId).filter(Boolean))).sort().join(',');
+
   useEffect(() => {
-    if (itemsById) { setFetched(null); return; }
-    const ids = Array.from(new Set(stickers.map(s => s.itemId).filter(Boolean)));
-    if (!ids.length) { setFetched({}); return; }
+    if (itemsById) return; // parent supplies items; nothing to fetch
+    if (!idKey) { setFetched({}); return; }
+    const ids = idKey.split(',');
     let cancelled = false;
     Promise.all(
       ids.map(id => getDoc(doc(db, 'items', id))
@@ -27,12 +32,18 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
         .catch(() => null))
     ).then(rows => {
       if (cancelled) return;
-      setFetched(Object.fromEntries(rows.filter(Boolean)));
+      const map = Object.fromEntries(rows.filter(Boolean));
+      // Merge onto any previously-fetched items so a transient miss never
+      // empties an already-rendered thumbnail.
+      setFetched(prev => ({ ...(prev || {}), ...map }));
     });
     return () => { cancelled = true; };
-  }, [board?.id, itemsById]);
+  }, [idKey, itemsById]);
 
-  const lookup = itemsById ?? fetched ?? {};
+  // When the parent supplies items, prefer them but fall back to anything we
+  // already self-fetched, so a momentarily-empty itemsById (closet
+  // subscription mid-refresh) doesn't wipe the board.
+  const lookup = itemsById ? { ...(fetched || {}), ...itemsById } : (fetched ?? {});
   // Background + the board's own aspect ratio (portrait/square/landscape).
   const style = { ...boardBgStyle(board?.background), aspectRatio: boardRatioCss(board?.ratio) };
 

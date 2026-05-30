@@ -137,10 +137,7 @@ export function Feed({ user, onSignIn }) {
   const showingMarket = kind === 'market';
   const list = showingMarket ? listings : showingBoards ? boards : ootds;
 
-  const setKindAnd = (k) => {
-    setKind(k);
-    setSearchParams(p => { p.set('kind', k); return p; }, { replace: true });
-  };
+  const setKindAnd = (k) => setKind(k);
 
   return (
     <div className="community-feed">
@@ -233,33 +230,13 @@ export function Feed({ user, onSignIn }) {
       ) : showingBoards ? (
         <div className="board-feed">
           {boards.map(b => (
-            <BoardCard
-              key={b.id}
-              board={b}
-              author={authorMap.get(b.userId)}
-              user={user}
-              onSignIn={onSignIn}
-              onLikeChange={(patch) => setBoards(prev => resortByLikes(
-                prev.map(x => x.id === b.id ? { ...x, ...patch } : x), sort,
-              ))}
-              t={t}
-            />
+            <BoardCard key={b.id} board={b} />
           ))}
         </div>
       ) : (
         <div className="ootd-feed">
           {ootds.map(o => (
-            <OotdCard
-              key={o.id}
-              ootd={o}
-              author={authorMap.get(o.userId)}
-              user={user}
-              onLikeChange={(patch) => setOotds(prev => resortByLikes(
-                prev.map(x => x.id === o.id ? { ...x, ...patch } : x), sort,
-              ))}
-              onSignIn={onSignIn}
-              t={t}
-            />
+            <OotdCard key={o.id} ootd={o} />
           ))}
         </div>
       )}
@@ -332,76 +309,12 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
   );
 }
 
-function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
-  const isOwner = !!(user && ootd.userId === user.uid);
-  const liked = !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid));
-  // Bookmark state — read from the viewer's own /users/<uid>/bookmarks
-  // (the OOTD doc has no bookmark info per viewer). Light onSnapshot
-  // so it stays correct when the user bookmarks elsewhere too.
-  const [bookmarked, setBookmarked] = useState(false);
-  useEffect(() => {
-    if (!user || user.isAnonymous) { setBookmarked(false); return; }
-    return onSnapshot(
-      doc(db, 'users', user.uid, 'bookmarks', ootd.id),
-      (s) => setBookmarked(s.exists()),
-      () => setBookmarked(false),
-    );
-  }, [user?.uid, ootd.id]);
-
-  const handleLike = async () => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    const nextLiked = !liked;
-    const nextLikedBy = nextLiked
-      ? [...(ootd.likedBy || []), user.uid]
-      : (ootd.likedBy || []).filter(u => u !== user.uid);
-    const nextCount = Math.max(0, (ootd.likeCount || 0) + (nextLiked ? 1 : -1));
-    onLikeChange?.({ likedBy: nextLikedBy, likeCount: nextCount });
-    try {
-      await OutfitService.toggleLike(ootd.id, user.uid, liked);
-    } catch (err) {
-      console.warn('like failed', err.message);
-      onLikeChange?.({ likedBy: ootd.likedBy || [], likeCount: ootd.likeCount || 0 });
-    }
-  };
-
-  const handleBookmark = async () => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    const prev = bookmarked;
-    setBookmarked(!prev); // optimistic
-    try {
-      await OutfitService.toggleBookmark(ootd.id, prev);
-    } catch (err) {
-      console.warn('bookmark failed', err.message);
-      setBookmarked(prev);
-    }
-  };
-
-  // No self-like/save — owners get no quick actions on their own post.
-  const quickActions = isOwner ? [] : [
-    { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
-    { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
-  ];
-  const lp = useLongPressQuickActions({
-    actions: quickActions,
-    onFire: (key) => { if (key === 'like') handleLike(); else if (key === 'save') handleBookmark(); },
-  });
-
+function OotdCard({ ootd }) {
   return (
-    <Link
-      to={`/o/${ootd.id}`}
-      className={`ootd-card${lp.active ? ' is-pressed' : ''}`}
-      {...lp.bind}
-    >
+    <Link to={`/o/${ootd.id}`} className="ootd-card">
       {outfitCardPhoto(ootd)
         ? <img src={outfitCardPhoto(ootd)} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}
-      {lp.active && (
-        <CardQuickActions
-          actions={quickActions}
-          focusedKey={lp.focusedKey}
-          registerButton={lp.registerButton}
-        />
-      )}
     </Link>
   );
 }
