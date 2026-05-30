@@ -10,6 +10,14 @@ import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// Module-level cache of fetched feed pages, keyed by kind|sort|scope. The
+// Feed component unmounts when you open a detail and remounts on back —
+// without this it would re-query + flash a spinner every time. Cached
+// results seed state instantly; we still refetch in the background to pick
+// up new posts, but the list never blanks.
+const feedCache = new Map();
+const cacheKey = (kind, sort, scope) => `${kind}|${sort}|${scope}`;
+
 // Discovery feed — tapping a card opens its detail page. kind / sort /
 // scope all live in the URL so returning from a detail restores the exact
 // view (Popular, Following, Boards…) instead of snapping to defaults.
@@ -27,9 +35,12 @@ export function Feed({ user, onSignIn }) {
   const setSort = (s) => setParam('sort', s);
   const scope = searchParams.get('scope') === 'following' ? 'following' : 'forYou';
   const setScope = (s) => setParam('scope', s);
-  const [ootds, setOotds] = useState(null);
-  const [boards, setBoards] = useState(null);
-  const [listings, setListings] = useState(null);
+  // Seed from cache for the current view so back-navigation paints
+  // immediately (no spinner) — the effects below still refresh in place.
+  const seeded = feedCache.get(cacheKey(kind, sort, scope));
+  const [ootds, setOotds] = useState(kind === 'ootds' ? (seeded ?? null) : null);
+  const [boards, setBoards] = useState(kind === 'boards' ? (seeded ?? null) : null);
+  const [listings, setListings] = useState(kind === 'market' ? (seeded ?? null) : null);
   // null = not yet loaded, [] = signed in but follows nobody.
   const [followingIds, setFollowingIds] = useState(null);
   const isFollowingScope = scope === 'following';
@@ -50,67 +61,63 @@ export function Feed({ user, onSignIn }) {
 
   useEffect(() => {
     if (kind !== 'ootds') return;
-    setOotds(null);
+    const key = cacheKey(kind, sort, scope);
+    const cached = feedCache.get(key);
+    setOotds(cached ?? null); // keep showing cached results; spinner only if none
+    let cancelled = false;
+    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setOotds(rows); };
     if (isFollowingScope) {
-      // Wait for followingIds to resolve so we don't fire an empty query.
-      if (followingIds === null) return;
+      if (followingIds === null) return; // wait for ids
       OutfitService.listFollowingFeed({ followingIds, pageSize: 24 })
-        .then(rows => setOotds(rows))
-        .catch(err => {
-          console.warn('following ootd query failed:', err?.code, err?.message);
-          setOotds([]);
-        });
-      return;
+        .then(apply)
+        .catch(err => { console.warn('following ootd query failed:', err?.code, err?.message); if (!cancelled && !cached) setOotds([]); });
+      return () => { cancelled = true; };
     }
     OutfitService.listPublicFeed({ pageSize: 24, sortBy: sort })
-      .then(({ ootds }) => setOotds(ootds))
-      .catch((err) => {
-        console.warn('ootd feed query failed:', err?.code, err?.message);
-        setOotds([]);
-      });
-  }, [sort, kind, isFollowingScope, followingIds]);
+      .then(({ ootds }) => apply(ootds))
+      .catch((err) => { console.warn('ootd feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setOotds([]); });
+    return () => { cancelled = true; };
+  }, [sort, kind, scope, isFollowingScope, followingIds]);
 
   useEffect(() => {
     if (kind !== 'boards') return;
-    setBoards(null);
+    const key = cacheKey(kind, sort, scope);
+    const cached = feedCache.get(key);
+    setBoards(cached ?? null);
+    let cancelled = false;
+    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setBoards(rows); };
     if (isFollowingScope) {
       if (followingIds === null) return;
       BoardService.listFollowingBoards({ followingIds, pageSize: 24 })
-        .then(rows => setBoards(rows))
-        .catch(err => {
-          console.warn('following boards query failed:', err?.code, err?.message);
-          setBoards([]);
-        });
-      return;
+        .then(apply)
+        .catch(err => { console.warn('following boards query failed:', err?.code, err?.message); if (!cancelled && !cached) setBoards([]); });
+      return () => { cancelled = true; };
     }
     BoardService.listPublicBoards({ pageSize: 24, sortBy: sort })
-      .then(rows => setBoards(rows))
-      .catch((err) => {
-        console.warn('boards feed query failed:', err?.code, err?.message);
-        setBoards([]);
-      });
-  }, [kind, sort, isFollowingScope, followingIds]);
+      .then(apply)
+      .catch((err) => { console.warn('boards feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setBoards([]); });
+    return () => { cancelled = true; };
+  }, [kind, sort, scope, isFollowingScope, followingIds]);
 
   useEffect(() => {
     if (kind !== 'market') return;
-    setListings(null);
+    const key = cacheKey(kind, sort, scope);
+    const cached = feedCache.get(key);
+    setListings(cached ?? null);
+    let cancelled = false;
+    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setListings(rows); };
     if (isFollowingScope) {
       if (followingIds === null) return; // wait for ids
       MarketplaceService.listBySellers({ sellerIds: followingIds, pageSize: 30 })
-        .then(setListings)
-        .catch(err => {
-          console.warn('market following query failed:', err?.code, err?.message);
-          setListings([]);
-        });
-      return;
+        .then(apply)
+        .catch(err => { console.warn('market following query failed:', err?.code, err?.message); if (!cancelled && !cached) setListings([]); });
+      return () => { cancelled = true; };
     }
     MarketplaceService.listRecent({ pageSize: 30 })
-      .then(res => setListings(res.listings))
-      .catch(err => {
-        console.warn('market feed query failed:', err?.code, err?.message);
-        setListings([]);
-      });
-  }, [kind, isFollowingScope, followingIds]);
+      .then(res => apply(res.listings))
+      .catch(err => { console.warn('market feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setListings([]); });
+    return () => { cancelled = true; };
+  }, [kind, sort, scope, isFollowingScope, followingIds]);
 
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
