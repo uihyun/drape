@@ -164,19 +164,29 @@ export function BoardDetail({ user, onSignIn }) {
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
 
-      <div className="controls" style={{ padding: '0 1rem' }}>
-        <ShareButton
-          className="btn btn-secondary"
-          title={board.name || t('untitledBoard')}
-          text=""
-          url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
-        />
+      {/* Same asymmetric action bar as outfit detail: wide primary +
+          compact icon row. */}
+      <div className="outfit-actions">
         {isOwner && (
-          <button type="button" className="btn btn-secondary" onClick={togglePublic} disabled={busy}>
-            {board.isPublic ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
+          <button
+            type="button"
+            className={`outfit-action-primary${board.isPublic ? ' is-unlist' : ''}`}
+            onClick={togglePublic}
+            disabled={busy}
+          >
+            {board.isPublic ? <EyeOff size={17} strokeWidth={1.7} /> : <Eye size={17} strokeWidth={1.7} />}
             {board.isPublic ? t('unlist') : t('publishToFeed')}
           </button>
         )}
+        <div className="outfit-action-row">
+          <ShareButton
+            className="outfit-action-icon"
+            title={board.name || t('untitledBoard')}
+            text=""
+            url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
+            label=""
+          />
+        </div>
       </div>
 
       <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />

@@ -35,7 +35,7 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
               </span>
             )}
             {(o.note || o.name) && (
-              <div className="ootd-card-overlay ootd-card-overlay--top">
+              <div className="ootd-card-overlay">
                 <h3 className="ootd-card-title">{o.note || o.name}</h3>
               </div>
             )}

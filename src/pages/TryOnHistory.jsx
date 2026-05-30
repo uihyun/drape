@@ -12,7 +12,6 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [gens, setGens] = useState(null);
   const [closet, setCloset] = useState({});
-  const [filterLiked, setFilterLiked] = useState(false);
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sheetOpen, setSheetOpen] = useState(false);
   const filterCount = countLookFilters(filters);
@@ -41,10 +40,9 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const visible = useMemo(() => {
     if (!gens) return null;
     let list = gens;
-    if (filterLiked) list = list.filter(g => g.liked);
     if (filterCount > 0) list = list.filter(g => lookMatches(g, filters, closet));
     return list;
-  }, [gens, closet, filterLiked, filters, filterCount]);
+  }, [gens, closet, filters, filterCount]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -70,16 +68,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       )}
 
       {gens && gens.length > 0 && (
-        <div className="closet-header" style={{ marginBottom: '1.25rem' }}>
-          <nav className="filter-chips filter-chips--text" style={{ margin: 0 }}>
-            <button
-              type="button"
-              className={`chip${filterLiked ? ' active' : ''}`}
-              onClick={() => setFilterLiked(f => !f)}
-            >
-              {t('filterLiked')}
-            </button>
-          </nav>
+        <div className="closet-header" style={{ marginBottom: '1.25rem', justifyContent: 'flex-end' }}>
           <button
             type="button"
             className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}

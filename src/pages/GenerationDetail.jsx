@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { Heart, RefreshCw, Trash2 } from 'lucide-react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { Comments } from '../components/Comments.jsx';
@@ -66,10 +66,6 @@ export function GenerationDetail({ user }) {
   if (user && gen.userId !== user.uid) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
   }
-
-  const toggleLike = async () => {
-    await GenerationService.toggleLike(gen.id, !gen.liked);
-  };
 
   // Same async pattern as the initial try-on: kick off in the background,
   // race a 1.5s timeout — if the function returns fast, navigate to the
@@ -218,33 +214,29 @@ export function GenerationDetail({ user }) {
             </section>
           )}
 
-          <div className="gen-actions">
+          {/* Asymmetric action bar — wide Regenerate primary, Delete pushed
+              to the far right. No self-like (liking your own is meaningless). */}
+          <div className="outfit-actions">
             <button
               type="button"
-              className={`btn btn-secondary gen-like-btn${gen.liked ? ' is-liked' : ''}`}
-              onClick={toggleLike}
-              aria-pressed={!!gen.liked}
-              aria-label={gen.liked ? t('selfUnlike') : t('selfLike')}
-            >
-              <Heart size={15} strokeWidth={1.7} fill={gen.liked ? 'currentColor' : 'none'} />
-              {gen.liked ? t('selfUnlike') : t('selfLike')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
+              className="outfit-action-primary"
               onClick={regen}
               disabled={regenerating}
             >
-              <RefreshCw size={14} strokeWidth={1.7} />
+              <RefreshCw size={17} strokeWidth={1.7} />
               {regenerating ? t('regenerating') : t('regenerate')}
             </button>
-            <button
-              type="button"
-              className="btn btn-secondary danger-btn"
-              onClick={remove}
-            >
-              <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
-            </button>
+            <div className="outfit-action-row">
+              <button
+                type="button"
+                className="outfit-action-icon outfit-action-danger"
+                onClick={remove}
+                aria-label={t('delete')}
+                title={t('delete')}
+              >
+                <Trash2 size={17} strokeWidth={1.7} />
+              </button>
+            </div>
           </div>
 
           <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />

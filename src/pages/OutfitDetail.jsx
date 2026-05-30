@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag } from 'lucide-react';
+import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -423,7 +423,7 @@ export function OutfitDetail({ user, onSignIn }) {
           />
           {isOwner && (
             <Link to={`/o/${outfit.id}/link`} className="outfit-action-icon" aria-label={t('linkItemsCta')} title={t('linkItemsCta')}>
-              <Pencil size={17} strokeWidth={1.7} />
+              <Shirt size={17} strokeWidth={1.7} />
             </Link>
           )}
           {isOwner && (
