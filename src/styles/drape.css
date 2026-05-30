@@ -2985,6 +2985,7 @@ input[type="search"]::-webkit-search-decoration {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: 16px;
 }
 .item-viewer-toggle {
   position: absolute;
@@ -4972,15 +4973,15 @@ input[type="search"]::-webkit-search-decoration {
   padding: 0 1rem 2rem;
 }
 .outfit-hero {
-  /* Negative margins to keep the hero full-bleed while the container
-     has 1rem padding — byline/title now align with the photo edges. */
-  width: calc(100% + 2rem);
-  margin-left: -1rem;
+  /* Rounded corners matching the feed/profile cards + board/try-on detail
+     heroes (was full-bleed square before). */
+  width: 100%;
   aspect-ratio: 4 / 3;
   background: var(--surface-elevated);
   overflow: hidden;
   margin-bottom: 1rem;
   position: relative;
+  border-radius: 16px;
 }
 .outfit-hero-single img {
   width: 100%; height: 100%; object-fit: cover;
@@ -4995,6 +4996,7 @@ input[type="search"]::-webkit-search-decoration {
   height: auto;
   max-height: 80vh;
   object-fit: contain;
+  border-radius: 16px;
 }
 /* Collage hero: each item is a free-floating sticker, positioned via
    inline style. Soft drop-shadow keeps the layered feel from getting
@@ -5520,6 +5522,16 @@ input[type="search"]::-webkit-search-decoration {
   position: relative;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   transform-origin: center;
+  /* Kill the iOS native long-press image drag / callout that otherwise
+     lifts the photo onto the finger and blocks the quick-action gesture. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ootd-card img, .board-feed-card img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none; /* gesture handler on the card owns all touches */
 }
 .ootd-card.is-pressed, .board-feed-card.is-pressed {
   transform: scale(1.06);

@@ -47,9 +47,17 @@ export function useLongPressQuickActions({ actions = [], onFire, enabled = true 
     timer.current = setTimeout(() => {
       armed.current = true;
       setActive(true);
-      if (navigator.vibrate) { try { navigator.vibrate(8); } catch { /* noop */ } }
+      // Haptic tick — only when the page already has user activation, else
+      // Chrome logs an intervention warning. Best-effort; never throws.
+      if (navigator.vibrate && navigator.userActivation?.isActive) {
+        try { navigator.vibrate(8); } catch { /* noop */ }
+      }
     }, HOLD_MS);
   }, [enabled, actions.length]);
+
+  // iOS fires a contextmenu on long-press (the native image/link preview
+  // that drags the photo to the finger). Always suppress it on touch.
+  const onContextMenu = useCallback((e) => { e.preventDefault(); }, []);
 
   const onPointerMove = useCallback((e) => {
     if (!active) {
@@ -106,7 +114,9 @@ export function useLongPressQuickActions({ actions = [], onFire, enabled = true 
       onPointerUp,
       onPointerCancel,
       onClickCapture,
-      style: { touchAction: active ? 'none' : 'pan-y' },
+      onContextMenu,
+      draggable: false,
+      style: { touchAction: active ? 'none' : 'pan-y', WebkitTouchCallout: 'none' },
     },
   };
 }
