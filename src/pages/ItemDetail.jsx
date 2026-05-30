@@ -356,6 +356,18 @@ export function ItemDetail({ user, onSignIn }) {
               )}
               <h1 className="item-viewer-name">
                 {item.name || t('untitledItem')}
+                {(item.shopUrl || item.tags?.shopUrl) && (
+                  <a
+                    href={item.shopUrl || item.tags?.shopUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="item-name-link"
+                    aria-label={t('viewProduct')}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink size={14} strokeWidth={1.8} />
+                  </a>
+                )}
                 {item.forSale && item.priceAsking > 0 && (
                   <span className="item-sale-tags">
                     <span className="item-sale-price">
@@ -370,10 +382,10 @@ export function ItemDetail({ user, onSignIn }) {
               {/* Shopping: owner-set product link (recommend / remember) +
                   a Google Shopping search from brand + description. */}
               <div className="item-shop-row">
-                {item.tags?.shopUrl && (
+                {(item.shopUrl || item.tags?.shopUrl) && (
                   <a
                     className="item-shop-link"
-                    href={item.tags.shopUrl}
+                    href={item.shopUrl || item.tags?.shopUrl}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
                   >

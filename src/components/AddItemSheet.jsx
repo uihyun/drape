@@ -10,10 +10,10 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const isMobileUA = typeof navigator !== 'undefined'
   && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
 
-// Quick closet-add as a bottom sheet (photo + an optional product/shop
-// URL the user wants to remember). Mirrors OotdSheet so the create menu
-// feels consistent; the heavy flows (try-on, analyze, builders) stay full
-// pages. Naming/tagging is still auto-filled server-side after upload.
+// Quick closet-add as a bottom sheet (photo + an optional shop URL to jump
+// straight to where it's sold). Mirrors OotdSheet so the create menu feels
+// consistent; the heavy flows (try-on, analyze, builders) stay full pages.
+// Naming/tagging is still auto-filled server-side after upload.
 export function AddItemSheet({ open, user, onClose, onSaved }) {
   const { t } = useLocale();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
@@ -47,13 +47,12 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
     setError(null);
     try {
       const compressed = await CameraService.compressImage(blob);
-      const { id } = await ItemService.createItem({ blob: compressed });
       const link = url.trim();
-      if (link) {
-        // updateItem's allowlist already permits a top-level shopUrl; stored
-        // there (not under tags) so the server auto-tag can't clobber it.
-        await ItemService.updateItem(id, { shopUrl: normalizeUrl(link) });
-      }
+      const { id } = await ItemService.createItem({
+        blob: compressed,
+        mime: compressed.type || 'image/jpeg',
+        shopUrl: link ? normalizeUrl(link) : '',
+      });
       onSaved?.(id);
       onClose?.();
     } catch (e) {
@@ -66,9 +65,12 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
   return (
     <>
       <div className="create-sheet-overlay" onClick={onClose}>
-        <div className="create-sheet" style={sheetStyle} onClick={e => e.stopPropagation()}>
-          <div className="create-sheet-handle" {...handleProps} />
-          <h3 className="create-sheet-title">{t('addItemTitle')}</h3>
+        <div className="create-sheet" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
+          <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
+            <X size={18} />
+          </button>
+          <h3 className="create-sheet-title">{t('createAddItem')}</h3>
 
           {preview ? (
             <div className="add-sheet-photo">
@@ -120,7 +122,9 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
             inputMode="url"
             value={url}
             onChange={e => setUrl(e.target.value)}
-            placeholder={t('itemUrlPlaceholder')}
+            placeholder={t('tagShopUrlPlaceholder')}
+            autoCapitalize="none"
+            autoCorrect="off"
           />
 
           {error && <p className="settings-error" style={{ margin: '0.5rem 0' }}>{error}</p>}

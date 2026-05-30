@@ -5469,3 +5469,69 @@ input[type="search"]::-webkit-search-decoration {
 .ootd-card { aspect-ratio: auto; }
 .ootd-card img { height: auto; }
 .ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
+
+/* ── Add-item sheet (photo + product URL) ─────────────────────────────── */
+.add-sheet-pickers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.5rem 0 1rem;
+}
+.add-sheet-take { position: relative; cursor: pointer; }
+.add-sheet-photo {
+  position: relative;
+  margin: 0.5rem 0 1rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface-elevated);
+}
+.add-sheet-photo img { width: 100%; max-height: 46vh; object-fit: contain; display: block; }
+.add-sheet-photo-rm {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.add-sheet-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0.35rem;
+}
+.add-sheet-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.add-sheet-cta { width: 100%; margin-top: 1rem; }
+
+/* Little "shop link attached" chip next to an item's title. */
+.item-name-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.item-name-link:hover { color: var(--accent); }

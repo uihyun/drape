@@ -47,16 +47,20 @@ function itemStorageRef(uid, itemId, filename) {
  * skeleton card while `status='processing'`. The cropped image + tags are
  * written by the `processItem` Cloud Function when it finishes.
  */
-async function createItem({ blob, mime = 'image/jpeg' }) {
+async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
 
   // 1. Reserve an id by creating the doc with status=uploading first. Lets us
   //    upload to a path keyed on that id (instead of guessing client-side).
+  //    A user-supplied shopUrl is stored TOP-LEVEL (not under tags) at create
+  //    time — the processItem function later overwrites `tags`, which would
+  //    wipe it, but it never touches top-level fields.
   const itemsCol = collection(db, ITEMS);
   const draft = await addDoc(itemsCol, {
     userId: user.uid,
     status: 'uploading',
+    ...(shopUrl ? { shopUrl } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
