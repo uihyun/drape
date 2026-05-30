@@ -41,6 +41,22 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
 
   const pick = (file) => { if (file) setBlob(file); };
 
+  // Take photo must reach the actual camera on every platform: the native
+  // Capacitor camera on device, the web getUserMedia modal on desktop.
+  // (Mobile web uses an <input capture> below — most reliable there.)
+  const handleTakePhoto = async () => {
+    if (isNativeApp()) {
+      try {
+        const b = await CameraService.takePhoto();
+        if (b) pick(b);
+      } catch (e) {
+        setError(e?.message || 'camera_failed');
+      }
+      return;
+    }
+    setCameraOpen(true);
+  };
+
   const save = async () => {
     if (!blob || saving) return;
     setSaving(true);
@@ -101,7 +117,7 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
                   />
                 </label>
               ) : (
-                <button type="button" className="btn btn-secondary" onClick={() => setCameraOpen(true)}>
+                <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
                   <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
                 </button>
               )}

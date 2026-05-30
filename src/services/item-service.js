@@ -238,7 +238,7 @@ async function analyzePhoto({ blob, mime = 'image/jpeg' }) {
  * still has something to show. Future: a follow-up processItem pass
  * could refine.
  */
-async function createFromDetected({ blob, detected, sourceLabel = '' }) {
+async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = '' }) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -270,6 +270,7 @@ async function createFromDetected({ blob, detected, sourceLabel = '' }) {
       brand: detected.brand || null,
     },
     detectedSearchQuery: detected.searchQuery || '',
+    ...(shopUrl ? { shopUrl } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
