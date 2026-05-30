@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X, Bookmark } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CATEGORIES, categoryLabel } from '../services/taxonomy.js';
@@ -36,7 +36,13 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
   const [items, setItems] = useState(null);
   // Top-row view: All (grid) / Brands (alpha groups) / Usage (recency).
-  const [view, setView] = useState('all');
+  // View in the URL (?cv=) so back-navigation keeps all/brands/usage.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('cv');
+  const view = VIEWS.includes(viewParam) ? viewParam : 'all';
+  const setView = (next) => setSearchParams((prev) => {
+    const p = new URLSearchParams(prev); p.set('cv', next); return p;
+  }, { replace: true });
   // Multi-facet tag filters (Set-like arrays per dimension). The All-view
   // category chip row and the detailed-filter sheet both write here.
   const [filters, setFilters] = useState(emptyFilters);

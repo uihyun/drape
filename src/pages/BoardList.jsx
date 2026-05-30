@@ -16,7 +16,12 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function BoardList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('boards', { min: 1, max: 3, def: 2 });
-  const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
+  // Tab in the URL (?bt=) so back-navigation keeps mine/saved.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('bt') === 'saved' ? 'saved' : 'mine';
+  const setTab = (next) => setSearchParams((prev) => {
+    const p = new URLSearchParams(prev); p.set('bt', next); return p;
+  }, { replace: true });
   const [mine, setMine] = useState(null);
   const [saved, setSaved] = useState(null);
   const [filters, setFilters] = useState(emptyLookFilters());

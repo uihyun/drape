@@ -36,7 +36,13 @@ export function PublicProfile({ user, onSignIn }) {
   const { t, lang } = useLocale();
   const { handle } = useParams();
   const [profile, setProfile] = useState(undefined);
-  const [tab, setTab] = useState('outfits');
+  // Tab in the URL (?pt=) so back-navigation keeps the section.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('pt');
+  const tab = PUBLIC_TABS.includes(tabParam) ? tabParam : 'outfits';
+  const setTab = (next) => setSearchParams((prev) => {
+    const p = new URLSearchParams(prev); p.set('pt', next); return p;
+  }, { replace: true });
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
