@@ -97,51 +97,53 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             <h3 className="create-sheet-title" style={{ margin: 0 }}>{t('ootdSheetTitle')}</h3>
           </header>
 
-          {/* Photo area */}
-          <div className="ootd-sheet-photo">
-            {photoPreview ? (
+          {/* Photo — same shape as Add item: buttons until a photo is
+              staged, then the photo itself with a remove affordance. */}
+          {photoPreview ? (
+            <div className="add-sheet-photo">
               <img src={photoPreview} alt="" />
-            ) : (
-              <div className="ootd-sheet-photo-empty">{t('ootdPickPhoto')}</div>
-            )}
-          </div>
-
-          <div className="ootd-sheet-photo-actions">
-            <button type="button" className="btn btn-secondary" onClick={() => fileRef.current?.click()}>
-              <ImageIcon size={14} strokeWidth={1.7} /> {t('uploadPhoto')}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={e => stagePicked(e.target.files?.[0])}
-            />
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={async () => {
-                if (isNativeApp()) {
-                  try {
-                    const blob = await CameraService.takePhoto();
-                    if (blob) stagePicked(blob);
-                  } catch (err) {
-                    setError(err.message);
+              <button
+                type="button"
+                className="add-sheet-photo-rm"
+                onClick={() => { setPhotoBlob(null); setPhotoPreview(null); }}
+                aria-label={t('remove')}
+              >
+                <X size={16} strokeWidth={2} />
+              </button>
+            </div>
+          ) : (
+            <div className="add-sheet-pickers">
+              <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
+                <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={async () => {
+                  if (isNativeApp()) {
+                    try {
+                      const blob = await CameraService.takePhoto();
+                      if (blob) stagePicked(blob);
+                    } catch (err) { setError(err.message); }
+                  } else {
+                    setCameraOpen(true);
                   }
-                } else {
-                  setCameraOpen(true);
-                }
-              }}
-            >
-              <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
-            </button>
-          </div>
+                }}
+              >
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={e => stagePicked(e.target.files?.[0])}
+          />
 
-          {/* Item / board linking moved to a dedicated closet-sized page
-              opened after save (so search + multi-select fit). */}
-
-          {/* Note */}
-          <label className="ootd-sheet-label">{t('ootdNoteLabel')}</label>
+          {/* Title */}
+          <label className="add-sheet-label">{t('ootdNoteLabel')}</label>
           <textarea
             className="ootd-sheet-note"
             value={note}

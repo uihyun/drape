@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
-import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
+import { CATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { MessageService } from '../services/message-service.js';
@@ -297,18 +297,21 @@ export function ItemDetail({ user, onSignIn }) {
             <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); }}>
               <Pencil size={14} strokeWidth={1.7} /> {t('editTags')}
             </button>
-            {item.kind === 'saved' && (
-              <button
-                type="button"
-                onClick={async () => {
-                  setMenuOpen(false);
-                  try { await ItemService.updateItem(item.id, { kind: 'owned' }); }
-                  catch (e) { console.warn('promote to owned failed', e?.message); }
-                }}
-              >
-                <Check size={14} strokeWidth={1.7} /> {t('itemMarkOwned')}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={async () => {
+                setMenuOpen(false);
+                // Toggle owned ↔ wishlist (reversible — a mis-tap or a sold
+                // piece can flip back). Missing kind is treated as owned.
+                const next = (item.kind === 'wishlist') ? 'owned' : 'wishlist';
+                try { await ItemService.updateItem(item.id, { kind: next }); }
+                catch (e) { console.warn('toggle kind failed', e?.message); }
+              }}
+            >
+              {item.kind === 'wishlist'
+                ? <><Check size={14} strokeWidth={1.7} /> {t('itemMarkOwned')}</>
+                : <><Bookmark size={14} strokeWidth={1.7} /> {t('itemMarkWishlist')}</>}
+            </button>
             <button type="button" onClick={() => { setMenuOpen(false); changeInputRef.current?.click(); }}>
               <ImageIcon size={14} strokeWidth={1.7} /> {t('changeProduct')}
             </button>
@@ -354,9 +357,9 @@ export function ItemDetail({ user, onSignIn }) {
               maxLength={80}
             />
             <TagsBlock t={t} tags={draft.tags} editing onChange={tags => setDraft({ ...draft, tags })} />
-            {/* Saved (analyze-detected) items aren't owned, so they can't be
-                listed for sale until promoted via "I own this". */}
-            {item.kind !== 'saved' && (
+            {/* Wishlist (analyze-detected) items aren't owned, so they can't
+                be listed for sale until promoted via "I own this". */}
+            {item.kind !== 'wishlist' && (
               <SaleBlock t={t} draft={draft} setDraft={setDraft} currency={ownerCurrency} />
             )}
             <div className="item-viewer-edit-actions">
@@ -368,7 +371,7 @@ export function ItemDetail({ user, onSignIn }) {
           <>
             <div className="item-viewer-meta">
               {item.tags?.category && (
-                <span className="item-viewer-cat">{t(`taxonomy.categories.${item.tags.category}`)}</span>
+                <span className="item-viewer-cat">{categoryLabel(item.tags, t)}</span>
               )}
               <h1 className="item-viewer-name">
                 {item.name || t('untitledItem')}

@@ -244,8 +244,9 @@ export const ko = {
   addFirstItem: '첫 옷 등록하기',
   filterAll: '전체',
   itemKindOwned: '내 옷',
-  itemKindSaved: '저장됨',
+  itemKindWishlist: '위시리스트',
   itemMarkOwned: '내가 가진 옷이에요',
+  itemMarkWishlist: '위시리스트로 옮기기',
   privateBadge: '비공개',
   filterForSale: '판매 중',
 
@@ -459,6 +460,16 @@ export const ko = {
     categories: {
       outerwear: '아우터', top: '상의', bottom: '하의', dress: '원피스',
       footwear: '신발', bag: '가방', accessory: '액세서리', innerwear: '이너', other: '기타',
+    },
+    subcategories: {
+      coat: '코트', jacket: '재킷', blazer: '블레이저', cardigan: '카디건', vest: '베스트', puffer: '패딩', trench: '트렌치',
+      't-shirt': '티셔츠', shirt: '셔츠', sweater: '스웨터', hoodie: '후디', blouse: '블라우스', knit: '니트', tank: '탱크탑',
+      jeans: '청바지', pants: '팬츠', skirt: '스커트', shorts: '반바지', leggings: '레깅스', sweatpants: '스웨트팬츠',
+      dress: '원피스', jumpsuit: '점프수트', romper: '롬퍼',
+      sneakers: '스니커즈', boots: '부츠', heels: '힐', loafers: '로퍼', sandals: '샌들', flats: '플랫',
+      tote: '토트백', crossbody: '크로스백', backpack: '백팩', clutch: '클러치', shoulder: '숄더백', duffel: '더플백',
+      hat: '모자', scarf: '스카프', belt: '벨트', jewelry: '주얼리', sunglasses: '선글라스', watch: '시계', tie: '타이', gloves: '장갑',
+      bra: '브라', underwear: '속옷', baselayer: '베이스레이어', socks: '양말', tights: '타이츠',
     },
     colors: {
       black: '블랙', white: '화이트', gray: '그레이', beige: '베이지', brown: '브라운',

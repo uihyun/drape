@@ -23,13 +23,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // RESULT page instead of a blank input screen. Cleared only by reset().
 const analyzeCache = { batches: [], savedKeys: new Set(), savedBatchIds: new Map() };
 
-// Tolerate "brand.com/x" pasted without a scheme.
-function normalizePieceUrl(u) {
-  const s = (u || '').trim();
-  if (!s) return '';
-  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
-}
-
 export function AnalyzePhoto({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
@@ -43,7 +36,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [savedBatchIds, setSavedBatchIds] = useState(analyzeCache.savedBatchIds);
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
-  const [pieceUrls, setPieceUrls] = useState({}); // `${batchIdx}:${itemIdx}` -> shop url
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
@@ -144,7 +136,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
         blob: batch.blob,
         detected,
         sourceLabel: batch.style || '',
-        shopUrl: pieceUrls[key] ? normalizePieceUrl(pieceUrls[key]) : '',
       });
       setSavedKeys(prev => new Set(prev).add(key));
     } catch (e) {
@@ -353,16 +344,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
                             {(it.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ')}
                             {it.brand && <> · <strong>{it.brand}</strong></>}
                           </p>
-                          <input
-                            type="url"
-                            inputMode="url"
-                            className="analyze-item-url"
-                            value={pieceUrls[key] || ''}
-                            onChange={e => setPieceUrls(prev => ({ ...prev, [key]: e.target.value }))}
-                            placeholder={t('tagShopUrlPlaceholder')}
-                            autoCapitalize="none"
-                            autoCorrect="off"
-                          />
                           <div className="analyze-item-v2-actions">
                             <a
                               href={searchUrl(it.searchQuery || it.description)}

@@ -246,8 +246,9 @@ export const ja = {
   addFirstItem: '最初のアイテムを追加',
   filterAll: 'すべて',
   itemKindOwned: '所有',
-  itemKindSaved: '保存済み',
+  itemKindWishlist: 'ウィッシュリスト',
   itemMarkOwned: '持っています',
+  itemMarkWishlist: 'ウィッシュリストへ',
   privateBadge: '非公開',
   filterForSale: '販売中',
 
@@ -468,6 +469,16 @@ export const ja = {
       accessory: 'アクセサリー',
       innerwear: 'インナー',
       other: 'その他',
+    },
+    subcategories: {
+      coat: 'コート', jacket: 'ジャケット', blazer: 'ブレザー', cardigan: 'カーディガン', vest: 'ベスト', puffer: 'ダウン', trench: 'トレンチ',
+      't-shirt': 'Tシャツ', shirt: 'シャツ', sweater: 'セーター', hoodie: 'パーカー', blouse: 'ブラウス', knit: 'ニット', tank: 'タンクトップ',
+      jeans: 'ジーンズ', pants: 'パンツ', skirt: 'スカート', shorts: 'ショーツ', leggings: 'レギンス', sweatpants: 'スウェット',
+      dress: 'ワンピース', jumpsuit: 'ジャンプスーツ', romper: 'ロンパース',
+      sneakers: 'スニーカー', boots: 'ブーツ', heels: 'ヒール', loafers: 'ローファー', sandals: 'サンダル', flats: 'フラット',
+      tote: 'トート', crossbody: 'ショルダー', backpack: 'バックパック', clutch: 'クラッチ', shoulder: 'ショルダーバッグ', duffel: 'ダッフル',
+      hat: '帽子', scarf: 'スカーフ', belt: 'ベルト', jewelry: 'ジュエリー', sunglasses: 'サングラス', watch: '時計', tie: 'ネクタイ', gloves: '手袋',
+      bra: 'ブラ', underwear: '下着', baselayer: 'ベースレイヤー', socks: '靴下', tights: 'タイツ',
     },
     colors: {
       black: 'ブラック', white: 'ホワイト', gray: 'グレー', beige: 'ベージュ', brown: 'ブラウン',

@@ -254,10 +254,10 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   // most prominent in the multi-item source photo.
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
-    // Saved from an analyzed photo — a reference / wishlist piece, NOT
+    // Detected from an analyzed photo — a wishlist / reference piece, NOT
     // something the user owns. Excluded from owned-only stats and can't be
     // listed for sale until the user marks "I own this" (kind → owned).
-    kind: 'saved',
+    kind: 'wishlist',
     name: detected.name || detected.description || sourceLabel || 'detected',
     notes: sourceLabel ? `detected from: ${sourceLabel}` : '',
     originalUrl: url,

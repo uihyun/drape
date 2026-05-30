@@ -244,8 +244,9 @@ export const en = {
   addFirstItem: 'Add your first item',
   filterAll: 'All',
   itemKindOwned: 'Owned',
-  itemKindSaved: 'Saved',
+  itemKindWishlist: 'Wishlist',
   itemMarkOwned: 'I own this',
+  itemMarkWishlist: 'Move to wishlist',
   privateBadge: 'Private',
   filterForSale: 'For sale',
 
@@ -466,6 +467,16 @@ export const en = {
       accessory: 'Accessory',
       innerwear: 'Innerwear',
       other: 'Other',
+    },
+    subcategories: {
+      coat: 'Coat', jacket: 'Jacket', blazer: 'Blazer', cardigan: 'Cardigan', vest: 'Vest', puffer: 'Puffer', trench: 'Trench',
+      't-shirt': 'T-shirt', shirt: 'Shirt', sweater: 'Sweater', hoodie: 'Hoodie', blouse: 'Blouse', knit: 'Knit', tank: 'Tank',
+      jeans: 'Jeans', pants: 'Pants', skirt: 'Skirt', shorts: 'Shorts', leggings: 'Leggings', sweatpants: 'Sweatpants',
+      dress: 'Dress', jumpsuit: 'Jumpsuit', romper: 'Romper',
+      sneakers: 'Sneakers', boots: 'Boots', heels: 'Heels', loafers: 'Loafers', sandals: 'Sandals', flats: 'Flats',
+      tote: 'Tote', crossbody: 'Crossbody', backpack: 'Backpack', clutch: 'Clutch', shoulder: 'Shoulder bag', duffel: 'Duffel',
+      hat: 'Hat', scarf: 'Scarf', belt: 'Belt', jewelry: 'Jewelry', sunglasses: 'Sunglasses', watch: 'Watch', tie: 'Tie', gloves: 'Gloves',
+      bra: 'Bra', underwear: 'Underwear', baselayer: 'Base layer', socks: 'Socks', tights: 'Tights',
     },
     colors: {
       black: 'Black', white: 'White', gray: 'Gray', beige: 'Beige', brown: 'Brown',

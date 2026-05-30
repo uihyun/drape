@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Bookmark } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
-import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
+import { CATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
@@ -175,10 +175,10 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           </button>
           <button
             type="button"
-            className={`chip-pill${filters.kind.includes('saved') ? ' active' : ''}`}
-            onClick={() => toggleDim('kind', 'saved')}
+            className={`chip-pill${filters.kind.includes('wishlist') ? ' active' : ''}`}
+            onClick={() => toggleDim('kind', 'wishlist')}
           >
-            {t('itemKindSaved')}
+            {t('itemKindWishlist')}
           </button>
         </div>
       )}
@@ -417,13 +417,15 @@ function ItemCard({ item, t, elapsed = null }) {
             {formatPrice(item.priceAsking, item.currency)}
           </span>
         )}
-        {item.kind === 'saved' && (
-          <span className="item-card-saved-badge">{t('itemKindSaved')}</span>
+        {item.kind === 'wishlist' && (
+          <span className="item-card-wish-badge" title={t('itemKindWishlist')}>
+            <Bookmark size={11} strokeWidth={2.2} fill="currentColor" />
+          </span>
         )}
       </div>
       <div className="item-card-meta">
         {item.tags?.category && (
-          <span className="item-card-cat">{t(`taxonomy.categories.${item.tags.category}`)}</span>
+          <span className="item-card-cat">{categoryLabel(item.tags, t)}</span>
         )}
         {item.name && (
           <span className="item-card-name">{item.name}</span>

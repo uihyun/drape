@@ -109,4 +109,19 @@ export const TAXONOMY = {
   lengths: LENGTHS,
 };
 
+// Display label for an item's category — prefers the fine-grained
+// subcategory ("Shirt") over the broad category ("Top") so cards/labels
+// read specifically. Falls back: localized subcategory → capitalized raw
+// subcategory → localized category. `t` is the locale lookup.
+export function categoryLabel(tags, t) {
+  const cat = tags?.category;
+  const sub = tags?.subcategory;
+  if (sub) {
+    const localized = t(`taxonomy.subcategories.${sub}`);
+    if (localized && localized !== `taxonomy.subcategories.${sub}`) return localized;
+    return sub.charAt(0).toUpperCase() + sub.slice(1);
+  }
+  return cat ? t(`taxonomy.categories.${cat}`) : '';
+}
+
 export default TAXONOMY;
