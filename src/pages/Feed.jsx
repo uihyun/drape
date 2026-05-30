@@ -130,21 +130,8 @@ export function Feed({ user, onSignIn }) {
       });
   }, [kind, isFollowingScope, followingIds]);
 
-  // Hydrate author profiles for whichever feed is showing.
-  useEffect(() => {
-    const rows = kind === 'ootds' ? ootds : kind === 'boards' ? boards : null;
-    if (!rows?.length) return;
-    const missing = rows.map(r => r.userId).filter(uid => uid && !authorMap.has(uid));
-    if (!missing.length) return;
-    ProfileService.getProfilesByUids?.(missing).then(map => {
-      if (!map || map.size === 0) return;
-      setAuthorMap(prev => {
-        const next = new Map(prev);
-        map.forEach((p, uid) => next.set(uid, p));
-        return next;
-      });
-    }).catch(() => {});
-  }, [ootds, boards, kind, authorMap]);
+  // (Feed cards no longer show an author chip, so there's no author
+  // hydration here — it was dead work that re-rendered the whole list.)
 
   const showingBoards = kind === 'boards';
   const showingMarket = kind === 'market';
