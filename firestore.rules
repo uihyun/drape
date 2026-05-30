@@ -73,7 +73,10 @@ service cloud.firestore {
                       // item for sale). Schema enforced client-side; rules
                       // just allow the keys through.
                       'forSale', 'priceOriginal', 'priceAsking',
-                      'conditionGrade', 'currency', 'listedAt']);
+                      'conditionGrade', 'currency', 'listedAt',
+                      // owned vs saved (analyze-detected reference) — flipped
+                      // by the "I own this" button.
+                      'kind']);
 
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;

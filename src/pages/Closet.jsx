@@ -25,7 +25,7 @@ const FILTER_DIMS = [
 ];
 
 function emptyFilters() {
-  return { category: [], colors: [], seasons: [], styles: [], fits: [], forSale: [] };
+  return { category: [], colors: [], seasons: [], styles: [], fits: [], forSale: [], kind: [] };
 }
 function countFilters(f) {
   return Object.values(f).reduce((n, arr) => n + arr.length, 0);
@@ -47,6 +47,12 @@ function matchesFilters(item, filters) {
   // For-sale is a boolean off the item (not a tag); selecting it keeps
   // only listed items.
   if (filters.forSale?.length && !item.forSale) return false;
+  // Owned vs saved (analyze-detected reference). Items predating the field
+  // are treated as owned (the default).
+  if (filters.kind?.length) {
+    const k = item.kind || 'owned';
+    if (!filters.kind.includes(k)) return false;
+  }
   return true;
 }
 
@@ -159,6 +165,21 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
               {t(`taxonomy.categories.${c}`)}
             </button>
           ))}
+          <span className="closet-cat-div" aria-hidden="true" />
+          <button
+            type="button"
+            className={`chip-pill${filters.kind.includes('owned') ? ' active' : ''}`}
+            onClick={() => toggleDim('kind', 'owned')}
+          >
+            {t('itemKindOwned')}
+          </button>
+          <button
+            type="button"
+            className={`chip-pill${filters.kind.includes('saved') ? ' active' : ''}`}
+            onClick={() => toggleDim('kind', 'saved')}
+          >
+            {t('itemKindSaved')}
+          </button>
         </div>
       )}
 
@@ -395,6 +416,9 @@ function ItemCard({ item, t, elapsed = null }) {
           <span className="item-card-sale">
             {formatPrice(item.priceAsking, item.currency)}
           </span>
+        )}
+        {item.kind === 'saved' && (
+          <span className="item-card-saved-badge">{t('itemKindSaved')}</span>
         )}
       </div>
       <div className="item-card-meta">

@@ -245,6 +245,10 @@ export const ja = {
   addItem: 'アイテム追加',
   addFirstItem: '最初のアイテムを追加',
   filterAll: 'すべて',
+  itemKindOwned: '所有',
+  itemKindSaved: '保存済み',
+  itemMarkOwned: '持っています',
+  privateBadge: '非公開',
   filterForSale: '販売中',
 
   // ── Add item ───────────────────────────────────────────────────────

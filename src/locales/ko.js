@@ -243,6 +243,10 @@ export const ko = {
   addItem: '옷 추가',
   addFirstItem: '첫 옷 등록하기',
   filterAll: '전체',
+  itemKindOwned: '내 옷',
+  itemKindSaved: '저장됨',
+  itemMarkOwned: '내가 가진 옷이에요',
+  privateBadge: '비공개',
   filterForSale: '판매 중',
 
   // ── Add item ───────────────────────────────────────────────────────

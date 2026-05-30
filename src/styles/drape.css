@@ -5535,6 +5535,46 @@ input[type="search"]::-webkit-search-decoration {
   vertical-align: middle;
 }
 .item-name-link:hover { color: var(--accent); }
+
+/* "Private" badge on the owner's own unpublished outfit/board cards. */
+.card-private-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(3px);
+}
+/* "Saved" (analyze reference, not owned) badge on closet item cards. */
+.item-card-saved-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+/* Small divider before the Owned/Saved pills in the closet category row. */
+.closet-cat-div {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 1px;
+  height: 18px;
+  margin: 0 0.15rem;
+  background: var(--border);
+}
 /* Camera capture must sit above any open bottom sheet (z 200). */
 .camera-overlay { z-index: 2000; }
 /* Per-piece shop-URL field on the analyze result. */

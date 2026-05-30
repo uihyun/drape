@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
@@ -297,6 +297,18 @@ export function ItemDetail({ user, onSignIn }) {
             <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); }}>
               <Pencil size={14} strokeWidth={1.7} /> {t('editTags')}
             </button>
+            {item.kind === 'saved' && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setMenuOpen(false);
+                  try { await ItemService.updateItem(item.id, { kind: 'owned' }); }
+                  catch (e) { console.warn('promote to owned failed', e?.message); }
+                }}
+              >
+                <Check size={14} strokeWidth={1.7} /> {t('itemMarkOwned')}
+              </button>
+            )}
             <button type="button" onClick={() => { setMenuOpen(false); changeInputRef.current?.click(); }}>
               <ImageIcon size={14} strokeWidth={1.7} /> {t('changeProduct')}
             </button>
@@ -342,7 +354,11 @@ export function ItemDetail({ user, onSignIn }) {
               maxLength={80}
             />
             <TagsBlock t={t} tags={draft.tags} editing onChange={tags => setDraft({ ...draft, tags })} />
-            <SaleBlock t={t} draft={draft} setDraft={setDraft} currency={ownerCurrency} />
+            {/* Saved (analyze-detected) items aren't owned, so they can't be
+                listed for sale until promoted via "I own this". */}
+            {item.kind !== 'saved' && (
+              <SaleBlock t={t} draft={draft} setDraft={setDraft} currency={ownerCurrency} />
+            )}
             <div className="item-viewer-edit-actions">
               <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>{t('cancel')}</button>
               <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? t('saving') : t('save')}</button>

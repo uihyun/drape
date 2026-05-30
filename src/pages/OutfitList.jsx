@@ -16,16 +16,19 @@ function formatCardDate(ts) {
 }
 
 // 2-col grid of natural-ratio look photos — matches the discovery feed.
-function OotdGrid({ ootds, t }) {
+// `showPrivacy` (own content only) flags looks that aren't published yet.
+function OotdGrid({ ootds, t, showPrivacy = false }) {
   return (
     <div className="ootd-feed">
       {ootds.map(o => {
         const photo = o.photoCutUrl || o.photoUrl || o.coverUrl || o.sourcePhotoUrl;
+        const isPrivate = showPrivacy && !o.isPublic && !o.isListed;
         return (
           <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
             {photo
               ? <img src={photo} alt="" loading="lazy" referrerPolicy="no-referrer" />
               : <div className="ootd-card-empty">◇</div>}
+            {isPrivate && <span className="card-private-badge">{t('privateBadge')}</span>}
             {(o.note || o.name) && (
               <div className="ootd-card-overlay">
                 <h3 className="ootd-card-title">{o.note || o.name}</h3>
@@ -156,7 +159,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
             </Link>
           </div>
         ) : (
-          <OotdGrid ootds={ootds} t={t} />
+          <OotdGrid ootds={ootds} t={t} showPrivacy />
         )
       ) : tab === 'saved' ? (
         ootds === null ? (

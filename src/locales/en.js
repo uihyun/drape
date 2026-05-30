@@ -243,6 +243,10 @@ export const en = {
   addItem: 'Add item',
   addFirstItem: 'Add your first item',
   filterAll: 'All',
+  itemKindOwned: 'Owned',
+  itemKindSaved: 'Saved',
+  itemMarkOwned: 'I own this',
+  privateBadge: 'Private',
   filterForSale: 'For sale',
 
   // ── Add item ───────────────────────────────────────────────────────

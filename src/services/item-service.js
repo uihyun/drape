@@ -60,6 +60,7 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
   const draft = await addDoc(itemsCol, {
     userId: user.uid,
     status: 'uploading',
+    kind: 'owned', // a piece the user actually owns (vs analyze-saved refs)
     ...(shopUrl ? { shopUrl } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -133,7 +134,7 @@ async function updateItem(itemId, patch) {
   const allowed = [
     'name', 'notes', 'tags', 'isArchived', 'isFavorite',
     'forSale', 'priceOriginal', 'priceAsking', 'conditionGrade',
-    'currency', 'listedAt',
+    'currency', 'listedAt', 'kind',
   ];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))
@@ -253,6 +254,10 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   // most prominent in the multi-item source photo.
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
+    // Saved from an analyzed photo — a reference / wishlist piece, NOT
+    // something the user owns. Excluded from owned-only stats and can't be
+    // listed for sale until the user marks "I own this" (kind → owned).
+    kind: 'saved',
     name: detected.name || detected.description || sourceLabel || 'detected',
     notes: sourceLabel ? `detected from: ${sourceLabel}` : '',
     originalUrl: url,

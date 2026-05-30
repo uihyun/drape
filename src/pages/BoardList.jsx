@@ -151,6 +151,9 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           {list.map(b => (
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
               <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
+              {tab === 'mine' && !b.isPublic && (
+                <span className="card-private-badge">{t('privateBadge')}</span>
+              )}
               {b.name && (
                 <div className="ootd-card-overlay">
                   <h3 className="ootd-card-title">{b.name}</h3>
