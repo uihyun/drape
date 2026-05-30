@@ -59,7 +59,10 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
               left: `${(s.x || 0.5) * 100}%`,
               top: `${(s.y || 0.5) * 100}%`,
               transform: `translate(-50%, -50%) scale(${s.scale || 0.35}) rotate(${s.rotation || 0}deg)`,
-              zIndex: s.z || 1,
+              // Stack by sorted array index (bounded 0..N) instead of the
+              // stored s.z (unbounded — grows every bring-to-front), so a
+              // fixed card overlay z reliably sits above every sticker.
+              zIndex: i + 1,
             }}
           >
             <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" draggable={false} />

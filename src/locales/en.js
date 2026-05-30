@@ -243,6 +243,7 @@ export const en = {
   addItem: 'Add item',
   addFirstItem: 'Add your first item',
   filterAll: 'All',
+  itemKindLabel: 'Ownership',
   itemKindOwned: 'Owned',
   itemKindWishlist: 'Wishlist',
   itemMarkOwned: 'I own this',

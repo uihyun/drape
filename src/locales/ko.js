@@ -243,6 +243,7 @@ export const ko = {
   addItem: '옷 추가',
   addFirstItem: '첫 옷 등록하기',
   filterAll: '전체',
+  itemKindLabel: '보유',
   itemKindOwned: '내 옷',
   itemKindWishlist: '위시리스트',
   itemMarkOwned: '내가 가진 옷이에요',

@@ -3,32 +3,55 @@ import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Detailed tag-filter sheet for "looks" (try-ons, outfits, OOTDs) — same
-// chip-grid UX as the closet's filter, no text box. A look matches a
-// selection when its aggregated tags (the style breakdown + every linked
-// closet item's tags) intersect. Across dimensions = AND, within = OR.
+// THE single tag-filter module for the whole app (closet, outfits, OOTDs,
+// try-ons, boards — everything except the calendar). Same chip-grid UX
+// everywhere, no text box. Manage filter UI + matching in ONE place so a
+// new dimension or fix lands across every surface at once.
 //
-// `style` is the look's own [{label, level}] breakdown; the rest come from
-// the items the look references.
-const LOOK_DIMS = [
-  { key: 'styles',   values: STYLES,     ns: 'styles',     labelKey: 'tagStyles' },
-  { key: 'category', values: CATEGORIES, ns: 'categories', labelKey: 'tagCategory' },
-  { key: 'colors',   values: COLORS,     ns: 'colors',     labelKey: 'tagColors' },
-  { key: 'seasons',  values: SEASONS,    ns: 'seasons',    labelKey: 'tagSeasons' },
-  { key: 'fits',     values: FITS,       ns: 'fits',       labelKey: 'tagFit' },
+// Two entity shapes are filtered:
+//   • ITEMS (closet) — one `tags` object per doc → itemMatchesFilters.
+//   • LOOKS (outfit/ootd/tryon/board) — tags aggregated from the style
+//     breakdown + linked closet items + analyzed pieces → lookMatches.
+// Both read the same `filters` shape, so the same sheet drives both.
+const FILTER_DIMS = [
+  { key: 'styles',   field: 'styles',   values: STYLES,     ns: 'styles',     labelKey: 'tagStyles' },
+  { key: 'category', field: 'category', values: CATEGORIES, ns: 'categories', labelKey: 'tagCategory' },
+  { key: 'colors',   field: 'colors',   values: COLORS,     ns: 'colors',     labelKey: 'tagColors' },
+  { key: 'seasons',  field: 'seasons',  values: SEASONS,    ns: 'seasons',    labelKey: 'tagSeasons' },
+  { key: 'fits',     field: 'fit',      values: FITS,       ns: 'fits',       labelKey: 'tagFit' },
 ];
+
+export const LOOK_DIMS = FILTER_DIMS;
 
 export function emptyLookFilters() {
   return { styles: [], category: [], colors: [], seasons: [], fits: [] };
 }
 
 export function countLookFilters(f) {
-  return Object.values(f).reduce((n, arr) => n + (arr?.length || 0), 0);
+  return Object.values(f).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
 }
 
+// ── ITEM (closet) matching ─────────────────────────────────────────────
+// A closet item carries one tags object. `forSale`/`kind` are item-only
+// extras handled outside the tag dims.
+export function itemMatchesFilters(item, filters) {
+  const tags = item.tags || {};
+  for (const dim of FILTER_DIMS) {
+    const sel = filters[dim.key];
+    if (!sel?.length) continue;
+    const v = tags[dim.field];
+    const has = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
+    if (!has) return false;
+  }
+  if (filters.forSale?.length && !item.forSale) return false;
+  if (filters.kind?.length && !filters.kind.includes(item.kind || 'owned')) return false;
+  return true;
+}
+
+// ── LOOK matching ──────────────────────────────────────────────────────
 /** Build the set of tag tokens a look carries, from its style breakdown +
  *  the tags of its linked closet items (resolved via `closetById`). */
-export function lookTagSet(look, closetById) {
+export function lookTagSet(look, closetById = {}) {
   const styles = new Set();
   const category = new Set();
   const colors = new Set();
@@ -56,9 +79,9 @@ export function lookTagSet(look, closetById) {
 }
 
 /** Does a look pass the active filters? */
-export function lookMatches(look, filters, closetById) {
+export function lookMatches(look, filters, closetById = {}) {
   const tags = lookTagSet(look, closetById);
-  for (const dim of LOOK_DIMS) {
+  for (const dim of FILTER_DIMS) {
     const sel = filters[dim.key];
     if (!sel?.length) continue;
     if (!sel.some(v => tags[dim.key].has(v))) return false;
@@ -66,7 +89,10 @@ export function lookMatches(look, filters, closetById) {
   return true;
 }
 
-export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount }) {
+// `extras` (optional) lets a surface add non-taxonomy chip sections after
+// the shared dims — e.g. closet's For-sale + Owned/Wishlist. Each:
+//   { key, labelKey, options: [{ value, labelKey }] }
+export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount, extras = [] }) {
   const { t } = useLocale();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
@@ -79,7 +105,7 @@ export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, re
         <h3 className="create-sheet-title" {...handleProps} style={{ cursor: 'grab', touchAction: 'none' }}>{t('detailedFilter')}</h3>
 
         <div className="detail-filter-body">
-          {LOOK_DIMS.map(dim => (
+          {FILTER_DIMS.map(dim => (
             <div key={dim.key} className="detail-filter-dim">
               <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
               <div className="detail-filter-chips">
@@ -93,6 +119,26 @@ export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, re
                       onClick={() => onToggle(dim.key, v)}
                     >
                       {t(`taxonomy.${dim.ns}.${v}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {extras.map(section => (
+            <div key={section.key} className="detail-filter-dim">
+              <span className="detail-filter-dim-label">{t(section.labelKey)}</span>
+              <div className="detail-filter-chips">
+                {section.options.map(opt => {
+                  const on = (filters[section.key] || []).includes(opt.value);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`chip-pill${on ? ' active' : ''}`}
+                      onClick={() => onToggle(section.key, opt.value)}
+                    >
+                      {t(opt.labelKey)}
                     </button>
                   );
                 })}

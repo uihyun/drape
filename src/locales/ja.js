@@ -245,6 +245,7 @@ export const ja = {
   addItem: 'アイテム追加',
   addFirstItem: '最初のアイテムを追加',
   filterAll: 'すべて',
+  itemKindLabel: '所有',
   itemKindOwned: '所有',
   itemKindWishlist: 'ウィッシュリスト',
   itemMarkOwned: '持っています',

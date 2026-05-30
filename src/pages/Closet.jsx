@@ -2,9 +2,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { SlidersHorizontal, X, Bookmark } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
-import { CATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
+import { CATEGORIES, categoryLabel } from '../services/taxonomy.js';
+import {
+  LookFilterSheet, LOOK_DIMS, countLookFilters, itemMatchesFilters,
+} from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { formatPrice } from '../utils/currency.js';
@@ -13,48 +15,21 @@ import { formatPrice } from '../utils/currency.js';
 // from skeleton to a finished card without a re-fetch.
 const VIEWS = ['all', 'brands', 'usage'];
 
-// Tag dimensions exposed in the detailed filter sheet. Each maps a tag
-// field to its vocab + the locale namespace for chip labels. `multi`
-// flags array-valued tags (an item can be summer AND spring) vs scalar.
-const FILTER_DIMS = [
-  { key: 'category', field: 'category', values: CATEGORIES, ns: 'categories', labelKey: 'tagCategory', multi: false },
-  { key: 'colors',   field: 'colors',   values: COLORS,     ns: 'colors',     labelKey: 'tagColors',   multi: true },
-  { key: 'seasons',  field: 'seasons',  values: SEASONS,    ns: 'seasons',    labelKey: 'tagSeasons',  multi: true },
-  { key: 'styles',   field: 'styles',   values: STYLES,     ns: 'styles',     labelKey: 'tagStyles',   multi: true },
-  { key: 'fits',     field: 'fit',      values: FITS,       ns: 'fits',       labelKey: 'tagFit',      multi: false },
+// Closet adds two item-only facets (not on looks) to the shared tag dims:
+// marketplace status + owned/wishlist. Rendered as `extras` in the sheet.
+const CLOSET_EXTRAS = [
+  { key: 'forSale', labelKey: 'saleSection', options: [{ value: 'yes', labelKey: 'filterForSale' }] },
+  { key: 'kind', labelKey: 'itemKindLabel', options: [
+    { value: 'owned', labelKey: 'itemKindOwned' },
+    { value: 'wishlist', labelKey: 'itemKindWishlist' },
+  ] },
 ];
 
 function emptyFilters() {
-  return { category: [], colors: [], seasons: [], styles: [], fits: [], forSale: [], kind: [] };
+  return { styles: [], category: [], colors: [], seasons: [], fits: [], forSale: [], kind: [] };
 }
-function countFilters(f) {
-  return Object.values(f).reduce((n, arr) => n + arr.length, 0);
-}
-
-// An item passes if, for every dimension that has selections, its tag
-// value intersects the selection. Across dimensions = AND; within a
-// dimension = OR. Tag enums are language-agnostic, so selecting "summer"
-// matches regardless of the user's locale (no cross-language text issue).
-function matchesFilters(item, filters) {
-  const tags = item.tags || {};
-  for (const dim of FILTER_DIMS) {
-    const sel = filters[dim.key];
-    if (!sel?.length) continue;
-    const v = tags[dim.field];
-    const has = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
-    if (!has) return false;
-  }
-  // For-sale is a boolean off the item (not a tag); selecting it keeps
-  // only listed items.
-  if (filters.forSale?.length && !item.forSale) return false;
-  // Owned vs saved (analyze-detected reference). Items predating the field
-  // are treated as owned (the default).
-  if (filters.kind?.length) {
-    const k = item.kind || 'owned';
-    if (!filters.kind.includes(k)) return false;
-  }
-  return true;
-}
+const countFilters = countLookFilters;
+const matchesFilters = itemMatchesFilters;
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
@@ -187,7 +162,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           chips so the user always sees what's narrowing the grid. */}
       {filterCount - filters.category.length > 0 && (
         <div className="closet-active-filters">
-          {FILTER_DIMS.filter(d => d.key !== 'category').flatMap(d =>
+          {LOOK_DIMS.filter(d => d.key !== 'category').flatMap(d =>
             (filters[d.key] || []).map(v => (
               <button
                 key={`${d.key}-${v}`}
@@ -221,14 +196,14 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
       )}
 
       {sheetOpen && (
-        <DetailFilterSheet
+        <LookFilterSheet
           filters={filters}
           onToggle={toggleDim}
           onClear={() => setFilters(emptyFilters())}
           onClose={() => setSheetOpen(false)}
           count={filterCount}
           resultCount={filtered?.length ?? 0}
-          t={t}
+          extras={CLOSET_EXTRAS}
         />
       )}
 
@@ -299,67 +274,6 @@ function groupByBrand(items, t) {
 }
 
 // Detailed filter sheet — every tag dimension as multi-select chips.
-// Selecting tags filters by enum value (language-agnostic), sidestepping
-// the cross-language text-search problem. Across dims = AND, within = OR.
-function DetailFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount, t }) {
-  const { sheetStyle, handleProps } = useSheetDrag(onClose);
-  return (
-    <div className="create-sheet-overlay" onClick={onClose}>
-      <div className="create-sheet detail-filter" style={sheetStyle} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="create-sheet-handle" {...handleProps} style={{ cursor: 'grab' }} />
-        <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
-          <X size={18} />
-        </button>
-        <h3 className="create-sheet-title">{t('detailedFilter')}</h3>
-
-        <div className="detail-filter-body">
-          {FILTER_DIMS.map(dim => (
-            <div key={dim.key} className="detail-filter-dim">
-              <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
-              <div className="detail-filter-chips">
-                {dim.values.map(v => {
-                  const on = (filters[dim.key] || []).includes(v);
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      className={`chip-pill${on ? ' active' : ''}`}
-                      onClick={() => onToggle(dim.key, v)}
-                    >
-                      {t(`taxonomy.${dim.ns}.${v}`)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-          {/* Marketplace status — boolean, not a tag dimension. */}
-          <div className="detail-filter-dim">
-            <span className="detail-filter-dim-label">{t('saleSection')}</span>
-            <div className="detail-filter-chips">
-              <button
-                type="button"
-                className={`chip-pill${(filters.forSale || []).length ? ' active' : ''}`}
-                onClick={() => onToggle('forSale', 'yes')}
-              >
-                {t('filterForSale')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="detail-filter-actions">
-          <button type="button" className="btn btn-secondary" onClick={onClear} disabled={count === 0}>
-            {t('clear')}
-          </button>
-          <button type="button" className="btn btn-primary" onClick={onClose}>
-            {t('detailedFilterApply', { n: resultCount })}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function GroupedList({ groups, cols, t, showElapsed = false }) {
   return (
