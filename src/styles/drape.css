@@ -5515,77 +5515,11 @@ input[type="search"]::-webkit-search-decoration {
 .ootd-card img { height: auto; }
 .ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
 
-/* ── Press-and-hold quick actions (mobile) ─────────────────────────────
-   Holding a feed card lifts it and floats like/save buttons; slide the
-   finger to one and release to fire. */
-.ootd-card, .board-feed-card {
-  position: relative;
-  /* Animate ONLY transform (GPU-composited, smooth). box-shadow is NOT
-     transitioned — animating it repaints every frame and was the main
-     jank source inside the multi-column masonry. */
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: center;
-  /* Kill the iOS native long-press image drag / callout that otherwise
-     lifts the photo onto the finger and blocks the quick-action gesture. */
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-/* Promote to its own compositor layer only while pressed, so the scale
-   tracks the finger without re-layout/clipping in the column flow. */
-.ootd-card.is-pressed, .board-feed-card.is-pressed {
-  will-change: transform;
-}
+/* Feed card images: block the native long-press image drag/save callout
+   so a press reads as a card tap, not an image grab. */
 .ootd-card img, .board-feed-card img {
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
-  pointer-events: none; /* gesture handler on the card owns all touches */
-}
-.ootd-card.is-pressed, .board-feed-card.is-pressed {
-  transform: scale(1.09);
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.3);
-  z-index: 60;
-}
-.card-quick-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 61;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.28);
-  border-radius: inherit;
-  pointer-events: none; /* gesture owns hit-testing */
-  animation: cardQuickScrimIn 0.26s ease both;
-}
-@keyframes cardQuickScrimIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.card-quick-actions {
-  display: flex;
-  gap: 1.1rem;
-  /* Buttons rise + fade in just after the scrim so the motion reads. */
-  animation: cardQuickActionsIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@keyframes cardQuickActionsIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.card-quick-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  background: rgba(20, 20, 20, 0.82);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.14s ease, background 0.14s ease;
-}
-.card-quick-btn.focused {
-  transform: scale(1.28);
-  background: #1a1a1a;
 }
 
 /* ── Add-item sheet (photo + product URL) ─────────────────────────────── */

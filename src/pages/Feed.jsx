@@ -1,55 +1,37 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { Heart, Bookmark } from 'lucide-react';
-import { db } from '../firebase.js';
 import { Users } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
 import { MarketplaceService } from '../services/marketplace-service.js';
-import { ProfileService } from '../services/profile-service.js';
-import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
-import { CardQuickActions } from '../components/CardQuickActions.jsx';
-import { useLongPressQuickActions } from '../hooks/useLongPressQuickActions.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// After an optimistic like patch, the popular feed must re-order so the
-// just-liked card moves to its new rank (the list is a one-shot query, not
-// live — without this the count changes but the position doesn't). Mirrors
-// the server sort: likeCount desc, then date desc as a stable tiebreak.
-// Latest feed keeps its fetched order untouched.
-function resortByLikes(list, sort) {
-  if (sort !== 'popular') return list;
-  return [...list].sort((a, b) =>
-    (b.likeCount || 0) - (a.likeCount || 0)
-    || String(b.date || '').localeCompare(String(a.date || '')));
-}
-
-// Discovery — published OOTDs from every user, newest first. Each
-// card is a full-bleed OOTD photo with the author chip + title
-// overlay on the bottom (Lekondo capture 1 read). Tapping opens
-// /ootd/:id for the editorial breakdown.
+// Discovery feed — tapping a card opens its detail page. kind / sort /
+// scope all live in the URL so returning from a detail restores the exact
+// view (Popular, Following, Boards…) instead of snapping to defaults.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [scope, setScope] = useState('forYou'); // 'forYou' | 'following'
+  const setParam = (key, val) => setSearchParams((prev) => {
+    const p = new URLSearchParams(prev); p.set(key, val); return p;
+  }, { replace: true });
   const VALID_KINDS = new Set(['ootds', 'boards', 'market']);
   const rawKind = searchParams.get('kind');
-  const [kind, setKind] = useState(VALID_KINDS.has(rawKind) ? rawKind : 'ootds');
+  const kind = VALID_KINDS.has(rawKind) ? rawKind : 'ootds';
+  const setKind = (k) => setParam('kind', k);
+  const sort = searchParams.get('sort') === 'popular' ? 'popular' : 'latest';
+  const setSort = (s) => setParam('sort', s);
+  const scope = searchParams.get('scope') === 'following' ? 'following' : 'forYou';
+  const setScope = (s) => setParam('scope', s);
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [listings, setListings] = useState(null);
-  const [authorMap, setAuthorMap] = useState(new Map());
-  const [sort, setSort] = useState('latest');
-  // null = not yet loaded, [] = signed in but follows nobody. Used by
-  // both kinds, so we resolve once per user change.
+  // null = not yet loaded, [] = signed in but follows nobody.
   const [followingIds, setFollowingIds] = useState(null);
-  // Following narrows every kind (OOTDs / Boards / Market) to people you
-  // follow, for consistency across the feed tabs.
   const isFollowingScope = scope === 'following';
   const isLoggedIn = user && !user.isAnonymous;
 
@@ -244,67 +226,10 @@ export function Feed({ user, onSignIn }) {
   );
 }
 
-function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
-  const isOwner = !!(user && board.userId === user.uid);
-  const liked = !!(user && Array.isArray(board.likedBy) && board.likedBy.includes(user.uid));
-  const [bookmarked, setBookmarked] = useState(false);
-  useEffect(() => {
-    if (!user || user.isAnonymous) { setBookmarked(false); return; }
-    return onSnapshot(
-      doc(db, 'users', user.uid, 'bookmarks', board.id),
-      (s) => setBookmarked(s.exists()),
-      () => setBookmarked(false),
-    );
-  }, [user?.uid, board.id]);
-
-  const handleLike = async () => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    const nextLiked = !liked;
-    const nextLikedBy = nextLiked
-      ? [...(board.likedBy || []), user.uid]
-      : (board.likedBy || []).filter(u => u !== user.uid);
-    const nextCount = Math.max(0, (board.likeCount || 0) + (nextLiked ? 1 : -1));
-    onLikeChange?.({ likedBy: nextLikedBy, likeCount: nextCount });
-    try {
-      await BoardService.toggleLike(board.id, user.uid, liked);
-    } catch (err) {
-      console.warn('board like failed:', err.message);
-      onLikeChange?.({ likedBy: board.likedBy || [], likeCount: board.likeCount || 0 });
-    }
-  };
-
-  const handleBookmark = async () => {
-    if (!user || user.isAnonymous) { onSignIn?.(); return; }
-    const prev = bookmarked;
-    setBookmarked(!prev); // optimistic
-    try { await BoardService.toggleBookmark(board.id, prev); }
-    catch (err) { console.warn('board bookmark failed:', err.message); setBookmarked(prev); }
-  };
-
-  // No self-like/save — owners get no quick actions on their own board.
-  const quickActions = isOwner ? [] : [
-    { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
-    { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
-  ];
-  const lp = useLongPressQuickActions({
-    actions: quickActions,
-    onFire: (key) => { if (key === 'like') handleLike(); else if (key === 'save') handleBookmark(); },
-  });
-
+function BoardCard({ board }) {
   return (
-    <Link
-      to={`/boards/${board.id}`}
-      className={`board-feed-card${lp.active ? ' is-pressed' : ''}`}
-      {...lp.bind}
-    >
+    <Link to={`/boards/${board.id}`} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
-      {lp.active && (
-        <CardQuickActions
-          actions={quickActions}
-          focusedKey={lp.focusedKey}
-          registerButton={lp.registerButton}
-        />
-      )}
     </Link>
   );
 }
