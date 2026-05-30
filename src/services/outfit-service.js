@@ -381,15 +381,21 @@ async function listBookmarkedOotds({ uid, pageSize = 60 } = {}) {
 
 /** All the user's dated outfits (OOTDs), newest date first. */
 async function listMyOotds({ uid, pageSize = 60 } = {}) {
+  // Order by createdAt desc (index: userId ASC, createdAt DESC) so the
+  // newest outfits are in the fetched window — a just-made OOTD must be
+  // here. Without an order the limit returned an arbitrary doc-ID slice,
+  // so a new OOTD could fall outside it (showed in Calendar's range query
+  // but not here). Fetch a bit wide, then keep the dated ones (= OOTDs).
   const snap = await getDocs(query(
     collection(db, OUTFITS),
     where('userId', '==', uid),
-    limit(pageSize),
+    orderBy('createdAt', 'desc'),
+    limit(pageSize * 3),
   ));
   const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }))
     .filter(o => !!o.date);
   ootds.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  return { ootds };
+  return { ootds: ootds.slice(0, pageSize) };
 }
 
 /** Public dated outfits by a user (PublicProfile). */

@@ -8,6 +8,12 @@ import {
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// Cache fetched lists by uid|tab so returning from a detail paints the
+// previous list instantly instead of blanking → spinner → refetch. Each
+// tab still refreshes in the background; the list never disappears.
+const olCache = new Map();
+const olKey = (uid, tab) => `${uid}|${tab}`;
+
 // 2-col grid of natural-ratio look photos — matches the discovery feed.
 // `showPrivacy` (own content only) flags looks that aren't published yet.
 function OotdGrid({ ootds, t, showPrivacy = false }) {
@@ -40,13 +46,15 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
 
 export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
-  const [outfits, setOutfits] = useState(null);
-  const [ootds, setOotds] = useState(null);
   // Sub-tab lives in the URL (?ot=mine|saved|analyzed) so returning from a
   // detail page lands back on the tab you left, not always Mine.
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('ot');
   const tab = ['mine', 'saved', 'analyzed'].includes(tabParam) ? tabParam : 'mine';
+  // Seed from cache for the current tab so back-nav paints immediately.
+  const seeded = user ? olCache.get(olKey(user.uid, tab)) : null;
+  const [outfits, setOutfits] = useState(tab === 'analyzed' ? (seeded ?? null) : null);
+  const [ootds, setOotds] = useState(tab !== 'analyzed' ? (seeded ?? null) : null);
   const setTab = (next) => setSearchParams((prev) => {
     const p = new URLSearchParams(prev);
     p.set('ot', next);
@@ -69,25 +77,30 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   //   analyzed → OutfitService.listMyOutfits (kind='analyzed')
   useEffect(() => {
     if (!user || user.isAnonymous) { setOutfits([]); setOotds([]); return; }
+    const key = olKey(user.uid, tab);
+    const cached = olCache.get(key);
+    let cancelled = false;
+    const apply = (setter, rows) => { if (cancelled) return; olCache.set(key, rows); setter(rows); };
     if (tab === 'mine') {
-      setOotds(null);
+      setOotds(cached ?? null); // keep cached list visible; spinner only if none
       OutfitService.listMyOotds({ uid: user.uid, pageSize: 60 })
-        .then(({ ootds }) => setOotds(ootds))
-        .catch(() => setOotds([]));
+        .then(({ ootds }) => apply(setOotds, ootds))
+        .catch(() => { if (!cancelled && !cached) setOotds([]); });
     } else if (tab === 'saved') {
-      setOotds(null);
+      setOotds(cached ?? null);
       OutfitService.listBookmarkedOotds({ uid: user.uid })
-        .then(({ ootds }) => setOotds(ootds))
+        .then(({ ootds }) => apply(setOotds, ootds))
         .catch((err) => {
           console.warn('saved bookmarks query failed:', err?.code, err?.message);
-          setOotds([]);
+          if (!cancelled && !cached) setOotds([]);
         });
     } else {
-      setOutfits(null);
+      setOutfits(cached ?? null);
       OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed' })
-        .then(({ outfits }) => setOutfits(outfits))
-        .catch(() => setOutfits([]));
+        .then(({ outfits }) => apply(setOutfits, outfits))
+        .catch(() => { if (!cancelled && !cached) setOutfits([]); });
     }
+    return () => { cancelled = true; };
   }, [user, tab]);
 
   if (!user || user.isAnonymous) {
