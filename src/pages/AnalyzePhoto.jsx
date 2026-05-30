@@ -4,6 +4,7 @@ import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles,
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
+import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
 import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -237,7 +238,22 @@ export function AnalyzePhoto({ user, onSignIn }) {
               className="hidden"
               onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
             />
-            {isMobileUA && !isNativeApp() ? (
+            {isNativeApp() ? (
+              <button
+                type="button"
+                className="btn btn-secondary analyze-input-btn"
+                onClick={async () => {
+                  try {
+                    const blob = await CameraService.takePhoto();
+                    if (blob) addFiles([blob]);
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+              >
+                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              </button>
+            ) : isMobileUA ? (
               <label className="btn btn-secondary analyze-input-btn">
                 <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
                 <input

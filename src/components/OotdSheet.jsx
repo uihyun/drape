@@ -120,7 +120,22 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               className="hidden"
               onChange={e => stagePicked(e.target.files?.[0])}
             />
-            {isMobileUA && !isNativeApp() ? (
+            {isNativeApp() ? (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={async () => {
+                  try {
+                    const blob = await CameraService.takePhoto();
+                    if (blob) stagePicked(blob);
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+              >
+                <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
+              </button>
+            ) : isMobileUA ? (
               <label className="btn btn-secondary">
                 <CameraIcon size={14} strokeWidth={1.7} /> {t('takePhoto')}
                 <input
