@@ -20,7 +20,7 @@ function OotdGrid({ ootds, t }) {
   return (
     <div className="ootd-feed">
       {ootds.map(o => {
-        const photo = o.photoCutUrl || o.photoUrl;
+        const photo = o.photoCutUrl || o.photoUrl || o.coverUrl || o.sourcePhotoUrl;
         return (
           <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
             {photo
@@ -200,13 +200,12 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
               {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
             </button>
           </div>
-          <AnalyzedGrid
-            outfits={outfits.filter(o => {
+          <OotdGrid
+            ootds={outfits.filter(o => {
               if (filterLiked && !o.selfLiked) return false;
               if (filterCount > 0 && !lookMatches(o, filters, {})) return false;
               return true;
             })}
-            itemsById={itemsById}
             t={t}
           />
           {sheetOpen && (

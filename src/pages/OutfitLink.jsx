@@ -6,6 +6,7 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { matchCloset } from '../utils/itemMatch.js';
 import {
   LookFilterSheet, emptyLookFilters, countLookFilters,
@@ -67,6 +68,19 @@ export function OutfitLink({ user, onSignIn }) {
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  // Tapping a board pulls every closet item pinned on it into the
+  // selection (or clears them all if they're already selected).
+  const toggleBoard = (ids) => {
+    const valid = ids.filter(id => closetById[id]);
+    if (valid.length === 0) return;
+    setSelected(prev => {
+      const next = new Set(prev);
+      const allSel = valid.every(id => next.has(id));
+      valid.forEach(id => (allSel ? next.delete(id) : next.add(id)));
       return next;
     });
   };

@@ -28,8 +28,18 @@ export function scoreMatch(piece, item) {
   const iCat = iTags.category || null;
   if (!pCat || !iCat || pCat !== iCat) return 0; // category gate
 
+  const pSub = piece.subcategory || null;
+  const iSub = iTags.subcategory || null;
+  // Subcategory gate. When both sides know their subcategory and disagree,
+  // it isn't a real match (a sash is not sunglasses). "accessory" lumps
+  // wildly different objects under one category, so for accessories a
+  // positive subcategory match is REQUIRED — better to show nothing than a
+  // confidently wrong suggestion (e.g. sunglasses ↔ a black scarf).
+  if (pSub && iSub && pSub !== iSub) return 0;
+  if (pCat === 'accessory' && !(pSub && iSub && pSub === iSub)) return 0;
+
   let score = 0.35; // base for clearing the category gate
-  if (piece.subcategory && iTags.subcategory && piece.subcategory === iTags.subcategory) {
+  if (pSub && iSub && pSub === iSub) {
     score += 0.25;
   }
   score += 0.30 * jaccard(piece.colors, iTags.colors);
