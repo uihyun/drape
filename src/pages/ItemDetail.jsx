@@ -234,7 +234,7 @@ export function ItemDetail({ user, onSignIn }) {
   };
 
   return (
-    <div className="item-viewer">
+    <div className={`item-viewer${editing ? ' editing' : ''}`}>
       <button
         type="button"
         className="item-viewer-close"

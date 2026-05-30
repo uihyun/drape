@@ -3580,15 +3580,32 @@ input[type="search"]::-webkit-search-decoration {
   gap: 0.5rem;
   padding: 1rem 1rem 0;
 }
-/* When the edit panel is open the form grows tall (tags + sale block).
-   Cap its height to the available viewport and let it scroll internally
-   so the Save / Cancel actions always stay reachable. */
-.item-viewer-foot:has(.item-viewer-edit) {
-  flex: 1;
-  min-height: 0;
+/* Editing: the whole viewer scrolls as ONE column instead of pinning the
+   photo and scrolling only the form. As you pull the form up, the photo
+   slides up with it (and back down on reverse scroll), revealing more
+   edit space — feels like one continuous sheet, not two panes. */
+.item-viewer.editing {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 1rem;
+}
+.item-viewer.editing .item-viewer-stage {
+  /* No longer flex-fills; becomes a fixed-height header block that scrolls
+     away. Tall enough to still see the garment, short enough to give the
+     form room once you start scrolling. */
+  flex: 0 0 auto;
+  height: 42vh;
+  padding-top: 3.5rem;
+}
+.item-viewer.editing .item-viewer-rail {
+  /* Anchor to the photo block's top-right while scrolling, not the
+     viewport middle (which would drift over the form). */
+  top: calc(var(--safe-top) + 3.5rem);
+  transform: none;
+}
+.item-viewer.editing .item-viewer-foot {
+  flex: 0 0 auto;
+  overflow: visible;
+  padding-bottom: calc(var(--safe-bottom) + 1.5rem);
 }
 .item-viewer-meta { flex: 1; min-width: 0; }
 .item-shop-row {
