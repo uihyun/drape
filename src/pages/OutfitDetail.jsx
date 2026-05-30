@@ -190,14 +190,8 @@ export function OutfitDetail({ user, onSignIn }) {
         {renderHero()}
         <div className="board-detail-hero-actions">
           {isOwner ? (
-            // No self-like — you can't like your own post. Show a read-only
-            // heart with the count others have given (only when > 0).
-            (outfit.likeCount || 0) > 0 && (
-              <div className="board-hero-action board-hero-action--static" aria-label={`${outfit.likeCount} likes`}>
-                <Heart size={16} strokeWidth={1.6} fill="currentColor" />
-                <span className="board-hero-count">{outfit.likeCount}</span>
-              </div>
-            )
+            // No self-like — owners get no heart at all on their own post.
+            null
           ) : (
             <>
               <button
@@ -394,32 +388,50 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
-      <div className="controls">
-        {(outfit.itemIds || []).length > 0 && (
-          <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="btn btn-primary">
-            <Sparkles size={16} strokeWidth={1.6} /> {t('tryThisOn')}
+      {/* Asymmetric action bar: one prominent primary (publish for owners,
+          try-on for visitors with items) spanning wide, then a compact
+          icon row — Delete pushed to the far right, off on its own. */}
+      <div className="outfit-actions">
+        {isOwner ? (
+          <button
+            type="button"
+            className={`outfit-action-primary${isPublic ? ' is-unlist' : ''}`}
+            onClick={togglePublish}
+            disabled={busy}
+          >
+            {isPublic ? <EyeOff size={17} strokeWidth={1.7} /> : <Eye size={17} strokeWidth={1.7} />}
+            {isPublic ? t('unlist') : t('publishToFeed')}
+          </button>
+        ) : (outfit.itemIds || []).length > 0 ? (
+          <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="outfit-action-primary">
+            <Sparkles size={17} strokeWidth={1.7} /> {t('tryThisOn')}
           </Link>
-        )}
-        <ShareButton
-          className="btn btn-secondary"
-          title={outfit.name || t('untitledOutfit')}
-          text={outfit.notes || ''}
-          url={`${window.location.origin}/s/${outfit.id}`}
-        />
-        {isOwner && (
-          <>
-            <Link to={`/o/${outfit.id}/link`} className="btn btn-secondary">
-              <Pencil size={15} strokeWidth={1.6} /> {t('linkItemsCta')}
+        ) : null}
+
+        <div className="outfit-action-row">
+          {isOwner && (outfit.itemIds || []).length > 0 && (
+            <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="outfit-action-icon" aria-label={t('tryThisOn')} title={t('tryThisOn')}>
+              <Sparkles size={18} strokeWidth={1.7} />
             </Link>
-            <button type="button" className="btn btn-secondary" onClick={togglePublish} disabled={busy}>
-              {isPublic ? <EyeOff size={16} strokeWidth={1.6} /> : <Eye size={16} strokeWidth={1.6} />}
-              {isPublic ? t('unlist') : t('publishToFeed')}
+          )}
+          <ShareButton
+            className="outfit-action-icon"
+            title={outfit.name || t('untitledOutfit')}
+            text={outfit.notes || ''}
+            url={`${window.location.origin}/s/${outfit.id}`}
+            label=""
+          />
+          {isOwner && (
+            <Link to={`/o/${outfit.id}/link`} className="outfit-action-icon" aria-label={t('linkItemsCta')} title={t('linkItemsCta')}>
+              <Pencil size={17} strokeWidth={1.7} />
+            </Link>
+          )}
+          {isOwner && (
+            <button type="button" className="outfit-action-icon outfit-action-danger" onClick={remove} aria-label={t('delete')} title={t('delete')}>
+              <Trash2 size={17} strokeWidth={1.7} />
             </button>
-            <button type="button" className="btn btn-secondary danger-btn" onClick={remove}>
-              <Trash2 size={16} strokeWidth={1.6} /> {t('delete')}
-            </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />

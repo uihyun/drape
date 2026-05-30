@@ -154,11 +154,11 @@ export function Calendar({ user, onSignIn, embedded = false }) {
         user={user}
         existing={sheetExisting}
         onClose={() => { setSheetDate(null); setSheetExisting(null); }}
-        onSaved={(savedId) => {
+        onSaved={() => {
+          // Linking items is now optional — no forced detour to /link.
+          // Auto-tagging matches the worn pieces; users who want to fix or
+          // attach more open "Link items" from the outfit detail.
           refetch();
-          // New OOTD (no prior items linked) → go straight to the
-          // closet-sized item-link page so the user attaches what they wore.
-          if (savedId && !sheetExisting) navigate(`/o/${savedId}/link`);
         }}
       />
 

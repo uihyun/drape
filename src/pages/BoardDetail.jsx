@@ -99,13 +99,8 @@ export function BoardDetail({ user, onSignIn }) {
         {/* Overlay actions — inside image, z-index 1000 so they're above all board stickers */}
         <div className="board-detail-hero-actions">
           {isOwner ? (
-            // No self-like — read-only count of others' likes (when > 0).
-            (board.likeCount || 0) > 0 && (
-              <div className="board-hero-action board-hero-action--static" aria-label={`${board.likeCount} likes`}>
-                <Heart size={16} strokeWidth={1.6} fill="currentColor" />
-                <span className="board-hero-count">{board.likeCount}</span>
-              </div>
-            )
+            // No self-like — owners get no heart at all on their own board.
+            null
           ) : (
             <>
               <button

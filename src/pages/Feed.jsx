@@ -242,7 +242,7 @@ export function Feed({ user, onSignIn }) {
           {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
         </div>
       ) : showingBoards ? (
-        <div className={`board-feed${sort === 'popular' ? ' feed-ranked' : ''}`}>
+        <div className="board-feed">
           {boards.map(b => (
             <BoardCard
               key={b.id}
@@ -258,7 +258,7 @@ export function Feed({ user, onSignIn }) {
           ))}
         </div>
       ) : (
-        <div className={`ootd-feed${sort === 'popular' ? ' feed-ranked' : ''}`}>
+        <div className="ootd-feed">
           {ootds.map(o => (
             <OotdCard
               key={o.id}
