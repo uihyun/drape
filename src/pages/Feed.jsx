@@ -321,12 +321,13 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
   return (
     <Link to={`/boards/${board.id}`} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
-      <div className="board-feed-card-overlay">
+      {/* Author at top — like the OOTD feed; board title is hidden in the
+          feed (the cover speaks for itself, author is what matters). */}
+      <div className="board-feed-card-overlay board-feed-card-overlay--top">
         <div className="board-feed-card-author">
           <Avatar src={author?.photoURL} name={author?.handle} size={28} />
           <span className="board-feed-card-handle">@{author?.handle || '—'}</span>
         </div>
-        {board.name && <h3 className="board-feed-card-title">{board.name}</h3>}
       </div>
     </Link>
   );
@@ -384,7 +385,7 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
       {outfitCardPhoto(ootd)
         ? <img src={outfitCardPhoto(ootd)} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}
-      <div className="ootd-card-overlay">
+      <div className="ootd-card-overlay ootd-card-overlay--top">
         <div className="ootd-card-author">
           <Avatar
             src={author?.photoURL}
