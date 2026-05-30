@@ -5436,3 +5436,34 @@ input[type="search"]::-webkit-search-decoration {
     width: 100%;
   }
 }
+
+/* ── Pinterest masonry (appended last to win the cascade) ──────────────
+   Same 2-column width, but every card keeps its own natural height and
+   tiles gap-free — the OOTD/outfit feeds (profile + discovery) and the
+   board grids. CSS multi-column flows column-by-column; true left→right
+   ordering would need JS, but this delivers the gap-free look. */
+.ootd-feed,
+.board-feed {
+  display: block;
+  columns: 2;
+  column-gap: 0.6rem;
+}
+.board-list-grid {
+  display: block;
+  columns: 2;
+  column-gap: 0.85rem;
+}
+.ootd-feed > *,
+.board-feed > *,
+.board-list-grid > * {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  width: 100%;
+  margin: 0 0 0.6rem;
+}
+.board-list-grid > * { margin-bottom: 0.85rem; }
+/* OOTD photo cards: drop the forced 3:4 so each photo keeps its own
+   height; empty (no-photo) cards still need a height to show. */
+.ootd-card { aspect-ratio: auto; }
+.ootd-card img { height: auto; }
+.ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
