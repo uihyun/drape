@@ -185,49 +185,46 @@ export function OutfitDetail({ user, onSignIn }) {
 
   return (
     <div className="outfit-detail">
-      {/* Hero + overlay actions — same dark-circle style as boards */}
+      {/* Hero photo — clean, no overlay actions on it. */}
       <div className="outfit-hero-wrap">
         {renderHero()}
-        <div className="board-detail-hero-actions">
-          {isOwner ? (
-            // No self-like — owners get no heart at all on their own post.
-            null
-          ) : (
-            <>
-              <button
-                type="button"
-                className={`board-hero-action${(outfit.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
-                onClick={async () => {
-                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                  try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
-                  catch (e) { console.warn('outfit like failed', e?.message); }
-                }}
-              >
-                <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-                {(outfit.likeCount || 0) > 0 && <span className="board-hero-count">{outfit.likeCount}</span>}
-              </button>
-              <button
-                type="button"
-                className={`board-hero-action${bookmarked ? ' bookmarked' : ''}`}
-                onClick={async () => {
-                  if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                  try { await OutfitService.toggleBookmark(outfit.id, bookmarked); }
-                  catch (e) { console.warn('outfit bookmark failed', e?.message); }
-                }}
-              >
-                <Bookmark size={16} strokeWidth={1.6} fill={bookmarked ? 'currentColor' : 'none'} />
-              </button>
-              <button
-                type="button"
-                className="board-hero-action"
-                onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
-              >
-                <Flag size={15} strokeWidth={1.6} />
-              </button>
-            </>
-          )}
-        </div>
       </div>
+      {/* Social actions live BELOW the photo (Pinterest-style bar) so they
+          never cover the image. Owners see none (no self-like/report). */}
+      {!isOwner && (
+        <div className="post-action-bar">
+          <button
+            type="button"
+            className={`post-action${(outfit.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
+            onClick={async () => {
+              if (!user || user.isAnonymous) { onSignIn?.(); return; }
+              try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+              catch (e) { console.warn('outfit like failed', e?.message); }
+            }}
+          >
+            <Heart size={20} strokeWidth={1.7} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+            {(outfit.likeCount || 0) > 0 && <span className="post-action-count">{outfit.likeCount}</span>}
+          </button>
+          <button
+            type="button"
+            className={`post-action${bookmarked ? ' bookmarked' : ''}`}
+            onClick={async () => {
+              if (!user || user.isAnonymous) { onSignIn?.(); return; }
+              try { await OutfitService.toggleBookmark(outfit.id, bookmarked); }
+              catch (e) { console.warn('outfit bookmark failed', e?.message); }
+            }}
+          >
+            <Bookmark size={20} strokeWidth={1.7} fill={bookmarked ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            type="button"
+            className="post-action"
+            onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+          >
+            <Flag size={19} strokeWidth={1.7} />
+          </button>
+        </div>
+      )}
       {reporting && (
         <ReportModal target={{ type: 'outfit', id: outfit.id }} user={user} onClose={() => setReporting(false)} />
       )}

@@ -2067,6 +2067,32 @@ body.is-native {
   line-height: 1;
 }
 
+/* Social action bar BELOW the photo (Pinterest-style) — like / save /
+   report sit off the image so nothing is covered. */
+.post-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem 0.25rem;
+}
+.post-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 0.6rem;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.post-action:hover { background: var(--surface-elevated); }
+.post-action.liked { color: #ff5a6e; }
+.post-action.bookmarked { color: var(--accent); }
+.post-action-count { font-size: 0.85rem; font-weight: 600; line-height: 1; }
+
 .board-detail-title {
   font-size: 1.4rem;
   font-weight: 600;
