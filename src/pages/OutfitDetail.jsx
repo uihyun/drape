@@ -125,7 +125,15 @@ export function OutfitDetail({ user, onSignIn }) {
   const heroItems = items.filter(it => it.croppedUrl || it.originalUrl);
   // A worn-look photo (OOTD photo upload) is the truest hero — show it
   // uncropped, no collage.
-  const wornPhoto = outfit.photoCutUrl || outfit.photoUrl || null;
+  // sourcePhotoUrl = the full analyzed photo (kind='analyzed'); treat it
+  // like a worn photo so it shows uncropped instead of the cover-crop.
+  const wornPhoto = outfit.photoCutUrl || outfit.photoUrl || outfit.sourcePhotoUrl || null;
+  // Detected garments: OOTDs store them as `pieces` (analyzeOotd), analyzed
+  // looks as `detectedItems` (richer — keeps the description). Render
+  // whichever the doc carries so a saved analysis keeps its item breakdown.
+  const pieceList = (Array.isArray(outfit.pieces) && outfit.pieces.length)
+    ? outfit.pieces
+    : (Array.isArray(outfit.detectedItems) ? outfit.detectedItems : []);
   const renderHero = () => {
     if (wornPhoto) {
       return <div className="outfit-hero outfit-hero-photo"><img src={wornPhoto} alt="" referrerPolicy="no-referrer" /></div>;
@@ -351,10 +359,10 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
-      {isOwner && Array.isArray(outfit.pieces) && outfit.pieces.length > 0 && (
+      {isOwner && pieceList.length > 0 && (
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
-          {outfit.pieces.map((piece, i) => (
+          {pieceList.map((piece, i) => (
             <PieceMatchRow key={i} piece={piece} closet={closet} t={t} />
           ))}
         </section>
@@ -400,6 +408,7 @@ function PieceMatchRow({ piece, closet, t }) {
   const label = piece.name
     || [(piece.colors || [])[0], piece.category].filter(Boolean).join(' ')
     || t('untitledItem');
+  const colorText = (piece.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ');
   return (
     <div className="piece-match-row">
       <div className="piece-match-head">
@@ -408,6 +417,8 @@ function PieceMatchRow({ piece, closet, t }) {
           <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
         )}
       </div>
+      {piece.description && <p className="piece-match-desc">{piece.description}</p>}
+      {colorText && <span className="piece-match-colors">{colorText}</span>}
       {matches.length > 0 ? (
         <div className="analyze-match-strip">
           <span className="analyze-match-label">{t('fromYourCloset')}</span>

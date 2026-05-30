@@ -1016,6 +1016,52 @@ body.is-native {
   flex-shrink: 0;
 }
 .piece-match-empty { font-size: 0.8rem; color: var(--text-muted); }
+.piece-match-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0 0 0.35rem;
+}
+.piece-match-colors {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* OutfitLink "From a board" — small board thumbnails (not exploded items).
+   Tapping a card pulls all of that board's closet items into selection. */
+.link-board-row {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0 0.15rem 0.4rem;
+  -webkit-overflow-scrolling: touch;
+}
+.link-board-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: 110px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.link-board-card.selected { border-color: var(--accent); }
+.link-board-card .board-card-cover { border-radius: 10px; }
+.link-board-name {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.15rem;
+}
 .analyze-result-v2 .analyze-footer {
   padding: 0 1rem;
 }

@@ -195,18 +195,22 @@ export function OutfitLink({ user, onSignIn }) {
       {boards.length > 0 && (
         <section className="outfit-link-boards">
           <h2 className="outfit-link-h2">{t('linkFromBoard')}</h2>
-          <div className="analyze-match-row">
+          <div className="link-board-row">
             {boards.map(b => {
-              const ids = Array.from(new Set((b.stickers || []).map(s => s.itemId).filter(Boolean)));
+              const ids = (b.stickers || []).map(s => s.itemId).filter(id => id && closetById[id]);
+              if (ids.length === 0) return null;
+              const allSel = ids.every(id => selected.has(id));
               return (
                 <button
                   key={b.id}
                   type="button"
-                  className="analyze-match-card board"
+                  className={`link-board-card${allSel ? ' selected' : ''}`}
                   title={b.name || ''}
-                  onClick={() => setSelected(prev => new Set([...prev, ...ids]))}
+                  onClick={() => toggleBoard(ids)}
                 >
-                  {b.coverUrl ? <img src={b.coverUrl} alt="" loading="lazy" /> : <div className="item-card-skeleton" />}
+                  <BoardThumbnail board={b} itemsById={closetById} />
+                  {b.name && <span className="link-board-name">{b.name}</span>}
+                  {allSel && <span className="item-card-check"><Check size={14} strokeWidth={2.4} /></span>}
                 </button>
               );
             })}
