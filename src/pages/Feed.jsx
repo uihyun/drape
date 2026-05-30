@@ -45,9 +45,9 @@ export function Feed({ user, onSignIn }) {
   // null = not yet loaded, [] = signed in but follows nobody. Used by
   // both kinds, so we resolve once per user change.
   const [followingIds, setFollowingIds] = useState(null);
-  // Market is a public catalogue — the Following filter doesn't apply to
-  // it. Treat it as For-You-only.
-  const isFollowingScope = scope === 'following' && kind !== 'market';
+  // Following narrows every kind (OOTDs / Boards / Market) to people you
+  // follow, for consistency across the feed tabs.
+  const isFollowingScope = scope === 'following';
   const isLoggedIn = user && !user.isAnonymous;
 
   useEffect(() => {
@@ -109,13 +109,23 @@ export function Feed({ user, onSignIn }) {
   useEffect(() => {
     if (kind !== 'market') return;
     setListings(null);
+    if (isFollowingScope) {
+      if (followingIds === null) return; // wait for ids
+      MarketplaceService.listBySellers({ sellerIds: followingIds, pageSize: 30 })
+        .then(setListings)
+        .catch(err => {
+          console.warn('market following query failed:', err?.code, err?.message);
+          setListings([]);
+        });
+      return;
+    }
     MarketplaceService.listRecent({ pageSize: 30 })
       .then(res => setListings(res.listings))
       .catch(err => {
         console.warn('market feed query failed:', err?.code, err?.message);
         setListings([]);
       });
-  }, [kind]);
+  }, [kind, isFollowingScope, followingIds]);
 
   // Hydrate author profiles for whichever feed is showing.
   useEffect(() => {
@@ -136,13 +146,10 @@ export function Feed({ user, onSignIn }) {
   const showingBoards = kind === 'boards';
   const showingMarket = kind === 'market';
   const list = showingMarket ? listings : showingBoards ? boards : ootds;
-  // Following toggle only applies to OOTDs/Boards; market is global.
-  const canFollow = kind !== 'market';
 
   const setKindAnd = (k) => {
     setKind(k);
     setSearchParams(p => { p.set('kind', k); return p; }, { replace: true });
-    if (k === 'market') setScope('forYou'); // market has no following view
   };
 
   return (
@@ -179,22 +186,21 @@ export function Feed({ user, onSignIn }) {
             </button>
           </nav>
           {/* Following is a compact filter toggle, not a top-level tab —
-              it just narrows the current kind to people you follow. */}
-          {canFollow && (
-            <button
-              type="button"
-              className={`feed-following-toggle${isFollowingScope ? ' active' : ''}`}
-              aria-pressed={isFollowingScope}
-              onClick={() => setScope(isFollowingScope ? 'forYou' : 'following')}
-            >
-              <Users size={15} strokeWidth={1.8} />
-              {t('feedScopeFollowing')}
-            </button>
-          )}
+              it just narrows the current kind (incl. Market) to people you
+              follow. */}
+          <button
+            type="button"
+            className={`feed-following-toggle${isFollowingScope ? ' active' : ''}`}
+            aria-pressed={isFollowingScope}
+            onClick={() => setScope(isFollowingScope ? 'forYou' : 'following')}
+          >
+            <Users size={15} strokeWidth={1.8} />
+            {t('feedScopeFollowing')}
+          </button>
         </div>
-        {/* Sort only for the chronological/popular content kinds in the
-            For-You scope. Hidden for market + following. */}
-        {canFollow && !isFollowingScope && (
+        {/* Sort only applies to OOTDs/Boards in the For-You scope. Hidden
+            for market (no like-sort) + following. */}
+        {!showingMarket && !isFollowingScope && (
           <nav className="feed-sort-tabs" role="tablist">
             <button
               type="button"

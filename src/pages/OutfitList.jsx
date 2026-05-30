@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar as CalendarIcon, SlidersHorizontal } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, SlidersHorizontal, Lock } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -31,7 +31,11 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
             {photo
               ? <img src={photo} alt="" loading="lazy" referrerPolicy="no-referrer" />
               : <div className="ootd-card-empty">◇</div>}
-            {isPrivate && <span className="card-private-badge">{t('privateBadge')}</span>}
+            {isPrivate && (
+              <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>
+                <Lock size={12} strokeWidth={2.2} />
+              </span>
+            )}
             {(o.note || o.name) && (
               <div className="ootd-card-overlay">
                 <h3 className="ootd-card-title">{o.note || o.name}</h3>

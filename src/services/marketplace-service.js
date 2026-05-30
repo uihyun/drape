@@ -31,6 +31,21 @@ export const MarketplaceService = {
     };
   },
 
+  // Listings from a set of sellers (the Following filter on Market).
+  // Firestore `in` caps at 30 ids; callers pass an already-trimmed list.
+  async listBySellers({ sellerIds, pageSize = 30 }) {
+    if (!Array.isArray(sellerIds) || sellerIds.length === 0) return [];
+    const ids = sellerIds.slice(0, 30);
+    const snap = await getDocs(query(
+      collection(db, ITEMS),
+      where('forSale', '==', true),
+      where('userId', 'in', ids),
+      orderBy('listedAt', 'desc'),
+      limit(pageSize),
+    ));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+
   // Listings by a specific seller (e.g. on the Profile → Marketplace tab).
   async listBySeller({ uid, pageSize = 30 }) {
     const q = query(

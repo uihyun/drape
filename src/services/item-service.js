@@ -184,13 +184,17 @@ async function recordWear({ itemIds, date, ootdId, outfitId }) {
 async function deleteItem(itemId) {
   const it = await getItem(itemId);
   if (!it) return;
-  // Storage cleanup — best effort. Firestore doc removal is the source of
-  // truth; orphan files are pruned by a scheduled function later.
+  // Firestore doc removal is the source of truth — do it FIRST and await
+  // only this. The UI can navigate away immediately afterward.
+  await deleteDoc(doc(db, ITEMS, itemId));
+  // Storage cleanup is best-effort and NOT awaited: deleteObject on an
+  // already-missing file 404s and Firebase retries it with backoff
+  // (~1s of dead time that would otherwise stall the delete). Fire it off
+  // and swallow errors; orphans are pruned by a scheduled function later.
   for (const path of [it.originalPath, it.croppedPath]) {
     if (!path) continue;
-    try { await deleteObject(ref(storage, path)); } catch { /* ignore */ }
+    deleteObject(ref(storage, path)).catch(() => { /* already gone / ignore */ });
   }
-  await deleteDoc(doc(db, ITEMS, itemId));
 }
 
 /**

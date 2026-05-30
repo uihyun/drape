@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, SlidersHorizontal } from 'lucide-react';
+import { Plus, SlidersHorizontal, Lock } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
@@ -152,7 +152,9 @@ export function BoardList({ user, onSignIn, embedded = false }) {
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
               <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
               {tab === 'mine' && !b.isPublic && (
-                <span className="card-private-badge">{t('privateBadge')}</span>
+                <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>
+                  <Lock size={12} strokeWidth={2.2} />
+                </span>
               )}
               {b.name && (
                 <div className="ootd-card-overlay">
