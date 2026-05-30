@@ -275,12 +275,25 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
                 {/* Style summary card sits right under the hero so the
                     style + notes read like an editorial caption. */}
-                {(b.style || b.notes) && (
+                {((Array.isArray(b.style) && b.style.length > 0) || b.notes) && (
                   <div className="analyze-style-card">
                     <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
-                    {b.style && <h2 className="analyze-style-name">{b.style}</h2>}
-                    {b.mood && <p className="analyze-mood">{b.mood}</p>}
                     {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
+                    {Array.isArray(b.style) && b.style.length > 0 && (
+                      <ul className="analyze-style-list">
+                        {b.style.map((c, i) => {
+                          const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
+                          return (
+                            <li key={i} className="style-bars-row">
+                              <span className="style-bars-label">{t(`taxonomy.styles.${c.label}`) || c.label}</span>
+                              <div className="style-bars-bar" role="meter" aria-valuemin="0" aria-valuemax="5" aria-valuenow={c.level || 0} aria-label={c.label}>
+                                <div className="style-bars-bar-fill" style={{ width: `${pct}%` }} />
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                     <button
                       type="button"
                       className={`btn ${analysisSaved ? 'btn-secondary' : 'btn-primary'} analyze-style-save`}
