@@ -312,9 +312,14 @@ service cloud.firestore {
           && request.auth.token.firebase.sign_in_provider != 'anonymous'
           && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants
           && request.resource.data.fromUid == request.auth.uid
-          && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
-          && request.resource.data.text.size() <= 1000;
+          && (
+            (request.resource.data.text is string
+              && request.resource.data.text.size() > 0
+              && request.resource.data.text.size() <= 1000)
+            || (request.resource.data.type == 'image'
+              && request.resource.data.imageUrl is string
+              && request.resource.data.imageUrl.size() > 0)
+          );
         allow update, delete: if false;
       }
     }

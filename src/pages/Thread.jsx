@@ -91,6 +91,21 @@ export function Thread({ user }) {
     }
   };
 
+  // Photo message — service recompresses before upload, so a raw camera
+  // file is fine here. We keep `sending` true across the upload so the
+  // composer disables and the user can't fire a second send mid-upload.
+  const sendImage = async (file) => {
+    if (!file || sending) return;
+    setSending(true);
+    try {
+      await MessageService.sendImage(threadId, file);
+    } catch (err) {
+      console.warn('image send failed:', err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (thread === undefined) return <div className="loading"><div className="spinner" /></div>;
   if (thread === null) {
     return (
@@ -201,7 +216,7 @@ function timeLabel(ts, lang) {
   });
 }
 
-function renderMessageStream(messages, myUid, lang, t) {
+function renderMessageStream(messages, myUid, lang, t, onImageClick) {
   const out = [];
   for (let i = 0; i < messages.length; i++) {
     const m = messages[i];
@@ -222,8 +237,19 @@ function renderMessageStream(messages, myUid, lang, t) {
 
     const mine = m.fromUid === myUid;
     out.push(
-      <div key={m.id} className={`thread-bubble${mine ? ' mine' : ''}`}>
-        {m.text}
+      <div key={m.id} className={`thread-bubble${mine ? ' mine' : ''}${m.type === 'image' ? ' thread-bubble-img' : ''}`}>
+        {m.type === 'image' && m.imageUrl
+          ? (
+            <img
+              src={m.imageUrl}
+              alt=""
+              className="thread-img"
+              loading="lazy"
+              style={m.width && m.height ? { aspectRatio: `${m.width} / ${m.height}` } : undefined}
+              onClick={() => onImageClick?.(m.imageUrl)}
+            />
+          )
+          : m.text}
       </div>
     );
 

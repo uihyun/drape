@@ -9,13 +9,50 @@ import {
   collection, doc, getDoc, setDoc, addDoc,
   query, where, orderBy, limit, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase.js';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../firebase.js';
+import { CameraService } from './camera.js';
 
 const THREADS = 'threads';
 
 export function threadIdFor(uidA, uidB, itemId) {
   const [lo, hi] = uidA < uidB ? [uidA, uidB] : [uidB, uidA];
   return `${lo}_${hi}_${itemId}`;
+}
+
+// Read a blob's pixel dimensions (so an image bubble can reserve the
+// right aspect ratio before the download resolves — no layout jump).
+function blobDimensions(blob) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { resolve({ width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); };
+    img.onerror = () => { resolve({ width: 0, height: 0 }); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+}
+
+// Bump unread for participants who *aren't currently in the room* and
+// refresh the thread preview. Shared by sendMessage / sendImage.
+// activeIn[uid] (set by Thread.jsx) suppresses the badge while the other
+// side is watching; the sender's own count always resets.
+async function bumpThread(threadId, uid, lastMessage) {
+  try {
+    const snap = await getDoc(doc(db, THREADS, threadId));
+    const data = snap.data() || {};
+    const others = (data.participants || []).filter(u => u !== uid);
+    const prev = (data.unreadFor && typeof data.unreadFor === 'object') ? data.unreadFor : {};
+    const active = (data.activeIn && typeof data.activeIn === 'object') ? data.activeIn : {};
+    const next = { ...prev, [uid]: 0 };
+    for (const o of others) next[o] = active[o] ? 0 : (prev[o] || 0) + 1;
+    await setDoc(
+      doc(db, THREADS, threadId),
+      { updatedAt: serverTimestamp(), lastMessage, unreadFor: next },
+      { merge: true },
+    );
+  } catch (err) {
+    console.warn('thread bump failed:', err.message);
+  }
 }
 
 export const MessageService = {
@@ -96,33 +133,38 @@ export const MessageService = {
       text: trimmed,
       createdAt: serverTimestamp(),
     });
-    // Bump unread for participants who *aren't currently in the room*.
-    // activeIn[uid] is set true by Thread.jsx on mount and false on
-    // unmount / tab-hide, so a back-and-forth conversation while both
-    // sides have the chat open never raises a badge. Sender's count
-    // always resets — they just typed it.
-    try {
-      const snap = await getDoc(doc(db, THREADS, threadId));
-      const data = snap.data() || {};
-      const others = (data.participants || []).filter(u => u !== user.uid);
-      const prev = (data.unreadFor && typeof data.unreadFor === 'object') ? data.unreadFor : {};
-      const active = (data.activeIn && typeof data.activeIn === 'object') ? data.activeIn : {};
-      const next = { ...prev, [user.uid]: 0 };
-      for (const o of others) {
-        next[o] = active[o] ? 0 : (prev[o] || 0) + 1;
-      }
-      await setDoc(
-        doc(db, THREADS, threadId),
-        {
-          updatedAt: serverTimestamp(),
-          lastMessage: { text: trimmed, fromUid: user.uid, createdAt: serverTimestamp() },
-          unreadFor: next,
-        },
-        { merge: true },
-      );
-    } catch (err) {
-      console.warn('thread updatedAt patch failed:', err.message);
-    }
+    await bumpThread(threadId, user.uid, { text: trimmed, fromUid: user.uid, createdAt: serverTimestamp() });
+  },
+
+  // Photo message. The blob is recompressed client-side before upload so
+  // we never push a multi-MB camera original over the wire — capped at
+  // 1280px / ~0.7 quality (a few hundred KB). Stored under the sender's
+  // own Storage prefix; the message doc just holds the download URL +
+  // pixel dimensions for jump-free rendering.
+  async sendImage(threadId, blob) {
+    const user = auth.currentUser;
+    if (!user || user.isAnonymous) throw new Error('AUTH_REQUIRED');
+    if (!blob) return;
+    const compressed = await CameraService.compressBlob(blob, {
+      maxWidth: 1280, maxHeight: 1280, quality: 0.7, format: 'image/jpeg',
+    });
+    const { width, height } = await blobDimensions(compressed);
+    const imgId = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const path = `dm/${user.uid}/${threadId}/${imgId}.jpg`;
+    const r = storageRef(storage, path);
+    await uploadBytes(r, compressed, { contentType: 'image/jpeg' });
+    const imageUrl = await getDownloadURL(r);
+    await addDoc(collection(db, THREADS, threadId, 'messages'), {
+      fromUid: user.uid,
+      type: 'image',
+      imageUrl,
+      imagePath: path,
+      width,
+      height,
+      createdAt: serverTimestamp(),
+    });
+    // Emoji preview keeps the thread-list snippet language-neutral.
+    await bumpThread(threadId, user.uid, { text: '📷', type: 'image', fromUid: user.uid, createdAt: serverTimestamp() });
   },
 
   // Presence flag — Thread.jsx flips this on mount / off on unmount.

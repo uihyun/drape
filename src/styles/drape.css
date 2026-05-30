@@ -639,10 +639,13 @@ body.is-native {
   display: block;
 }
 .analyze-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  /* Two equal columns aligned under the full-width upload buttons,
+     instead of floating small + right where they collide with the
+     floating bottom nav. Extra bottom margin clears that nav. */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.25rem 0 5rem;
 }
 .analyze-style {
   background: var(--surface-elevated);
