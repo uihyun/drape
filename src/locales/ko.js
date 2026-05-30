@@ -29,7 +29,7 @@ export const ko = {
   ootdConfirmDelete: '이 날 OOTD 를 삭제할까요?',
   ootdAddNew: '새로 추가',
   ootdRepHint: '체크를 눌러 그 날의 대표 사진을 정하세요.',
-  ootdDayHint: '눌러서 수정하거나, 다른 룩을 추가하세요.',
+  ootdDayHint: '눌러서 열거나, 다른 룩을 추가하세요.',
   ootdSetRep: '대표로 설정',
   ootdRepActive: '대표 사진',
   ootdPublishLabel: '피드에 퍼블리시',
