@@ -5502,6 +5502,26 @@ input[type="search"]::-webkit-search-decoration {
 .ootd-card img { height: auto; }
 .ootd-card:not(:has(img)) { aspect-ratio: 3 / 4; }
 
+/* Ranked (Popular) feed: rank must read TOP-DOWN, descending — #1 top-left,
+   #2 top-right, #3 next row… CSS multi-column fills a whole column first
+   (so #1 would sit above #2 in the SAME column = wrong). Switch to a
+   row-major grid so order flows left→right then down. Items stretch to
+   equal row height here (acceptable trade for correct ranking). */
+.ootd-feed.feed-ranked,
+.board-feed.feed-ranked {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  columns: auto;
+}
+.ootd-feed.feed-ranked > *,
+.board-feed.feed-ranked > * {
+  margin: 0;
+  width: auto;
+}
+.ootd-feed.feed-ranked .ootd-card { aspect-ratio: 3 / 4; }
+.ootd-feed.feed-ranked .ootd-card img { height: 100%; object-fit: cover; }
+
 /* ── Add-item sheet (photo + product URL) ─────────────────────────────── */
 .add-sheet-pickers {
   display: flex;
@@ -5567,6 +5587,8 @@ input[type="search"]::-webkit-search-decoration {
   vertical-align: middle;
 }
 .item-name-link:hover { color: var(--accent); }
+/* Owner's read-only like display (no self-like button). */
+.board-hero-action--static { cursor: default; }
 .outfit-hero-choice { margin: 0.25rem 0 0.5rem; }
 .outfit-hero-choice-label {
   display: block;

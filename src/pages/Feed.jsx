@@ -11,6 +11,7 @@ import { MarketplaceService } from '../services/marketplace-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -241,7 +242,7 @@ export function Feed({ user, onSignIn }) {
           {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
         </div>
       ) : showingBoards ? (
-        <div className="board-feed">
+        <div className={`board-feed${sort === 'popular' ? ' feed-ranked' : ''}`}>
           {boards.map(b => (
             <BoardCard
               key={b.id}
@@ -257,7 +258,7 @@ export function Feed({ user, onSignIn }) {
           ))}
         </div>
       ) : (
-        <div className="ootd-feed">
+        <div className={`ootd-feed${sort === 'popular' ? ' feed-ranked' : ''}`}>
           {ootds.map(o => (
             <OotdCard
               key={o.id}
@@ -380,8 +381,8 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
 
   return (
     <Link to={`/o/${ootd.id}`} className="ootd-card">
-      {ootd.photoUrl
-        ? <img src={ootd.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+      {outfitCardPhoto(ootd)
+        ? <img src={outfitCardPhoto(ootd)} alt="" loading="lazy" referrerPolicy="no-referrer" />
         : <div className="ootd-card-empty">◇</div>}
       <div className="ootd-card-overlay">
         <div className="ootd-card-author">

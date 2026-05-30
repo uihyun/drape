@@ -8,6 +8,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 function formatCardDate(ts) {
@@ -21,10 +22,7 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
   return (
     <div className="ootd-feed">
       {ootds.map(o => {
-        // Profile/feed show the FULL photo (with background). The cut-out
-        // (photoCutUrl) is calendar-only. Fall back to cut/cover only when
-        // there's no original.
-        const photo = o.photoUrl || o.coverUrl || o.sourcePhotoUrl || o.photoCutUrl;
+        const photo = outfitCardPhoto(o);
         const isPrivate = showPrivacy && !o.isPublic && !o.isListed;
         return (
           <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">

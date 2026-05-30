@@ -99,19 +99,13 @@ export function BoardDetail({ user, onSignIn }) {
         {/* Overlay actions — inside image, z-index 1000 so they're above all board stickers */}
         <div className="board-detail-hero-actions">
           {isOwner ? (
-            // Owner ❤️ uses the same like (likedBy + likeCount) as everyone
-            // else so it counts toward the popular feed.
-            <button
-              type="button"
-              className={`board-hero-action${(board.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
-              onClick={async () => {
-                try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
-                catch (err) { console.warn('board like failed', err?.message); }
-              }}
-            >
-              <Heart size={16} strokeWidth={1.6} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(board.likeCount || 0) > 0 && <span className="board-hero-count">{board.likeCount}</span>}
-            </button>
+            // No self-like — read-only count of others' likes (when > 0).
+            (board.likeCount || 0) > 0 && (
+              <div className="board-hero-action board-hero-action--static" aria-label={`${board.likeCount} likes`}>
+                <Heart size={16} strokeWidth={1.6} fill="currentColor" />
+                <span className="board-hero-count">{board.likeCount}</span>
+              </div>
+            )
           ) : (
             <>
               <button

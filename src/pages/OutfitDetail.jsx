@@ -8,6 +8,7 @@ import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -128,14 +129,10 @@ export function OutfitDetail({ user, onSignIn }) {
   const heroItems = items.filter(it => it.croppedUrl || it.originalUrl);
   // A worn-look photo (OOTD photo upload) is the truest hero — show it
   // uncropped, no collage.
-  // Hero photo. Default to the FULL photo (with background) — the cut-out
-  // (photoCutUrl, background removed) is opt-in per post via heroVariant,
-  // for people who want just themselves with no backdrop. Calendar always
-  // uses the cut-out separately. sourcePhotoUrl backs analyzed looks.
-  const fullPhoto = outfit.photoUrl || outfit.sourcePhotoUrl || null;
-  const wornPhoto = (outfit.heroVariant === 'cut' && outfit.photoCutUrl)
-    ? outfit.photoCutUrl
-    : (fullPhoto || outfit.photoCutUrl || null);
+  // Hero photo — shared with the profile/feed cards so the per-post
+  // heroVariant choice ('full' with background vs 'cut' outfit-only) is
+  // consistent everywhere. Calendar uses photoCutUrl separately.
+  const wornPhoto = outfitCardPhoto(outfit);
   // Detected garments: OOTDs store them as `pieces` (analyzeOotd), analyzed
   // looks as `detectedItems` (richer — keeps the description). Render
   // whichever the doc carries so a saved analysis keeps its item breakdown.
@@ -193,19 +190,14 @@ export function OutfitDetail({ user, onSignIn }) {
         {renderHero()}
         <div className="board-detail-hero-actions">
           {isOwner ? (
-            // Owner ❤️ uses the SAME like (likedBy + likeCount) as everyone
-            // else, so liking your own look counts toward the popular feed.
-            <button
-              type="button"
-              className={`board-hero-action${(outfit.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
-              onClick={async () => {
-                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
-                catch (e) { console.warn('outfit like failed', e?.message); }
-              }}
-            >
-              <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(outfit.likeCount || 0) > 0 && <span className="board-hero-count">{outfit.likeCount}</span>}
-            </button>
+            // No self-like — you can't like your own post. Show a read-only
+            // heart with the count others have given (only when > 0).
+            (outfit.likeCount || 0) > 0 && (
+              <div className="board-hero-action board-hero-action--static" aria-label={`${outfit.likeCount} likes`}>
+                <Heart size={16} strokeWidth={1.6} fill="currentColor" />
+                <span className="board-hero-count">{outfit.likeCount}</span>
+              </div>
+            )
           ) : (
             <>
               <button
