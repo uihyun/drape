@@ -1,144 +1,114 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { SlidersHorizontal } from 'lucide-react';
+import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
-import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
-import { usePinchColumns } from '../hooks/usePinchColumns.js';
+import { LookFilterSheet } from '../components/LookFilterSheet.jsx';
+import { emptyLookFilters, countLookFilters, boardMatches } from '../data/lookFilters.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// "My boards" with a Saved tab for boards the user has bookmarked
-// from other profiles. Same Mine/Saved shape as OutfitList so the
-// profile shell's Boards tab reads consistently.
-export function BoardList({ user, onSignIn, embedded = false }) {
+// Profile "Boards" tab — grid of the user's mood boards. Tapping a
+// board opens it; the + tile starts a new board. Same tag-filter as the
+// outfit list, matching boards by the tags of the closet items they pin.
+export function BoardList({ user, onSignIn, embedded }) {
   const { t } = useLocale();
-  const { cols, ref: gridRef } = usePinchColumns('boards', { min: 1, max: 3, def: 2 });
-  const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
-  const [mine, setMine] = useState(null);
-  const [saved, setSaved] = useState(null);
-  const [filterLiked, setFilterLiked] = useState(false);
-  const [items, setItems] = useState([]);
-  const itemsById = useMemo(
-    () => Object.fromEntries(items.map(i => [i.id, i])),
-    [items],
-  );
+  const navigate = useNavigate();
+  const [boards, setBoards] = useState(null);
+  const [itemsById, setItemsById] = useState({});
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState(emptyLookFilters());
 
   useEffect(() => {
-    if (!user || user.isAnonymous) { setMine([]); return; }
-    return BoardService.subscribeMyBoards(setMine);
+    if (!user || user.isAnonymous) { setBoards([]); return; }
+    return BoardService.subscribeMyBoards(setBoards);
   }, [user]);
 
+  // Hydrate the closet items pinned across all boards so the filter can
+  // match a board by what's on it. Only fetches ids we don't already have.
   useEffect(() => {
-    if (!user || user.isAnonymous) { setSaved([]); return; }
-    if (tab !== 'saved') return; // lazy — only fetch when the tab opens
-    BoardService.listBookmarkedBoards({ uid: user.uid })
-      .then(setSaved)
-      .catch(() => setSaved([]));
-  }, [user, tab]);
+    const ids = Array.from(new Set(
+      (boards || []).flatMap(b => (b.stickers || []).map(s => s.itemId)).filter(Boolean)
+    ));
+    const missing = ids.filter(id => !itemsById[id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    Promise.all(missing.map(id => getDoc(doc(db, 'items', id))
+      .then(s => (s.exists() ? { id: s.id, ...s.data() } : null))
+      .catch(() => null)))
+      .then(rows => {
+        if (cancelled) return;
+        setItemsById(prev => {
+          const next = { ...prev };
+          rows.forEach(r => { if (r) next[r.id] = r; });
+          return next;
+        });
+      });
+    return () => { cancelled = true; };
+  }, [boards]);
 
-  // Closet items power the mini-canvas thumbnails (each sticker references
-  // an itemId, and the card preview needs the cropped image). Only used
-  // for the user's own boards — saved boards from other users hydrate
-  // their items individually via BoardThumbnail's self-hydration.
-  useEffect(() => {
-    if (!user || user.isAnonymous) return;
-    return ItemService.subscribeMyCloset(user.uid, setItems);
-  }, [user]);
+  const filterCount = countLookFilters(filters);
+  const filtered = useMemo(() => {
+    if (!boards) return null;
+    if (filterCount === 0) return boards;
+    return boards.filter(b => boardMatches(b, itemsById, filters));
+  }, [boards, itemsById, filters, filterCount]);
 
-  if (!user || user.isAnonymous) {
-    return (
-      <div className={embedded ? '' : 'page'}>
-        {!embedded && <h1 className="page-h1">{t('boards')}</h1>}
-        <div className="empty-state empty-state-card">
-          <p>{t('boardSignInBody')}</p>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
-        </div>
-      </div>
-    );
+  if (boards === null) {
+    return <div className="loading"><div className="spinner" /></div>;
   }
 
-  const rawList = tab === 'saved' ? saved : mine;
-  const list = (rawList && filterLiked && tab === 'mine')
-    ? rawList.filter(b => b.selfLiked)
-    : rawList;
-
   return (
-    <div className={embedded ? '' : 'page'}>
-      {!embedded && (
-        <div className="closet-header">
-          <h1 className="page-h1" style={{ margin: 0 }}>{t('boards')}</h1>
-          <Link to="/boards/new" className="btn btn-primary">
-            <Plus size={14} strokeWidth={1.8} /> {t('boardNew')}
-          </Link>
-        </div>
-      )}
+    <div className={`board-list${embedded ? ' board-list-embedded' : ''}`}>
+      <div className="outfit-list-toolbar" style={{ justifyContent: 'flex-end' }}>
+        <button
+          type="button"
+          className={`icon-pill${filterCount > 0 ? ' active' : ''}`}
+          onClick={() => setFilterOpen(true)}
+          aria-label={t('filterTitle')}
+        >
+          <SlidersHorizontal size={18} strokeWidth={1.7} />
+          {filterCount > 0 && <span className="icon-pill-badge">{filterCount}</span>}
+        </button>
+      </div>
 
-      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '1.25rem' }}>
-        {['mine', 'saved'].map(key => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            className={`chip${tab === key ? ' active' : ''}`}
-            onClick={() => setTab(key)}
-          >
-            {t(`boardsTabs.${key}`)}
-          </button>
-        ))}
-        {tab === 'mine' && (
+      <div className="board-list-grid">
+        {filterCount === 0 && (
           <button
             type="button"
-            className={`chip${filterLiked ? ' active' : ''}`}
-            onClick={() => setFilterLiked(f => !f)}
+            className="board-new-tile"
+            onClick={() => navigate('/boards/new')}
+            aria-label={t('newBoard')}
           >
-            {t('filterLiked')}
+            <span className="board-new-plus">+</span>
+            <span>{t('newBoard')}</span>
           </button>
         )}
-      </nav>
+        {(filtered || []).map(b => (
+          <BoardThumbnail
+            key={b.id}
+            board={b}
+            onClick={() => navigate(`/boards/${b.id}`)}
+          />
+        ))}
+      </div>
 
-      {list === null ? (
-        <div className="loading"><div className="spinner" /></div>
-      ) : list.length === 0 ? (
+      {filterCount > 0 && filtered.length === 0 && (
         <div className="empty-state empty-state-card">
-          {tab === 'mine' ? (
-            <>
-              <p>{t('boardsEmpty')}</p>
-              <Link to="/boards/new" className="btn btn-primary">
-                <Plus size={14} strokeWidth={1.8} /> {t('boardNew')}
-              </Link>
-            </>
-          ) : (
-            <>
-              <p>{t('savedBoardsEmpty')}</p>
-              <Link to="/feed" className="btn btn-secondary">{t('browseFeed')}</Link>
-            </>
-          )}
-        </div>
-      ) : (
-        <div
-          ref={gridRef}
-          className="board-list-grid pinch-grid"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-        >
-          {list.map(b => (
-            <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
-              <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
-              <div className="board-card-meta">
-                <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
-                <span className="card-meta-date">{formatCardDate(b.createdAt || b.updatedAt)}</span>
-              </div>
-            </Link>
-          ))}
+          <p>{t('noBoardMatch')}</p>
         </div>
       )}
+
+      <LookFilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        onChange={setFilters}
+        counts={null}
+      />
     </div>
   );
-}
-
-function formatCardDate(ts) {
-  const d = ts?.toDate?.() || (ts instanceof Date ? ts : null);
-  return d ? d.toLocaleDateString() : '';
 }
 
 export default BoardList;
