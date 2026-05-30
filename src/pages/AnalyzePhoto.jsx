@@ -67,7 +67,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       blob,
       previewUrl: URL.createObjectURL(blob),
       status: 'pending',
-      style: '',
+      style: [],
       notes: '',
       items: [],
     }));
@@ -144,7 +144,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
     try {
       const { id } = await OutfitService.createAnalyzedOutfit({
         photoBlob: batch.blob,
-        name: batch.style || '',
+        style: batch.style || [],
         notes: batch.notes || '',
         detectedItems: batch.items || [],
         itemIds: [],
@@ -294,35 +294,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
                   </div>
                 )}
 
-                {/* Palette — dominant color swatches with % share. */}
-                {Array.isArray(b.palette) && b.palette.length > 0 && (
-                  <section className="analyze-palette">
-                    <h3 className="analyze-section-head">{t('palette')}</h3>
-                    <div className="analyze-palette-row">
-                      {b.palette.map((c, i) => (
-                        <div key={i} className="palette-card" style={{ background: c.hex }}>
-                          <span className="palette-pct">{Math.round(c.percent || 0)}%</span>
-                          <div className="palette-meta">
-                            <div className="palette-name">{c.name || ''}</div>
-                            <div className="palette-hex">{c.hex}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Styling tips — short actionable suggestions. */}
-                {Array.isArray(b.stylingTips) && b.stylingTips.length > 0 && (
-                  <section className="analyze-tips">
-                    <h3 className="analyze-section-head">{t('stylingTips')}</h3>
-                    <ul className="analyze-tips-list">
-                      {b.stylingTips.map((tip, i) => (
-                        <li key={i} className="analyze-tip">{tip}</li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
 
                 {b.items.length === 0 ? (
                   <p className="muted" style={{ padding: '0.75rem 1rem 1rem' }}>{t('analyzeNoItems')}</p>
