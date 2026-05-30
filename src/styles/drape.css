@@ -497,6 +497,8 @@ body.is-native {
   align-items: start; /* variable-ratio board cards don't stretch to match */
 }
 .board-card {
+  position: relative;
+  display: block;
   text-decoration: none;
   color: inherit;
   border-radius: 12px;

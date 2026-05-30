@@ -19,7 +19,6 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   const [tab, setTab] = useState('mine'); // 'mine' | 'saved'
   const [mine, setMine] = useState(null);
   const [saved, setSaved] = useState(null);
-  const [filterLiked, setFilterLiked] = useState(false);
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [items, setItems] = useState([]);
@@ -82,9 +81,8 @@ export function BoardList({ user, onSignIn, embedded = false }) {
 
   const rawList = tab === 'saved' ? saved : mine;
   let list = rawList;
-  if (list && tab === 'mine') {
-    if (filterLiked) list = list.filter(b => b.selfLiked);
-    if (filterCount > 0) list = list.filter(boardMatchesFilters);
+  if (list && tab === 'mine' && filterCount > 0) {
+    list = list.filter(boardMatchesFilters);
   }
 
   return (
@@ -112,15 +110,6 @@ export function BoardList({ user, onSignIn, embedded = false }) {
               {t(`boardsTabs.${key}`)}
             </button>
           ))}
-          {tab === 'mine' && (
-            <button
-              type="button"
-              className={`chip${filterLiked ? ' active' : ''}`}
-              onClick={() => setFilterLiked(f => !f)}
-            >
-              {t('filterLiked')}
-            </button>
-          )}
         </nav>
         {tab === 'mine' && (
           <button
@@ -162,10 +151,11 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           {list.map(b => (
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
               <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
-              <div className="board-card-meta">
-                <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
-                <span className="card-meta-date">{formatCardDate(b.createdAt || b.updatedAt)}</span>
-              </div>
+              {b.name && (
+                <div className="ootd-card-overlay">
+                  <h3 className="ootd-card-title">{b.name}</h3>
+                </div>
+              )}
             </Link>
           ))}
         </div>

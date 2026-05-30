@@ -18,17 +18,23 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const isMobileUA = typeof navigator !== 'undefined'
   && /iPhone|iPad|iPod|Android/.test(navigator.userAgent || '');
 
+// Analyze results live only in memory until explicitly saved. Keep them in
+// a module-level cache so navigating away (tapping a closet match, opening
+// "find similar", hitting the tab bar) and pressing back returns to the
+// RESULT page instead of a blank input screen. Cleared only by reset().
+const analyzeCache = { batches: [], savedKeys: new Set(), savedBatchIds: new Map() };
+
 export function AnalyzePhoto({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const fileRef = useRef();
   // batches: [{ blob, previewUrl, status: 'pending'|'analyzing'|'done'|'failed', style, notes, items: [...] }]
-  const [batches, setBatches] = useState([]);
+  const [batches, setBatches] = useState(analyzeCache.batches);
   const [cameraOpen, setCameraOpen] = useState(false);
   // savedKey is `"${batchIdx}:${itemIdx}"` for items that have been added
-  const [savedKeys, setSavedKeys] = useState(new Set());
+  const [savedKeys, setSavedKeys] = useState(analyzeCache.savedKeys);
   // Per-batch "Save analysis" state — kind='analyzed' outfit doc id once saved.
-  const [savedBatchIds, setSavedBatchIds] = useState(new Map());
+  const [savedBatchIds, setSavedBatchIds] = useState(analyzeCache.savedBatchIds);
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
@@ -41,11 +47,13 @@ export function AnalyzePhoto({ user, onSignIn }) {
       setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
   }, [user]);
 
-  // Object URLs on each batch — revoke when batches list changes / unmounts.
-  useEffect(() => {
-    return () => batches.forEach(b => b.previewUrl && URL.revokeObjectURL(b.previewUrl));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Mirror result state into the module cache so a remount (back nav)
+  // restores exactly what was on screen. Object URLs are deliberately NOT
+  // revoked on unmount — they must stay valid for the cached previews;
+  // reset() / removeBatch() revoke explicitly instead.
+  useEffect(() => { analyzeCache.batches = batches; }, [batches]);
+  useEffect(() => { analyzeCache.savedKeys = savedKeys; }, [savedKeys]);
+  useEffect(() => { analyzeCache.savedBatchIds = savedBatchIds; }, [savedBatchIds]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -157,8 +165,12 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
   const reset = () => {
     batches.forEach(b => b.previewUrl && URL.revokeObjectURL(b.previewUrl));
+    analyzeCache.batches = [];
+    analyzeCache.savedKeys = new Set();
+    analyzeCache.savedBatchIds = new Map();
     setBatches([]);
     setSavedKeys(new Set());
+    setSavedBatchIds(new Map());
     setError(null);
   };
 
