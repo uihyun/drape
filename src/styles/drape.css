@@ -3592,16 +3592,20 @@ input[type="search"]::-webkit-search-decoration {
   -webkit-overflow-scrolling: touch;
 }
 .item-viewer.editing .item-viewer-stage {
-  /* A normal block that scrolls away with the page. Tall enough to still
-     see the garment, short enough to give the form room as you scroll. */
+  /* A block that PARALLAXES with scroll (translateY set inline by the
+     scroll handler). will-change keeps the transform on the compositor so
+     it tracks the finger smoothly. */
   display: block;
   height: 44vh;
   padding-top: 3.5rem;
+  will-change: transform, opacity;
+  pointer-events: none; /* don't eat scroll/taps once it's sliding away */
 }
 .item-viewer.editing .item-viewer-stage img {
   display: block;
   margin: 0 auto;
   max-height: 100%;
+  pointer-events: auto;
 }
 .item-viewer.editing .item-viewer-rail {
   /* Anchor to the photo block's top-right while scrolling, not the
@@ -3613,6 +3617,10 @@ input[type="search"]::-webkit-search-decoration {
   display: block;
   overflow: visible;
   padding-bottom: calc(var(--safe-bottom) + 1.5rem);
+  /* Opaque so it cleanly covers the photo gliding up behind it. */
+  position: relative;
+  z-index: 1;
+  background: #fff;
 }
 .item-viewer-meta { flex: 1; min-width: 0; }
 .item-shop-row {

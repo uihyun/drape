@@ -185,15 +185,18 @@ export function OutfitDetail({ user, onSignIn }) {
         {renderHero()}
         <div className="board-detail-hero-actions">
           {isOwner ? (
+            // Owner ❤️ uses the SAME like (likedBy + likeCount) as everyone
+            // else, so liking your own look counts toward the popular feed.
             <button
               type="button"
-              className={`board-hero-action${outfit.selfLiked ? ' active' : ''}`}
+              className={`board-hero-action${(outfit.likedBy || []).includes(user?.uid) ? ' active' : ''}`}
               onClick={async () => {
-                try { await OutfitService.toggleSelfLike(outfit.id, !outfit.selfLiked); }
-                catch (e) { console.warn('toggleSelfLike failed', e?.message); }
+                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+                catch (e) { console.warn('outfit like failed', e?.message); }
               }}
             >
-              <Heart size={16} strokeWidth={1.6} fill={outfit.selfLiked ? 'currentColor' : 'none'} />
+              <Heart size={16} strokeWidth={1.6} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+              {(outfit.likeCount || 0) > 0 && <span className="board-hero-count">{outfit.likeCount}</span>}
             </button>
           ) : (
             <>

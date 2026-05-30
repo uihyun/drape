@@ -21,7 +21,10 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
   return (
     <div className="ootd-feed">
       {ootds.map(o => {
-        const photo = o.photoCutUrl || o.photoUrl || o.coverUrl || o.sourcePhotoUrl;
+        // Profile/feed show the FULL photo (with background). The cut-out
+        // (photoCutUrl) is calendar-only. Fall back to cut/cover only when
+        // there's no original.
+        const photo = o.photoUrl || o.coverUrl || o.sourcePhotoUrl || o.photoCutUrl;
         const isPrivate = showPrivacy && !o.isPublic && !o.isListed;
         return (
           <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
@@ -205,7 +208,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
           </div>
           <OotdGrid
             ootds={outfits.filter(o => {
-              if (filterLiked && !o.selfLiked) return false;
+              if (filterLiked && !(o.likedBy || []).includes(user?.uid)) return false;
               if (filterCount > 0 && !lookMatches(o, filters, {})) return false;
               return true;
             })}
@@ -219,7 +222,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
               onClose={() => setSheetOpen(false)}
               count={filterCount}
               resultCount={outfits.filter(o => {
-                if (filterLiked && !o.selfLiked) return false;
+                if (filterLiked && !(o.likedBy || []).includes(user?.uid)) return false;
                 if (filterCount > 0 && !lookMatches(o, filters, {})) return false;
                 return true;
               }).length}

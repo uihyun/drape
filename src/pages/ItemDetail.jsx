@@ -37,6 +37,19 @@ export function ItemDetail({ user, onSignIn }) {
   const [reporting, setReporting] = useState(false);
   const [ownerCurrency, setOwnerCurrency] = useState(null);
   const changeInputRef = useRef(null);
+  const stageRef = useRef(null);
+
+  // While editing, the photo follows the scroll: as the form is pulled up
+  // the photo glides up at ~half speed (parallax) and fades, then glides
+  // back down on reverse scroll — a smooth reveal, not a block that just
+  // scrolls off. Driven by the scroll container's scrollTop.
+  const onEditScroll = (e) => {
+    const el = stageRef.current;
+    if (!el) return;
+    const y = e.currentTarget.scrollTop;
+    el.style.transform = `translateY(${-y * 0.5}px)`;
+    el.style.opacity = String(Math.max(0, 1 - y / 320));
+  };
 
   useEffect(() => {
     if (!itemId) return;
@@ -235,7 +248,10 @@ export function ItemDetail({ user, onSignIn }) {
   };
 
   return (
-    <div className={`item-viewer${editing ? ' editing' : ''}`}>
+    <div
+      className={`item-viewer${editing ? ' editing' : ''}`}
+      onScroll={editing ? onEditScroll : undefined}
+    >
       <button
         type="button"
         className="item-viewer-close"
@@ -246,6 +262,7 @@ export function ItemDetail({ user, onSignIn }) {
       </button>
 
       <div
+        ref={stageRef}
         className="item-viewer-stage"
         onClick={() => hasBoth && setShowOriginal(s => !s)}
         role={hasBoth ? 'button' : undefined}
