@@ -38,6 +38,14 @@ export function scoreMatch(piece, item) {
   if (pSub && iSub && pSub !== iSub) return 0;
   if (pCat === 'accessory' && !(pSub && iSub && pSub === iSub)) return 0;
 
+  // Color gate. A black crewneck and a green crewneck are different
+  // garments — when both sides are colour-tagged and share none, it is not
+  // a match. (Only gates when we actually have colours on both; otherwise
+  // fall through and let the weighted score decide.)
+  const pColors = piece.colors || [];
+  const iColors = iTags.colors || [];
+  if (pColors.length && iColors.length && !pColors.some(c => iColors.includes(c))) return 0;
+
   let score = 0.35; // base for clearing the category gate
   if (pSub && iSub && pSub === iSub) {
     score += 0.25;

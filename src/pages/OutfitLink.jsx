@@ -141,11 +141,26 @@ export function OutfitLink({ user, onSignIn }) {
   if (!outfit) return <div className="loading"><div className="spinner" /></div>;
 
   const pieces = Array.isArray(outfit.pieces) ? outfit.pieces : [];
+  // A freshly-saved photo OOTD: analyzeOotd runs server-side and fills
+  // `pieces` + `analyzedAt` a moment later. Until then, show a "reading
+  // your look" note so the empty pieces area reads as in-progress.
+  const analyzing = !!(outfit.photoUrl || outfit.photoCutUrl || outfit.sourcePhotoUrl)
+    && !outfit.analyzedAt && pieces.length === 0;
 
   return (
     <div className="page outfit-link">
       <h1 className="page-h1">{t('linkItemsTitle')}</h1>
       <p className="page-sub">{t('linkItemsSub')}</p>
+
+      {analyzing && (
+        <section className="outfit-link-pieces">
+          <h2 className="outfit-link-h2">{t('piecesInLook')}</h2>
+          <div className="piece-analyzing">
+            <span className="piece-analyzing-dot" />
+            <span>{t('tryOnAnalyzing')}</span>
+          </div>
+        </section>
+      )}
 
       {/* Per-piece suggestions from analysis */}
       {pieces.length > 0 && (

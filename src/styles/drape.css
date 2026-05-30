@@ -1062,6 +1062,31 @@ body.is-native {
   text-overflow: ellipsis;
   padding: 0 0.15rem;
 }
+
+/* "Reading your look…" placeholder while server-side analysis runs. */
+.piece-analyzing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.piece-analyzing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: piece-pulse 1s ease-in-out infinite;
+}
+@keyframes piece-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Item detail "BOARDS" — render a real (small) board thumbnail. */
+.item-usage-board { width: 96px; flex: 0 0 auto; }
+.item-usage-board .board-card-cover { width: 100%; border-radius: 10px; }
 .analyze-result-v2 .analyze-footer {
   padding: 0 1rem;
 }

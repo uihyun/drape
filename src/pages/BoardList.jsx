@@ -157,7 +157,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
         <div
           ref={gridRef}
           className="board-list-grid pinch-grid"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          style={{ columns: cols }}
         >
           {list.map(b => (
             <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
