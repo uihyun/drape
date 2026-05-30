@@ -5520,7 +5520,9 @@ input[type="search"]::-webkit-search-decoration {
    finger to one and release to fire. */
 .ootd-card, .board-feed-card {
   position: relative;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  /* Glide into the lifted state — slow enough to read, not sluggish. */
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   transform-origin: center;
   /* Kill the iOS native long-press image drag / callout that otherwise
      lifts the photo onto the finger and blocks the quick-action gesture. */
@@ -5534,8 +5536,8 @@ input[type="search"]::-webkit-search-decoration {
   pointer-events: none; /* gesture handler on the card owns all touches */
 }
 .ootd-card.is-pressed, .board-feed-card.is-pressed {
-  transform: scale(1.06);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+  transform: scale(1.09);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.3);
   z-index: 60;
 }
 .card-quick-overlay {
@@ -5548,10 +5550,21 @@ input[type="search"]::-webkit-search-decoration {
   background: rgba(0, 0, 0, 0.28);
   border-radius: inherit;
   pointer-events: none; /* gesture owns hit-testing */
+  animation: cardQuickScrimIn 0.26s ease both;
+}
+@keyframes cardQuickScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .card-quick-actions {
   display: flex;
   gap: 1.1rem;
+  /* Buttons rise + fade in just after the scrim so the motion reads. */
+  animation: cardQuickActionsIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cardQuickActionsIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .card-quick-btn {
   width: 56px;
@@ -5562,7 +5575,7 @@ input[type="search"]::-webkit-search-decoration {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.12s ease, background 0.12s ease;
+  transition: transform 0.14s ease, background 0.14s ease;
 }
 .card-quick-btn.focused {
   transform: scale(1.28);
