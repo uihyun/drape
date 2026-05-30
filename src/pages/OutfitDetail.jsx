@@ -27,6 +27,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editHeroVariant, setEditHeroVariant] = useState('full'); // 'full' | 'cut'
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [closet, setCloset] = useState([]);
@@ -93,6 +94,7 @@ export function OutfitDetail({ user, onSignIn }) {
     // analyzed outfit uses `name` + a longer `notes` body.
     setEditName(outfit.date ? (outfit.note || '') : (outfit.name || ''));
     setEditNotes(outfit.notes || '');
+    setEditHeroVariant(outfit.heroVariant === 'cut' ? 'cut' : 'full');
     setEditing(true);
   };
 
@@ -102,6 +104,7 @@ export function OutfitDetail({ user, onSignIn }) {
       const patch = outfit.date
         ? { note: editName.trim() }
         : { name: editName.trim(), notes: editNotes.trim() };
+      if (outfit.photoCutUrl) patch.heroVariant = editHeroVariant;
       await OutfitService.updateOutfit(outfit.id, patch);
       setEditing(false);
     } finally { setBusy(false); }
@@ -125,9 +128,14 @@ export function OutfitDetail({ user, onSignIn }) {
   const heroItems = items.filter(it => it.croppedUrl || it.originalUrl);
   // A worn-look photo (OOTD photo upload) is the truest hero — show it
   // uncropped, no collage.
-  // sourcePhotoUrl = the full analyzed photo (kind='analyzed'); treat it
-  // like a worn photo so it shows uncropped instead of the cover-crop.
-  const wornPhoto = outfit.photoCutUrl || outfit.photoUrl || outfit.sourcePhotoUrl || null;
+  // Hero photo. Default to the FULL photo (with background) — the cut-out
+  // (photoCutUrl, background removed) is opt-in per post via heroVariant,
+  // for people who want just themselves with no backdrop. Calendar always
+  // uses the cut-out separately. sourcePhotoUrl backs analyzed looks.
+  const fullPhoto = outfit.photoUrl || outfit.sourcePhotoUrl || null;
+  const wornPhoto = (outfit.heroVariant === 'cut' && outfit.photoCutUrl)
+    ? outfit.photoCutUrl
+    : (fullPhoto || outfit.photoCutUrl || null);
   // Detected garments: OOTDs store them as `pieces` (analyzeOotd), analyzed
   // looks as `detectedItems` (richer — keeps the description). Render
   // whichever the doc carries so a saved analysis keeps its item breakdown.
@@ -272,6 +280,29 @@ export function OutfitDetail({ user, onSignIn }) {
               rows={4}
               placeholder={t('notesPlaceholder')}
             />
+          )}
+          {/* Hero photo choice — only when a background-removed cut-out
+              exists for this post. Full (with background) is the default. */}
+          {outfit.photoCutUrl && (outfit.photoUrl || outfit.sourcePhotoUrl) && (
+            <div className="outfit-hero-choice">
+              <span className="outfit-hero-choice-label">{t('heroPhotoLabel')}</span>
+              <div className="filter-chips filter-chips--text">
+                <button
+                  type="button"
+                  className={`chip${editHeroVariant === 'full' ? ' active' : ''}`}
+                  onClick={() => setEditHeroVariant('full')}
+                >
+                  {t('heroPhotoFull')}
+                </button>
+                <button
+                  type="button"
+                  className={`chip${editHeroVariant === 'cut' ? ' active' : ''}`}
+                  onClick={() => setEditHeroVariant('cut')}
+                >
+                  {t('heroPhotoCut')}
+                </button>
+              </div>
+            </div>
           )}
           <div className="outfit-edit-actions">
             <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={busy}>

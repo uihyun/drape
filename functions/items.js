@@ -444,8 +444,19 @@ ONLY valid JSON with this exact schema:
 }
 
 Rules: only describe garments and accessories that are clearly visible.
-Skip skin, body parts, and identifying features of the wearer. Max 8
-items. Palette percents should sum close to 100. Composition must use
+Skip skin, body parts, and identifying features of the wearer.
+
+CRITICAL — IGNORE THE BACKGROUND. The photo may sit on a studio backdrop
+(white/seamless, grey, or any flat color), a hanger, a wall, or a scene.
+The backdrop, floor, and lighting are NOT part of the clothing:
+- "palette" = colors of the worn clothing only. NEVER add the backdrop
+  color (don't report "white" just because the background is white). If all
+  garments are dark, the palette is all dark.
+- Each item's "colors" = that garment's own fabric color(s). Do NOT pick up
+  the background color bleeding around the garment's edges (black trousers
+  on a white backdrop are "black", not "black, white").
+
+Max 8 items. Palette percents should sum close to 100. Composition must use
 exactly 4 entries from the enum. Use null/[] for any field you can't
 determine. Avoid generic phrasing like 'effortlessly cool' or 'timeless
 classic'.`;
@@ -509,6 +520,18 @@ exact schema:
 }
 
 Rules: only describe what's visible. Skip the wearer's identity / face.
+
+CRITICAL — IGNORE THE BACKGROUND. The photo may sit on a studio backdrop
+(white, grey, or any flat color), a wall, or street scene. The backdrop,
+floor, lighting, and the person's skin are NOT part of the outfit:
+- The "palette" must contain ONLY colors of the worn clothing & accessories.
+  Never include the backdrop color (e.g. do NOT report "white" just because
+  the photo has a white/seamless background). If the garments are all dark,
+  the palette is all dark — that's correct.
+- A garment's "colors" must be the fabric's own color(s). Do NOT assign a
+  piece a color that actually belongs to the background bleeding around its
+  edges (a black trouser on a white backdrop is "black", not "black, white").
+
 Percentages of palette entries should sum close to 100. Composition
 must use exactly 4 entries from the enum. For items, list each distinct
 worn piece (top, bottom, outerwear, shoes, bag, etc.) — these power a

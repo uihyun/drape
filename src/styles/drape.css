@@ -5567,6 +5567,13 @@ input[type="search"]::-webkit-search-decoration {
   vertical-align: middle;
 }
 .item-name-link:hover { color: var(--accent); }
+.outfit-hero-choice { margin: 0.25rem 0 0.5rem; }
+.outfit-hero-choice-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
 
 /* "Private" lock on the owner's own unpublished outfit/board cards — a
    small icon dot, not a wide text pill. */
