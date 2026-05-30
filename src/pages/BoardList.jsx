@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Heart } from 'lucide-react';
+import { Plus, SlidersHorizontal } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import {
+  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
+} from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -17,10 +20,30 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   const [mine, setMine] = useState(null);
   const [saved, setSaved] = useState(null);
   const [filterLiked, setFilterLiked] = useState(false);
+  const [filters, setFilters] = useState(emptyLookFilters());
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [items, setItems] = useState([]);
   const itemsById = useMemo(
     () => Object.fromEntries(items.map(i => [i.id, i])),
     [items],
+  );
+  const filterCount = countLookFilters(filters);
+  const toggleFilter = (dim, value) => {
+    setFilters(prev => {
+      const cur = prev[dim] || [];
+      const next = cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value];
+      return { ...prev, [dim]: next };
+    });
+  };
+
+  // Boards carry no tags of their own — match a board by the tags of the
+  // closet items it pins (stickers[].itemId), reusing the look matcher
+  // with a pseudo-look. Only meaningful on the user's own boards, whose
+  // referenced items live in their closet (itemsById).
+  const boardMatchesFilters = (b) => lookMatches(
+    { itemIds: (b.stickers || []).map(s => s.itemId).filter(Boolean) },
+    filters,
+    itemsById,
   );
 
   useEffect(() => {
@@ -58,9 +81,11 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   }
 
   const rawList = tab === 'saved' ? saved : mine;
-  const list = (rawList && filterLiked && tab === 'mine')
-    ? rawList.filter(b => b.selfLiked)
-    : rawList;
+  let list = rawList;
+  if (list && tab === 'mine') {
+    if (filterLiked) list = list.filter(b => b.selfLiked);
+    if (filterCount > 0) list = list.filter(boardMatchesFilters);
+  }
 
   return (
     <div className={embedded ? '' : 'page'}>
@@ -73,29 +98,42 @@ export function BoardList({ user, onSignIn, embedded = false }) {
         </div>
       )}
 
-      <nav className="filter-chips filter-chips--text" role="tablist" style={{ marginBottom: '1.25rem' }}>
-        {['mine', 'saved'].map(key => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            className={`chip${tab === key ? ' active' : ''}`}
-            onClick={() => setTab(key)}
-          >
-            {t(`boardsTabs.${key}`)}
-          </button>
-        ))}
+      <div className="closet-header" style={{ marginBottom: '1.25rem' }}>
+        <nav className="filter-chips filter-chips--text" role="tablist" style={{ margin: 0 }}>
+          {['mine', 'saved'].map(key => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              className={`chip${tab === key ? ' active' : ''}`}
+              onClick={() => setTab(key)}
+            >
+              {t(`boardsTabs.${key}`)}
+            </button>
+          ))}
+          {tab === 'mine' && (
+            <button
+              type="button"
+              className={`chip${filterLiked ? ' active' : ''}`}
+              onClick={() => setFilterLiked(f => !f)}
+            >
+              {t('filterLiked')}
+            </button>
+          )}
+        </nav>
         {tab === 'mine' && (
           <button
             type="button"
-            className={`chip${filterLiked ? ' active' : ''}`}
-            onClick={() => setFilterLiked(f => !f)}
+            className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}
+            aria-label={t('detailedFilter')}
+            onClick={() => setSheetOpen(true)}
           >
-            {t('filterLiked')}
+            <SlidersHorizontal size={18} strokeWidth={1.7} />
+            {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
           </button>
         )}
-      </nav>
+      </div>
 
       {list === null ? (
         <div className="loading"><div className="spinner" /></div>
@@ -131,6 +169,17 @@ export function BoardList({ user, onSignIn, embedded = false }) {
             </Link>
           ))}
         </div>
+      )}
+
+      {sheetOpen && (
+        <LookFilterSheet
+          filters={filters}
+          onToggle={toggleFilter}
+          onClear={() => setFilters(emptyLookFilters())}
+          onClose={() => setSheetOpen(false)}
+          count={filterCount}
+          resultCount={list?.length ?? 0}
+        />
       )}
     </div>
   );
