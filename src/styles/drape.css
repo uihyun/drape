@@ -2028,7 +2028,7 @@ body.is-native {
 }
 .board-detail-hero {
   width: 100%;
-  border-radius: 14px;
+  border-radius: 16px; /* unified hero radius (was 14) */
   display: block;
   /* aspect-ratio set inline by BoardThumbnail from the board's own ratio. */
 }
@@ -4210,7 +4210,7 @@ input[type="search"]::-webkit-search-decoration {
      looks like it's floating on the card with breathing room. */
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: 12px;
+  border-radius: 16px; /* unified card radius (was 12) */
   overflow: hidden;
   background: #fff;
   border: 1px solid var(--border);

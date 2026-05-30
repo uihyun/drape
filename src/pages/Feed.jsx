@@ -281,6 +281,7 @@ export function Feed({ user, onSignIn }) {
 }
 
 function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
+  const isOwner = !!(user && board.userId === user.uid);
   const liked = !!(user && Array.isArray(board.likedBy) && board.likedBy.includes(user.uid));
   const [bookmarked, setBookmarked] = useState(false);
   useEffect(() => {
@@ -316,7 +317,8 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
     catch (err) { console.warn('board bookmark failed:', err.message); setBookmarked(prev); }
   };
 
-  const quickActions = [
+  // No self-like/save — owners get no quick actions on their own board.
+  const quickActions = isOwner ? [] : [
     { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
     { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
   ];
@@ -344,6 +346,7 @@ function BoardCard({ board, author, user, onLikeChange, onSignIn, t }) {
 }
 
 function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
+  const isOwner = !!(user && ootd.userId === user.uid);
   const liked = !!(user && Array.isArray(ootd.likedBy) && ootd.likedBy.includes(user.uid));
   // Bookmark state — read from the viewer's own /users/<uid>/bookmarks
   // (the OOTD doc has no bookmark info per viewer). Light onSnapshot
@@ -386,7 +389,8 @@ function OotdCard({ ootd, author, user, onLikeChange, onSignIn, t }) {
     }
   };
 
-  const quickActions = [
+  // No self-like/save — owners get no quick actions on their own post.
+  const quickActions = isOwner ? [] : [
     { key: 'like', icon: <Heart size={22} strokeWidth={2} fill={liked ? 'currentColor' : 'none'} /> },
     { key: 'save', icon: <Bookmark size={22} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} /> },
   ];

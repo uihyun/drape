@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Calendar as CalendarIcon, SlidersHorizontal, Lock } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import {
