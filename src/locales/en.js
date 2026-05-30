@@ -417,6 +417,7 @@ export const en = {
   threadEmptyHint: 'Say hi — ask about size, condition, or pickup.',
   threadInputPlaceholder: 'Write a message',
   send: 'Send',
+  sendPhoto: 'Send a photo',
   back: 'Back',
   unknownUser: 'Unknown',
   reportTitle: 'Report',

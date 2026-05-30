@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Send } from 'lucide-react';
+import { ChevronLeft, Send, ImagePlus, X } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
@@ -19,7 +19,9 @@ export function Thread({ user }) {
   const [other, setOther] = useState(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
   const scrollRef = useRef(null);
+  const fileRef = useRef(null);
 
   useEffect(() => {
     if (!threadId) return;
@@ -156,11 +158,27 @@ export function Thread({ user }) {
         {messages.length === 0 ? (
           <div className="thread-empty"><p>{t('threadEmptyHint')}</p></div>
         ) : (
-          renderMessageStream(messages, user?.uid, lang, t)
+          renderMessageStream(messages, user?.uid, lang, t, setLightbox)
         )}
       </div>
 
       <footer className="thread-input">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }}
+        />
+        <button
+          type="button"
+          className="thread-attach"
+          onClick={() => fileRef.current?.click()}
+          disabled={sending}
+          aria-label={t('sendPhoto')}
+        >
+          <ImagePlus size={20} strokeWidth={1.6} />
+        </button>
         <textarea
           rows={1}
           value={draft}
@@ -173,6 +191,15 @@ export function Thread({ user }) {
           <Send size={18} strokeWidth={1.6} />
         </button>
       </footer>
+
+      {lightbox && (
+        <div className="thread-lightbox" onClick={() => setLightbox(null)} role="dialog" aria-modal="true">
+          <button type="button" className="thread-lightbox-close" aria-label={t('close')}>
+            <X size={24} strokeWidth={1.7} />
+          </button>
+          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }

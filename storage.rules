@@ -118,5 +118,21 @@ service firebase.storage {
           && request.resource.contentType.matches('image/.*')
         ));
     }
+
+    // ── dm/{uid}/{threadId}/<id>.jpg ───────────────────────────────────
+    // DM photo messages. Any signed-in user may read (download URLs carry
+    // an unguessable token, so they're effectively private to whoever has
+    // the link — Storage rules can't reach Firestore to verify thread
+    // membership). Only the sender writes, under their own prefix; the 8MB
+    // cap backs the client-side compression.
+    match /dm/{userId}/{threadId}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && (request.resource == null || (
+          request.resource.size < 8 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*')
+        ));
+    }
   }
 }

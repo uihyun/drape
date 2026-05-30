@@ -3437,6 +3437,67 @@ input[type="search"]::-webkit-search-decoration {
   cursor: pointer;
 }
 .thread-send:disabled { background: var(--border); cursor: default; }
+.thread-attach {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.thread-attach:disabled { opacity: 0.4; cursor: default; }
+
+/* Image message — drop the text padding/bg so the photo fills the bubble. */
+.thread-bubble-img { padding: 0; background: none; overflow: hidden; }
+.thread-bubble-img.mine { background: none; }
+.thread-img {
+  display: block;
+  max-width: 100%;
+  width: 220px;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 16px;
+  cursor: zoom-in;
+  background: var(--surface-elevated);
+}
+
+/* Tap-to-zoom lightbox over the whole screen. */
+.thread-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.thread-lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.thread-lightbox-close {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
 .item-viewer-contact { margin-left: auto; }
 

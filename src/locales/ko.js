@@ -417,6 +417,7 @@ export const ko = {
   threadEmptyHint: '인사를 건네보세요 — 사이즈, 상태, 거래 방식 등을 물어볼 수 있어요.',
   threadInputPlaceholder: '메시지를 입력하세요',
   send: '보내기',
+  sendPhoto: '사진 보내기',
   back: '뒤로',
   unknownUser: '알 수 없음',
   reportTitle: '신고',

@@ -419,6 +419,7 @@ export const ja = {
   threadEmptyHint: '挨拶してみましょう — サイズ・状態・受け渡しなどを聞いてみてください。',
   threadInputPlaceholder: 'メッセージを入力',
   send: '送信',
+  sendPhoto: '写真を送る',
   back: '戻る',
   unknownUser: '不明',
   reportTitle: '通報',
