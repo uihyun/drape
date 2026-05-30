@@ -97,41 +97,6 @@ export function BoardDetail({ user, onSignIn }) {
       <div className="board-detail-hero-wrap">
         <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
       </div>
-      {/* Social actions below the image (never cover the board). */}
-      {!isOwner && (
-        <div className="post-action-bar">
-          <button
-            type="button"
-            className={`post-action${(board.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
-            onClick={async () => {
-              if (!user || user.isAnonymous) { onSignIn?.(); return; }
-              try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
-              catch (err) { console.warn('board like failed', err?.message); }
-            }}
-          >
-            <Heart size={20} strokeWidth={1.7} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-            {(board.likeCount || 0) > 0 && <span className="post-action-count">{board.likeCount}</span>}
-          </button>
-          <button
-            type="button"
-            className={`post-action${bookmarked ? ' bookmarked' : ''}`}
-            onClick={async () => {
-              if (!user || user.isAnonymous) { onSignIn?.(); return; }
-              try { await BoardService.toggleBookmark(board.id, bookmarked); }
-              catch (err) { console.warn('board bookmark failed', err?.message); }
-            }}
-          >
-            <Bookmark size={20} strokeWidth={1.7} fill={bookmarked ? 'currentColor' : 'none'} />
-          </button>
-          <button
-            type="button"
-            className="post-action"
-            onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
-          >
-            <Flag size={19} strokeWidth={1.7} />
-          </button>
-        </div>
-      )}
       {reporting && (
         <ReportModal target={{ type: 'board', id: board.id }} user={user} onClose={() => setReporting(false)} />
       )}
@@ -174,6 +139,35 @@ export function BoardDetail({ user, onSignIn }) {
           </button>
         )}
         <div className="outfit-action-row">
+          {!isOwner && (
+            <button
+              type="button"
+              className={`outfit-action-icon${(board.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
+              aria-label={t('like')}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
+                catch (err) { console.warn('board like failed', err?.message); }
+              }}
+            >
+              <Heart size={18} strokeWidth={1.7} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+              {(board.likeCount || 0) > 0 && <span className="outfit-action-count">{board.likeCount}</span>}
+            </button>
+          )}
+          {!isOwner && (
+            <button
+              type="button"
+              className={`outfit-action-icon${bookmarked ? ' is-saved' : ''}`}
+              aria-label={t('save')}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await BoardService.toggleBookmark(board.id, bookmarked); }
+                catch (err) { console.warn('board bookmark failed', err?.message); }
+              }}
+            >
+              <Bookmark size={18} strokeWidth={1.7} fill={bookmarked ? 'currentColor' : 'none'} />
+            </button>
+          )}
           <ShareButton
             className="outfit-action-icon"
             title={board.name || t('untitledBoard')}
@@ -181,6 +175,16 @@ export function BoardDetail({ user, onSignIn }) {
             url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
             label=""
           />
+          {!isOwner && (
+            <button
+              type="button"
+              className="outfit-action-icon"
+              aria-label={t('report')}
+              onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+            >
+              <Flag size={17} strokeWidth={1.7} />
+            </button>
+          )}
         </div>
       </div>
 

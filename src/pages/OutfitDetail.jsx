@@ -189,42 +189,6 @@ export function OutfitDetail({ user, onSignIn }) {
       <div className="outfit-hero-wrap">
         {renderHero()}
       </div>
-      {/* Social actions live BELOW the photo (Pinterest-style bar) so they
-          never cover the image. Owners see none (no self-like/report). */}
-      {!isOwner && (
-        <div className="post-action-bar">
-          <button
-            type="button"
-            className={`post-action${(outfit.likedBy || []).includes(user?.uid) ? ' liked' : ''}`}
-            onClick={async () => {
-              if (!user || user.isAnonymous) { onSignIn?.(); return; }
-              try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
-              catch (e) { console.warn('outfit like failed', e?.message); }
-            }}
-          >
-            <Heart size={20} strokeWidth={1.7} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-            {(outfit.likeCount || 0) > 0 && <span className="post-action-count">{outfit.likeCount}</span>}
-          </button>
-          <button
-            type="button"
-            className={`post-action${bookmarked ? ' bookmarked' : ''}`}
-            onClick={async () => {
-              if (!user || user.isAnonymous) { onSignIn?.(); return; }
-              try { await OutfitService.toggleBookmark(outfit.id, bookmarked); }
-              catch (e) { console.warn('outfit bookmark failed', e?.message); }
-            }}
-          >
-            <Bookmark size={20} strokeWidth={1.7} fill={bookmarked ? 'currentColor' : 'none'} />
-          </button>
-          <button
-            type="button"
-            className="post-action"
-            onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
-          >
-            <Flag size={19} strokeWidth={1.7} />
-          </button>
-        </div>
-      )}
       {reporting && (
         <ReportModal target={{ type: 'outfit', id: outfit.id }} user={user} onClose={() => setReporting(false)} />
       )}
@@ -406,6 +370,37 @@ export function OutfitDetail({ user, onSignIn }) {
         ) : null}
 
         <div className="outfit-action-row">
+          {/* Visitor social actions share this row with Share — same format,
+              not a separate bar under the photo. */}
+          {!isOwner && (
+            <button
+              type="button"
+              className={`outfit-action-icon${(outfit.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
+              aria-label={t('like')}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+                catch (e) { console.warn('outfit like failed', e?.message); }
+              }}
+            >
+              <Heart size={18} strokeWidth={1.7} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+              {(outfit.likeCount || 0) > 0 && <span className="outfit-action-count">{outfit.likeCount}</span>}
+            </button>
+          )}
+          {!isOwner && (
+            <button
+              type="button"
+              className={`outfit-action-icon${bookmarked ? ' is-saved' : ''}`}
+              aria-label={t('save')}
+              onClick={async () => {
+                if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                try { await OutfitService.toggleBookmark(outfit.id, bookmarked); }
+                catch (e) { console.warn('outfit bookmark failed', e?.message); }
+              }}
+            >
+              <Bookmark size={18} strokeWidth={1.7} fill={bookmarked ? 'currentColor' : 'none'} />
+            </button>
+          )}
           {isOwner && (outfit.itemIds || []).length > 0 && (
             <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="outfit-action-icon" aria-label={t('tryThisOn')} title={t('tryThisOn')}>
               <Sparkles size={18} strokeWidth={1.7} />
@@ -418,6 +413,16 @@ export function OutfitDetail({ user, onSignIn }) {
             url={`${window.location.origin}/s/${outfit.id}`}
             label=""
           />
+          {!isOwner && (
+            <button
+              type="button"
+              className="outfit-action-icon"
+              aria-label={t('report')}
+              onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
+            >
+              <Flag size={17} strokeWidth={1.7} />
+            </button>
+          )}
           {isOwner && (
             <Link to={`/o/${outfit.id}/link`} className="outfit-action-icon" aria-label={t('linkItemsCta')} title={t('linkItemsCta')}>
               <Shirt size={17} strokeWidth={1.7} />
