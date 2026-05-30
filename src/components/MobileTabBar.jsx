@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
+import { AddItemSheet } from './AddItemSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Some Google profile photos throw CORS / 403 in third-party contexts.
@@ -33,6 +34,7 @@ export function MobileTabBar({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [addItemOpen, setAddItemOpen] = useState(false);
   const { sheetStyle: createSheetStyle, handleProps: createHandleProps } = useSheetDrag(() => setSheetOpen(false));
 
   const isLoggedIn = user && !user.isAnonymous;
@@ -42,6 +44,12 @@ export function MobileTabBar({ user }) {
   const go = (path) => () => {
     setSheetOpen(false);
     navigate(isLoggedIn ? path : '/welcome');
+  };
+
+  const openAddItem = () => {
+    setSheetOpen(false);
+    if (!isLoggedIn) { navigate('/welcome'); return; }
+    setAddItemOpen(true);
   };
 
   return (
@@ -89,7 +97,7 @@ export function MobileTabBar({ user }) {
               <X size={18} />
             </button>
             <h3 className="create-sheet-title">{t('createSheetTitle')}</h3>
-            <button type="button" className="create-sheet-row" onClick={go('/closet/add')}>
+            <button type="button" className="create-sheet-row" onClick={openAddItem}>
               <span className="create-sheet-icon"><Shirt size={20} strokeWidth={1.5} /></span>
               <span className="create-sheet-label">{t('createAddItem')}</span>
             </button>
@@ -112,6 +120,8 @@ export function MobileTabBar({ user }) {
           </div>
         </div>
       )}
+
+      <AddItemSheet open={addItemOpen} user={user} onClose={() => setAddItemOpen(false)} />
     </>
   );
 }
