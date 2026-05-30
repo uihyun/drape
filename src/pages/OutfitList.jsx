@@ -42,8 +42,16 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const [outfits, setOutfits] = useState(null);
   const [ootds, setOotds] = useState(null);
-  // 'mine' (my OOTDs) | 'saved' (OOTDs I bookmarked from feed) | 'analyzed'
-  const [tab, setTab] = useState('mine');
+  // Sub-tab lives in the URL (?ot=mine|saved|analyzed) so returning from a
+  // detail page lands back on the tab you left, not always Mine.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('ot');
+  const tab = ['mine', 'saved', 'analyzed'].includes(tabParam) ? tabParam : 'mine';
+  const setTab = (next) => setSearchParams((prev) => {
+    const p = new URLSearchParams(prev);
+    p.set('ot', next);
+    return p;
+  }, { replace: true });
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sheetOpen, setSheetOpen] = useState(false);
   const filterCount = countLookFilters(filters);
