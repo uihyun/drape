@@ -6,6 +6,7 @@ import { BoardService } from '../services/board-service.js';
 import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
 import { MarketplaceService } from '../services/marketplace-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { CardImage } from '../components/CardImage.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -245,7 +246,7 @@ function OotdCard({ ootd }) {
   return (
     <Link to={`/o/${ootd.id}`} className="ootd-card">
       {outfitCardPhoto(ootd)
-        ? <img src={outfitCardPhoto(ootd)} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        ? <CardImage src={outfitCardPhoto(ootd)} />
         : <div className="ootd-card-empty">◇</div>}
     </Link>
   );

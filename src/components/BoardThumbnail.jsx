@@ -3,6 +3,12 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { boardBgStyle, boardRatioCss } from '../data/boardBackgrounds.js';
 
+// Shared across all thumbnail instances + their re-mounts. Back-navigation
+// re-mounts every card, and without this each one re-fetched its sticker
+// items from zero — blanking then repopulating, which reads as the board
+// "reorganizing" on every return. Keyed by itemId; items rarely change.
+const itemCache = new Map();
+
 // Replays a board's stickers at their stored 0..1 coordinates so the
 // thumbnail matches what the editor shows, just shrunk to whatever
 // aspect-ratio the parent container uses.
@@ -14,25 +20,40 @@ import { boardBgStyle, boardRatioCss } from '../data/boardBackgrounds.js';
 // reads via Cloud Storage are public for ready items.
 export function BoardThumbnail({ board, itemsById, className = '' }) {
   const stickers = Array.isArray(board?.stickers) ? board.stickers : [];
-  const [fetched, setFetched] = useState(null);
 
   // Key the self-hydration on the actual sticker item ids (stable string),
   // not the board object identity — so a parent re-render with a new board
   // reference doesn't retrigger a fetch that briefly blanks the thumbnail.
   const idKey = Array.from(new Set(stickers.map(s => s.itemId).filter(Boolean))).sort().join(',');
 
+  // Seed initial state from the shared cache so a warm re-mount paints the
+  // stickers on the first frame — no blank → re-fetch flash.
+  const [fetched, setFetched] = useState(() => {
+    if (itemsById || !idKey) return null;
+    const hit = {};
+    for (const id of idKey.split(',')) if (itemCache.has(id)) hit[id] = itemCache.get(id);
+    return Object.keys(hit).length ? hit : null;
+  });
+
   useEffect(() => {
     if (itemsById) return; // parent supplies items; nothing to fetch
     if (!idKey) { setFetched({}); return; }
     const ids = idKey.split(',');
+    // Show whatever the cache already has, then fetch only the misses.
+    const cached = {};
+    for (const id of ids) if (itemCache.has(id)) cached[id] = itemCache.get(id);
+    if (Object.keys(cached).length) setFetched(prev => ({ ...(prev || {}), ...cached }));
+    const missing = ids.filter(id => !itemCache.has(id));
+    if (missing.length === 0) return;
     let cancelled = false;
     Promise.all(
-      ids.map(id => getDoc(doc(db, 'items', id))
+      missing.map(id => getDoc(doc(db, 'items', id))
         .then(s => s.exists() ? [id, { id, ...s.data() }] : null)
         .catch(() => null))
     ).then(rows => {
       if (cancelled) return;
       const map = Object.fromEntries(rows.filter(Boolean));
+      for (const [id, it] of Object.entries(map)) itemCache.set(id, it);
       // Merge onto any previously-fetched items so a transient miss never
       // empties an already-rendered thumbnail.
       setFetched(prev => ({ ...(prev || {}), ...map }));

@@ -6,6 +6,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
+import { CardImage } from '../components/CardImage.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Cache fetched lists by uid|tab so returning from a detail paints the
@@ -25,7 +26,7 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
         return (
           <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
             {photo
-              ? <img src={photo} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
             {isPrivate && (
               <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>
