@@ -1,4 +1,4 @@
-package com.voda.app;
+package com.uihyun.drape;
 
 import com.getcapacitor.BridgeActivity;
 

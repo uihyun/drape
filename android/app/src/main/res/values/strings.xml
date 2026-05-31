@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">archelier</string>
-    <string name="title_activity_main">archelier</string>
-    <string name="package_name">com.voda.app</string>
-    <string name="custom_url_scheme">com.voda.app</string>
+    <string name="app_name">Drape</string>
+    <string name="title_activity_main">Drape</string>
+    <string name="package_name">com.uihyun.drape</string>
+    <string name="custom_url_scheme">com.uihyun.drape</string>
 </resources>

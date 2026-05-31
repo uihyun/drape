@@ -23,6 +23,8 @@ PODS:
     - Capacitor
     - FirebaseAuth (~> 11.7.0)
     - GoogleSignIn (= 7.1.0)
+  - CapacitorPushNotifications (7.0.6):
+    - Capacitor
   - CapacitorShare (7.0.4):
     - Capacitor
   - CapacitorSplashScreen (7.0.5):
@@ -101,6 +103,7 @@ DEPENDENCIES:
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
   - "CapacitorFirebaseAuthentication (from `../../node_modules/@capacitor-firebase/authentication`)"
+  - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
@@ -141,6 +144,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/filesystem"
   CapacitorFirebaseAuthentication:
     :path: "../../node_modules/@capacitor-firebase/authentication"
+  CapacitorPushNotifications:
+    :path: "../../node_modules/@capacitor/push-notifications"
   CapacitorShare:
     :path: "../../node_modules/@capacitor/share"
   CapacitorSplashScreen:
@@ -160,6 +165,7 @@ SPEC CHECKSUMS:
   CapacitorCordova: 8214697bed435f6e7c5e3ed86d1632a8c42f7d77
   CapacitorFilesystem: c63fc54df41e5a6761785a7f3c49dc696c22e296
   CapacitorFirebaseAuthentication: 53725bd30dcca0e455b42565593b77c6c5d93fa3
+  CapacitorPushNotifications: b8e30637549ce91468b8c4dddbef2657be831f4c
   CapacitorShare: 25f7fc5dd0e4edbde5d6801c6de5d14a8b450a41
   CapacitorSplashScreen: 409eeaaeac603d264f209c0fcb718aa22fe1f7bb
   CapacitorStatusBar: 416e9e53fd6397e668d4a181cd2131617d949bd6
@@ -182,6 +188,6 @@ SPEC CHECKSUMS:
   RevenuecatPurchasesCapacitorUi: 969baeb81228e051e2b9e3e764f86f577e73a4b9
   RevenueCatUI: c6acb3648fa58ccb4f0f178556ed0278b796234f
 
-PODFILE CHECKSUM: 5323b130bd3064d8f7f42457e60857a79e55d834
+PODFILE CHECKSUM: 4b741cdae65d33361fedd80fe6d70e8c95406354
 
 COCOAPODS: 1.16.2

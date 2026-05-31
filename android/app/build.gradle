@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.voda.app"
+    namespace "com.uihyun.drape"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.voda.app"
+        applicationId "com.uihyun.drape"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
