@@ -69,7 +69,7 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
 
   // 2. Upload original.
   const originalRef = itemStorageRef(user.uid, itemId, `original.${mime === 'image/png' ? 'png' : 'jpg'}`);
-  await uploadBytes(originalRef, blob, { contentType: mime });
+  await uploadBytes(originalRef, blob, { contentType: mime, cacheControl: IMG_CACHE });
   const originalUrl = await getDownloadURL(originalRef);
 
   // 3. Flip to processing + record the path. Listener UI shows skeleton.
@@ -249,7 +249,7 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const path = `items/${user.uid}/${id}/original.jpg`;
   const ref_ = ref(storage, path);
-  await uploadBytes(ref_, blob, { contentType: 'image/jpeg' });
+  await uploadBytes(ref_, blob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
   const url = await getDownloadURL(ref_);
   // Status starts as 'processing' so the card shows a skeleton until the
   // server isolates the specific piece. processItem (called below with a

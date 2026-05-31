@@ -152,7 +152,7 @@ export const MessageService = {
     const imgId = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const path = `dm/${user.uid}/${threadId}/${imgId}.jpg`;
     const r = storageRef(storage, path);
-    await uploadBytes(r, compressed, { contentType: 'image/jpeg' });
+    await uploadBytes(r, compressed, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
     const imageUrl = await getDownloadURL(r);
     await addDoc(collection(db, THREADS, threadId, 'messages'), {
       fromUid: user.uid,

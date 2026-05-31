@@ -141,7 +141,7 @@ export const ProfileService = {
     if (!user) throw new Error('not_signed_in');
     const path = `users/${user.uid}/profile/avatar.jpg`;
     const r = storageRef(storage, path);
-    await uploadBytes(r, blob, { contentType: blob.type || 'image/jpeg' });
+    await uploadBytes(r, blob, { contentType: blob.type || 'image/jpeg', cacheControl: IMG_CACHE });
     const url = await getDownloadURL(r);
     const bustered = `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`;
     await authedFetch(UPDATE_FN_URL, { photoURL: bustered });

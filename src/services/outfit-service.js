@@ -90,7 +90,7 @@ async function createAnalyzedOutfit({
     const id = `an_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const path = `analyzed/${user.uid}/${id}.jpg`;
     const r = storageRef(storage, path);
-    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
+    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
     photoUrl = await getDownloadURL(r);
     photoPath = path;
   }
@@ -241,7 +241,7 @@ async function upsertOotd({
   if (photoBlob) {
     const path = `ootds/${user.uid}/${date}-${Date.now()}.jpg`;
     const r = storageRef(storage, path);
-    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
+    await uploadBytes(r, photoBlob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
     photoUrl = await getDownloadURL(r);
     photoPath = path;
   }

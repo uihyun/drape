@@ -62,7 +62,7 @@ async function startTryOn({
     const id = `ci_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     customPhotoPath = `tryon-input/${user.uid}/${id}.jpg`;
     const r = storageRef(storage, customPhotoPath);
-    await uploadBytes(r, customPhotoBlob, { contentType: 'image/jpeg' });
+    await uploadBytes(r, customPhotoBlob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
   }
 
   const callable = httpsCallable(functions, 'virtualTryOn');

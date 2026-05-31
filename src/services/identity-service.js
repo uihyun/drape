@@ -31,7 +31,7 @@ async function addRef(blob) {
   const idx = existing.length;
   const path = `identity/${user.uid}/${idx}.jpg`;
   const r = storageRef(storage, path);
-  await uploadBytes(r, blob, { contentType: 'image/jpeg' });
+  await uploadBytes(r, blob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
   let url = await getDownloadURL(r);
   let finalPath = path;
 
