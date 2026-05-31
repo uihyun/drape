@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProfileService } from '../services/profile-service.js';
 import { OutfitService } from '../services/outfit-service.js';
