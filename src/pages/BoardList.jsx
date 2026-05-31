@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, SlidersHorizontal, Lock } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
