@@ -370,8 +370,7 @@ export const ko = {
   privacy: '개인정보 처리방침',
   terms: '이용약관',
   support: '고객지원',
-  privacyBody: '내 옷장, 정체성 사진, OOTD 기록은 기본적으로 비공개입니다. 코디는 피드에 직접 공개를 선택할 때만 공유됩니다.',
-  termsBody: 'drape 를 책임감 있게 사용해 주세요. 생성 이미지는 제3자 AI 모델이 만든 것으로 정확성이 보장되지 않습니다.',
+  legalEffective: '시행일 {date}',
   supportBody: '도움이 필요하신가요?',
 
   // ── Onboarding ─────────────────────────────────────────────────────

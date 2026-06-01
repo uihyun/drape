@@ -370,8 +370,7 @@ export const en = {
   privacy: 'Privacy',
   terms: 'Terms',
   support: 'Support',
-  privacyBody: 'Your closet, identity photos, and OOTD entries are private to your account by default. Outfits become public only when you choose to publish them to the feed.',
-  termsBody: 'By using drape you agree to use the service responsibly. Generated images are produced by third-party AI models; results may not be perfectly accurate.',
+  legalEffective: 'Effective {date}',
   supportBody: 'Need help? Email us:',
 
   // ── Onboarding ─────────────────────────────────────────────────────

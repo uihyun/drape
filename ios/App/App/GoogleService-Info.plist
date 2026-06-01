@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>762268177686-8ohuut2th6uk2g74ekj3mmuf0fvqfjfj.apps.googleusercontent.com</string>
+	<string>284753548556-rn6fseb761bmqnnu2jf6v9q07dokeqeb.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.762268177686-8ohuut2th6uk2g74ekj3mmuf0fvqfjfj</string>
+	<string>com.googleusercontent.apps.284753548556-rn6fseb761bmqnnu2jf6v9q07dokeqeb</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBZm-ivsv-rVyCifmaeaW-R_lag0w5cu0A</string>
+	<string>AIzaSyAkEcQ0GzARFnH8Mu-IUYiygoTXcIgTxhw</string>
 	<key>GCM_SENDER_ID</key>
-	<string>762268177686</string>
+	<string>284753548556</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.voda.app</string>
+	<string>com.uihyun.drape</string>
 	<key>PROJECT_ID</key>
-	<string>voda-7647c</string>
+	<string>drape-9e532</string>
 	<key>STORAGE_BUCKET</key>
-	<string>voda-7647c.firebasestorage.app</string>
+	<string>drape-9e532.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:762268177686:ios:a1be3e753a7c299818ac37</string>
+	<string>1:284753548556:ios:2d9aae1a832ca7a70d2529</string>
 </dict>
 </plist>

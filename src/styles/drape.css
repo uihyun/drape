@@ -4717,8 +4717,12 @@ input[type="search"]::-webkit-search-decoration {
 .feed-sort-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 .feed-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 .hidden { display: none; }
-.static-page { max-width: 640px; margin: 0 auto; padding: 1rem 0; }
-.static-page h2 { margin-bottom: 1rem; }
+.static-page { max-width: 640px; margin: 0 auto; padding: 1rem 0 3rem; }
+.static-page h2 { margin-bottom: 0.5rem; }
+.static-page-date { color: var(--text-muted, #888); font-size: 0.85rem; margin: 0 0 1.5rem; }
+.static-page-section { margin-bottom: 1.25rem; }
+.static-page-section h3 { font-size: 1rem; font-weight: 650; margin: 0 0 0.35rem; }
+.static-page-section p { line-height: 1.6; margin: 0; color: var(--text, inherit); }
 
 /* ── Profile shell (Lekondo) ───────────────────────────────────────── */
 .profile {
