@@ -17,6 +17,8 @@
     "serve": "firebase serve",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run tests/firestore-rules.test.js\"",
     "test:unit": "vitest run tests/",
+    "check": "node scripts/check.mjs",
+    "check:fast": "node scripts/check.mjs --fast",
     "cap:sync": "npm run build && cap sync",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android"
