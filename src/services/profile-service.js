@@ -8,6 +8,7 @@ import { collection, doc, getDoc, getDocs, query, where, limit, onSnapshot } fro
 import { updateProfile as authUpdateProfile } from 'firebase/auth';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../firebase.js';
+import { IMG_CACHE } from './storageCache.js';
 
 const CLAIM_FN_URL = `${FUNCTIONS_BASE}/claimHandle`;
 const UPDATE_FN_URL = `${FUNCTIONS_BASE}/updateProfile`;

@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../firebase.js';
+import { IMG_CACHE } from './storageCache.js';
 import { CameraService } from './camera.js';
 
 const THREADS = 'threads';

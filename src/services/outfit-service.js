@@ -25,6 +25,7 @@ import {
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, auth, storage, functions } from '../firebase.js';
+import { IMG_CACHE } from './storageCache.js';
 
 const OUTFITS = 'outfits';
 

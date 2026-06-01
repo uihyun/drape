@@ -10,6 +10,7 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, auth, functions } from '../firebase.js';
+import { IMG_CACHE } from './storageCache.js';
 
 const MAX_IDENTITY_REFS = 3;
 const MIN_IDENTITY_REFS = 1;

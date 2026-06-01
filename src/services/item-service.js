@@ -30,6 +30,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, functions, auth } from '../firebase.js';
+import { IMG_CACHE } from './storageCache.js';
 
 const ITEMS = 'items';
 
