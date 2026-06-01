@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Camera as CameraIcon, RefreshCw } from 'lucide-react';
+import { X, Camera as CameraIcon, RefreshCw, Check } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // In-page webcam capture for desktop browsers (and as a fallback when
@@ -7,14 +7,32 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // Returns a JPEG Blob via the onCapture callback. Requires HTTPS — the
 // site is served over HTTPS so this is safe in production; on localhost
 // dev it works because browsers treat localhost as a secure context.
-export function CameraCaptureModal({ open, onClose, onCapture }) {
+//
+// `burst`: when true the camera stays open after each shot and captures
+// accumulate as thumbnails — snap several items in a row, then tap Done to
+// return all of them at once via onDone(blobs[]). onCapture still fires per
+// shot so callers that want streaming can use it; single-shot callers leave
+// burst off and get the original close-on-capture behaviour.
+export function CameraCaptureModal({ open, onClose, onCapture, burst = false, onDone }) {
   const { t } = useLocale();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
-  const [facingMode, setFacingMode] = useState('user'); // user = front, environment = rear
+  // Default to the rear camera for burst (shooting clothes laid out); the
+  // single-shot flow keeps front-facing as before.
+  const [facingMode, setFacingMode] = useState(burst ? 'environment' : 'user');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // Burst-mode accumulator: { url, blob }[]. Reset whenever the modal opens.
+  const [shots, setShots] = useState([]);
+
+  useEffect(() => {
+    if (!open) return;
+    setShots([]);
+  }, [open]);
+
+  // Revoke thumbnail object URLs on unmount to avoid leaking them.
+  useEffect(() => () => { shots.forEach(s => URL.revokeObjectURL(s.url)); }, [shots]);
 
   useEffect(() => {
     if (!open) return;
@@ -77,8 +95,22 @@ export function CameraCaptureModal({ open, onClose, onCapture }) {
     ctx.drawImage(video, 0, 0, w, h);
     canvas.toBlob((blob) => {
       setBusy(false);
-      if (blob) onCapture?.(blob);
+      if (!blob) return;
+      if (burst) {
+        // Keep shooting — stash a thumbnail + blob and leave the camera live.
+        setShots(prev => [...prev, { url: URL.createObjectURL(blob), blob }]);
+        onCapture?.(blob);
+      } else {
+        onCapture?.(blob);
+      }
     }, 'image/jpeg', 0.9);
+  };
+
+  const finishBurst = () => {
+    const blobs = shots.map(s => s.blob);
+    // Hand back the blobs first; let the parent close + the unmount cleanup
+    // revoke the URLs.
+    onDone?.(blobs);
   };
 
   // Hide the flip button when there's only one camera (typical on desktops).
@@ -114,6 +146,29 @@ export function CameraCaptureModal({ open, onClose, onCapture }) {
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
+      {!error && burst && shots.length > 0 && (
+        <div className="camera-filmstrip">
+          {shots.map((s, i) => (
+            <div key={i} className="camera-filmstrip-thumb">
+              <img src={s.url} alt="" />
+              <button
+                type="button"
+                className="camera-filmstrip-rm"
+                onClick={() => setShots(prev => {
+                  const next = [...prev];
+                  const [removed] = next.splice(i, 1);
+                  if (removed) URL.revokeObjectURL(removed.url);
+                  return next;
+                })}
+                aria-label={t('remove')}
+              >
+                <X size={12} strokeWidth={2.4} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {!error && (
         <div className="camera-controls">
           {supportsMultipleCameras && (
@@ -135,7 +190,20 @@ export function CameraCaptureModal({ open, onClose, onCapture }) {
           >
             <CameraIcon size={24} strokeWidth={1.6} />
           </button>
-          <span className="camera-spacer" />
+          {burst ? (
+            <button
+              type="button"
+              className="camera-done"
+              onClick={finishBurst}
+              disabled={shots.length === 0}
+              aria-label={t('done')}
+            >
+              <Check size={20} strokeWidth={2} />
+              {shots.length > 0 && <span className="camera-done-count">{shots.length}</span>}
+            </button>
+          ) : (
+            <span className="camera-spacer" />
+          )}
         </div>
       )}
     </div>

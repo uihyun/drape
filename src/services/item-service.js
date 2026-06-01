@@ -243,7 +243,7 @@ async function analyzePhoto({ blob, mime = 'image/jpeg' }) {
  * still has something to show. Future: a follow-up processItem pass
  * could refine.
  */
-async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = '' }) {
+async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = '', owned = false }) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -258,10 +258,11 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   // most prominent in the multi-item source photo.
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
-    // Detected from an analyzed photo — a wishlist / reference piece, NOT
-    // something the user owns. Excluded from owned-only stats and can't be
-    // listed for sale until the user marks "I own this" (kind → owned).
-    kind: 'wishlist',
+    // `owned`: bulk-adding pieces the user actually owns (multi-item flat-lay
+    // or burst capture of their own closet) → kind 'owned', counts toward
+    // stats and is sale-eligible. Default false = detected-from-someone-
+    // else's-photo, a wishlist reference until they mark "I own this".
+    kind: owned ? 'owned' : 'wishlist',
     name: detected.name || detected.description || sourceLabel || 'detected',
     notes: sourceLabel ? `detected from: ${sourceLabel}` : '',
     originalUrl: url,

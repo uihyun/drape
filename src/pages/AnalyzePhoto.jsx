@@ -36,6 +36,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [savedBatchIds, setSavedBatchIds] = useState(analyzeCache.savedBatchIds);
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
+  // When on, detected pieces are saved as items the user OWNS (kind 'owned')
+  // instead of wishlist references — this is the "bulk-add my own closet from
+  // a flat-lay / burst" path. Persisted in the cache so it survives remounts.
+  const [owned, setOwned] = useState(analyzeCache.owned ?? false);
+  const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
@@ -53,6 +58,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
   useEffect(() => { analyzeCache.batches = batches; }, [batches]);
   useEffect(() => { analyzeCache.savedKeys = savedKeys; }, [savedKeys]);
   useEffect(() => { analyzeCache.savedBatchIds = savedBatchIds; }, [savedBatchIds]);
+  useEffect(() => { analyzeCache.owned = owned; }, [owned]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -136,11 +142,41 @@ export function AnalyzePhoto({ user, onSignIn }) {
         blob: batch.blob,
         detected,
         sourceLabel: batch.style || '',
+        owned,
       });
       setSavedKeys(prev => new Set(prev).add(key));
     } catch (e) {
       setError(e.message || 'save_failed');
     } finally { setSavingKey(null); }
+  };
+
+  // Bulk: add every not-yet-saved detected piece in a batch to the closet in
+  // one tap. Sequential (shared Gemini key) but each createFromDetected only
+  // uploads + dispatches processItem, so it's fast; cards stream in via the
+  // live closet subscription.
+  const addAllInBatch = async (batchIdx) => {
+    if (bulkBatchIdx !== -1) return;
+    const batch = batches[batchIdx];
+    if (!batch || batch.status !== 'done') return;
+    setBulkBatchIdx(batchIdx);
+    setError(null);
+    try {
+      for (let itemIdx = 0; itemIdx < batch.items.length; itemIdx++) {
+        const key = `${batchIdx}:${itemIdx}`;
+        if (savedKeys.has(key)) continue;
+        try {
+          await ItemService.createFromDetected({
+            blob: batch.blob,
+            detected: batch.items[itemIdx],
+            sourceLabel: batch.style || '',
+            owned,
+          });
+          setSavedKeys(prev => new Set(prev).add(key));
+        } catch (e) {
+          setError(e.message || 'save_failed');
+        }
+      }
+    } finally { setBulkBatchIdx(-1); }
   };
 
   const saveAnalysis = async (batchIdx) => {
@@ -173,6 +209,12 @@ export function AnalyzePhoto({ user, onSignIn }) {
     setError(null);
   };
 
+  // Burst capture (web modal) hands back several photos at once.
+  const onBurstDone = (blobs) => {
+    setCameraOpen(false);
+    if (blobs?.length) addFiles(blobs);
+  };
+
   const pendingCount = batches.filter(b => b.status === 'pending').length;
   const anyDone = batches.some(b => b.status === 'done');
   const searchUrl = (q) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
@@ -184,6 +226,18 @@ export function AnalyzePhoto({ user, onSignIn }) {
         <>
           <h1 className="page-h1">{t('analyzeTitle')}</h1>
           <p className="page-sub">{t('analyzeBody')}</p>
+
+          {/* "These are my clothes" — flips detected pieces from wishlist
+              references to owned closet items. The headline use case: shoot a
+              flat-lay or burst-capture your own wardrobe and bulk-add it. */}
+          <label className="analyze-owned-toggle">
+            <input
+              type="checkbox"
+              checked={owned}
+              onChange={e => setOwned(e.target.checked)}
+            />
+            <span>{t('analyzeOwnedToggle')}</span>
+          </label>
 
           {/* Large preview hero — when one or more photos staged, show them
               big enough to actually see what's being analyzed. */}
@@ -243,7 +297,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
                 }
               }}
             >
-              <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+              <CameraIcon size={16} strokeWidth={1.6} /> {isNativeApp() ? t('takePhoto') : t('burstCapture')}
             </button>
           </div>
 
@@ -321,7 +375,20 @@ export function AnalyzePhoto({ user, onSignIn }) {
                   <p className="muted" style={{ padding: '0.75rem 1rem 1rem' }}>{t('analyzeNoItems')}</p>
                 ) : (
                   <div className="analyze-items-v2">
-                    <h3 className="analyze-items-head">{t('itemsInPhoto')}</h3>
+                    <div className="analyze-items-headrow">
+                      <h3 className="analyze-items-head">{t('itemsInPhoto')}</h3>
+                      {b.items.some((_, i) => !savedKeys.has(`${batchIdx}:${i}`)) && (
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm analyze-addall"
+                          onClick={() => addAllInBatch(batchIdx)}
+                          disabled={bulkBatchIdx === batchIdx}
+                        >
+                          <Plus size={13} strokeWidth={1.9} />
+                          {bulkBatchIdx === batchIdx ? t('saving') : t(owned ? 'addAllToCloset' : 'addAllToWishlist')}
+                        </button>
+                      )}
+                    </div>
                     {b.items.map((it, itemIdx) => {
                       const key = `${batchIdx}:${itemIdx}`;
                       const saved = savedKeys.has(key);
@@ -360,8 +427,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
                               disabled={saved || savingKey === key}
                             >
                               {saved
-                                ? <><Check size={13} strokeWidth={2} /> {t('savedToCloset')}</>
-                                : <><Plus size={13} strokeWidth={1.9} /> {t('saveToCloset')}</>}
+                                ? <><Check size={13} strokeWidth={2} /> {t(owned ? 'savedToCloset' : 'savedToWishlist')}</>
+                                : <><Plus size={13} strokeWidth={1.9} /> {t(owned ? 'saveToCloset' : 'saveToWishlist')}</>}
                             </button>
                           </div>
                           <ClosetMatchStrip piece={it} closet={closet} t={t} />
@@ -385,8 +452,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
       <CameraCaptureModal
         open={cameraOpen}
+        burst
         onClose={() => setCameraOpen(false)}
-        onCapture={(blob) => { setCameraOpen(false); addFiles([blob]); }}
+        onDone={onBurstDone}
       />
     </div>
   );

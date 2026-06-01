@@ -97,9 +97,16 @@ export function MobileTabBar({ user }) {
               <X size={18} />
             </button>
             <h3 className="create-sheet-title">{t('createSheetTitle')}</h3>
-            <button type="button" className="create-sheet-row" onClick={openAddItem}>
+            <button type="button" className="create-sheet-row create-sheet-row--primary" onClick={openAddItem}>
               <span className="create-sheet-icon"><Shirt size={20} strokeWidth={1.5} /></span>
               <span className="create-sheet-label">{t('createAddItem')}</span>
+            </button>
+            <button type="button" className="create-sheet-row" onClick={go('/analyze')}>
+              <span className="create-sheet-icon"><ScanEye size={20} strokeWidth={1.5} /></span>
+              <span className="create-sheet-label">
+                {t('createAnalyze')}
+                <span className="create-sheet-sub">{t('createAnalyzeSub')}</span>
+              </span>
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/profile/calendar?ootd=today')}>
               <span className="create-sheet-icon"><CalendarIcon size={20} strokeWidth={1.5} /></span>
@@ -108,10 +115,6 @@ export function MobileTabBar({ user }) {
             <button type="button" className="create-sheet-row" onClick={go('/boards/new')}>
               <span className="create-sheet-icon"><Grid3x3 size={20} strokeWidth={1.5} /></span>
               <span className="create-sheet-label">{t('createBoard')}</span>
-            </button>
-            <button type="button" className="create-sheet-row" onClick={go('/analyze')}>
-              <span className="create-sheet-icon"><ScanEye size={20} strokeWidth={1.5} /></span>
-              <span className="create-sheet-label">{t('createAnalyze')}</span>
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/tryon')}>
               <span className="create-sheet-icon"><Sparkles size={20} strokeWidth={1.5} /></span>

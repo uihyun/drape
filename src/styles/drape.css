@@ -226,6 +226,61 @@ body.is-native {
   align-items: center;
   padding: 0 1.5rem;
 }
+/* Burst mode: filmstrip of captured shots above the controls + a Done
+   button (mirrors the flip button's slot on the right of the shutter). */
+.camera-filmstrip {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+  scrollbar-width: none;
+}
+.camera-filmstrip::-webkit-scrollbar { display: none; }
+.camera-filmstrip-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 56px; height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.camera-filmstrip-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.camera-filmstrip-rm {
+  position: absolute; top: 2px; right: 2px;
+  width: 18px; height: 18px;
+  border: none; border-radius: 999px;
+  background: rgba(0,0,0,0.6); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0;
+}
+.camera-done {
+  justify-self: end;
+  position: relative;
+  width: 48px; height: 48px;
+  border: none; border-radius: 999px;
+  background: var(--accent, #6b7cff); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.camera-done:disabled { opacity: 0.4; }
+.camera-done-count {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 999px; background: #fff; color: var(--accent, #6b7cff);
+  font-size: 0.7rem; font-weight: 700; line-height: 18px;
+}
+/* "These are my clothes" toggle on the analyze input screen. */
+.analyze-owned-toggle {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.75rem 0.9rem; margin: 0 0 1rem;
+  border: 1px solid var(--border, #e5e5e5); border-radius: 12px;
+  font-size: 0.92rem; cursor: pointer;
+}
+.analyze-owned-toggle input { width: 18px; height: 18px; accent-color: var(--accent, #6b7cff); }
+.analyze-items-headrow {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; padding: 0 1rem;
+}
+.analyze-addall { flex: 0 0 auto; }
 .camera-shutter {
   width: 72px;
   height: 72px;
@@ -1435,6 +1490,23 @@ body.is-native {
   border-radius: 10px;
 }
 .create-sheet-row:hover { background: var(--surface-elevated); }
+/* Primary action (Add item) — the most-used row, visually lifted so it
+   reads as the default without reordering away from the thumb. */
+.create-sheet-row--primary {
+  background: color-mix(in srgb, var(--accent, #6b7cff) 9%, transparent);
+  font-weight: 650;
+}
+.create-sheet-row--primary .create-sheet-icon {
+  background: var(--accent, #6b7cff);
+  color: #fff;
+}
+.create-sheet-sub {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted, #888);
+  margin-top: 1px;
+}
 .create-sheet-icon {
   width: 40px;
   height: 40px;
