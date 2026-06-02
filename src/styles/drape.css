@@ -1495,16 +1495,6 @@ body.is-native {
   border-radius: 10px;
 }
 .create-sheet-row:hover { background: var(--surface-elevated); }
-/* Primary action (Add item) — the most-used row, visually lifted so it
-   reads as the default without reordering away from the thumb. */
-.create-sheet-row--primary {
-  background: color-mix(in srgb, var(--accent, #6b7cff) 9%, transparent);
-  font-weight: 650;
-}
-.create-sheet-row--primary .create-sheet-icon {
-  background: var(--accent, #6b7cff);
-  color: #fff;
-}
 .create-sheet-sub {
   display: block;
   font-size: 0.78rem;
