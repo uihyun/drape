@@ -23,7 +23,12 @@ button, a, [role="button"] {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 body.is-native {
-  --safe-top: calc(max(env(safe-area-inset-top, 0px), 50px) + 12px);
+  /* Clear the notch/Dynamic Island with a tight floor and no extra buffer —
+     the previous +12px (on top of a 50pt floor) left a visibly empty band
+     above the first content on every screen. The status bar is ~47-54pt;
+     a 44pt floor + the real inset is enough to never collide, without the
+     dead space. */
+  --safe-top: max(env(safe-area-inset-top, 0px), 44px);
 }
 
 /* ── Header / nav ──────────────────────────────────────────────────── */
