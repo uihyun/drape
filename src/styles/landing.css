@@ -6,7 +6,8 @@
   --lp-muted: #737373;
   --lp-accent: #3F5841;
   --lp-line: #ECECEC;
-  min-height: 100vh;
+  /* Content height — no forced 100vh, which left a dead white band below
+     the footer when the content was shorter than the viewport. */
   background: #fff;
   color: var(--lp-ink);
   font-family: var(--font-display);
@@ -88,10 +89,9 @@
 
 /* ── Hero ────────────────────────────────────────────────────────────── */
 .lp-hero {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(2rem, 6vw, 4rem);
+  gap: clamp(1.5rem, 5vw, 3rem);
   align-items: center;
   max-width: 1180px;
   width: 100%;
@@ -131,7 +131,8 @@
   font-size: clamp(1rem, 2.4vw, 1.15rem);
   line-height: 1.55;
   color: var(--lp-muted);
-  max-width: 30ch;
+  /* No tight max-width — let it use the full copy column so it stays on
+     one line where the width allows, instead of wrapping early. */
 }
 
 .lp-stores {
