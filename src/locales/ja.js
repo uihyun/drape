@@ -267,6 +267,8 @@ export const ja = {
   uploadPhoto: '写真をアップロード',
   takePhoto: '写真を撮る',
   addItemHint: 'ハンガーにかけたまま、床に置いて、着たまま、どんな状態でも OK。drape が服だけきれいに切り抜きます。',
+  addItemBulkTitle: '1枚の写真に服が複数ありますか?',
+  addItemBulkHint: 'まとめて追加',
   addItemGuideTitle: 'きれいな切り抜きのコツ',
   addItemGuide1: '無地の背景 — 床、壁、シーツなど。',
   addItemGuide2: '均一な自然光、強い影は避ける。',

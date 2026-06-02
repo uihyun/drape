@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -26,6 +26,11 @@ const analyzeCache = { batches: [], savedKeys: new Set(), savedBatchIds: new Map
 export function AnalyzePhoto({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  // `?owned=1` (from Add item → "several pieces in one photo") starts in
+  // owned mode: detected pieces save straight into the closet as items you
+  // own, not wishlist references. Bare /analyze (create menu) defaults off.
+  const ownedParam = search.get('owned') === '1';
   const fileRef = useRef();
   // batches: [{ blob, previewUrl, status: 'pending'|'analyzing'|'done'|'failed', style, notes, items: [...] }]
   const [batches, setBatches] = useState(analyzeCache.batches);
@@ -39,7 +44,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // When on, detected pieces are saved as items the user OWNS (kind 'owned')
   // instead of wishlist references — this is the "bulk-add my own closet from
   // a flat-lay / burst" path. Persisted in the cache so it survives remounts.
-  const [owned, setOwned] = useState(analyzeCache.owned ?? false);
+  const [owned, setOwned] = useState(ownedParam || (analyzeCache.owned ?? false));
   const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each

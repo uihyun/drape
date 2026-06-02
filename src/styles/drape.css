@@ -4143,6 +4143,31 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-muted);
   margin-left: 0.4rem;
 }
+/* Bulk-add entry (AddItem page + AddItemSheet): one photo → many items. */
+.add-item-bulk, .add-sheet-bulk {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 12px;
+  background: var(--surface-elevated, #f7f7f5);
+  color: var(--text-primary, inherit);
+  text-align: left;
+  cursor: pointer;
+}
+.add-item-bulk:hover, .add-sheet-bulk:hover { background: var(--surface, #f0f0ee); }
+.add-item-bulk-text, .add-sheet-bulk-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.add-item-bulk-text strong, .add-sheet-bulk-text strong { font-size: 0.95rem; font-weight: 600; }
+.add-item-bulk-text span, .add-sheet-bulk-text span { font-size: 0.82rem; color: var(--text-muted, #888); }
+
 /* Outfit-reference: the borrowed look shown as the garment to recreate. */
 .tryon-outfitref { margin-top: 0.5rem; }
 .tryon-outfitref-card {

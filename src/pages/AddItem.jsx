@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { X, UploadCloud, Camera as CameraIcon, Image as ImageIcon, Lock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { X, UploadCloud, Camera as CameraIcon, Image as ImageIcon, Lock, Layers, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
@@ -117,6 +117,18 @@ export function AddItem({ user, onSignIn }) {
         </div>
 
         {error && <p style={{ color: 'var(--error)' }}>{error}</p>}
+
+        {/* Bulk path: one photo with several garments. Reuses the analyze
+            pipeline but starts in owned mode so detected pieces land in the
+            closet as items you own — same place, not a separate "analyze". */}
+        <Link to="/analyze?owned=1" className="add-item-bulk">
+          <Layers size={18} strokeWidth={1.7} />
+          <span className="add-item-bulk-text">
+            <strong>{t('addItemBulkTitle')}</strong>
+            <span>{t('addItemBulkHint')}</span>
+          </span>
+          <ChevronRight size={18} strokeWidth={1.7} />
+        </Link>
 
         <div className="add-item-guide">
           <h3>{t('addItemGuideTitle')}</h3>

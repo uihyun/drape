@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Image as ImageIcon, Camera as CameraIcon, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Image as ImageIcon, Camera as CameraIcon, X, Layers, ChevronRight } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
@@ -114,6 +115,19 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
             className="hidden"
             onChange={e => { pick(e.target.files?.[0]); e.target.value = ''; }}
           />
+
+          {/* Several garments in one photo → the bulk path (analyze pipeline
+              in owned mode). Only offered before a single photo is staged. */}
+          {!preview && (
+            <Link to="/analyze?owned=1" className="add-sheet-bulk" onClick={onClose}>
+              <Layers size={16} strokeWidth={1.7} />
+              <span className="add-sheet-bulk-text">
+                <strong>{t('addItemBulkTitle')}</strong>
+                <span>{t('addItemBulkHint')}</span>
+              </span>
+              <ChevronRight size={16} strokeWidth={1.7} />
+            </Link>
+          )}
 
           <label className="add-sheet-label">{t('tagShopUrl')}</label>
           <input

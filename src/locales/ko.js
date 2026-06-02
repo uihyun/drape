@@ -265,6 +265,8 @@ export const ko = {
   uploadPhoto: '사진 업로드',
   takePhoto: '사진 촬영',
   addItemHint: '걸어둔 옷·바닥에 둔 옷·입고 있는 옷, 무엇이든 촬영하세요. drape 가 옷만 깔끔하게 잘라냅니다.',
+  addItemBulkTitle: '한 사진에 옷이 여러 개인가요?',
+  addItemBulkHint: '한번에 전부 추가하기',
   addItemGuideTitle: '깔끔한 누끼를 위한 팁',
   addItemGuide1: '단색 배경 — 마룻바닥, 벽, 침대시트 모두 OK.',
   addItemGuide2: '균일한 자연광, 짙은 그림자 피하기.',

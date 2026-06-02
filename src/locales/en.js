@@ -265,6 +265,8 @@ export const en = {
   uploadPhoto: 'Upload photo',
   takePhoto: 'Take photo',
   addItemHint: 'Snap each piece on a hanger, on the floor, or while you wear it. Drape crops out everything but the garment.',
+  addItemBulkTitle: 'Several pieces in one photo?',
+  addItemBulkHint: 'Add them all at once',
   addItemGuideTitle: 'Tips for the cleanest crop',
   addItemGuide1: 'Flat background — wood, wall, or bedsheet works.',
   addItemGuide2: 'Even daylight, no harsh shadows.',
