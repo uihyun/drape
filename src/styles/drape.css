@@ -2888,6 +2888,19 @@ input[type="search"]::-webkit-search-decoration {
   align-items: center;
   justify-content: center;
 }
+.identity-ref-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  height: 100%;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--surface-2, #f2efe9);
+}
+.identity-ref-processing .spin { animation: spin 0.9s linear infinite; }
 .identity-ref-preview-btn img {
   /* Show the whole figure top-to-bottom regardless of source aspect
      ratio. processIdentityRef trims transparent margins after

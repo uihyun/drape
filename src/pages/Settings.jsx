@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2 } from 'lucide-react';
+import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2, Loader2 } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
@@ -439,12 +439,25 @@ function IdentitySection({ user, t }) {
               type="button"
               className="identity-ref-preview-btn"
               onClick={() => {
-                if (justDraggedRef.current) return;
+                // The raw upload is intentionally hidden while the cutout
+                // is being made — don't open a preview of a photo we're
+                // about to replace; it would just flicker.
+                if (justDraggedRef.current || r.processing) return;
                 setPreviewUrl(r.url);
               }}
               aria-label={t('view')}
             >
-              <img src={r.url} alt="" />
+              {/* Show a processing placeholder, not the raw photo, until the
+                  background-removed cutout is ready — otherwise the original
+                  shot flashes in and then swaps, which reads as a glitch. */}
+              {r.processing ? (
+                <span className="identity-ref-processing">
+                  <Loader2 size={18} strokeWidth={1.8} className="spin" />
+                  <span>{t('uploading')}</span>
+                </span>
+              ) : (
+                <img src={r.url} alt="" />
+              )}
             </button>
             {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
             <button type="button" className="slot-remove" onClick={() => onRemove(i)} aria-label={t('remove')}>
