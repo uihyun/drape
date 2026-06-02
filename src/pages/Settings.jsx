@@ -341,8 +341,12 @@ function IdentitySection({ user, t }) {
   const fileInput = useRef();
   const DRAG_THRESHOLD = 6;
 
+  // Live subscription is the source of truth — so a background-removal that
+  // finishes after the user leaves and comes back still shows up, and an
+  // add that's mid-flight survives navigation (it's committed to Firestore
+  // before this resolves). Service calls below don't need their return value.
   useEffect(() => {
-    IdentityService.getMyRefs().then(setRefs).catch(() => setRefs([]));
+    return IdentityService.subscribeMyRefs(setRefs);
   }, [user.uid]);
 
   const onAdd = async (file) => {
@@ -350,11 +354,11 @@ function IdentitySection({ user, t }) {
     setAdding(true);
     try {
       const blob = await CameraService.compressImage(file);
-      setRefs(await IdentityService.addRef(blob));
+      await IdentityService.addRef(blob); // subscription reflects it
     } catch (e) { alert(e.message); }
     finally { setAdding(false); }
   };
-  const onRemove = async (i) => setRefs(await IdentityService.removeRef(i));
+  const onRemove = async (i) => { await IdentityService.removeRef(i); };
 
   const onSlotDown = (e, i) => {
     // Only the trash icon must NOT start a drag — the preview button

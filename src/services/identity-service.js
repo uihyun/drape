@@ -6,7 +6,7 @@
 // Stored as a small array on the user's /users/{uid} doc + the actual jpegs
 // under identity/{uid}/{n}.jpg. The set is private; only the owner reads.
 
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, auth, functions } from '../firebase.js';
@@ -15,10 +15,13 @@ import { IMG_CACHE } from './storageCache.js';
 const MAX_IDENTITY_REFS = 3;
 const MIN_IDENTITY_REFS = 1;
 
-/** Add one identity reference photo. Uploads the raw shot, then asks
- *  the processIdentityRef Cloud Function to background-remove the
- *  person so downstream try-on calls see a clean cutout regardless of
- *  the original room/wall/floor. Returns the updated refs array. */
+/** Add one identity reference photo — fire-and-forget, like createItem.
+ *  The slot is committed to Firestore with the RAW photo first, so the
+ *  ref is saved the moment the upload finishes even if the user leaves the
+ *  screen. Background-removal (slow Gemini call) is then dispatched WITHOUT
+ *  awaiting; when it returns it patches just that slot. Settings observes
+ *  the user doc via subscribeMyRefs, so the cutout swaps in live with no
+ *  refresh. Resolves as soon as the raw ref is committed. */
 async function addRef(blob) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -30,31 +33,49 @@ async function addRef(blob) {
     throw new Error('max_identity_refs');
   }
   const idx = existing.length;
-  const path = `identity/${user.uid}/${idx}.jpg`;
+  // Unique path (timestamp) so a delete-then-re-add at the same index never
+  // collides with the old object, and the slot's identity is stable for the
+  // async patch below even if the array shifts.
+  const refId = `${idx}_${Date.now()}`;
+  const path = `identity/${user.uid}/${refId}.jpg`;
   const r = storageRef(storage, path);
   await uploadBytes(r, blob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
-  let url = await getDownloadURL(r);
-  let finalPath = path;
+  const url = await getDownloadURL(r);
 
-  // Background-remove the person. Best-effort — if Gemini fails we keep
-  // the raw photo so the ref slot isn't empty.
-  try {
-    const processFn = httpsCallable(functions, 'processIdentityRef');
-    const { data } = await processFn({ storagePath: path });
-    if (data?.ok && data?.url) {
-      url = data.url;
-      finalPath = data.path || path;
-    }
-  } catch (err) {
-    console.warn('identity ref bg-removal skipped:', err?.message);
-  }
-
-  const next = [...existing, { url, path: finalPath, addedAt: Date.now() }];
+  // Commit the ref with the raw photo NOW — leaving the screen is safe.
+  // `processing: true` lets the UI show a "cleaning up" hint on this slot.
+  const committed = { url, path, refId, addedAt: Date.now(), processing: true };
   await updateDoc(userRef, {
-    identityRefs: next,
+    identityRefs: [...existing, committed],
     identityRefUpdatedAt: serverTimestamp(),
   });
-  return next;
+
+  // Background-remove the person, fire-and-forget. Re-reads the doc on
+  // completion (the array may have changed) and patches this slot by refId.
+  (async () => {
+    try {
+      const processFn = httpsCallable(functions, 'processIdentityRef');
+      const { data } = await processFn({ storagePath: path });
+      const fresh = await getDoc(userRef);
+      const cur = (fresh.exists() && fresh.data().identityRefs) || [];
+      const patched = cur.map(s => s.refId === refId
+        ? { ...s, url: data?.ok && data?.url ? data.url : s.url, path: data?.path || s.path, processing: false }
+        : s);
+      await updateDoc(userRef, { identityRefs: patched, identityRefUpdatedAt: serverTimestamp() });
+    } catch (err) {
+      console.warn('identity ref bg-removal skipped:', err?.message);
+      // Clear the processing flag so the slot doesn't spin forever.
+      try {
+        const fresh = await getDoc(userRef);
+        const cur = (fresh.exists() && fresh.data().identityRefs) || [];
+        await updateDoc(userRef, {
+          identityRefs: cur.map(s => s.refId === refId ? { ...s, processing: false } : s),
+        });
+      } catch { /* ignore */ }
+    }
+  })();
+
+  return [...existing, committed];
 }
 
 /** Re-run background removal on an existing ref. For users who added
@@ -139,9 +160,23 @@ async function getMyRefs() {
   return (snap.exists() && snap.data().identityRefs) || [];
 }
 
+/** Live subscription to the user's identity refs. Lets the Settings UI
+ *  reflect background-removal completing (and any other device's edits)
+ *  without a manual refetch — the fire-and-forget addRef relies on this. */
+function subscribeMyRefs(cb) {
+  const user = auth.currentUser;
+  if (!user) { cb([]); return () => {}; }
+  return onSnapshot(
+    doc(db, 'users', user.uid),
+    snap => cb((snap.exists() && snap.data().identityRefs) || []),
+    err => { console.warn('subscribeMyRefs failed:', err?.message); cb([]); },
+  );
+}
+
 export const IdentityService = {
   addRef,
   removeRef,
+  subscribeMyRefs,
   reprocessRef,
   reorderRefs,
   getMyRefs,
