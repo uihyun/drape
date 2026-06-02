@@ -5370,17 +5370,22 @@ input[type="search"]::-webkit-search-decoration {
 /* ── Welcome / sign-in (Lekondo capture 1) ─────────────────────────── */
 .app-full-bleed .main { padding: 0; max-width: none; }
 .welcome {
-  min-height: 100dvh;
+  /* Fixed to the viewport so the whole first-run screen fits with no scroll
+     on every phone. The hero flexes to absorb leftover height; nothing else
+     grows. */
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: #fff;
-  padding: var(--safe-top) 1.25rem calc(var(--safe-bottom) + 1.25rem);
+  padding: var(--safe-top) 1.25rem calc(var(--safe-bottom) + 0.75rem);
 }
 .welcome-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 0 0;
+  padding: 0.5rem 0 0;
+  flex: 0 0 auto;
 }
 .welcome-brand {
   font-weight: 700;
@@ -5437,17 +5442,20 @@ input[type="search"]::-webkit-search-decoration {
 .welcome-lang-menu button[aria-selected="true"] { font-weight: 600; }
 
 .welcome-hero {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 1.5rem 0;
-  min-height: 0;
+  padding: 1rem 0;
+  min-height: 0; /* allow the panel to shrink below its content on short screens */
 }
 .welcome-hero-panel {
   width: 100%;
   max-width: 360px;
-  aspect-ratio: 4 / 5;
+  /* No fixed aspect-ratio — the panel takes whatever height the flex row
+     leaves, so the page never overflows. A min-height keeps it from
+     collapsing to nothing on very short screens. */
+  min-height: 120px;
   border-radius: 24px;
   background: linear-gradient(160deg, #F4F5F1 0%, #E8ECE5 100%);
   display: flex;
@@ -5469,6 +5477,8 @@ input[type="search"]::-webkit-search-decoration {
   max-width: 420px;
   width: 100%;
   margin: 0 auto;
+  flex: 0 0 auto;
+  padding-top: 1rem;
 }
 /* In-app sign-in chooser sheet. Reuses the create-sheet shell; the
    provider buttons are the same .signin-btn modifiers as Welcome. */
@@ -5543,15 +5553,25 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 .welcome-footer {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.5;
+  flex: 0 0 auto;
 }
 .welcome-footer a { color: var(--text-secondary); text-decoration: underline; }
 .welcome-footer a:hover { color: var(--text-primary); }
-.welcome-version { margin-top: 0.6rem; }
+.welcome-legal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.welcome-legal-dot { color: var(--border); }
+.welcome-version { color: var(--text-muted); }
 
 @media (min-width: 769px) {
   .welcome {

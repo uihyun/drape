@@ -129,12 +129,12 @@ export function Welcome() {
 
       <footer className="welcome-footer">
         <p className="welcome-legal">
-          {t('welcomeLegalBefore')}{' '}
-          <a href="/terms">{t('termsOfService')}</a>{' '}
-          {t('welcomeLegalAnd')}{' '}
+          <a href="/terms">{t('termsOfService')}</a>
+          <span className="welcome-legal-dot" aria-hidden="true">·</span>
           <a href="/privacy">{t('privacyPolicy')}</a>
+          <span className="welcome-legal-dot" aria-hidden="true">·</span>
+          <span className="welcome-version">v{version}</span>
         </p>
-        <p className="welcome-version">Version {version}</p>
       </footer>
     </div>
   );
