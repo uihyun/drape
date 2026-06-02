@@ -143,7 +143,13 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // home, like every SNS app); anonymous/new users see the welcome screen.
   // Their own profile/closet/calendar live one tap away in the tab bar.
   const isLoggedIn = user && !user.isAnonymous;
-  const rootTarget = isLoggedIn ? '/feed' : '/welcome';
+  // The marketing domain (drape.nyc) shares this hosting site; when the app
+  // loads at its root we send it to the landing page. Deep links like
+  // drape.nyc/feed still resolve normally. So wiring the domain is just
+  // "add drape.nyc as a Firebase custom domain" — no separate site needed.
+  const isMarketingHost = typeof window !== 'undefined'
+    && /(^|\.)drape\.nyc$/i.test(window.location.hostname);
+  const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? '/feed' : '/welcome');
 
   return (
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}`}>
