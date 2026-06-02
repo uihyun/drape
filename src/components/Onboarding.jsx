@@ -59,6 +59,11 @@ export function Onboarding({ user, forceShow = false, onClose }) {
       title: t('onboardSlide3Title'),
       body: t('onboardSlide3Body'),
     },
+    {
+      icon: 'explore',
+      title: t('onboardSlide4Title'),
+      body: t('onboardSlide4Body'),
+    },
   ];
 
   const close = () => {

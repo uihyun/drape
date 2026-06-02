@@ -128,6 +128,7 @@ export const ja = {
   bulkAddTitle: '複数のアイテムをまとめて追加',
   bulkAddBody: '自分の服を並べて撮影・アップロードすると、アイテムごとに自動認識してクローゼットへまとめて追加します。',
   analyzeRun: '解析する',
+  bulkAddRun: 'クローゼットに追加',
   analyzing: '読み取り中…',
   analyzeSignInBody: 'ログインして写真の解析を試してみましょう。',
   analyzeNoItems: 'この写真からは服が明確に見つかりませんでした。',
@@ -189,7 +190,7 @@ export const ja = {
   settingsSignInBody: 'ログインしてプロフィールと試着用写真を編集しましょう。',
   profileSignInTitle: 'あなたのクローゼットを、手の中に',
   profileSignInBody: 'ログインして毎日のコーデを記録しましょう。',
-  profileTabs: { outfits: 'コーデ', calendar: 'カレンダー', closet: 'クローゼット', wishlist: 'ウィッシュ', boards: 'ボード', tryon: '試着' },
+  profileTabs: { outfits: 'コーデ', calendar: 'カレンダー', closet: 'クローゼット', boards: 'ボード', tryon: '試着' },
   create: '作成',
   createSheetTitle: '何を追加しますか?',
   createAddItem: 'アイテムを追加',
@@ -233,7 +234,7 @@ export const ja = {
   detailedFilter: '詳細検索',
   detailedFilterApply: '{n}件を表示',
   clear: 'クリア',
-  closetView: { all: 'すべて', usage: '使用頻度', brands: 'ブランド', categories: 'カテゴリー', seasons: '季節', styles: 'スタイル' },
+  closetView: { all: 'すべて', usage: '使用頻度', brands: 'ブランド', wishlist: 'ウィッシュ', categories: 'カテゴリー', seasons: '季節', styles: 'スタイル' },
   usageWorn: '着用済み',
   usageNever: '未着用',
   usageWeek: '今週',
@@ -392,11 +393,13 @@ export const ja = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'クローゼットを、手の中に',
-  onboardSlide1Body: '服を撮るだけ。drape が服だけ切り抜いてカテゴリー・カラー・スタイルを自動でタグ付けします。',
+  onboardSlide1Body: '服を 1 枚ずつ、または 1 枚の写真から複数まとめて追加。drape が服だけ切り抜いて自動でタグ付けします。',
   onboardSlide2Title: 'まず自分で試着',
-  onboardSlide2Body: '全身写真を 2〜3 枚登録。バーチャル試着で実際に着る前に服を体に合成して見られます。',
-  onboardSlide3Title: '今日のコーデを記録',
-  onboardSlide3Body: 'コーデを保存し、毎日の OOTD をカレンダーに記録、ルックブックをコミュニティと共有しましょう。',
+  onboardSlide2Body: '全身写真を 2〜3 枚登録すれば、どんな服でも試着でき、他人のコーデ全体を自分の体に再現することもできます。',
+  onboardSlide3Title: 'コーデを作って毎日を記録',
+  onboardSlide3Body: 'アイテムを組み合わせてコーデを作り、毎日の OOTD をカレンダーに記録しましょう。',
+  onboardSlide4Title: '見つけて保存',
+  onboardSlide4Body: 'フィードを探索し、欲しいアイテムをウィッシュリストに保存、自分のルックをコミュニティと共有しましょう。',
 
   // ── Report / Block ─────────────────────────────────────────────────
   report: '通報',

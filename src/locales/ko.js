@@ -126,6 +126,7 @@ export const ko = {
   bulkAddTitle: '한 번에 여러 옷 추가',
   bulkAddBody: '내 옷을 펼쳐 찍거나 올리면, 옷마다 자동으로 인식해서 옷장에 한꺼번에 추가해요.',
   analyzeRun: '분석하기',
+  bulkAddRun: '옷장에 추가',
   analyzing: '읽는 중…',
   analyzeSignInBody: '로그인 하고 사진을 분석해 보세요.',
   analyzeNoItems: '이 사진에서 옷을 명확히 찾지 못했어요.',
@@ -187,7 +188,7 @@ export const ko = {
   settingsSignInBody: '로그인 하고 프로필과 피팅 사진을 관리하세요.',
   profileSignInTitle: '내 옷장, 내 폰 안에',
   profileSignInBody: '로그인 하고 매일의 코디를 기록해 보세요.',
-  profileTabs: { outfits: '코디', calendar: '캘린더', closet: '옷장', wishlist: '위시리스트', boards: '보드', tryon: '피팅' },
+  profileTabs: { outfits: '코디', calendar: '캘린더', closet: '옷장', boards: '보드', tryon: '피팅' },
   create: '만들기',
   createSheetTitle: '무엇을 추가할까요?',
   createAddItem: '옷 추가하기',
@@ -231,7 +232,7 @@ export const ko = {
   detailedFilter: '상세 찾기',
   detailedFilterApply: '{n}개 보기',
   clear: '지우기',
-  closetView: { all: '전체', usage: '사용도', brands: '브랜드', categories: '카테고리', seasons: '계절', styles: '스타일' },
+  closetView: { all: '전체', usage: '사용도', brands: '브랜드', wishlist: '위시리스트', categories: '카테고리', seasons: '계절', styles: '스타일' },
   usageWorn: '입은 옷',
   usageNever: '안 입은',
   usageWeek: '이번 주',
@@ -390,11 +391,13 @@ export const ko = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: '내 옷장이 손 안에',
-  onboardSlide1Body: '옷을 찍으면 drape 가 옷만 깔끔하게 잘라내고 카테고리·컬러·스타일 태그를 자동으로 답니다.',
+  onboardSlide1Body: '옷을 한 장씩, 또는 한 사진으로 여러 벌을 한 번에 추가하세요. drape 가 옷만 잘라내고 태그를 자동으로 답니다.',
   onboardSlide2Title: '입어보고 결정',
-  onboardSlide2Body: '내 전신 사진 2~3장을 등록하면, 가상 피팅으로 옷을 실제로 입기 전에 미리 입어볼 수 있어요.',
-  onboardSlide3Title: '오늘의 코디 기록',
-  onboardSlide3Body: '코디를 저장하고, 매일 OOTD 를 캘린더에 기록하고, 룩북을 커뮤니티와 공유하세요.',
+  onboardSlide2Body: '내 전신 사진 2~3장을 등록하면 어떤 옷이든 입어볼 수 있고, 남의 코디 전체를 내 몸에 그대로 재현할 수도 있어요.',
+  onboardSlide3Title: '코디 만들고 하루 기록',
+  onboardSlide3Body: '옷들을 조합해 코디를 만들고, 매일 OOTD 를 캘린더에 기록하세요.',
+  onboardSlide4Title: '발견하고 저장',
+  onboardSlide4Body: '피드를 둘러보고, 갖고 싶은 옷은 위시리스트에 저장하고, 내 룩을 커뮤니티와 공유하세요.',
 
   // ── Report / Block ─────────────────────────────────────────────────
   report: '신고',

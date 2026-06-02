@@ -126,6 +126,7 @@ export const en = {
   bulkAddTitle: 'Add several pieces at once',
   bulkAddBody: 'Shoot or upload a flat-lay of your own clothes — we detect each piece and add them all to your closet.',
   analyzeRun: 'Analyze',
+  bulkAddRun: 'Add to closet',
   analyzing: 'Reading…',
   analyzeSignInBody: 'Sign in to analyze outfit photos.',
   analyzeNoItems: 'Couldn’t find clear clothing items in this photo.',
@@ -187,7 +188,7 @@ export const en = {
   settingsSignInBody: 'Sign in to edit your profile and try-on photos.',
   profileSignInTitle: 'Your closet, on your phone',
   profileSignInBody: 'Sign in to start logging outfits.',
-  profileTabs: { outfits: 'Outfits', calendar: 'Calendar', closet: 'Closet', wishlist: 'Wishlist', boards: 'Boards', tryon: 'Try-on' },
+  profileTabs: { outfits: 'Outfits', calendar: 'Calendar', closet: 'Closet', boards: 'Boards', tryon: 'Try-on' },
   create: 'Create',
   createSheetTitle: 'Add something',
   createAddItem: 'Add item to closet',
@@ -231,7 +232,7 @@ export const en = {
   detailedFilter: 'Filter',
   detailedFilterApply: 'Show {n}',
   clear: 'Clear',
-  closetView: { all: 'All', usage: 'Usage', brands: 'Brands', categories: 'Categories', seasons: 'Seasons', styles: 'Styles' },
+  closetView: { all: 'All', usage: 'Usage', brands: 'Brands', wishlist: 'Wishlist', categories: 'Categories', seasons: 'Seasons', styles: 'Styles' },
   usageWorn: 'Worn',
   usageNever: 'Never worn',
   usageWeek: 'This week',
@@ -390,11 +391,13 @@ export const en = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'Your closet, on your phone',
-  onboardSlide1Body: 'Snap each piece. Drape crops out everything but the garment and tags it automatically.',
+  onboardSlide1Body: 'Snap each piece — or add several at once from one photo. Drape cuts out the garment and tags it automatically.',
   onboardSlide2Title: 'See it on you, first',
-  onboardSlide2Body: 'Upload 2–3 full-body photos of yourself. Virtual try-on shows clothes on your body before you wear them.',
-  onboardSlide3Title: 'Log your daily looks',
-  onboardSlide3Body: 'Save outfits, log a daily OOTD on the calendar, and share looks with the community.',
+  onboardSlide2Body: 'Add 2–3 full-body photos of yourself, then try on any item — or recreate someone else’s whole look on your body.',
+  onboardSlide3Title: 'Build looks, log your days',
+  onboardSlide3Body: 'Combine pieces into outfits and log a daily OOTD on your calendar.',
+  onboardSlide4Title: 'Discover & save',
+  onboardSlide4Body: 'Explore the feed, save pieces you want to your wishlist, and share your looks with the community.',
 
   // ── Report / Block ─────────────────────────────────────────────────
   report: 'Report',

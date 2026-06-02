@@ -22,7 +22,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // Calendar / Closet as segmented tabs over the user's identity header.
 // Each tab body is the existing page component rendered with `embedded`
 // (no top h2 / Add button) so the chrome is provided here once.
-const TABS = ['outfits', 'calendar', 'closet', 'wishlist', 'boards', 'tryon'];
+const TABS = ['outfits', 'calendar', 'closet', 'boards', 'tryon'];
 const DEFAULT_TAB = 'calendar';
 
 // Lucide dropped brand icons over trademark concerns. Inline the IG glyph
@@ -184,8 +184,7 @@ export function Profile({ user, authReady, onSignIn }) {
       <div className="profile-tabcontent" role="tabpanel">
         {activeTab === 'outfits' && <OutfitList user={user} onSignIn={onSignIn} embedded />}
         {activeTab === 'calendar' && <Calendar user={user} onSignIn={onSignIn} embedded />}
-        {activeTab === 'closet' && <Closet user={user} authReady={authReady} onSignIn={onSignIn} embedded kind="owned" />}
-        {activeTab === 'wishlist' && <Closet user={user} authReady={authReady} onSignIn={onSignIn} embedded kind="wishlist" />}
+        {activeTab === 'closet' && <Closet user={user} authReady={authReady} onSignIn={onSignIn} embedded />}
         {activeTab === 'boards' && <BoardList user={user} onSignIn={onSignIn} embedded />}
         {activeTab === 'tryon' && <TryOnHistory user={user} onSignIn={onSignIn} embedded />}
       </div>

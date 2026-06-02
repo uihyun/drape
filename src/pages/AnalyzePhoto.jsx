@@ -43,10 +43,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [savedBatchIds, setSavedBatchIds] = useState(analyzeCache.savedBatchIds);
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
-  // When on, detected pieces are saved as items the user OWNS (kind 'owned')
-  // instead of wishlist references — this is the "bulk-add my own closet from
-  // a flat-lay / burst" path. Persisted in the cache so it survives remounts.
-  const [owned, setOwned] = useState(ownedParam || (analyzeCache.owned ?? false));
+  // owned mode is decided purely by the entry point now: ?owned=1 means
+  // "bulk-add my own closet" (lean: detect → add, no style analysis), no
+  // param means "analyze someone's look → wishlist". The in-screen toggle
+  // was removed — the two intents are separate flows with their own entries.
+  const owned = ownedParam;
   const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each
@@ -65,7 +66,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
   useEffect(() => { analyzeCache.batches = batches; }, [batches]);
   useEffect(() => { analyzeCache.savedKeys = savedKeys; }, [savedKeys]);
   useEffect(() => { analyzeCache.savedBatchIds = savedBatchIds; }, [savedBatchIds]);
-  useEffect(() => { analyzeCache.owned = owned; }, [owned]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -232,25 +232,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
         // ── INPUT MODE: pick photos + run analyze ────────────────────
         <>
           {/* Two distinct entry intents share this engine but read as
-              separate flows (the explicit ask): entering with ?owned=1 from
-              "Add item → several pieces" is a closet bulk-add — title + copy
-              say so and the ownership toggle is locked on (no confusion with
-              the wishlist path). The create-menu entry (no param) is the
-              "save someone else's pieces to wishlist" flow, where the toggle
-              is offered in case they actually own them. */}
-          <h1 className="page-h1">{ownedParam ? t('bulkAddTitle') : t('analyzeTitle')}</h1>
-          <p className="page-sub">{ownedParam ? t('bulkAddBody') : t('analyzeBody')}</p>
-
-          {!ownedParam && (
-            <label className="analyze-owned-toggle">
-              <input
-                type="checkbox"
-                checked={owned}
-                onChange={e => setOwned(e.target.checked)}
-              />
-              <span>{t('analyzeOwnedToggle')}</span>
-            </label>
-          )}
+              separate flows (the explicit ask): ?owned=1 (from Add item →
+              several pieces) is a lean closet bulk-add; no param is the
+              "analyze someone's look → wishlist" flow. */}
+          <h1 className="page-h1">{owned ? t('bulkAddTitle') : t('analyzeTitle')}</h1>
+          <p className="page-sub">{owned ? t('bulkAddBody') : t('analyzeBody')}</p>
 
           {/* Large preview hero — when one or more photos staged, show them
               big enough to actually see what's being analyzed. */}
@@ -327,9 +313,10 @@ export function AnalyzePhoto({ user, onSignIn }) {
                 disabled={pendingCount === 0 && !batches.some(b => b.status === 'failed')}
               >
                 <Sparkles size={16} strokeWidth={1.7} />
-                {pendingCount > 0
-                  ? `${t('analyzeRun')}${batches.length > 1 ? ` · ${pendingCount}` : ''}`
-                  : t('analyzeRun')}
+                {(() => {
+                  const label = owned ? t('bulkAddRun') : t('analyzeRun');
+                  return pendingCount > 0 && batches.length > 1 ? `${label} · ${pendingCount}` : label;
+                })()}
               </button>
             </div>
           )}
@@ -352,8 +339,10 @@ export function AnalyzePhoto({ user, onSignIn }) {
                 </div>
 
                 {/* Style summary card sits right under the hero so the
-                    style + notes read like an editorial caption. */}
-                {((Array.isArray(b.style) && b.style.length > 0) || b.notes) && (
+                    style + notes read like an editorial caption. Owned
+                    bulk-add skips it entirely — that path is just "add these
+                    pieces to my closet", no style read, nothing to save. */}
+                {!owned && ((Array.isArray(b.style) && b.style.length > 0) || b.notes) && (
                   <div className="analyze-style-card">
                     <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
                     {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
@@ -427,14 +416,16 @@ export function AnalyzePhoto({ user, onSignIn }) {
                             {it.brand && <> · <strong>{it.brand}</strong></>}
                           </p>
                           <div className="analyze-item-v2-actions">
-                            <a
-                              href={searchUrl(it.searchQuery || it.description)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="btn btn-secondary btn-sm"
-                            >
-                              <ExternalLink size={13} strokeWidth={1.8} /> {t('findSimilar')}
-                            </a>
+                            {!owned && (
+                              <a
+                                href={searchUrl(it.searchQuery || it.description)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-secondary btn-sm"
+                              >
+                                <ExternalLink size={13} strokeWidth={1.8} /> {t('findSimilar')}
+                              </a>
+                            )}
                             <button
                               type="button"
                               className="btn btn-primary btn-sm"

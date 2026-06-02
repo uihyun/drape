@@ -14,7 +14,11 @@ import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
-const VIEWS = ['all', 'brands', 'usage'];
+// Top-row segments. all/brands/usage are display modes of the owned
+// closet; 'wishlist' swaps the whole grid to saved-but-not-owned pieces
+// (kind 'wishlist') — it lives here next to usage so owned vs not-owned
+// is one tap away inside the closet, not a separate profile tab.
+const VIEWS = ['all', 'brands', 'usage', 'wishlist'];
 
 // Owned-closet adds a marketplace-status facet to the shared tag dims.
 // (The owned/wishlist split used to be a facet here; it's now the tab
@@ -30,11 +34,7 @@ function emptyFilters() {
 const countFilters = countLookFilters;
 const matchesFilters = itemMatchesFilters;
 
-// `kind` partitions the grid: the Closet tab shows owned pieces, the
-// Wishlist tab shows saved-but-not-owned ones. They're the same component
-// and the same subscription — only the kind filter + empty-state copy
-// differ — so a "mark I own this" toggle just moves an item between tabs.
-export function Closet({ user, authReady, onSignIn, embedded = false, kind = 'owned' }) {
+export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
   const [items, setItems] = useState(null);
@@ -43,6 +43,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false, kind = 'ow
   const [searchParams, setSearchParams] = useSearchParams();
   const viewParam = searchParams.get('cv');
   const view = VIEWS.includes(viewParam) ? viewParam : 'all';
+  // The wishlist segment is its own kind partition; every other view is a
+  // display mode of the owned closet.
+  const kind = view === 'wishlist' ? 'wishlist' : 'owned';
   const setView = (next) => setSearchParams((prev) => {
     const p = new URLSearchParams(prev); p.set('cv', next); return p;
   }, { replace: true });

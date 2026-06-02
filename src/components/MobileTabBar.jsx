@@ -131,7 +131,12 @@ export function MobileTabBar({ user }) {
         </div>
       )}
 
-      <AddItemSheet open={addItemOpen} user={user} onClose={() => setAddItemOpen(false)} />
+      <AddItemSheet
+        open={addItemOpen}
+        user={user}
+        onClose={() => setAddItemOpen(false)}
+        onSaved={() => { setAddItemOpen(false); navigate('/profile/closet'); }}
+      />
     </>
   );
 }
