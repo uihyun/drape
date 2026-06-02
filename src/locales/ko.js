@@ -400,6 +400,20 @@ export const ko = {
   onboardSlide4Title: '발견하고 저장',
   onboardSlide4Body: '피드를 둘러보고, 갖고 싶은 옷은 위시리스트에 저장하고, 내 룩을 커뮤니티와 공유하세요.',
 
+  // 랜딩 / 마케팅 페이지 (/landing)
+  landingNavLookbook: '룩북',
+  landingNavOpen: '앱 열기',
+  landingFeat1: 'OOTD 캘린더',
+  landingFeat2: '가상 피팅',
+  landingFeat3: '디지털 옷장',
+  landingFeat4: '룩북 피드',
+  landingHeadline: '당신의 옷장이 사는 곳',
+  landingTagline: '착장을 기록하고, 나만의 디지털 옷장을 만들고, 무엇이든 내 몸에 입어보세요.',
+  landingStoreOn: '다운로드',
+  landingStoreGet: '다운로드',
+  landingWebNote: '앱은 곧 출시됩니다.',
+  landingWebNoteLink: '웹에서 시작하기 →',
+
   // ── Report / Block ─────────────────────────────────────────────────
   report: '신고',
   block: '차단',

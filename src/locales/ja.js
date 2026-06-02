@@ -402,6 +402,20 @@ export const ja = {
   onboardSlide4Title: '見つけて保存',
   onboardSlide4Body: 'フィードを探索し、欲しいアイテムをウィッシュリストに保存、自分のルックをコミュニティと共有しましょう。',
 
+  // ランディング / マーケティングページ (/landing)
+  landingNavLookbook: 'ルックブック',
+  landingNavOpen: 'アプリを開く',
+  landingFeat1: 'OOTDカレンダー',
+  landingFeat2: 'バーチャル試着',
+  landingFeat3: 'デジタルクローゼット',
+  landingFeat4: 'ルックブックフィード',
+  landingHeadline: 'あなたのワードローブが住む場所',
+  landingTagline: '着こなしを記録し、デジタルクローゼットを作り、何でも自分の体に試着しましょう。',
+  landingStoreOn: 'ダウンロード',
+  landingStoreGet: 'ダウンロード',
+  landingWebNote: 'アプリは近日公開。',
+  landingWebNoteLink: 'ウェブで始める →',
+
   // ── Report / Block ─────────────────────────────────────────────────
   report: '通報',
   block: 'ブロック',

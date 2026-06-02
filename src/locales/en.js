@@ -400,6 +400,20 @@ export const en = {
   onboardSlide4Title: 'Discover & save',
   onboardSlide4Body: 'Explore the feed, save pieces you want to your wishlist, and share your looks with the community.',
 
+  // Landing / marketing page (/landing)
+  landingNavLookbook: 'Lookbook',
+  landingNavOpen: 'Open app',
+  landingFeat1: 'OOTD calendar',
+  landingFeat2: 'Virtual try-on',
+  landingFeat3: 'Digital closet',
+  landingFeat4: 'Lookbook feed',
+  landingHeadline: 'Where your wardrobe lives',
+  landingTagline: 'Log your outfits, build your digital closet, and try anything on — on you.',
+  landingStoreOn: 'Download on the',
+  landingStoreGet: 'GET IT ON',
+  landingWebNote: 'Coming soon to the app stores.',
+  landingWebNoteLink: 'Start on the web →',
+
   // ── Report / Block ─────────────────────────────────────────────────
   report: 'Report',
   block: 'Block',

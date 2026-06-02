@@ -23,6 +23,7 @@ import { Calendar } from './pages/Calendar.jsx';
 import { Profile } from './pages/Profile.jsx';
 import { PublicProfile } from './pages/PublicProfile.jsx';
 import { Welcome } from './pages/Welcome.jsx';
+import { Landing } from './pages/Landing.jsx';
 import { BoardList } from './pages/BoardList.jsx';
 import { BoardEditor } from './pages/BoardEditor.jsx';
 import { BoardDetail } from './pages/BoardDetail.jsx';
@@ -99,7 +100,7 @@ export default function App() {
 
 // Routes that render edge-to-edge with no global chrome (own header,
 // own background). The Welcome / sign-in page is the canonical example.
-const FULL_BLEED = [/^\/welcome$/];
+const FULL_BLEED = [/^\/welcome$/, /^\/landing$/];
 
 // Routes where the floating bottom nav would overlap a page-level CTA
 // (Save outfit, Generate, Upload, etc.) or a full-screen viewer. The
@@ -152,6 +153,8 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
         <Routes>
           <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />
           <Route path="/welcome" element={isLoggedIn ? <Navigate to="/profile" replace /> : <Welcome />} />
+          {/* Public marketing page — the drape.nyc domain points here. */}
+          <Route path="/landing" element={<Landing />} />
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />
