@@ -53,10 +53,13 @@ async function startTryOn({
   // photo's background. Pass true to run segmentation on the result so
   // the figure ends up on a clean white card (identity-refs style).
   removeCustomBg = false,
+  // Outfit-reference: re-create a public outfit's whole look on the user.
+  // The server reads that outfit's photo as the garment input — no itemIds.
+  outfitRefId = null,
 }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
-  if (!Array.isArray(itemIds) || itemIds.length === 0) throw new Error('no_items');
+  if (!outfitRefId && (!Array.isArray(itemIds) || itemIds.length === 0)) throw new Error('no_items');
 
   let customPhotoPath = null;
   if (customPhotoBlob) {
@@ -68,7 +71,7 @@ async function startTryOn({
 
   const callable = httpsCallable(functions, 'virtualTryOn');
   const res = await callable({
-    itemIds,
+    itemIds: Array.isArray(itemIds) ? itemIds : [],
     modelTier,
     title,
     prompt,
@@ -76,6 +79,7 @@ async function startTryOn({
     regenerateOf,
     customPhotoPath,
     removeCustomBg,
+    outfitRefId,
   });
   return res.data; // { generationId }
 }

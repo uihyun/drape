@@ -163,6 +163,8 @@ export const en = {
   analyzeAPhoto: 'Analyze a photo',
   browseFeed: 'Browse feed',
   tryOnSource: 'Photo to dress',
+  tryOnOutfitRefHead: 'The look to recreate',
+  tryOnOutfitRefHint: "We'll recreate this whole outfit on you.",
   savedRefs: 'saved references',
   editRefs: 'Edit identity references',
   useCustomPhoto: 'Use a custom photo',

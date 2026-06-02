@@ -163,6 +163,8 @@ export const ko = {
   analyzeAPhoto: '사진 분석하기',
   browseFeed: '피드 보러 가기',
   tryOnSource: '입혀줄 사진',
+  tryOnOutfitRefHead: '재현할 룩',
+  tryOnOutfitRefHint: '이 코디 전체를 당신에게 입혀드려요.',
   savedRefs: '저장된 레퍼런스',
   editRefs: '레퍼런스 사진 편집',
   useCustomPhoto: '사진 직접 올리기',

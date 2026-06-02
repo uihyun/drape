@@ -4143,6 +4143,19 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-muted);
   margin-left: 0.4rem;
 }
+/* Outfit-reference: the borrowed look shown as the garment to recreate. */
+.tryon-outfitref { margin-top: 0.5rem; }
+.tryon-outfitref-card {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface-elevated, #f3f3f3);
+  margin-top: 0.5rem;
+}
+.tryon-outfitref-card img { width: 100%; height: 100%; object-fit: cover; }
+
 .tryon-custom-card {
   position: relative;
   display: flex;

@@ -4,7 +4,9 @@ import { Check, Sparkles, Upload, X } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
 import { GenerationService } from '../services/generation-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { CameraService } from '../services/camera.js';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Try-on entry. Pick WHO (saved identity refs, or a one-shot custom photo)
@@ -20,6 +22,11 @@ export function TryOn({ user, onSignIn }) {
     const ids = search.get('items');
     return new Set(ids ? ids.split(',') : []);
   });
+  // Outfit-reference mode: re-create a whole look from someone's outfit photo.
+  // `?outfitRef=<id>` — we load that outfit to show its photo as the garment;
+  // the closet item grid is hidden and submit sends outfitRefId instead.
+  const outfitRefId = search.get('outfitRef');
+  const [outfitRef, setOutfitRef] = useState(null);
   // Optional scene description sent to the model — empty = default
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
   // photo mode preserves the photo's background regardless).
@@ -38,6 +45,16 @@ export function TryOn({ user, onSignIn }) {
     });
     return unsub;
   }, [user]);
+
+  // Load the referenced outfit (its photo becomes the garment input).
+  useEffect(() => {
+    if (!outfitRefId) { setOutfitRef(null); return; }
+    let cancelled = false;
+    OutfitService.getOutfit(outfitRefId)
+      .then(o => { if (!cancelled) setOutfitRef(o); })
+      .catch(() => { if (!cancelled) setOutfitRef(null); });
+    return () => { cancelled = true; };
+  }, [outfitRefId]);
 
   // Object URL cleanup for the custom-photo preview.
   useEffect(() => {
@@ -107,7 +124,7 @@ export function TryOn({ user, onSignIn }) {
   };
 
   const submit = async () => {
-    if (selected.size === 0) return;
+    if (!outfitRefId && selected.size === 0) return;
     setSubmitting(true);
     setError(null);
     // Kick off in the background so the user can browse other tabs while
@@ -118,7 +135,8 @@ export function TryOn({ user, onSignIn }) {
     // — otherwise we navigate to the tryon tab immediately.
     try {
       const promise = GenerationService.startTryOn({
-        itemIds: Array.from(selected),
+        itemIds: outfitRefId ? [] : Array.from(selected),
+        outfitRefId: outfitRefId || null,
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
@@ -226,9 +244,19 @@ export function TryOn({ user, onSignIn }) {
         </div>
       )}
 
-      {/* ── Pick items from your closet ───────────────────────────── */}
+      {/* ── The garment: a referenced outfit's whole look, OR closet items ── */}
       <div style={{ marginTop: '0.75rem' }} />
-      {(
+      {outfitRefId ? (
+        <section className="tryon-outfitref">
+          <h3 className="tryon-section-head">{t('tryOnOutfitRefHead')}</h3>
+          <p className="tryon-source-hint">{t('tryOnOutfitRefHint')}</p>
+          <div className="tryon-outfitref-card">
+            {outfitRef && outfitCardPhoto(outfitRef)
+              ? <img src={outfitCardPhoto(outfitRef)} alt="" referrerPolicy="no-referrer" />
+              : <div className="item-card-skeleton" />}
+          </div>
+        </section>
+      ) : (
         items.length === 0 ? (
           <div className="empty-state empty-state-card" style={{ marginTop: '1rem' }}>
             <p>{t('tryOnEmptyCloset')}</p>
@@ -269,10 +297,10 @@ export function TryOn({ user, onSignIn }) {
           type="button"
           className="btn btn-primary"
           onClick={submit}
-          disabled={submitting || selected.size === 0}
+          disabled={submitting || (!outfitRefId && selected.size === 0)}
         >
           <Sparkles size={16} strokeWidth={1.8} />
-          {submitting ? t('generating') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`}
+          {submitting ? t('generating') : (outfitRefId ? t('startTryOn') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`)}
         </button>
       </div>
     </div>

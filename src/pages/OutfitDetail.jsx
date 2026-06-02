@@ -363,11 +363,16 @@ export function OutfitDetail({ user, onSignIn }) {
             {isPublic ? <EyeOff size={17} strokeWidth={1.7} /> : <Eye size={17} strokeWidth={1.7} />}
             {isPublic ? t('unlist') : t('publishToFeed')}
           </button>
-        ) : (outfit.itemIds || []).length > 0 ? (
-          <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="outfit-action-primary">
-            <Sparkles size={17} strokeWidth={1.7} /> {t('tryThisOn')}
-          </Link>
-        ) : null}
+        ) : (
+          /* Visitors re-create the whole look from this outfit's PHOTO
+             (outfit-ref mode) — its itemIds belong to the owner's closet and
+             can't be used directly. Available whenever the outfit has a photo. */
+          outfitCardPhoto(outfit) ? (
+            <Link to={`/tryon?outfitRef=${outfit.id}`} className="outfit-action-primary">
+              <Sparkles size={17} strokeWidth={1.7} /> {t('tryThisOn')}
+            </Link>
+          ) : null
+        )}
 
         <div className="outfit-action-row">
           {/* Visitor social actions share this row with Share — same format,

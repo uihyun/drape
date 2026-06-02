@@ -165,6 +165,8 @@ export const ja = {
   analyzeAPhoto: '写真を解析する',
   browseFeed: 'フィードを見る',
   tryOnSource: '着せる写真',
+  tryOnOutfitRefHead: '再現するルック',
+  tryOnOutfitRefHint: 'このコーデ全体をあなたに着せます。',
   savedRefs: '保存中のレファレンス',
   editRefs: 'アイデンティティ写真を編集',
   useCustomPhoto: '写真をその場でアップロード',

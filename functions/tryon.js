@@ -95,6 +95,42 @@ function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
     return `(${i + 1}) ${parts.join(' ')}`;
   }).join(', ');
 
+  // ── outfit-ref: copy a whole worn look from a reference photo ─────
+  // The garment input is NOT an isolated crop — it's a photo of someone
+  // (or a flat-lay) wearing the complete outfit. Re-create that entire
+  // styling on the user's identity, keeping THEIR face/body but taking the
+  // clothing head-to-toe from the reference look.
+  if (mode === 'outfit-ref') {
+    const bgClause = backgroundDesc
+      ? `Place them against this background: ${backgroundDesc}.`
+      : `Place them against a plain white fashion lookbook background.`;
+    return `You are given identity reference photo(s) of a person FIRST,
+then a photo showing a complete outfit/look worn by someone else (or laid
+out). Re-create that ENTIRE outfit on the person from the identity photos.
+
+Take the full styling from the outfit photo — every visible garment and
+how they are combined (top, bottom, outerwear, shoes, and notable
+accessories), including colors, materials, proportions, and the way the
+pieces are layered and worn. Reproduce the look as faithfully as possible.
+
+KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
+body proportions, height. Match the FIRST identity photo's pose and framing.
+Do NOT copy the other person's face, body, or identity from the outfit
+photo — only their clothing and styling. Full-body shot, head to feet,
+do not crop.
+
+Render fabric texture, drape, fold, and shadow naturally on the body.
+
+${bgClause}
+
+${customPrompt ? `Additional direction: ${customPrompt}` : ''}
+
+OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person in
+ONE outfit. Do NOT produce a grid, collage, contact sheet, side-by-side
+comparison, before/after split, or multiple poses. One image, one frame,
+one person, no panels.`;
+  }
+
   // ── custom-photo: surgical, region-only ──────────────────────────
   // Restored verbatim from commit 1bbfdbb (the first cut of this mode)
   // because the later region-by-region itemized version over-prescribed
@@ -189,11 +225,17 @@ exports.virtualTryOn = onCall(
       // to run segmentation on the result so the figure ends up on a
       // clean white card (matches the identity-refs default look).
       removeCustomBg = false,
+      // Outfit-reference mode: re-create the FULL look from a public outfit's
+      // photo on the user's identity. The garment input is that worn-outfit
+      // photo (not isolated crops), so no itemIds are needed. The server
+      // resolves the photo from the outfit doc and only allows public ones.
+      outfitRefId = null,
     } = request.data || {};
-    if (!Array.isArray(itemIds) || itemIds.length === 0) {
+    const isOutfitRef = !!outfitRefId;
+    if (!isOutfitRef && (!Array.isArray(itemIds) || itemIds.length === 0)) {
       throw new HttpsError('invalid-argument', 'itemIds required');
     }
-    if (itemIds.length > 6) {
+    if (Array.isArray(itemIds) && itemIds.length > 6) {
       // Practical limit — more than ~6 layered items pushes Nano Banana Pro
       // past its quoted 14-image total budget once we add identity refs +
       // safety/system parts. Reject early instead of hoping it copes.
@@ -234,7 +276,8 @@ exports.virtualTryOn = onCall(
     const genRef = db.collection('generations').doc();
     await genRef.set({
       userId: uid,
-      itemIds,
+      itemIds: Array.isArray(itemIds) ? itemIds : [],
+      outfitRefId: outfitRefId || null,
       title: (title || '').slice(0, 80),
       identityRefCount: referenceCount,
       customPhotoPath: customPhotoPath || null,
@@ -258,34 +301,66 @@ exports.virtualTryOn = onCall(
       }
     }
 
-    // ── Load items + verify ownership ──────────────────────────────────
-    const itemDocs = await Promise.all(
-      itemIds.map(id => db.collection('items').doc(id).get())
-    );
+    // ── Load garment input ─────────────────────────────────────────────
+    // Two sources: (a) the user's own item crops (itemIds), ownership-checked;
+    // (b) a public outfit's worn-look photo (outfitRefId) — re-create the
+    // whole look. Only ONE mode is active per call.
     const items = [];
-    for (const snap of itemDocs) {
-      if (!snap.exists) {
-        await genRef.update({ status: 'failed', errors: ['item missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('not-found', 'item missing');
+    let outfitRefPart = null;
+    if (isOutfitRef) {
+      const oSnap = await db.collection('outfits').doc(outfitRefId).get();
+      if (!oSnap.exists) {
+        await genRef.update({ status: 'failed', errors: ['outfit missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        throw new HttpsError('not-found', 'outfit missing');
       }
-      const data = snap.data();
-      if (data.userId !== uid) {
-        await genRef.update({ status: 'failed', errors: ['not your item'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('permission-denied', 'not your item');
+      const o = oSnap.data();
+      // Only public outfits can be borrowed (your own private ones too).
+      if (!o.isPublic && o.userId !== uid) {
+        await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        throw new HttpsError('permission-denied', 'outfit not public');
       }
-      if (data.status !== 'ready' || !data.croppedPath) {
-        await genRef.update({ status: 'failed', errors: ['item not processed yet'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('failed-precondition', 'item not processed yet');
+      // Prefer the cutout (person removed → cleaner garment read) then the
+      // full photo. Stored path fields mirror outfit-service.
+      const garmentPath = o.photoCutPath || o.photoPath || o.sourcePhotoPath || o.coverPath;
+      if (!garmentPath) {
+        await genRef.update({ status: 'failed', errors: ['outfit has no photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        throw new HttpsError('failed-precondition', 'outfit has no photo');
       }
-      items.push({ id: snap.id, ...data });
+      outfitRefPart = await downloadAsInlineData(bucket, garmentPath);
+    } else {
+      const itemDocs = await Promise.all(
+        itemIds.map(id => db.collection('items').doc(id).get())
+      );
+      for (const snap of itemDocs) {
+        if (!snap.exists) {
+          await genRef.update({ status: 'failed', errors: ['item missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('not-found', 'item missing');
+        }
+        const data = snap.data();
+        if (data.userId !== uid) {
+          await genRef.update({ status: 'failed', errors: ['not your item'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('permission-denied', 'not your item');
+        }
+        if (data.status !== 'ready' || !data.croppedPath) {
+          await genRef.update({ status: 'failed', errors: ['item not processed yet'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('failed-precondition', 'item not processed yet');
+        }
+        items.push({ id: snap.id, ...data });
+      }
     }
 
     // ── Build prompt parts ─────────────────────────────────────────────
     const parts = [...referenceParts];
-    for (const it of items) {
-      parts.push(await downloadAsInlineData(bucket, it.croppedPath));
+    if (isOutfitRef) {
+      parts.push(outfitRefPart);
+    } else {
+      for (const it of items) {
+        parts.push(await downloadAsInlineData(bucket, it.croppedPath));
+      }
     }
-    const promptMode = customPhotoPath ? 'custom-photo' : 'identity-refs';
+    const promptMode = isOutfitRef
+      ? 'outfit-ref'
+      : (customPhotoPath ? 'custom-photo' : 'identity-refs');
     parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) });
 
     // ── Run N variants in parallel ─────────────────────────────────────
