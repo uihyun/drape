@@ -49,6 +49,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // was removed — the two intents are separate flows with their own entries.
   const owned = ownedParam;
   const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
+  // True while the owned flow is detecting + auto-adding to the closet, so we
+  // show a single "adding…" screen instead of flashing the review UI.
+  const [bulkAdding, setBulkAdding] = useState(false);
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
@@ -119,6 +122,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
       .filter(({ b }) => b.status === 'pending' || b.status === 'failed');
     if (queue.length === 0) return;
     setError(null);
+    if (owned) setBulkAdding(true);
+    const detected = []; // {blob, items, style} collected for owned auto-add
     for (const { idx } of queue) {
       setBatches(prev => prev.map((x, i) => i === idx ? { ...x, status: 'analyzing' } : x));
       try {
@@ -130,10 +135,25 @@ export function AnalyzePhoto({ user, onSignIn }) {
         setBatches(prev => prev.map((x, i) => i === idx
           ? { ...x, status: 'done', style: data.style || '', notes: data.notes || '', items: data.items || [] }
           : x));
+        detected.push({ blob, items: data.items || [], style: data.style || '' });
       } catch (e) {
         setBatches(prev => prev.map((x, i) => i === idx ? { ...x, status: 'failed' } : x));
         setError(e.message || 'analyze_failed');
       }
+    }
+    // Owned bulk-add is a one-shot action: the user already curated this set
+    // of photos, so don't drop them on a review screen and ask them to tap
+    // "add all" again — add every detected piece straight to the closet and
+    // land there, exactly like single add-item.
+    if (owned) {
+      for (const d of detected) {
+        for (const piece of d.items) {
+          try {
+            await ItemService.createFromDetected({ blob: d.blob, detected: piece, sourceLabel: d.style, owned: true });
+          } catch (e) { setError(e.message || 'save_failed'); }
+        }
+      }
+      navigate('/profile/closet');
     }
   };
 
@@ -226,6 +246,17 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const anyDone = batches.some(b => b.status === 'done');
   const searchUrl = (q) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
 
+  if (bulkAdding) {
+    return (
+      <div className="page analyze-photo">
+        <div className="loading" style={{ flexDirection: 'column', gap: '1rem', paddingTop: '4rem' }}>
+          <div className="spinner" />
+          <p className="page-sub">{t('bulkAddingToCloset')}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page analyze-photo">
       {!anyDone ? (
@@ -276,7 +307,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
               ref={fileRef}
               type="file"
               accept="image/*"
-              multiple
+              // Multi-select only in the owned bulk-add flow. Plain analyze
+              // reads ONE look at a time, so a single photo is all it needs.
+              multiple={owned}
               className="hidden"
               onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
             />
@@ -284,12 +317,12 @@ export function AnalyzePhoto({ user, onSignIn }) {
               type="button"
               className="btn btn-secondary analyze-input-btn"
               onClick={async () => {
-                // Burst lives in the in-page getUserMedia modal, which works
-                // inside the iOS/Android WebView too (NSCameraUsageDescription
-                // is set) — so the native app gets real "탁탁탁" multi-shot,
-                // not the OS one-shot camera. Only fall back to the native
-                // single-shot picker on the rare device with no getUserMedia.
-                if (canBurst) { setCameraOpen(true); return; }
+                // Burst (multi-shot) belongs to the owned bulk-add flow only.
+                // The in-page getUserMedia modal works inside the iOS/Android
+                // WebView too (NSCameraUsageDescription is set). Plain analyze
+                // takes a single shot; fall back to the native single-shot
+                // picker when getUserMedia is unavailable.
+                if (owned && canBurst) { setCameraOpen(true); return; }
                 try {
                   const blob = await CameraService.takePhoto();
                   if (blob) addFiles([blob]);
@@ -298,7 +331,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
                 }
               }}
             >
-              <CameraIcon size={16} strokeWidth={1.6} /> {canBurst ? t('burstCapture') : t('takePhoto')}
+              <CameraIcon size={16} strokeWidth={1.6} /> {owned && canBurst ? t('burstCapture') : t('takePhoto')}
             </button>
           </div>
 

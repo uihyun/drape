@@ -110,10 +110,7 @@ export function MobileTabBar({ user }) {
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/analyze')}>
               <span className="create-sheet-icon"><ScanEye size={20} strokeWidth={1.5} /></span>
-              <span className="create-sheet-label">
-                {t('createAnalyze')}
-                <span className="create-sheet-sub">{t('createAnalyzeSub')}</span>
-              </span>
+              <span className="create-sheet-label">{t('createAnalyze')}</span>
             </button>
             <button type="button" className="create-sheet-row" onClick={go('/tryon')}>
               <span className="create-sheet-icon"><Sparkles size={20} strokeWidth={1.5} /></span>
