@@ -5548,6 +5548,24 @@ input[type="search"]::-webkit-search-decoration {
   letter-spacing: -0.01em;
 }
 
+/* Welcome reuses the landing's CSS phone mockups in its hero. The page is
+   locked to one screen (no scroll), so the visual is sized to the flex
+   area and clipped if a very short screen can't fit it whole. */
+.welcome-showcase {
+  overflow: hidden;
+  padding: 0.5rem 0;
+}
+.welcome-showcase .lp-visual {
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.welcome-showcase .lp-phone {
+  width: clamp(132px, 38%, 178px);
+}
+
 .welcome-actions {
   display: flex;
   flex-direction: column;

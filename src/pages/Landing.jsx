@@ -1,27 +1,21 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
+import { PhoneShowcase } from '../components/PhoneShowcase.jsx';
 import '../styles/landing.css';
 
 // Marketing landing page. Lives at /landing and is the page the buyable
-// drape.nyc domain will point at (see deploy notes). Fully public, full
-// bleed (no app header / nav). The phone mockups are rendered in pure
-// CSS/markup — no screenshot assets to keep in sync — so the page looks
-// like real drape UI and can be reskinned later with actual captures.
+// drape.nyc domain points at (see deploy notes). Fully public, full bleed
+// (no app header / nav).
 export function Landing() {
   const { t, lang, setLang } = useLocale();
   const [langOpen, setLangOpen] = useState(false);
-
   const WEB_APP = 'https://drape-9e532.web.app';
 
   return (
     <div className="landing">
       <header className="lp-nav">
-        <a className="lp-brand" href={WEB_APP}>drape</a>
-        <nav className="lp-nav-links">
-          <a href={`${WEB_APP}/feed`}>{t('landingNavLookbook')}</a>
-          <a href={`${WEB_APP}/welcome`}>{t('landingNavOpen')}</a>
-        </nav>
+        <span className="lp-brand">drape</span>
         <div className="lp-lang">
           <button
             type="button"
@@ -55,10 +49,7 @@ export function Landing() {
       </header>
 
       <main className="lp-hero">
-        <div className="lp-visual" aria-hidden="true">
-          <PhoneCalendar />
-          <PhoneCloset />
-        </div>
+        <PhoneShowcase />
 
         <div className="lp-copy">
           <ul className="lp-pills">
@@ -75,24 +66,21 @@ export function Landing() {
           <p className="lp-tagline">{t('landingTagline')}</p>
 
           <div className="lp-stores">
-            <a className="lp-store" href={`${WEB_APP}/welcome`}>
+            <span className="lp-store">
               <AppleGlyph />
               <span className="lp-store-text">
                 <small>{t('landingStoreOn')}</small>
                 <strong>App Store</strong>
               </span>
-            </a>
-            <a className="lp-store" href={`${WEB_APP}/welcome`}>
+            </span>
+            <span className="lp-store">
               <PlayGlyph />
               <span className="lp-store-text">
                 <small>{t('landingStoreGet')}</small>
                 <strong>Google Play</strong>
               </span>
-            </a>
+            </span>
           </div>
-          <p className="lp-web-note">
-            {t('landingWebNote')} <a href={`${WEB_APP}/welcome`}>{t('landingWebNoteLink')}</a>
-          </p>
         </div>
       </main>
 
@@ -106,65 +94,6 @@ export function Landing() {
     </div>
   );
 }
-
-// ── CSS phone mockups ───────────────────────────────────────────────────
-// A mini OOTD calendar: month header + a 5×7 grid where some cells hold a
-// little "look" tile (a soft neutral block standing in for an OOTD photo).
-function PhoneCalendar() {
-  const filled = new Set([2, 4, 7, 8, 11, 14, 15, 18, 21, 22, 25, 27]);
-  return (
-    <div className="lp-phone lp-phone--back">
-      <div className="lp-phone-screen">
-        <div className="lp-cal-top">
-          <span className="lp-cal-handle">@you</span>
-          <span className="lp-cal-invite">Invite</span>
-        </div>
-        <div className="lp-cal-tabs"><span className="on">Calendar</span><span>Closet</span><span>Outfits</span></div>
-        <div className="lp-cal-month">June 2026</div>
-        <div className="lp-cal-grid">
-          {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className={`lp-cal-cell${filled.has(i) ? ' filled' : ''}`}>
-              {filled.has(i) && <span className="lp-cal-look" style={{ '--h': LOOK_HUES[i % LOOK_HUES.length] }} />}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// A mini closet grid: garment cards, each a soft block + category + name,
-// echoing the real closet's masonry.
-function PhoneCloset() {
-  return (
-    <div className="lp-phone lp-phone--front">
-      <div className="lp-phone-screen">
-        <div className="lp-closet-grid">
-          {CLOSET_TILES.map((tile, i) => (
-            <div key={i} className="lp-closet-card">
-              <div className="lp-closet-img" style={{ '--h': tile.hue, '--a': tile.alt }} />
-              <span className="lp-closet-cat">{tile.cat}</span>
-              <span className="lp-closet-name">{tile.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const LOOK_HUES = [222, 28, 0, 200, 45, 260, 12];
-const CLOSET_TILES = [
-  { cat: 'OUTERWEAR', name: 'Charcoal wool coat', hue: 220, alt: 4 },
-  { cat: 'TOP', name: 'Ivory silk blouse', hue: 40, alt: 8 },
-  { cat: 'BAG', name: 'Black leather tote', hue: 0, alt: 0 },
-  { cat: 'BOTTOM', name: 'Indigo wide jeans', hue: 222, alt: 6 },
-  { cat: 'SKIRT', name: 'Tartan pleated skirt', hue: 12, alt: 5 },
-  { cat: 'KNIT', name: 'Camel ribbed knit', hue: 32, alt: 7 },
-  { cat: 'SHOES', name: 'Black pointed heels', hue: 0, alt: 2 },
-  { cat: 'HAT', name: 'Wide-brim fedora', hue: 28, alt: 3 },
-  { cat: 'DRESS', name: 'Slip midi dress', hue: 260, alt: 5 },
-];
 
 const LANG_FLAG = { en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵' };
 

@@ -1,8 +1,8 @@
-// Canvas-based "Made with Drape" watermark applied to Free-tier downloads.
+// Canvas-based "Made with drape" watermark applied to Free-tier downloads.
 // Pro tier downloads the raw bytes. The intent is light brand marking, not
 // piracy prevention — Pro users get the clean asset.
 
-const WORDMARK = 'Made with Drape';
+const WORDMARK = 'Made with drape';
 const FONT = '600 16px -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif';
 
 /**

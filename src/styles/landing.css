@@ -162,79 +162,8 @@
 }
 .lp-web-note a { color: var(--lp-accent); font-weight: 600; }
 
-/* ── Phone mockups ───────────────────────────────────────────────────── */
-.lp-visual {
-  position: relative;
-  width: 100%;
-  max-width: 460px;
-  height: clamp(360px, 75vw, 540px);
-}
-.lp-phone {
-  position: absolute;
-  width: clamp(190px, 46vw, 240px);
-  aspect-ratio: 1 / 2.05;
-  background: #14171a;
-  border-radius: 34px;
-  padding: 8px;
-  box-shadow: 0 30px 60px -20px rgba(20,23,26,0.45), 0 8px 20px -8px rgba(0,0,0,0.2);
-}
-.lp-phone-screen {
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  border-radius: 27px;
-  overflow: hidden;
-  padding: 12px 10px;
-}
-.lp-phone--back {
-  left: 2%;
-  top: 0;
-  transform: rotate(-4deg);
-  z-index: 1;
-}
-.lp-phone--front {
-  right: 2%;
-  bottom: 0;
-  transform: rotate(3deg);
-  z-index: 2;
-}
-
-/* calendar phone */
-.lp-cal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.lp-cal-handle { font-size: 0.7rem; font-weight: 700; }
-.lp-cal-invite {
-  font-size: 0.55rem; font-weight: 700; color: #fff;
-  background: var(--lp-accent); padding: 3px 8px; border-radius: 999px;
-}
-.lp-cal-tabs { display: flex; gap: 8px; font-size: 0.52rem; color: var(--lp-muted); margin-bottom: 8px; }
-.lp-cal-tabs .on { color: var(--lp-ink); font-weight: 700; border-bottom: 1.5px solid var(--lp-ink); padding-bottom: 2px; }
-.lp-cal-month { font-size: 0.62rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
-.lp-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.lp-cal-cell {
-  aspect-ratio: 1; border-radius: 4px; background: #F5F5F4;
-  display: flex; align-items: center; justify-content: center;
-}
-.lp-cal-look {
-  width: 100%; height: 100%; border-radius: 4px;
-  background: linear-gradient(160deg, hsl(var(--h) 18% 82%), hsl(var(--h) 22% 62%));
-}
-
-/* closet phone */
-.lp-closet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.lp-closet-card { display: flex; flex-direction: column; }
-.lp-closet-img {
-  aspect-ratio: 3 / 4; border-radius: 6px;
-  background:
-    radial-gradient(circle at 50% 38%, hsl(var(--h) calc(var(--a) * 3%) 88%), hsl(var(--h) calc(var(--a) * 4%) 70%));
-}
-.lp-closet-cat {
-  font-size: 0.4rem; font-weight: 700; letter-spacing: 0.04em;
-  color: var(--lp-muted); margin-top: 3px;
-}
-.lp-closet-name {
-  font-size: 0.5rem; color: var(--lp-ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+/* Phone mockups (.lp-visual / .lp-phone / .lp-cal-* / .lp-closet-*) live in
+   phone-showcase.css — shared with the welcome screen. */
 
 /* ── Footer ──────────────────────────────────────────────────────────── */
 .lp-footer {

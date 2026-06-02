@@ -1,6 +1,6 @@
 {
   "appId": "com.uihyun.drape",
-  "appName": "Drape",
+  "appName": "drape",
   "webDir": "dist",
   "server": {
     "hostname": "localhost",

@@ -1,6 +1,6 @@
 {
-  "name": "Drape — Digital Closet & Virtual Try-On",
-  "short_name": "Drape",
+  "name": "drape — Digital Closet & Virtual Try-On",
+  "short_name": "drape",
   "description": "Photograph your wardrobe, see clothes on yourself before wearing them, and log your daily outfits.",
   "start_url": "/",
   "display": "standalone",

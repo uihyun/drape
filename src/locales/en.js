@@ -270,7 +270,7 @@ export const en = {
   // ── Add item ───────────────────────────────────────────────────────
   uploadPhoto: 'Upload photo',
   takePhoto: 'Take photo',
-  addItemHint: 'Snap each piece on a hanger, on the floor, or while you wear it. Drape crops out everything but the garment.',
+  addItemHint: 'Snap each piece on a hanger, on the floor, or while you wear it. drape crops out everything but the garment.',
   addItemBulkTitle: 'Add several pieces at once',
   addItemBulkHint: 'Add them all at once',
   addItemGuideTitle: 'Tips for the cleanest crop',
@@ -346,7 +346,7 @@ export const en = {
   usedInOutfits: 'Outfits',
   usedInBoards: 'Boards',
   addIdentityRefsTitle: 'Add identity reference photos first',
-  addIdentityRefsBody: 'Drape needs 2–3 full-body photos of you to preserve your face and pose when trying on clothes.',
+  addIdentityRefsBody: 'drape needs 2–3 full-body photos of you to preserve your face and pose when trying on clothes.',
   goToSettings: 'Go to settings',
 
   // ── Calendar ───────────────────────────────────────────────────────
@@ -392,7 +392,7 @@ export const en = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'Your closet, on your phone',
-  onboardSlide1Body: 'Snap each piece — or add several at once from one photo. Drape cuts out the garment and tags it automatically.',
+  onboardSlide1Body: 'Snap each piece — or add several at once from one photo. drape cuts out the garment and tags it automatically.',
   onboardSlide2Title: 'See it on you, first',
   onboardSlide2Body: 'Add 2–3 full-body photos of yourself, then try on any item — or recreate someone else’s whole look on your body.',
   onboardSlide3Title: 'Build looks, log your days',

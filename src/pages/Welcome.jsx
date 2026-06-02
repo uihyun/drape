@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Compass, ChevronDown } from 'lucide-react';
 import { AuthService } from '../services/auth-service.js';
+import { PhoneShowcase } from '../components/PhoneShowcase.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 
 // First-run welcome / sign-in page (Lekondo capture 1):
@@ -52,7 +53,7 @@ export function Welcome() {
   return (
     <div className="welcome">
       <header className="welcome-header">
-        <span className="welcome-brand">DRAPE</span>
+        <span className="welcome-brand">drape</span>
         <div className="welcome-lang">
           <button
             type="button"
@@ -85,10 +86,8 @@ export function Welcome() {
         </div>
       </header>
 
-      <section className="welcome-hero" aria-hidden="true">
-        <div className="welcome-hero-panel">
-          <p className="welcome-tagline">{t('welcomeTagline')}</p>
-        </div>
+      <section className="welcome-hero welcome-showcase">
+        <PhoneShowcase />
       </section>
 
       <section className="welcome-actions">

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Drape</string>
-    <string name="title_activity_main">Drape</string>
+    <string name="app_name">drape</string>
+    <string name="title_activity_main">drape</string>
     <string name="package_name">com.uihyun.drape</string>
     <string name="custom_url_scheme">com.uihyun.drape</string>
 </resources>
