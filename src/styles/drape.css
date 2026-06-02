@@ -2838,7 +2838,17 @@ input[type="search"]::-webkit-search-decoration {
   background: var(--surface-elevated);
   border: 1px solid var(--border);
 }
-.identity-ref img { width: 100%; height: 100%; object-fit: cover; }
+.identity-ref img {
+  width: 100%; height: 100%; object-fit: cover;
+  /* iOS WebKit otherwise hijacks a press-drag on the <img> with its own
+     native image drag / callout, which fires pointercancel and kills the
+     reorder gesture before it commits. Disable all of that so OUR pointer
+     handlers own the drag. */
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 .identity-ref.is-primary { border: 1.5px solid var(--accent); }
 .identity-ref-badge {
   position: absolute;
@@ -2870,7 +2880,10 @@ input[type="search"]::-webkit-search-decoration {
   touch-action: pan-y;
 }
 .identity-ref:not(.identity-ref-add):active { cursor: grabbing; }
-.identity-ref.is-dragging { opacity: 0.55; }
+/* While a slot is the one being dragged, take it out of hit-testing so
+   document.elementFromPoint resolves to the slot UNDERNEATH the finger
+   (the drop target) rather than the dragged slot itself. */
+.identity-ref.is-dragging { opacity: 0.55; pointer-events: none; }
 .identity-ref.is-drop-target {
   outline: 2px dashed var(--accent);
   outline-offset: 3px;

@@ -4,6 +4,7 @@ import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2,
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
+import { publicOrigin } from '../services/platform-service.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
@@ -456,7 +457,7 @@ function IdentitySection({ user, t }) {
                   <span>{t('uploading')}</span>
                 </span>
               ) : (
-                <img src={r.url} alt="" />
+                <img src={r.url} alt="" draggable={false} />
               )}
             </button>
             {i === 0 && <span className="identity-ref-badge">{t('identityRefsPrimaryBadge')}</span>}
@@ -500,10 +501,19 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   // Invite = share a referral link to the user's public profile (or the
   // app URL if no handle yet). Same behavior the old Profile button had.
   const onInvite = async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://drape-9e532.web.app';
+    // publicOrigin() returns the hosted address even inside the native
+    // webview (whose own origin is https://localhost and useless to share).
+    const origin = publicOrigin();
     const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
     try {
-      await shareLink({ title: t('inviteShareTitle'), text: t('inviteShareText'), url });
+      // Fold the URL into the text too: some share targets (Messages note,
+      // certain mail clients) render only the `text` field and silently drop
+      // a separately-passed `url`, which is why the invite showed no link.
+      await shareLink({
+        title: t('inviteShareTitle'),
+        text: `${t('inviteShareText')} ${url}`,
+        url,
+      });
     } catch (err) {
       console.warn('invite share failed', err?.message);
     }

@@ -36,12 +36,15 @@ export const isAndroid = () => getPlatform() === 'android';
 export const isWeb = () => getPlatform() === 'web';
 
 // Public-facing origin for share / invite / canonical URLs. We force the
-// canonical brand domain (drape.app) in production so a link a user
-// shares from REPLACE_ME_DRAPE_PROJECT.web.app or the native Capacitor webview still
-// looks like drape.app. Dev (localhost / 127.0.0.1 / .local) falls
-// through to window.location.origin so local share testing works.
-const PUBLIC_BRAND_ORIGIN = 'https://drape.app';
+// canonical hosted origin so a link shared from the native Capacitor
+// webview (which runs on https://localhost) or any preview host still
+// points at the real app. The native app ALWAYS uses the hosted origin —
+// its own localhost is never a shareable address. Only a real browser on
+// localhost / 127.0.0.1 / .local (local dev) falls through to
+// window.location.origin so local share testing works.
+const PUBLIC_BRAND_ORIGIN = 'https://drape-9e532.web.app';
 export function publicOrigin() {
+  if (isNativeApp()) return PUBLIC_BRAND_ORIGIN;
   if (typeof window === 'undefined') return PUBLIC_BRAND_ORIGIN;
   const h = window.location.hostname || '';
   if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')) {
