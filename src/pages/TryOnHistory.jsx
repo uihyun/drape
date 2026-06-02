@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Sparkles, SlidersHorizontal, X } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
 import { ItemService } from '../services/item-service.js';
 import {
@@ -35,6 +35,19 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       const next = cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value];
       return { ...prev, [dim]: next };
     });
+  };
+
+  // Quick-delete a try-on straight from the grid — important for failed
+  // generations, which otherwise can't be cleared without opening detail.
+  const removeGen = async (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(t('confirmDeleteGeneration'))) return;
+    try {
+      await GenerationService.deleteGeneration(id);
+    } catch (err) {
+      console.warn('delete generation failed', err?.message);
+    }
   };
 
   const visible = useMemo(() => {
@@ -105,6 +118,17 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                   {cover
                     ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" />
                     : <div className={`tryon-history-empty status-${status}`}>{t(`tryOnStatus.${status}`) || status}</div>}
+                  {status === 'failed' && (
+                    <button
+                      type="button"
+                      className="tryon-history-del"
+                      onClick={(e) => removeGen(e, g.id)}
+                      aria-label={t('delete')}
+                      title={t('delete')}
+                    >
+                      <X size={14} strokeWidth={2.4} />
+                    </button>
+                  )}
                 </div>
                 <div className="tryon-history-meta">
                   <span className="tryon-history-date">

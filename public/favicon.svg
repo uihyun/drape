@@ -1,15 +1,8 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <!-- archelier app icon — atelier window motif (글자 폰트 의존 없음).
-       차콜 배경 + 베이지 stroke 의 arch top + 십자 mullion + 골드 underline. -->
-  <rect width="1024" height="1024" fill="#1F1B16"/>
-  <g transform="translate(384, 304)" stroke="#F5EDE0" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- frame: arch top + vertical sides + horizontal bottom -->
-    <path d="M 0 128 A 128 128 0 0 1 256 128 L 256 384 L 0 384 Z"/>
-    <!-- vertical mullion -->
-    <line x1="128" y1="2" x2="128" y2="384"/>
-    <!-- horizontal mullion -->
-    <line x1="0" y1="256" x2="256" y2="256"/>
-  </g>
-  <!-- gold accent underline (도면선 모티프) -->
-  <line x1="408" y1="800" x2="616" y2="800" stroke="#C9A961" stroke-width="6" stroke-linecap="round"/>
+  <!-- Drape favicon — ink background, ivory serif D, terracotta accent dot.
+       Matches the app icon. -->
+  <rect width="1024" height="1024" fill="#141312"/>
+  <text x="496" y="512" font-family="Georgia, 'Times New Roman', serif" font-size="660"
+        font-weight="500" fill="#f4f1ea" text-anchor="middle" dominant-baseline="central">D</text>
+  <circle cx="700" cy="690" r="46" fill="#c0694a"/>
 </svg>

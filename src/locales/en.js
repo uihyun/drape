@@ -308,7 +308,6 @@ export const en = {
   heroPhotoFull: 'With background',
   heroPhotoCut: 'Just the outfit',
   styleSection: 'Style',
-  styleSectionSub: '(subjective, contextual)',
   palette: 'Color palette',
   stylingTips: 'Styling notes',
   notesOnComposition: 'Notes on style',

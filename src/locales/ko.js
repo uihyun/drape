@@ -248,7 +248,7 @@ export const ko = {
 
   // ── Closet ─────────────────────────────────────────────────────────
   closetSignInTitle: '내 디지털 옷장',
-  closetSignInBody: '로그인하면 내가 가진 옷을 사진으로 등록하고 자동 태깅돼요.',
+  closetSignInBody: '로그인하면 내 옷을 사진으로 등록하고 자동 태깅돼요.',
   closetEmpty: '옷장이 비어있어요. 첫 옷을 등록해 보세요.',
   addItem: '옷 추가',
   addFirstItem: '첫 옷 등록하기',
@@ -256,7 +256,7 @@ export const ko = {
   itemKindLabel: '보유',
   itemKindOwned: '내 옷',
   itemKindWishlist: '위시리스트',
-  itemMarkOwned: '내가 가진 옷이에요',
+  itemMarkOwned: '내 옷이에요',
   itemMarkWishlist: '위시리스트로 옮기기',
   privateBadge: '비공개',
   filterForSale: '판매 중',
@@ -308,7 +308,6 @@ export const ko = {
   heroPhotoFull: '배경 포함',
   heroPhotoCut: '옷만',
   styleSection: '스타일',
-  styleSectionSub: '(주관적, 맥락적)',
   palette: '컬러 팔레트',
   stylingTips: '스타일링 노트',
   notesOnComposition: '스타일 노트',

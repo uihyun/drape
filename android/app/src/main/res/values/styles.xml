@@ -17,11 +17,10 @@
 
 
     <!-- Android 12+ 시스템 splash. OS 가 모든 앱에 강제 표시 — 완전 비활성화 불가.
-         icon 을 transparent drawable 로 두어 베이지 빈 화면만 표시. 그 뒤 Capacitor
-         splash (애니메이션 있는 우리 splash D) 가 자연스럽게 이어짐. 사용자 입장에선
-         우리 splash 만 본 것처럼. postSplashScreenTheme 으로 splash 끝난 뒤 theme 지정. -->
+         배경을 drape ink(#141312)로 두어 그 뒤 Capacitor splash (D 마크)와
+         이음새 없이 이어짐 — 사용자 입장에선 우리 splash 만 본 것처럼. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#C8BFAF</item>
+        <item name="windowSplashScreenBackground">#141312</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:background">@drawable/splash</item>

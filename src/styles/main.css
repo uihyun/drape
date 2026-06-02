@@ -5497,10 +5497,8 @@ body.is-native {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  /* Match icon BG exactly: gradient + 5% black overlay (same as resources/icon-only.svg). */
-  background:
-    linear-gradient(rgba(31, 27, 22, 0.05), rgba(31, 27, 22, 0.05)),
-    linear-gradient(135deg, #DCD4C4 0%, #C9C0AF 100%);
+  /* Drape ink background — matches the app icon + native splash. */
+  background: #141312;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5533,14 +5531,14 @@ body.is-native {
   margin: 0.5rem 0 0;
   font: 400 clamp(36px, 10vw, 60px)/1 'Hoefler Text', 'Cochin', 'Cormorant Garamond', 'Garamond', 'Times New Roman', serif;
   letter-spacing: 0.04em;
-  color: #1F1B16;
+  color: #f4f1ea;
   display: flex;
 }
 .js-splash-tagline {
   margin: 0.5rem 0 0;
   font: 300 clamp(11px, 2.4vw, 14px)/1 'Helvetica Neue', 'Avenir Next', system-ui, sans-serif;
   letter-spacing: 0.42em;
-  color: rgba(31, 27, 22, 0.55);
+  color: rgba(244, 241, 234, 0.55);
   text-transform: uppercase;
   opacity: 0;
   animation: js-splash-tagline-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 2.0s forwards;

@@ -1,8 +1,8 @@
-# archelier robots.txt
+# Drape robots.txt
 User-agent: *
 Allow: /
 
 # Auth handler / webhook endpoints — no crawl needed.
 Disallow: /__/
 
-Sitemap: https://archelier.co/sitemap.xml
+Sitemap: https://drape-9e532.web.app/sitemap.xml

@@ -120,10 +120,15 @@ export function GenerationDetail({ user }) {
           {gen.errors?.length > 0 && (
             <p className="muted">{gen.errors.join('; ')}</p>
           )}
-          <button className="btn btn-primary" onClick={regen} disabled={regenerating}>
-            <RefreshCw size={14} strokeWidth={1.7} />
-            {regenerating ? t('regenerating') : t('regenerate')}
-          </button>
+          <div className="empty-state-actions">
+            <button className="btn btn-primary" onClick={regen} disabled={regenerating}>
+              <RefreshCw size={14} strokeWidth={1.7} />
+              {regenerating ? t('regenerating') : t('regenerate')}
+            </button>
+            <button className="btn btn-secondary" onClick={remove}>
+              <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -169,7 +174,6 @@ export function GenerationDetail({ user }) {
             <section className="outfit-style-bars">
               <header>
                 <h2>{t('styleSection')}</h2>
-                <span className="style-bars-sub">{t('styleSectionSub')}</span>
               </header>
               <ul>
                 {gen.style.map((c, i) => {

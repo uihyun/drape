@@ -310,7 +310,6 @@ export const ja = {
   heroPhotoFull: '背景あり',
   heroPhotoCut: 'コーデのみ',
   styleSection: 'スタイル',
-  styleSectionSub: '(主観的、文脈的)',
   palette: 'カラーパレット',
   stylingTips: 'スタイリングノート',
   notesOnComposition: 'スタイルメモ',

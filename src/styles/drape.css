@@ -640,12 +640,25 @@ body.is-native {
 }
 .tryon-history-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .tryon-history-cover {
+  position: relative;
   aspect-ratio: 3 / 4;
   background: var(--surface-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
 }
+/* Quick-delete on a failed try-on card — failed gens have no result to open,
+   so clearing them must be reachable straight from the grid. */
+.tryon-history-del {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 26px; height: 26px;
+  border: none; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0; z-index: 2;
+}
+.tryon-history-del:hover { background: rgba(0, 0, 0, 0.8); }
 /* contain (not cover) so the figure stays head-to-feet on the history
    thumbnail. Server normalizes every variant to 3:4 with white padding
    so the image already matches the .tryon-history-cover aspect; cover

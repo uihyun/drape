@@ -2,17 +2,18 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["WG75TG59NJ.com.voda.app"],
+        "appIDs": ["TEAMID.com.uihyun.drape"],
         "components": [
-          { "/": "/s/*", "comment": "shared design" },
-          { "/": "/c/*", "comment": "collection" },
-          { "/": "/u/*", "comment": "designer profile" },
-          { "/": "/designs/*", "comment": "owned design detail" }
+          { "/": "/s/*", "comment": "shared outfit" },
+          { "/": "/o/*", "comment": "outfit detail" },
+          { "/": "/i/*", "comment": "item detail" },
+          { "/": "/u/*", "comment": "public profile" },
+          { "/": "/boards/*", "comment": "board detail" }
         ]
       }
     ]
   },
   "webcredentials": {
-    "apps": ["WG75TG59NJ.com.voda.app"]
+    "apps": ["TEAMID.com.uihyun.drape"]
   }
 }

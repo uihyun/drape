@@ -4,7 +4,7 @@
   "description": "Photograph your wardrobe, see clothes on yourself before wearing them, and log your daily outfits.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
+  "background_color": "#141312",
   "theme_color": "#FFFFFF",
   "orientation": "portrait-primary",
   "icons": [

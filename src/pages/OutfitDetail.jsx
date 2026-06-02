@@ -292,7 +292,6 @@ export function OutfitDetail({ user, onSignIn }) {
         <section className="outfit-style-bars">
           <header>
             <h2>{t('styleSection')}</h2>
-            <span className="style-bars-sub">{t('styleSectionSub')}</span>
           </header>
           <ul>
             {styleBars.map((c, i) => {

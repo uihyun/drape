@@ -1,12 +1,11 @@
 <svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
-  <!-- Splash bg matches icon-only.svg exactly: same gradient + 5% black overlay.
-       icon 과 splash 가 시각적으로 완전 동일하도록 (사용자 요구). -->
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#DCD4C4"/>
-      <stop offset="1" stop-color="#C9C0AF"/>
-    </linearGradient>
-  </defs>
-  <rect width="2732" height="2732" fill="url(#bg)"/>
-  <rect width="2732" height="2732" fill="#1F1B16" opacity="0.05"/>
+  <!-- Drape splash: ink background + centered ivory serif D with the warm
+       accent dot — same mark as the app icon, scaled for a full-screen
+       launch. Square canvas; capacitor-assets center-crops per device. -->
+  <rect width="2732" height="2732" fill="#141312"/>
+  <text x="1340" y="1366"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="760" font-weight="500"
+        fill="#f4f1ea" text-anchor="middle" dominant-baseline="central">D</text>
+  <circle cx="1575" cy="1535" r="54" fill="#c0694a"/>
 </svg>
