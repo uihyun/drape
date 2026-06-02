@@ -138,10 +138,11 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
   const hideNav = isFullBleed || HIDE_NAV.some(re => re.test(location.pathname));
-  // Pick the right "home" for `/` based on auth: signed-in users land on
-  // their profile; anonymous/new users see the welcome screen.
+  // Home for `/`: signed-in users land on the discovery feed (the social
+  // home, like every SNS app); anonymous/new users see the welcome screen.
+  // Their own profile/closet/calendar live one tap away in the tab bar.
   const isLoggedIn = user && !user.isAnonymous;
-  const rootTarget = isLoggedIn ? '/profile' : '/welcome';
+  const rootTarget = isLoggedIn ? '/feed' : '/welcome';
 
   return (
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}`}>
@@ -150,7 +151,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
       <main className="main">
         <Routes>
           <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />
-          <Route path="/welcome" element={isLoggedIn ? <Navigate to="/profile" replace /> : <Welcome />} />
+          <Route path="/welcome" element={isLoggedIn ? <Navigate to="/feed" replace /> : <Welcome />} />
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />

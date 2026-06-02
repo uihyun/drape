@@ -17,7 +17,7 @@ export function Welcome() {
   const [error, setError] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
 
-  const afterSignIn = () => navigate('/profile', { replace: true });
+  const afterSignIn = () => navigate('/feed', { replace: true });
 
   // Swallow user-driven cancellations so closing the OAuth popup or
   // denying consent doesn't show a scary red error message.
