@@ -5450,6 +5450,12 @@ input[type="search"]::-webkit-search-decoration {
   height: 100%;
   overflow: hidden;
 }
+/* Chrome-less but scrollable (the marketing landing): full width, no app
+   padding, but NO height lock so the page scrolls past one screen. */
+.app-bare .main {
+  padding: 0;
+  max-width: none;
+}
 .welcome {
   height: 100%;
   overflow: hidden;

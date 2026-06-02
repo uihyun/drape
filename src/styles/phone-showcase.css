@@ -7,12 +7,13 @@
   width: 100%;
   max-width: 460px;
   /* Must stay TALLER than a phone (width × 2.05) or the angled phones spill
-     out of the box and overlap whatever sits below (the feature pills). */
-  height: clamp(430px, 110vw, 560px);
+     out of the box and overlap whatever sits below (the feature pills).
+     Kept just barely taller so the block stays compact. */
+  height: clamp(400px, 102vw, 540px);
 }
 .lp-phone {
   position: absolute;
-  width: clamp(178px, 43vw, 230px);
+  width: clamp(168px, 41vw, 222px);
   aspect-ratio: 1 / 2.05;
   background: #14171a;
   border-radius: 34px;

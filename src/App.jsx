@@ -99,8 +99,14 @@ export default function App() {
 }
 
 // Routes that render edge-to-edge with no global chrome (own header,
-// own background). The Welcome / sign-in page is the canonical example.
-const FULL_BLEED = [/^\/welcome$/, /^\/landing$/];
+// own background) AND are locked to one screen (100dvh, no scroll). The
+// Welcome / sign-in page is the canonical example.
+const FULL_BLEED = [/^\/welcome$/];
+
+// Chrome-less but NORMALLY SCROLLABLE routes — own header, no app nav, but
+// taller than one screen (the marketing landing). Must NOT inherit the
+// full-bleed 100dvh/overflow:hidden lock or their bottom gets clipped.
+const BARE_SCROLL = [/^\/landing$/];
 
 // Routes where the floating bottom nav would overlap a page-level CTA
 // (Save outfit, Generate, Upload, etc.) or a full-screen viewer. The
@@ -138,7 +144,9 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   }, [location.pathname]);
 
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
-  const hideNav = isFullBleed || HIDE_NAV.some(re => re.test(location.pathname));
+  const isBare = BARE_SCROLL.some(re => re.test(location.pathname));
+  const noChrome = isFullBleed || isBare;
+  const hideNav = noChrome || HIDE_NAV.some(re => re.test(location.pathname));
   // Home for `/`: signed-in users land on the discovery feed (the social
   // home, like every SNS app); anonymous/new users see the welcome screen.
   // Their own profile/closet/calendar live one tap away in the tab bar.
@@ -152,8 +160,8 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? '/feed' : '/welcome');
 
   return (
-    <div className={`app${isFullBleed ? ' app-full-bleed' : ''}`}>
-      {!isFullBleed && <MobileHeader />}
+    <div className={`app${isFullBleed ? ' app-full-bleed' : ''}${isBare ? ' app-bare' : ''}`}>
+      {!noChrome && <MobileHeader />}
 
       <main className="main">
         <Routes>
@@ -217,8 +225,8 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
       {!hideNav && <MobileTabBar user={user} />}
 
-      {/* Onboarding only after sign-in — never on top of /welcome. */}
-      {isLoggedIn && !isFullBleed && <Onboarding user={user} />}
+      {/* Onboarding only after sign-in — never on /welcome or /landing. */}
+      {isLoggedIn && !noChrome && <Onboarding user={user} />}
     </div>
   );
 }
