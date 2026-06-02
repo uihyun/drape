@@ -5368,12 +5368,23 @@ input[type="search"]::-webkit-search-decoration {
 .btn-pill--accent:hover:not(:disabled) { background: var(--accent-strong); }
 
 /* ── Welcome / sign-in (Lekondo capture 1) ─────────────────────────── */
-.app-full-bleed .main { padding: 0; max-width: none; }
-.welcome {
-  /* Fixed to the viewport so the whole first-run screen fits with no scroll
-     on every phone. The hero flexes to absorb leftover height; nothing else
-     grows. */
+/* Lock the whole full-bleed chain (app → main → welcome) to exactly one
+   viewport so the first-run screen never scrolls, on any phone. Scoped to
+   .app-full-bleed (welcome-only) — no other page is affected. The single
+   100dvh lives here on .app-full-bleed; .main and .welcome just fill it at
+   100%, so there's no double-100dvh that could overflow by a few px. */
+.app-full-bleed {
   height: 100dvh;
+  overflow: hidden;
+}
+.app-full-bleed .main {
+  padding: 0;
+  max-width: none;
+  height: 100%;
+  overflow: hidden;
+}
+.welcome {
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
