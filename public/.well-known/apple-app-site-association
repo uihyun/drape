@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["TEAMID.com.uihyun.drape"],
+        "appIDs": ["WG75TG59NJ.com.uihyun.drape"],
         "components": [
           { "/": "/s/*", "comment": "shared outfit" },
           { "/": "/o/*", "comment": "outfit detail" },
@@ -14,6 +14,6 @@
     ]
   },
   "webcredentials": {
-    "apps": ["TEAMID.com.uihyun.drape"]
+    "apps": ["WG75TG59NJ.com.uihyun.drape"]
   }
 }
