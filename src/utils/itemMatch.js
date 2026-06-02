@@ -38,13 +38,15 @@ export function scoreMatch(piece, item) {
   if (pSub && iSub && pSub !== iSub) return 0;
   if (pCat === 'accessory' && !(pSub && iSub && pSub === iSub)) return 0;
 
-  // Color gate. A black crewneck and a green crewneck are different
-  // garments — when both sides are colour-tagged and share none, it is not
-  // a match. (Only gates when we actually have colours on both; otherwise
-  // fall through and let the weighted score decide.)
+  // Color gate on the DOMINANT colour, not "any colour in common". A white
+  // windbreaker with a small navy logo (colors [white, navy]) must NOT match
+  // a navy jacket just because navy appears in both — the user reads these
+  // as "not similar at all". So the detected piece's primary colour
+  // (colors[0]) has to be one the owned item actually has. (Only gates when
+  // both sides are colour-tagged.)
   const pColors = piece.colors || [];
   const iColors = iTags.colors || [];
-  if (pColors.length && iColors.length && !pColors.some(c => iColors.includes(c))) return 0;
+  if (pColors.length && iColors.length && !iColors.includes(pColors[0])) return 0;
 
   let score = 0.35; // base for clearing the category gate
   if (pSub && iSub && pSub === iSub) {
@@ -61,7 +63,7 @@ export function scoreMatch(piece, item) {
 
 /** Rank closet items for a detected piece. Returns the best matches above
  *  `threshold`, sorted desc, capped at `limit`. Each entry: { item, score }. */
-export function matchCloset(piece, closetItems, { threshold = 0.45, limit = 6 } = {}) {
+export function matchCloset(piece, closetItems, { threshold = 0.55, limit = 6 } = {}) {
   if (!piece || !Array.isArray(closetItems)) return [];
   return closetItems
     .map(item => ({ item, score: scoreMatch(piece, item) }))
