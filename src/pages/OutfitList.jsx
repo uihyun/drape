@@ -8,6 +8,7 @@ import {
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { loadFilters, saveFilters } from '../services/filterStore.js';
 
 // Cache fetched lists by uid|tab so returning from a detail paints the
 // previous list instantly instead of blanking → spinner → refetch. Each
@@ -61,8 +62,10 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
     p.set('ot', next);
     return p;
   }, { replace: true });
-  const [filters, setFilters] = useState(emptyLookFilters());
+  const fkey = `outfits:${user?.uid || 'anon'}`;
+  const [filters, setFilters] = useState(() => loadFilters(fkey, emptyLookFilters()));
   const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
   const filterCount = countLookFilters(filters);
   const toggleFilter = (dim, value) => {
     setFilters(prev => {

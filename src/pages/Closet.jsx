@@ -9,20 +9,19 @@ import {
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
+import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
 const VIEWS = ['all', 'brands', 'usage'];
 
-// Closet adds two item-only facets (not on looks) to the shared tag dims:
-// marketplace status + owned/wishlist. Rendered as `extras` in the sheet.
-const CLOSET_EXTRAS = [
+// Owned-closet adds a marketplace-status facet to the shared tag dims.
+// (The owned/wishlist split used to be a facet here; it's now the tab
+// itself, so it's gone from the sheet.) Wishlist has no extra facets —
+// for-sale is meaningless for pieces you don't own.
+const OWNED_EXTRAS = [
   { key: 'forSale', labelKey: 'saleSection', options: [{ value: 'yes', labelKey: 'filterForSale' }] },
-  { key: 'kind', labelKey: 'itemKindLabel', options: [
-    { value: 'owned', labelKey: 'itemKindOwned' },
-    { value: 'wishlist', labelKey: 'itemKindWishlist' },
-  ] },
 ];
 
 function emptyFilters() {
@@ -31,7 +30,11 @@ function emptyFilters() {
 const countFilters = countLookFilters;
 const matchesFilters = itemMatchesFilters;
 
-export function Closet({ user, authReady, onSignIn, embedded = false }) {
+// `kind` partitions the grid: the Closet tab shows owned pieces, the
+// Wishlist tab shows saved-but-not-owned ones. They're the same component
+// and the same subscription — only the kind filter + empty-state copy
+// differ — so a "mark I own this" toggle just moves an item between tabs.
+export function Closet({ user, authReady, onSignIn, embedded = false, kind = 'owned' }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
   const [items, setItems] = useState(null);
@@ -45,8 +48,12 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   }, { replace: true });
   // Multi-facet tag filters (Set-like arrays per dimension). The All-view
   // category chip row and the detailed-filter sheet both write here.
-  const [filters, setFilters] = useState(emptyFilters);
+  // Seeded from (and mirrored to) filterStore so a recent filter survives
+  // leaving the page; stale ones (>30m) fall back to empty.
+  const fkey = `closet:${kind}:${user?.uid || 'anon'}`;
+  const [filters, setFilters] = useState(() => loadFilters(fkey, emptyFilters()));
   const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -58,10 +65,12 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
 
   const filtered = useMemo(() => {
     if (!items) return null;
-    let live = items.filter(i => !i.isArchived);
+    // Partition owned vs wishlist first — legacy items with no `kind` are
+    // treated as owned (createItem has always stamped owned).
+    let live = items.filter(i => !i.isArchived && (i.kind || 'owned') === kind);
     if (filterCount > 0) live = live.filter(i => matchesFilters(i, filters));
     return live;
-  }, [items, filters, filterCount]);
+  }, [items, filters, filterCount, kind]);
 
   const toggleDim = (key, value) => {
     setFilters(prev => {
@@ -209,7 +218,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           onClose={() => setSheetOpen(false)}
           count={filterCount}
           resultCount={filtered?.length ?? 0}
-          extras={CLOSET_EXTRAS}
+          extras={kind === 'owned' ? OWNED_EXTRAS : []}
         />
       )}
 
@@ -217,10 +226,16 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         <div className="loading"><div className="spinner" /></div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <p>{t('closetEmpty')}</p>
-          <Link to="/closet/add" className="btn btn-primary">
-            {t('addFirstItem')}
-          </Link>
+          <p>{kind === 'wishlist' ? t('wishlistEmpty') : t('closetEmpty')}</p>
+          {kind === 'wishlist' ? (
+            <Link to="/analyze" className="btn btn-primary">
+              {t('wishlistAddCta')}
+            </Link>
+          ) : (
+            <Link to="/closet/add" className="btn btn-primary">
+              {t('addFirstItem')}
+            </Link>
+          )}
         </div>
       ) : view === 'usage' ? (
         <GroupedList groups={groupByUsage(filtered, t)} cols={cols} t={t} showElapsed />

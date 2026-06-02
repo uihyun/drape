@@ -125,7 +125,6 @@ export function AddItem({ user, onSignIn }) {
           <Layers size={18} strokeWidth={1.7} />
           <span className="add-item-bulk-text">
             <strong>{t('addItemBulkTitle')}</strong>
-            <span>{t('addItemBulkHint')}</span>
           </span>
           <ChevronRight size={18} strokeWidth={1.7} />
         </Link>

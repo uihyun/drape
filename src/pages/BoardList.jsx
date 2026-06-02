@@ -9,6 +9,7 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { loadFilters, saveFilters } from '../services/filterStore.js';
 
 // "My boards" with a Saved tab for boards the user has bookmarked
 // from other profiles. Same Mine/Saved shape as OutfitList so the
@@ -24,8 +25,10 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   }, { replace: true });
   const [mine, setMine] = useState(null);
   const [saved, setSaved] = useState(null);
-  const [filters, setFilters] = useState(emptyLookFilters());
+  const fkey = `boards:${user?.uid || 'anon'}`;
+  const [filters, setFilters] = useState(() => loadFilters(fkey, emptyLookFilters()));
   const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
   const [items, setItems] = useState([]);
   const itemsById = useMemo(
     () => Object.fromEntries(items.map(i => [i.id, i])),

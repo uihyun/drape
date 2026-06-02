@@ -209,7 +209,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
       {!hideNav && <MobileTabBar user={user} />}
 
       {/* Onboarding only after sign-in — never on top of /welcome. */}
-      {isLoggedIn && !isFullBleed && <Onboarding />}
+      {isLoggedIn && !isFullBleed && <Onboarding user={user} />}
     </div>
   );
 }

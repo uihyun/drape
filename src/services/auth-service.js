@@ -338,4 +338,19 @@ export const AuthService = {
     const snap = await getDoc(doc(db, 'users', userId));
     return snap.exists() ? (snap.data().savedCustomStyles || []) : [];
   },
+
+  // Onboarding "already seen" flag. Stored on the user doc (not just
+  // localStorage) so a reinstall or a second device doesn't replay the
+  // intro to someone who already dismissed it.
+  async hasOnboarded(userId) {
+    try {
+      const snap = await getDoc(doc(db, 'users', userId));
+      return !!(snap.exists() && snap.data().onboardedAt);
+    } catch { return false; }
+  },
+  async markOnboarded(userId) {
+    try {
+      await updateDoc(doc(db, 'users', userId), { onboardedAt: serverTimestamp() });
+    } catch { /* non-fatal — localStorage still guards this device */ }
+  },
 };

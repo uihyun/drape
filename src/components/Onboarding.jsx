@@ -5,8 +5,9 @@
 //
 // Persisted in localStorage so it doesn't nag on every visit.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { AuthService } from '../services/auth-service.js';
 
 const KEY = 'drape_onboarding_dismissed_v1';
 
@@ -18,10 +19,27 @@ function dismiss() {
   try { localStorage.setItem(KEY, '1'); } catch { /* ignore */ }
 }
 
-export function Onboarding({ forceShow = false, onClose }) {
+export function Onboarding({ user, forceShow = false, onClose }) {
   const { t } = useLocale();
-  const [hidden, setHidden] = useState(!forceShow && isDismissed());
+  // Start hidden and only reveal once we've confirmed this user has NOT
+  // onboarded — both on this device (localStorage) and server-side (the
+  // user doc). Defaulting to hidden means a returning user on a fresh
+  // install never sees a flash of the intro before the server check lands.
+  const [hidden, setHidden] = useState(true);
   const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (forceShow) { setHidden(false); return; }
+    if (isDismissed()) { setHidden(true); return; }
+    let alive = true;
+    (async () => {
+      const seen = user?.uid ? await AuthService.hasOnboarded(user.uid) : false;
+      if (!alive) return;
+      if (seen) { dismiss(); setHidden(true); }   // sync this device's flag
+      else setHidden(false);
+    })();
+    return () => { alive = false; };
+  }, [user?.uid, forceShow]);
 
   if (hidden) return null;
 
@@ -45,6 +63,7 @@ export function Onboarding({ forceShow = false, onClose }) {
 
   const close = () => {
     dismiss();
+    if (user?.uid) AuthService.markOnboarded(user.uid); // persist across devices/reinstalls
     setHidden(true);
     onClose?.();
   };

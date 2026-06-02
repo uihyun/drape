@@ -123,7 +123,6 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
               <Layers size={16} strokeWidth={1.7} />
               <span className="add-sheet-bulk-text">
                 <strong>{t('addItemBulkTitle')}</strong>
-                <span>{t('addItemBulkHint')}</span>
               </span>
               <ChevronRight size={16} strokeWidth={1.7} />
             </Link>

@@ -32,6 +32,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // own, not wishlist references. Bare /analyze (create menu) defaults off.
   const ownedParam = search.get('owned') === '1';
   const fileRef = useRef();
+  // getUserMedia drives the burst modal; present in modern WebViews too.
+  const canBurst = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
   // batches: [{ blob, previewUrl, status: 'pending'|'analyzing'|'done'|'failed', style, notes, items: [...] }]
   const [batches, setBatches] = useState(analyzeCache.batches);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -229,20 +231,26 @@ export function AnalyzePhoto({ user, onSignIn }) {
       {!anyDone ? (
         // ── INPUT MODE: pick photos + run analyze ────────────────────
         <>
-          <h1 className="page-h1">{t('analyzeTitle')}</h1>
-          <p className="page-sub">{t('analyzeBody')}</p>
+          {/* Two distinct entry intents share this engine but read as
+              separate flows (the explicit ask): entering with ?owned=1 from
+              "Add item → several pieces" is a closet bulk-add — title + copy
+              say so and the ownership toggle is locked on (no confusion with
+              the wishlist path). The create-menu entry (no param) is the
+              "save someone else's pieces to wishlist" flow, where the toggle
+              is offered in case they actually own them. */}
+          <h1 className="page-h1">{ownedParam ? t('bulkAddTitle') : t('analyzeTitle')}</h1>
+          <p className="page-sub">{ownedParam ? t('bulkAddBody') : t('analyzeBody')}</p>
 
-          {/* "These are my clothes" — flips detected pieces from wishlist
-              references to owned closet items. The headline use case: shoot a
-              flat-lay or burst-capture your own wardrobe and bulk-add it. */}
-          <label className="analyze-owned-toggle">
-            <input
-              type="checkbox"
-              checked={owned}
-              onChange={e => setOwned(e.target.checked)}
-            />
-            <span>{t('analyzeOwnedToggle')}</span>
-          </label>
+          {!ownedParam && (
+            <label className="analyze-owned-toggle">
+              <input
+                type="checkbox"
+                checked={owned}
+                onChange={e => setOwned(e.target.checked)}
+              />
+              <span>{t('analyzeOwnedToggle')}</span>
+            </label>
+          )}
 
           {/* Large preview hero — when one or more photos staged, show them
               big enough to actually see what's being analyzed. */}
@@ -290,19 +298,21 @@ export function AnalyzePhoto({ user, onSignIn }) {
               type="button"
               className="btn btn-secondary analyze-input-btn"
               onClick={async () => {
-                if (isNativeApp()) {
-                  try {
-                    const blob = await CameraService.takePhoto();
-                    if (blob) addFiles([blob]);
-                  } catch (err) {
-                    setError(err.message);
-                  }
-                } else {
-                  setCameraOpen(true);
+                // Burst lives in the in-page getUserMedia modal, which works
+                // inside the iOS/Android WebView too (NSCameraUsageDescription
+                // is set) — so the native app gets real "탁탁탁" multi-shot,
+                // not the OS one-shot camera. Only fall back to the native
+                // single-shot picker on the rare device with no getUserMedia.
+                if (canBurst) { setCameraOpen(true); return; }
+                try {
+                  const blob = await CameraService.takePhoto();
+                  if (blob) addFiles([blob]);
+                } catch (err) {
+                  setError(err.message);
                 }
               }}
             >
-              <CameraIcon size={16} strokeWidth={1.6} /> {isNativeApp() ? t('takePhoto') : t('burstCapture')}
+              <CameraIcon size={16} strokeWidth={1.6} /> {canBurst ? t('burstCapture') : t('takePhoto')}
             </button>
           </div>
 

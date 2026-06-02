@@ -114,7 +114,9 @@ accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
-body proportions, height. Match the FIRST identity photo's pose and framing.
+body proportions, height. Match the FIRST identity photo's pose, but place
+exactly ONE person standing centered horizontally in the frame — do not
+inherit any off-center framing or any second person from the reference.
 Do NOT copy the other person's face, body, or identity from the outfit
 photo — only their clothing and styling. Full-body shot, head to feet,
 do not crop.
@@ -184,7 +186,9 @@ split, or multiple variations. One image, one frame, one person.`;
   return `Dress the person from the reference photos in the supplied
 clothing (${itemSummary}). Remove whatever they were originally wearing
 and have them wear the supplied garments instead. Match the FIRST
-reference photo's pose and framing exactly.
+reference photo's pose, but place exactly ONE person standing centered
+horizontally in the frame — do not inherit any off-center framing or any
+second person from the reference photo.
 
 Render fabric texture, drape, fold, and shadow naturally on the person's
 body. Keep the person's face, hair, skin, and body proportions IDENTICAL
