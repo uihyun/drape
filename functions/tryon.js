@@ -114,13 +114,11 @@ accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
-body proportions, height. Place exactly ONE person standing upright, facing
-the camera, centered horizontally, full body head to feet, in a relaxed
-natural standing pose with arms at the sides and EMPTY hands — do NOT carry
-over any object the person was holding (glass, bottle, bag, phone), any
-props, furniture, background clutter, or any second person from the
-reference photos. Do NOT copy the other person's face, body, or identity
-from the outfit photo — only their clothing and styling.
+body proportions, height. Match the FIRST identity photo's pose and framing
+— keep their natural stance. Show exactly ONE person, full body head to
+feet; do not add a second person from the reference photos. Do NOT copy the
+other person's face, body, or identity from the outfit photo — only their
+clothing and styling.
 
 Render fabric texture, drape, fold, and shadow naturally on the body.
 
@@ -186,12 +184,10 @@ split, or multiple variations. One image, one frame, one person.`;
 
   return `Dress the person from the reference photos in the supplied
 clothing (${itemSummary}). Remove whatever they were originally wearing
-and have them wear the supplied garments instead. Place exactly ONE person
-standing upright, facing the camera, centered horizontally, full body head
-to feet. Use a relaxed natural standing pose with arms at the sides and
-EMPTY hands — do NOT carry over any object the person was holding (glass,
-bottle, bag, phone), any props, furniture, or background clutter, and no
-second person from the reference photos.
+and have them wear the supplied garments instead. Match the FIRST reference
+photo's pose and framing — keep the person's natural stance. Show exactly
+ONE person, full body head to feet; do not add a second person from the
+reference photos.
 
 Render fabric texture, drape, fold, and shadow naturally on the person's
 body. Keep the person's face, hair, skin, and body proportions IDENTICAL

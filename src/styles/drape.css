@@ -142,19 +142,31 @@ body.is-native {
   color: var(--text-muted);
   margin-bottom: 0.75rem;
 }
+/* Floating action bar — pinned to the bottom of the viewport so the
+   primary CTA (Start try-on / Save outfit) is always reachable no matter
+   how long the item grid is, instead of living at the end of the scroll.
+   These pages (tryon, outfits/new) hide the tab bar, so nothing collides.
+   The page keeps its 6.5rem bottom padding so the last row clears the bar. */
 .builder-cta {
-  position: sticky;
-  bottom: calc(var(--safe-bottom) + 1rem);
-  margin-top: 1.25rem;
-  padding: 0 0.25rem;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  margin: 0;
+  padding: 0.7rem 1rem calc(var(--safe-bottom) + 0.7rem);
   display: flex;
   gap: 0.6rem;
   justify-content: center;
+  /* Fade content out under the bar instead of a hard edge. */
+  background: linear-gradient(to top, var(--background) 58%, transparent);
+  pointer-events: none;
 }
+.builder-cta > * { pointer-events: auto; }
 .builder-cta .btn {
   width: 100%;
-  max-width: 360px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  max-width: 480px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.16);
 }
 .item-card-check {
   position: absolute;
@@ -2709,6 +2721,11 @@ input[type="search"]::-webkit-search-decoration {
   box-shadow: var(--shadow-lg);
 }
 .modal h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.6rem; }
+/* AlertModal — message + single confirm button. */
+.alert-modal { max-width: 340px; text-align: center; }
+.alert-modal-msg { color: var(--text-primary); font-size: 0.95rem; line-height: 1.5; margin: 0.2rem 0 1.2rem; }
+.alert-modal-actions { display: flex; justify-content: center; }
+.alert-modal-actions .btn { min-width: 120px; }
 .delete-account-desc { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.6rem; }
 .delete-account-list { padding-left: 1.1rem; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.55; margin-bottom: 0.6rem; }
 .delete-account-billing { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.6rem; line-height: 1.5; }

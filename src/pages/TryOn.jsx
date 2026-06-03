@@ -7,7 +7,12 @@ import { GenerationService } from '../services/generation-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraService } from '../services/camera.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
+import { AlertModal } from '../components/AlertModal.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
+
+// Server rejects > 6 garments; cap on the client so the user gets a clear
+// message instead of a failed request after pressing Start.
+const MAX_TRYON_ITEMS = 6;
 
 // Try-on entry. Pick WHO (saved identity refs, or a one-shot custom photo)
 // and WHAT (one or more closet items). On submit, navigates to
@@ -110,6 +115,10 @@ export function TryOn({ user, onSignIn }) {
   }
 
   const toggleItem = (id) => {
+    if (!selected.has(id) && selected.size >= MAX_TRYON_ITEMS) {
+      setError(t('tryOnMaxItems', { max: MAX_TRYON_ITEMS }));
+      return;
+    }
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
@@ -290,7 +299,7 @@ export function TryOn({ user, onSignIn }) {
         )
       )}
 
-      {error && <p style={{ color: 'var(--error)' }}>{error}</p>}
+      <AlertModal open={!!error} message={error} onClose={() => setError(null)} />
 
       <div className="builder-cta">
         <button
