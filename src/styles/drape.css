@@ -405,7 +405,12 @@ body.is-native {
   transform-origin: center;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
   transition: filter 0.12s ease;
+  /* Explicitly own the gesture so a drag is never reinterpreted as a page
+     scroll/zoom (which fires pointercancel and made the sticker feel stuck).
+     The canvas already sets this, but children don't inherit touch-action. */
+  touch-action: none;
 }
+.board-sticker img { -webkit-user-drag: none; pointer-events: none; }
 .board-sticker:active { cursor: grabbing; }
 .board-sticker.selected {
   filter: drop-shadow(0 6px 14px rgba(0,0,0,0.2));

@@ -383,6 +383,27 @@ function BoardCanvas({
   const dragState = useRef(null);
   const handleState = useRef(null);
 
+  // Safety net: if a pointerup/cancel ever fails to reach the sticker's own
+  // handler (the element re-rendered or got detached mid-gesture, an iOS
+  // WebView quirk), the drag would stay "armed" and swallow the next touch —
+  // the board feels frozen. A window-level listener guarantees the gesture
+  // state always clears on any pointer release.
+  useEffect(() => {
+    const clear = () => {
+      if (dragState.current) {
+        clearTimeout(dragState.current.pressTimer);
+        dragState.current = null;
+      }
+      handleState.current = null;
+    };
+    window.addEventListener('pointerup', clear);
+    window.addEventListener('pointercancel', clear);
+    return () => {
+      window.removeEventListener('pointerup', clear);
+      window.removeEventListener('pointercancel', clear);
+    };
+  }, []);
+
   const onPointerDown = (e, idx) => {
     e.stopPropagation();
     const rect = canvasRef.current?.getBoundingClientRect();
