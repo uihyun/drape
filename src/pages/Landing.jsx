@@ -57,6 +57,7 @@ export function Landing() {
             <li>{t('landingFeat2')}</li>
             <li>{t('landingFeat3')}</li>
             <li>{t('landingFeat4')}</li>
+            <li>{t('landingFeat5')}</li>
           </ul>
 
           <h1 className="lp-headline">

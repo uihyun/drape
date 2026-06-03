@@ -1,6 +1,30 @@
 # Progress log
 
-Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically.
+Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
+
+## Current state — 2026-06-02
+
+### Shipped this session (web deployed; native needs a rebuild to pick up)
+- **Brand wordmark is all-lowercase `drape`** everywhere — web UI, SEO/meta (`index.html`), `manifest.json`, legal (`data/legal.js`), watermark, and native display names (iOS `CFBundleDisplayName`, Android `app_name`, `capacitor.config.json`). Splash + `JsSplash` were already lowercase. Code comments left as "Drape" (not user-facing).
+- **Accent color → pine `#2E4A3A`** (was lekondo forest-olive `#3F5841`). Tokens in `main.css` (`--accent` / `--accent-strong #233A2D` / `--accent-soft #E9EFEA` / `--success`) + `landing.css --lp-accent`. Point color now ALSO on previously-black active states: floating nav button ring+label, profile-tab / closet text-tab / feed-sort underlines. Filled-black pills (feed-kind, "전체") left as-is.
+- **Marketing landing at `/landing`** — `pages/Landing.jsx` + `styles/landing.css`. Public, chrome-less but scrollable: it's its own `app-bare` mode (NOT welcome's `app-full-bleed` one-screen lock — that lock clipped the page). Phone mockups are `components/PhoneShowcase.jsx` + `styles/phone-showcase.css` (pure CSS, no screenshot assets), reused on Welcome. `drape.nyc` will point here via host detection in `App.jsx` (`isMarketingHost` → root `/` serves `/landing`); wiring the domain = add it as a Firebase custom domain, nothing else.
+- **Wishlist = a Closet view segment** (`?cv=wishlist`, next to all/brands/usage), NOT a profile tab. `Closet` takes the kind from the view; items are `kind: 'owned' | 'wishlist'`.
+- **Persisted tag filters** — `services/filterStore.js` (module Map + sessionStorage, 30-min TTL). Wired into Closet / OutfitList / BoardList (`fkey` per surface+uid).
+- **Onboarding** — gated on a server flag too (`users/{uid}.onboardedAt` via `AuthService.hasOnboarded/markOnboarded`), so reinstall/2nd device doesn't replay it. 4 slides now.
+- **Bulk-add split from analyze** — Add item → `/analyze?owned=1` is a lean closet bulk-add: detect → auto-add ALL → route to `/profile/closet`, no style card, no review page. Plain `/analyze` (no param) = single-photo → wishlist (no burst, no multi-select). Burst/multi belong to the owned flow only.
+- **Native burst capture** — uses the in-WebView `getUserMedia` modal (NSCameraUsageDescription is set), owned flow only; single-shot fallback when unavailable.
+- **Try-on centering** — `functions/tryon.js` prompt now forces ONE person, centered, empty hands, no props/second person (the off-center result came from the reference cutout including held objects). Deployed.
+- **Avatars never use the Google/Apple account photo.** Bottom nav profile button reads the drape profile photo (`ProfileService.subscribeByUid`); neutral User-glyph default when unset. (`components/Header.jsx` still references `user.photoURL` but is DEAD/unused.)
+- **Closet match** (`utils/itemMatch.js`) gates on the detected piece's DOMINANT color (`colors[0]`) + threshold 0.55 — kills "white windbreaker ↔ navy jacket" false matches.
+
+### Deferred / pending
+- **Invite share** (memory `project_invite_copy_todo`): native share shows the URL twice (text has it + `url` field appended); copy should mention building a closet, not just outfit tracking. Fix in `Settings.jsx onInvite`.
+- **"번쩍임" loading flash** — user reports some screen blanks/reloads images; specific screen not yet identified. Caches already exist (CardImage ratio, BoardThumbnail, feed/outfit). Awaiting which screen.
+- **Branding visuals** — app icon + splash are still the terracotta-`D`; user finds it dated and is sourcing references. Accent is now pine; icon/splash not yet reworked.
+- **App Store / Play deploy (user-only):** Apple Sign-In portal (App ID + Service ID + Key for `com.uihyun.drape`), App Store Connect listing/screenshots/build upload.
+- **Native rebuild required** for any of the above to reach a device — web hosting is live but the iOS/Android bundle is only refreshed by `npm run build && npx cap sync` + an Xcode/Android Studio build.
+
+### Decided color: pine `#2E4A3A` (chosen over forest-olive to differ from lekondo; teal/aubergine candidates declined).
 
 ## 2026-05-22 — Bootstrap from voda
 
