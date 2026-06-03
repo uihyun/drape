@@ -1382,9 +1382,10 @@ body.is-native {
 .floating-nav-icon img { width: 100%; height: 100%; object-fit: cover; }
 .floating-nav-btn:active .floating-nav-icon { transform: scale(0.94); }
 .floating-nav-btn.active .floating-nav-icon {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 0 1.5px var(--text-primary);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 0 2px var(--accent);
+  color: var(--accent);
 }
-.floating-nav-btn.active { color: var(--text-primary); font-weight: 600; }
+.floating-nav-btn.active { color: var(--accent); font-weight: 600; }
 .floating-nav-label {
   font-size: 0.7rem;
   margin-top: 0.3rem;
@@ -1785,7 +1786,7 @@ body.is-native {
   left: 0; right: 0;
   bottom: -0.4rem;
   height: 2px;
-  background: var(--text-primary);
+  background: var(--accent);
 }
 .filter-chips--text .chip-soon {
   /* Disabled "coming soon" tabs render greyed-out but still in the row
@@ -1909,7 +1910,7 @@ body.is-native {
   left: 0; right: 0;
   bottom: -0.35rem;
   height: 2px;
-  background: var(--text-primary);
+  background: var(--accent);
 }
 
 /* Pinterest-style masonry — varied tile heights so portrait / landscape
@@ -5103,7 +5104,7 @@ input[type="search"]::-webkit-search-decoration {
   right: 25%;
   bottom: -1px;
   height: 2px;
-  background: var(--text-primary);
+  background: var(--accent);
 }
 
 /* Embedded mode: the inner pages drop their own page-level chrome and

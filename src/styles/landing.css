@@ -4,7 +4,7 @@
 .landing {
   --lp-ink: #1A1A1A;
   --lp-muted: #737373;
-  --lp-accent: #3F5841;
+  --lp-accent: #2E4A3A;
   --lp-line: #ECECEC;
   /* Content height — no forced 100vh, which left a dead white band below
      the footer when the content was shorter than the viewport. */
