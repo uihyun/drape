@@ -5,7 +5,7 @@
 //
 // Effective date is shown verbatim; bump it whenever the substance changes.
 export const LEGAL_EFFECTIVE = '2026-06-01';
-export const LEGAL_CONTACT = 'uihyunkei@gmail.com';
+export const LEGAL_CONTACT = 'hello@uhzlab.com';
 
 export const PRIVACY = {
   en: [
