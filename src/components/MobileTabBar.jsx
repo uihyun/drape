@@ -1,20 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { AddItemSheet } from './AddItemSheet.jsx';
+import { ProfileService } from '../services/profile-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Some Google profile photos throw CORS / 403 in third-party contexts.
-// When the avatar fails we want a clean User icon, not a broken-image
-// glyph. Track per-user so a transient failure doesn't permanently
-// strike out a working URL across the session.
-function Avatar({ user, size = 22 }) {
+// Avatar source is the drape profile photo ONLY — we deliberately never
+// pull the Google/Apple account photo (that's where the stray brown "U"
+// default was coming from: user.photoURL carries the provider's generated
+// avatar). No drape photo → a neutral User glyph that nudges adding one.
+function Avatar({ src, size = 22 }) {
   const [failed, setFailed] = useState(false);
-  if (user?.photoURL && !failed) {
+  useEffect(() => { setFailed(false); }, [src]);
+  if (src && !failed) {
     return (
       <img
-        src={user.photoURL}
+        src={src}
         alt=""
         referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
@@ -40,6 +42,15 @@ export function MobileTabBar({ user }) {
   const isLoggedIn = user && !user.isAnonymous;
   const onHome = location.pathname === '/' || location.pathname.startsWith('/feed');
   const onProfile = location.pathname.startsWith('/profile') || location.pathname.startsWith('/u/');
+
+  // Live drape profile photo — same source the profile header uses, so the
+  // bottom button matches it (real photo when set, neutral default when not)
+  // instead of the provider's account avatar.
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  useEffect(() => {
+    if (!isLoggedIn) { setProfilePhoto(null); return; }
+    return ProfileService.subscribeByUid(user.uid, p => setProfilePhoto(p?.photoURL || null));
+  }, [isLoggedIn, user?.uid]);
 
   const go = (path) => () => {
     setSheetOpen(false);
@@ -83,7 +94,7 @@ export function MobileTabBar({ user }) {
           aria-label={t('navProfile')}
         >
           <span className="floating-nav-icon">
-            <Avatar user={user} />
+            <Avatar src={profilePhoto} />
           </span>
           <span className="floating-nav-label">{t('navProfile')}</span>
         </Link>
