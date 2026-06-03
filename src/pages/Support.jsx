@@ -6,7 +6,7 @@ export function Support() {
     <article className="static-page">
       <h2>{t('support')}</h2>
       <p>{t('supportBody')}</p>
-      <p><a href="mailto:hello@drape.app">hello@drape.app</a></p>
+      <p><a href="mailto:uihyunkei@gmail.com">uihyunkei@gmail.com</a></p>
     </article>
   );
 }
