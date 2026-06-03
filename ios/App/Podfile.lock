@@ -80,21 +80,7 @@ PODS:
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
   - GTMSessionFetcher/Core (3.5.0)
   - IONFilesystemLib (1.1.2)
-  - PurchasesHybridCommon (17.25.0):
-    - RevenueCat (= 5.51.1)
-  - PurchasesHybridCommonUI (17.25.0):
-    - PurchasesHybridCommon (= 17.25.0)
-    - RevenueCatUI (= 5.51.1)
   - RecaptchaInterop (100.0.0)
-  - RevenueCat (5.51.1)
-  - RevenuecatPurchasesCapacitor (11.3.2):
-    - Capacitor
-    - PurchasesHybridCommon (= 17.25.0)
-  - RevenuecatPurchasesCapacitorUi (11.3.2):
-    - Capacitor
-    - PurchasesHybridCommonUI (= 17.25.0)
-  - RevenueCatUI (5.51.1):
-    - RevenueCat (= 5.51.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -108,8 +94,6 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - GoogleSignIn (= 7.1.0)
-  - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
-  - "RevenuecatPurchasesCapacitorUi (from `../../node_modules/@revenuecat/purchases-capacitor-ui`)"
 
 SPEC REPOS:
   trunk:
@@ -125,11 +109,7 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - IONFilesystemLib
-    - PurchasesHybridCommon
-    - PurchasesHybridCommonUI
     - RecaptchaInterop
-    - RevenueCat
-    - RevenueCatUI
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -152,10 +132,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
-  RevenuecatPurchasesCapacitor:
-    :path: "../../node_modules/@revenuecat/purchases-capacitor"
-  RevenuecatPurchasesCapacitorUi:
-    :path: "../../node_modules/@revenuecat/purchases-capacitor-ui"
 
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
@@ -180,14 +156,8 @@ SPEC CHECKSUMS:
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   IONFilesystemLib: 21a63377696b2d8fab5632ecfb7d2ac67bddb68a
-  PurchasesHybridCommon: 6a79a873ab52f777bfa36e9516f3fcd84d3b3428
-  PurchasesHybridCommonUI: 3c1f78addfb3f470713548b4eac8c59254d0efe6
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
-  RevenueCat: eab035bbab271faccfef5c36eaff2a1ffef14dc0
-  RevenuecatPurchasesCapacitor: fa376932f9967c7ab4b5eac477e824d90393b91a
-  RevenuecatPurchasesCapacitorUi: 969baeb81228e051e2b9e3e764f86f577e73a4b9
-  RevenueCatUI: c6acb3648fa58ccb4f0f178556ed0278b796234f
 
-PODFILE CHECKSUM: 4b741cdae65d33361fedd80fe6d70e8c95406354
+PODFILE CHECKSUM: 392dd8542c2ed16e144114fefd00350d7ab7b4f9
 
 COCOAPODS: 1.16.2
