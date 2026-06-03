@@ -21,7 +21,12 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // a module-level cache so navigating away (tapping a closet match, opening
 // "find similar", hitting the tab bar) and pressing back returns to the
 // RESULT page instead of a blank input screen. Cleared only by reset().
-const analyzeCache = { batches: [], savedKeys: new Set(), savedBatchIds: new Map() };
+//
+// SEPARATE cache per mode — the wishlist "Analyze a photo" flow and the
+// owned "several pieces at once" flow must never inherit each other's
+// results (they save to different places: wishlist vs your own closet).
+const makeAnalyzeCache = () => ({ batches: [], savedKeys: new Set(), savedBatchIds: new Map() });
+const analyzeCaches = { owned: makeAnalyzeCache(), wishlist: makeAnalyzeCache() };
 
 export function AnalyzePhoto({ user, onSignIn }) {
   const { t } = useLocale();
@@ -31,16 +36,20 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // owned mode: detected pieces save straight into the closet as items you
   // own, not wishlist references. Bare /analyze (create menu) defaults off.
   const ownedParam = search.get('owned') === '1';
+  // The cache (and therefore the whole result state) is picked by mode, so
+  // the two flows are fully independent — entering one never shows the
+  // other's leftover results.
+  const cache = analyzeCaches[ownedParam ? 'owned' : 'wishlist'];
   const fileRef = useRef();
   // getUserMedia drives the burst modal; present in modern WebViews too.
   const canBurst = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
   // batches: [{ blob, previewUrl, status: 'pending'|'analyzing'|'done'|'failed', style, notes, items: [...] }]
-  const [batches, setBatches] = useState(analyzeCache.batches);
+  const [batches, setBatches] = useState(cache.batches);
   const [cameraOpen, setCameraOpen] = useState(false);
   // savedKey is `"${batchIdx}:${itemIdx}"` for items that have been added
-  const [savedKeys, setSavedKeys] = useState(analyzeCache.savedKeys);
+  const [savedKeys, setSavedKeys] = useState(cache.savedKeys);
   // Per-batch "Save analysis" state — kind='analyzed' outfit doc id once saved.
-  const [savedBatchIds, setSavedBatchIds] = useState(analyzeCache.savedBatchIds);
+  const [savedBatchIds, setSavedBatchIds] = useState(cache.savedBatchIds);
   const [savingBatchIdx, setSavingBatchIdx] = useState(-1);
   const [savingKey, setSavingKey] = useState(null);
   // owned mode is decided purely by the entry point now: ?owned=1 means
@@ -66,9 +75,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // restores exactly what was on screen. Object URLs are deliberately NOT
   // revoked on unmount — they must stay valid for the cached previews;
   // reset() / removeBatch() revoke explicitly instead.
-  useEffect(() => { analyzeCache.batches = batches; }, [batches]);
-  useEffect(() => { analyzeCache.savedKeys = savedKeys; }, [savedKeys]);
-  useEffect(() => { analyzeCache.savedBatchIds = savedBatchIds; }, [savedBatchIds]);
+  useEffect(() => { cache.batches = batches; }, [cache, batches]);
+  useEffect(() => { cache.savedKeys = savedKeys; }, [cache, savedKeys]);
+  useEffect(() => { cache.savedBatchIds = savedBatchIds; }, [cache, savedBatchIds]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -153,6 +162,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
           } catch (e) { setError(e.message || 'save_failed'); }
         }
       }
+      // One-shot flow: clear this mode's cache so re-entering "several pieces"
+      // starts on a fresh input screen, not on these just-added results.
+      cache.batches = [];
+      cache.savedKeys = new Set();
+      cache.savedBatchIds = new Map();
       navigate('/profile/closet');
     }
   };
@@ -227,9 +241,9 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
   const reset = () => {
     batches.forEach(b => b.previewUrl && URL.revokeObjectURL(b.previewUrl));
-    analyzeCache.batches = [];
-    analyzeCache.savedKeys = new Set();
-    analyzeCache.savedBatchIds = new Map();
+    cache.batches = [];
+    cache.savedKeys = new Set();
+    cache.savedBatchIds = new Map();
     setBatches([]);
     setSavedKeys(new Set());
     setSavedBatchIds(new Map());
