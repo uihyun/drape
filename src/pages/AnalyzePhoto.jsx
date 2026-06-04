@@ -394,9 +394,20 @@ export function AnalyzePhoto({ user, onSignIn }) {
                     style + notes read like an editorial caption. Owned
                     bulk-add skips it entirely — that path is just "add these
                     pieces to my closet", no style read, nothing to save. */}
-                {!owned && ((Array.isArray(b.style) && b.style.length > 0) || b.notes) && (
+                {!owned && ((Array.isArray(b.style) && b.style.length > 0) || b.notes || (Array.isArray(b.palette) && b.palette.length > 0)) && (
                   <div className="analyze-style-card">
                     <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
+                    {/* Colour palette preview — same read the saved detail shows. */}
+                    {Array.isArray(b.palette) && b.palette.length > 0 && (
+                      <div className="analyze-palette">
+                        {b.palette.slice(0, 3).map((c, i) => (
+                          <div key={i} className="analyze-palette-chip">
+                            <span className="analyze-palette-sw" style={{ background: c.hex }} />
+                            <span className="analyze-palette-txt">{c.name}{c.percent ? ` · ${Math.round(c.percent)}%` : ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
                     {Array.isArray(b.style) && b.style.length > 0 && (
                       <ul className="analyze-style-list">
