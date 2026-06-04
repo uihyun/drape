@@ -5518,7 +5518,7 @@ body.is-native {
 }
 .js-splash-wordmark-img {
   display: block;
-  width: clamp(220px, 56vw, 400px);
+  width: clamp(150px, 34vw, 240px);
   height: auto;
   opacity: 0;
   animation: js-splash-mark-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
