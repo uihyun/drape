@@ -137,6 +137,8 @@ export const en = {
   findSimilar: 'Find similar',
   saveToCloset: 'Save',
   savedToCloset: 'Saved',
+  addToCloset: 'Add to closet',
+  addedToCloset: 'Added',
   saveToWishlist: 'Save to wishlist',
   savedToWishlist: 'Saved to wishlist',
   addAllToCloset: 'Add all to closet',

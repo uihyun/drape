@@ -1108,6 +1108,23 @@ body.is-native {
   flex-shrink: 0;
 }
 .piece-match-empty { font-size: 0.8rem; color: var(--text-muted); }
+/* Small, quiet "+ Add to closet" per detected piece. */
+.piece-add-closet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.piece-add-closet:disabled { opacity: 0.6; cursor: default; }
+.piece-add-closet .spin { animation: spin 0.9s linear infinite; }
 .piece-match-desc {
   font-size: 0.88rem;
   color: var(--text-secondary);

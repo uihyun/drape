@@ -139,6 +139,8 @@ export const ja = {
   findSimilar: '似たものを探す',
   saveToCloset: 'クローゼットに追加',
   savedToCloset: '追加済み',
+  addToCloset: 'クローゼットに追加',
+  addedToCloset: '追加済み',
   saveToWishlist: 'ウィッシュに保存',
   savedToWishlist: 'ウィッシュに保存済み',
   addAllToCloset: 'すべてクローゼットに追加',

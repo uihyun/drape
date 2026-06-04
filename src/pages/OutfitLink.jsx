@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Check, SlidersHorizontal } from 'lucide-react';
+import { Check, SlidersHorizontal, Plus, Loader2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
@@ -40,10 +40,18 @@ export function OutfitLink({ user, onSignIn }) {
     });
   }, [outfitId]);
 
-  // Seed selection from the outfit's existing itemIds (once).
+  // Seed selection from the outfit's existing itemIds (once). Also pre-set
+  // the closet filter to the categories detected in the look, so "From your
+  // closet" starts narrowed to the relevant pieces (dress, footwear, …)
+  // instead of the whole wardrobe.
   useEffect(() => {
     if (outfit && !seeded) {
       setSelected(new Set(outfit.itemIds || []));
+      const pieceCats = Array.from(new Set(
+        (Array.isArray(outfit.pieces) ? outfit.pieces : [])
+          .map(p => p?.category).filter(Boolean)
+      ));
+      if (pieceCats.length) setFilters(prev => ({ ...prev, category: pieceCats }));
       setSeeded(true);
     }
   }, [outfit, seeded]);
@@ -70,6 +78,28 @@ export function OutfitLink({ user, onSignIn }) {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+  };
+
+  // "+ Add to closet" for a detected piece that isn't in the closet yet:
+  // crop it out of THIS look's photo into a new owned item (same engine as
+  // the analyze flow's add), then auto-link it. So a piece can be either
+  // linked to an existing item or freshly added — without leaving here.
+  const [addingPiece, setAddingPiece] = useState(-1);
+  const [addedPieces, setAddedPieces] = useState(new Set());
+  const addPieceToCloset = async (piece, i) => {
+    if (addingPiece !== -1 || addedPieces.has(i)) return;
+    const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
+    if (!photoUrl) return;
+    setAddingPiece(i);
+    try {
+      const res = await fetch(photoUrl, { mode: 'cors' });
+      const blob = await res.blob();
+      const { id } = await ItemService.createFromDetected({ blob, detected: piece, owned: true });
+      setSelected(prev => new Set(prev).add(id));        // link the new item
+      setAddedPieces(prev => new Set(prev).add(i));
+    } catch (e) {
+      console.warn('add piece to closet failed:', e?.message);
+    } finally { setAddingPiece(-1); }
   };
 
   // Tapping a board pulls every closet item pinned on it into the
@@ -179,6 +209,18 @@ export function OutfitLink({ user, onSignIn }) {
                     <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
                   )}
                 </div>
+                <button
+                  type="button"
+                  className="piece-add-closet"
+                  onClick={() => addPieceToCloset(piece, i)}
+                  disabled={addingPiece === i || addedPieces.has(i)}
+                >
+                  {addedPieces.has(i)
+                    ? <><Check size={13} strokeWidth={2.4} /> {t('addedToCloset')}</>
+                    : addingPiece === i
+                      ? <><Loader2 size={13} strokeWidth={2} className="spin" /> {t('saving')}</>
+                      : <><Plus size={13} strokeWidth={2.2} /> {t('addToCloset')}</>}
+                </button>
                 {matches.length > 0 ? (
                   <div className="analyze-match-row">
                     {matches.map(({ item }) => {

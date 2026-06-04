@@ -137,6 +137,8 @@ export const ko = {
   findSimilar: '비슷한 옷 찾기',
   saveToCloset: '옷장에 저장',
   savedToCloset: '저장됨',
+  addToCloset: '옷장에 추가',
+  addedToCloset: '추가됨',
   saveToWishlist: '위시리스트에 저장',
   savedToWishlist: '위시리스트에 저장됨',
   addAllToCloset: '전부 옷장에 추가',
