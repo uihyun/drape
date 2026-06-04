@@ -63,7 +63,9 @@ export default function App() {
       setUser(u || null);
       setAuthReady(true);
       if (u && !u.isAnonymous) {
-        try { await AuthService.initializeIfNeeded?.(u); } catch (e) { console.warn('init failed', e?.message); }
+        // Close the sign-in sheet the instant auth is confirmed — the
+        // profile bootstrap (auth-service) and warm-up run in the background.
+        setSignInModalOpen(false);
         // No-op on web; on iOS/Android registers for FCM and persists
         // the token to /users/{uid}/fcmTokens/{token} for the
         // sendNewMessagePush function to fan out to.

@@ -61,7 +61,7 @@ export const AuthService = {
       try {
         const result = await linkWithPopup(current, googleProvider);
         await this._ensureUserDoc(result.user, 'google');
-        await this.initializeCredits(result.user);
+        await this.ensureUserProfile(result.user);
         return result.user;
       } catch (err) {
         if (err.code === 'auth/credential-already-in-use') {
@@ -73,7 +73,7 @@ export const AuthService = {
           await beforeSwitch?.();
           const result = await signInWithCredential(auth, credential);
           await this._ensureUserDoc(result.user, 'google');
-          await this.initializeCredits(result.user);
+          await this.ensureUserProfile(result.user);
           return result.user;
         }
         throw err;
@@ -81,7 +81,7 @@ export const AuthService = {
     } else {
       const result = await signInWithPopup(auth, googleProvider);
       await this._ensureUserDoc(result.user, 'google');
-      await this.initializeCredits(result.user);
+      await this.ensureUserProfile(result.user);
       return result.user;
     }
   },
@@ -108,14 +108,14 @@ export const AuthService = {
       try {
         const linked = await linkWithCredential(current, credential);
         await this._ensureUserDoc(linked.user, 'google');
-        await this.initializeCredits(linked.user);
+        await this.ensureUserProfile(linked.user);
         return linked.user;
       } catch (err) {
         if (err.code === 'auth/credential-already-in-use') {
           await beforeSwitch?.();
           const signed = await signInWithCredential(auth, credential);
           await this._ensureUserDoc(signed.user, 'google');
-          await this.initializeCredits(signed.user);
+          await this.ensureUserProfile(signed.user);
           return signed.user;
         }
         throw err;
@@ -123,7 +123,7 @@ export const AuthService = {
     } else {
       const signed = await signInWithCredential(auth, credential);
       await this._ensureUserDoc(signed.user, 'google');
-      await this.initializeCredits(signed.user);
+      await this.ensureUserProfile(signed.user);
       return signed.user;
     }
   },
@@ -171,7 +171,7 @@ export const AuthService = {
       const fb = await signInWithCredential(auth, credential);
       await this._applyAppleFirstLoginName(fb.user, fullName);
       await this._ensureUserDoc(fb.user, 'apple');
-      await this.initializeCredits(fb.user);
+      await this.ensureUserProfile(fb.user);
       return fb.user;
     }
 
@@ -181,7 +181,7 @@ export const AuthService = {
         const result = await linkWithPopup(current, appleProvider);
         await this._applyAppleFirstLoginName(result.user, result.user.displayName || '');
         await this._ensureUserDoc(result.user, 'apple');
-        await this.initializeCredits(result.user);
+        await this.ensureUserProfile(result.user);
         return result.user;
       } catch (err) {
         if (err.code === 'auth/credential-already-in-use') {
@@ -194,7 +194,7 @@ export const AuthService = {
           const result = await signInWithCredential(auth, credential);
           await this._applyAppleFirstLoginName(result.user, result.user.displayName || '');
           await this._ensureUserDoc(result.user, 'apple');
-          await this.initializeCredits(result.user);
+          await this.ensureUserProfile(result.user);
           return result.user;
         }
         throw err;
@@ -203,7 +203,7 @@ export const AuthService = {
       const result = await signInWithPopup(auth, appleProvider);
       await this._applyAppleFirstLoginName(result.user, result.user.displayName || '');
       await this._ensureUserDoc(result.user, 'apple');
-      await this.initializeCredits(result.user);
+      await this.ensureUserProfile(result.user);
       return result.user;
     }
   },
@@ -227,7 +227,7 @@ export const AuthService = {
       if (result?.user) {
         const provider = providerKeyForUser(result.user);
         await this._ensureUserDoc(result.user, provider);
-        await this.initializeCredits(result.user);
+        await this.ensureUserProfile(result.user);
       }
       return result;
     } catch (err) {
@@ -236,7 +236,7 @@ export const AuthService = {
         if (credential) {
           const result = await signInWithCredential(auth, credential);
           await this._ensureUserDoc(result.user, 'google');
-          await this.initializeCredits(result.user);
+          await this.ensureUserProfile(result.user);
           return result;
         }
       }
@@ -301,10 +301,10 @@ export const AuthService = {
     }
   },
 
-  // Server-side bootstrap after sign-in: hits initializeUser which
-  // ensures the /profiles/{uid} doc + handle exist. No body — there's
-  // nothing else to pass post credit-removal.
-  async initializeCredits(user) {
+  // First-sign-in bootstrap: hits the initializeUser endpoint which ensures
+  // the /profiles/{uid} doc + handle exist. NOT credits — drape has none;
+  // this is purely the profile/handle setup.
+  async ensureUserProfile(user) {
     try {
       const token = await user.getIdToken();
       await fetch(`${FUNCTIONS_BASE}/initializeUser`, {
@@ -315,7 +315,7 @@ export const AuthService = {
         },
       });
     } catch (err) {
-      console.warn('initializeCredits error:', err);
+      console.warn('ensureUserProfile error:', err);
     }
   },
 
