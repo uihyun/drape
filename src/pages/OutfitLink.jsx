@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Check, SlidersHorizontal, Plus, Loader2 } from 'lucide-react';
+import { Check, SlidersHorizontal, Plus } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
@@ -85,24 +85,17 @@ export function OutfitLink({ user, onSignIn }) {
   // crop it out of THIS look's photo into a new owned item (same engine as
   // the analyze flow's add), then auto-link it. So a piece can be either
   // linked to an existing item or freshly added — without leaving here.
-  const [addingPiece, setAddingPiece] = useState(-1);
-  const [addedPieces, setAddedPieces] = useState(new Set());
+  // "+" now just MARKS a piece to be added on Save (was: add immediately).
+  // pieceIndex -> piece. The actual createFromExistingPhoto happens in save()
+  // so nothing lands in the closet until the user commits.
+  const [pendingAdds, setPendingAdds] = useState(new Map());
   const [addErr, setAddErr] = useState(null);
-  const addPieceToCloset = async (piece, i) => {
-    if (addingPiece !== -1 || addedPieces.has(i)) return;
-    const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
-    const photoPath = outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath;
-    if (!photoUrl || !photoPath) { setAddErr(t('addToClosetFailed')); return; }
-    setAddingPiece(i);
-    try {
-      // Server reads the existing photo + crops — no client cross-origin fetch.
-      const { id } = await ItemService.createFromExistingPhoto({ photoUrl, photoPath, detected: piece, owned: true });
-      setSelected(prev => new Set(prev).add(id));        // link the new item
-      setAddedPieces(prev => new Set(prev).add(i));
-    } catch (e) {
-      console.warn('add piece to closet failed:', e?.message);
-      setAddErr(t('addToClosetFailed'));
-    } finally { setAddingPiece(-1); }
+  const togglePendingAdd = (piece, i) => {
+    setPendingAdds(prev => {
+      const next = new Map(prev);
+      if (next.has(i)) next.delete(i); else next.set(i, piece);
+      return next;
+    });
   };
 
   // Tapping a board pulls every closet item pinned on it into the
@@ -147,7 +140,20 @@ export function OutfitLink({ user, onSignIn }) {
     if (saving || !outfit) return;
     setSaving(true);
     try {
-      const ids = Array.from(selected);
+      // Commit the "+ add to closet" picks now — crop each marked piece out
+      // of this look's photo into a new owned item, then link it too.
+      const newIds = [];
+      const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
+      const photoPath = outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath;
+      if (pendingAdds.size && photoUrl && photoPath) {
+        for (const piece of pendingAdds.values()) {
+          try {
+            const { id } = await ItemService.createFromExistingPhoto({ photoUrl, photoPath, detected: piece, owned: true });
+            newIds.push(id);
+          } catch (e) { console.warn('add piece on save failed:', e?.message); }
+        }
+      }
+      const ids = [...Array.from(selected), ...newIds];
       const cover = outfit.coverUrl || outfit.photoCutUrl || outfit.photoUrl
         || ids.map(id => closetById[id]).find(Boolean)?.croppedUrl || null;
       await OutfitService.updateOutfit(outfit.id, { itemIds: ids, coverUrl: cover });
@@ -213,17 +219,14 @@ export function OutfitLink({ user, onSignIn }) {
                   )}
                   <button
                     type="button"
-                    className={`piece-add-closet${addedPieces.has(i) ? ' done' : ''}`}
-                    onClick={() => addPieceToCloset(piece, i)}
-                    disabled={addingPiece === i || addedPieces.has(i)}
+                    className={`piece-add-closet${pendingAdds.has(i) ? ' done' : ''}`}
+                    onClick={() => togglePendingAdd(piece, i)}
                     aria-label={t('addToCloset')}
                     title={t('addToCloset')}
                   >
-                    {addedPieces.has(i)
+                    {pendingAdds.has(i)
                       ? <Check size={14} strokeWidth={2.6} />
-                      : addingPiece === i
-                        ? <Loader2 size={14} strokeWidth={2} className="spin" />
-                        : <Plus size={15} strokeWidth={2.4} />}
+                      : <Plus size={15} strokeWidth={2.4} />}
                   </button>
                 </div>
                 {matches.length > 0 ? (
@@ -324,7 +327,7 @@ export function OutfitLink({ user, onSignIn }) {
           {t('skip')}
         </button>
         <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>
-          {saving ? t('saving') : `${t('save')}${selected.size > 0 ? ` · ${selected.size}` : ''}`}
+          {saving ? t('saving') : `${t('save')}${(selected.size + pendingAdds.size) > 0 ? ` · ${selected.size + pendingAdds.size}` : ''}`}
         </button>
       </div>
 
