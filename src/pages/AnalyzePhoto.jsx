@@ -142,7 +142,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
           mime: blob.type || 'image/jpeg',
         });
         setBatches(prev => prev.map((x, i) => i === idx
-          ? { ...x, status: 'done', style: data.style || '', notes: data.notes || '', items: data.items || [] }
+          ? { ...x, status: 'done', style: data.style || '', notes: data.notes || '', items: data.items || [],
+              palette: data.palette || [], mood: data.mood || '' }
           : x));
         detected.push({ blob, items: data.items || [], style: data.style || '' });
       } catch (e) {
@@ -230,6 +231,10 @@ export function AnalyzePhoto({ user, onSignIn }) {
         photoBlob: batch.blob,
         style: batch.style || [],
         notes: batch.notes || '',
+        // Carry the colour palette + mood through so a saved analysis shows
+        // the same swatches/editorial read as a try-on result.
+        palette: batch.palette || [],
+        mood: batch.mood || '',
         detectedItems: batch.items || [],
         itemIds: [],
       });
