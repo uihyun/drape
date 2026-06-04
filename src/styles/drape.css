@@ -987,27 +987,8 @@ body.is-native {
   color: var(--text-muted);
   margin-bottom: 0.4rem;
 }
-/* Compact colour palette preview in the analyze result style card. */
-.analyze-palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
-  margin: 0.1rem 0 0.7rem;
-}
-.analyze-palette-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-}
-.analyze-palette-sw {
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
-  flex-shrink: 0;
-}
+/* (analyze result palette now reuses .outfit-palette big cards — the same
+   format as the saved detail — so no separate compact-swatch styles.) */
 .analyze-style-name {
   font-size: 1.45rem;
   font-weight: 600;

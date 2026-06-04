@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check } from 'lucide-react';
+import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
@@ -27,6 +27,16 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // results (they save to different places: wishlist vs your own closet).
 const makeAnalyzeCache = () => ({ batches: [], savedKeys: new Set(), savedBatchIds: new Map() });
 const analyzeCaches = { owned: makeAnalyzeCache(), wishlist: makeAnalyzeCache() };
+
+// Pick readable ink for a palette swatch background (same as OutfitDetail,
+// so the analyze result palette renders identically to the saved detail).
+function contrastInk(hex) {
+  if (!hex || hex[0] !== '#' || hex.length < 7) return '#111';
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#111' : '#fff';
+}
 
 export function AnalyzePhoto({ user, onSignIn }) {
   const { t } = useLocale();
@@ -394,20 +404,25 @@ export function AnalyzePhoto({ user, onSignIn }) {
                     style + notes read like an editorial caption. Owned
                     bulk-add skips it entirely — that path is just "add these
                     pieces to my closet", no style read, nothing to save. */}
-                {!owned && ((Array.isArray(b.style) && b.style.length > 0) || b.notes || (Array.isArray(b.palette) && b.palette.length > 0)) && (
+                {/* Colour palette — identical big cards to the saved detail
+                    (outfit-palette), full width above the style read. */}
+                {!owned && Array.isArray(b.palette) && b.palette.length > 0 && (
+                  <section className="outfit-palette">
+                    {b.palette.slice(0, 3).map((c, i) => (
+                      <div key={i} className="palette-card" style={{ background: c.hex, color: contrastInk(c.hex) }}>
+                        <span className="palette-pct">{Math.round(c.percent || 0)}%</span>
+                        <div className="palette-meta">
+                          <div className="palette-name">{c.name || ''}</div>
+                          <div className="palette-hex">{c.hex}</div>
+                        </div>
+                        <ChevronRight size={16} strokeWidth={1.5} className="palette-chev" />
+                      </div>
+                    ))}
+                  </section>
+                )}
+                {!owned && ((Array.isArray(b.style) && b.style.length > 0) || b.notes) && (
                   <div className="analyze-style-card">
                     <span className="analyze-style-eyebrow">{t('styleLabel')}</span>
-                    {/* Colour palette preview — same read the saved detail shows. */}
-                    {Array.isArray(b.palette) && b.palette.length > 0 && (
-                      <div className="analyze-palette">
-                        {b.palette.slice(0, 3).map((c, i) => (
-                          <div key={i} className="analyze-palette-chip">
-                            <span className="analyze-palette-sw" style={{ background: c.hex }} />
-                            <span className="analyze-palette-txt">{c.name}{c.percent ? ` · ${Math.round(c.percent)}%` : ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {b.notes && <p className="analyze-style-notes">{b.notes}</p>}
                     {Array.isArray(b.style) && b.style.length > 0 && (
                       <ul className="analyze-style-list">
