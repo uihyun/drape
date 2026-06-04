@@ -48,6 +48,7 @@ export function OutfitLink({ user, onSignIn }) {
   useEffect(() => {
     if (outfit && !seeded) {
       setSelected(new Set(outfit.itemIds || []));
+      setPieceLinks(outfit.pieceLinks && typeof outfit.pieceLinks === 'object' ? { ...outfit.pieceLinks } : {});
       const pieceCats = Array.from(new Set(
         (Array.isArray(outfit.pieces) ? outfit.pieces : [])
           .map(p => p?.category).filter(Boolean)
@@ -73,12 +74,76 @@ export function OutfitLink({ user, onSignIn }) {
     [closet],
   );
 
-  const toggle = (id) => {
+  const pieces = useMemo(
+    () => (Array.isArray(outfit?.pieces) ? outfit.pieces : []),
+    [outfit],
+  );
+
+  // #3 — slot each linked item under the detected piece it matches.
+  // pieceLinks: { [pieceIndex]: [itemId, …] }. An item belongs to at most one
+  // piece; items whose category matches no piece stay "unsorted" (flat).
+  const [pieceLinks, setPieceLinks] = useState({});
+  const [picker, setPicker] = useState(null); // { itemId, candidates: [{p, idx}] }
+
+  const piecesByCategory = (cat) => pieces
+    .map((p, idx) => ({ p, idx }))
+    .filter(({ p }) => p.category && cat && p.category === cat);
+
+  const assignToPiece = (idx, itemId) => {
+    setPieceLinks(prev => {
+      const next = {};
+      // An item lives under one piece — drop it from any other first.
+      for (const [k, ids] of Object.entries(prev)) {
+        const kept = ids.filter(id => id !== itemId);
+        if (kept.length) next[k] = kept;
+      }
+      next[idx] = [...(next[idx] || []), itemId];
+      return next;
+    });
+  };
+
+  const unassignItem = (itemId) => {
+    setPieceLinks(prev => {
+      const next = {};
+      for (const [k, ids] of Object.entries(prev)) {
+        const kept = ids.filter(id => id !== itemId);
+        if (kept.length) next[k] = kept;
+      }
+      return next;
+    });
+  };
+
+  // Whole-closet grid / generic select. On add, auto-slot by category:
+  // 1 matching piece → assign; 2+ → ask (modal); 0 → leave unsorted.
+  const toggle = (item) => {
+    const id = typeof item === 'string' ? item : item.id;
+    const obj = typeof item === 'string' ? closetById[id] : item;
+    const wasSelected = selected.has(id);
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+    if (wasSelected) {
+      unassignItem(id);
+    } else {
+      const cands = piecesByCategory(obj?.tags?.category);
+      if (cands.length === 1) assignToPiece(cands[0].idx, id);
+      else if (cands.length >= 2) setPicker({ itemId: id, candidates: cands });
+    }
+  };
+
+  // Tapping a closet suggestion shown UNDER a specific piece is an explicit
+  // choice — assign straight to that piece, no category guessing.
+  const togglePieceMatch = (idx, item) => {
+    const id = item.id;
+    if (selected.has(id)) {
+      setSelected(prev => { const n = new Set(prev); n.delete(id); return n; });
+      unassignItem(id);
+    } else {
+      setSelected(prev => new Set(prev).add(id));
+      assignToPiece(idx, id);
+    }
   };
 
   // "+ Add to closet" for a detected piece that isn't in the closet yet:
@@ -103,11 +168,21 @@ export function OutfitLink({ user, onSignIn }) {
   const toggleBoard = (ids) => {
     const valid = ids.filter(id => closetById[id]);
     if (valid.length === 0) return;
+    const allSel = valid.every(id => selected.has(id));
     setSelected(prev => {
       const next = new Set(prev);
-      const allSel = valid.every(id => next.has(id));
       valid.forEach(id => (allSel ? next.delete(id) : next.add(id)));
       return next;
+    });
+    // Bulk pull: auto-slot the unambiguous ones (exactly 1 piece in that
+    // category). Skip the picker modal here — a board can add many items and
+    // a modal per ambiguous item would be a wall of prompts; those stay
+    // unsorted and can be slotted individually from the per-piece strip.
+    valid.forEach(id => {
+      if (allSel) { unassignItem(id); return; }
+      if (selected.has(id)) return; // already in — keep its existing mapping
+      const cands = piecesByCategory(closetById[id]?.tags?.category);
+      if (cands.length === 1) assignToPiece(cands[0].idx, id);
     });
   };
 
@@ -153,20 +228,32 @@ export function OutfitLink({ user, onSignIn }) {
       // Commit the "+ add to closet" picks now — crop each marked piece out
       // of this look's photo into a new owned item, then link it too.
       const newIds = [];
+      // Clone the piece→items map so we can graft freshly-added pieces in.
+      const links = {};
+      for (const [k, arr] of Object.entries(pieceLinks)) links[k] = [...arr];
       const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
       const photoPath = outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath;
       if (pendingAdds.size && photoUrl && photoPath) {
-        for (const piece of pendingAdds.values()) {
+        for (const [idx, piece] of pendingAdds.entries()) {
           try {
             const { id } = await ItemService.createFromExistingPhoto({ photoUrl, photoPath, detected: piece, owned: true });
             newIds.push(id);
+            // A "+ add" piece IS that detected piece → slot it there.
+            links[idx] = [...(links[idx] || []), id];
           } catch (e) { console.warn('add piece on save failed:', e?.message); }
         }
       }
       const ids = [...Array.from(selected), ...newIds];
+      // Drop any stale links pointing at items no longer selected.
+      const idSet = new Set(ids);
+      const cleanLinks = {};
+      for (const [k, arr] of Object.entries(links)) {
+        const kept = arr.filter(id => idSet.has(id));
+        if (kept.length) cleanLinks[k] = kept;
+      }
       const cover = outfit.coverUrl || outfit.photoCutUrl || outfit.photoUrl
         || ids.map(id => closetById[id]).find(Boolean)?.croppedUrl || null;
-      await OutfitService.updateOutfit(outfit.id, { itemIds: ids, coverUrl: cover });
+      await OutfitService.updateOutfit(outfit.id, { itemIds: ids, coverUrl: cover, pieceLinks: cleanLinks });
       // Dated look → stamp wear on the linked items for that day.
       if (outfit.date && ids.length) {
         await ItemService.recordWear({ itemIds: ids, date: outfit.date, ootdId: outfit.id, outfitId: outfit.id });
@@ -189,7 +276,6 @@ export function OutfitLink({ user, onSignIn }) {
   }
   if (!outfit) return <div className="loading"><div className="spinner" /></div>;
 
-  const pieces = Array.isArray(outfit.pieces) ? outfit.pieces : [];
   // A freshly-saved photo OOTD: analyzeOotd runs server-side and fills
   // `pieces` + `analyzedAt` a moment later. Until then, show a "reading
   // your look" note so the empty pieces area reads as in-progress.
@@ -251,7 +337,7 @@ export function OutfitLink({ user, onSignIn }) {
                             key={item.id}
                             type="button"
                             className={`analyze-match-card${on ? ' selected' : ''}`}
-                            onClick={() => toggle(item.id)}
+                            onClick={() => togglePieceMatch(i, item)}
                           >
                             {cover ? <img src={cover} alt="" loading="lazy" /> : <div className="item-card-skeleton" />}
                             {on && <span className="item-card-check"><Check size={12} strokeWidth={2.6} /></span>}
@@ -318,7 +404,7 @@ export function OutfitLink({ user, onSignIn }) {
                 key={it.id}
                 type="button"
                 className={`item-card builder-pickable ${on ? 'selected' : ''}`}
-                onClick={() => toggle(it.id)}
+                onClick={() => toggle(it)}
               >
                 <div className="item-card-image">
                   {it.croppedUrl || it.originalUrl
@@ -350,6 +436,37 @@ export function OutfitLink({ user, onSignIn }) {
           count={filterCount}
           resultCount={visibleCloset.length}
         />
+      )}
+
+      {/* 2+ pieces share the picked item's category → ask which one. */}
+      {picker && (
+        <div className="modal-backdrop" onClick={() => setPicker(null)}>
+          <div className="modal piece-picker-modal" onClick={e => e.stopPropagation()}>
+            <h3>{t('pickPieceTitle')}</h3>
+            <p className="piece-picker-sub">{t('pickPieceSub')}</p>
+            <div className="piece-picker-list">
+              {picker.candidates.map(({ p, idx }) => {
+                const label = p.name
+                  || [(p.colors || [])[0], p.category].filter(Boolean).join(' ')
+                  || t('untitledItem');
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="piece-picker-opt"
+                    onClick={() => { assignToPiece(idx, picker.itemId); setPicker(null); }}
+                  >
+                    <span className="piece-picker-opt-name">{label}</span>
+                    {p.category && <span className="piece-match-cat">{t(`taxonomy.categories.${p.category}`)}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setPicker(null)}>
+              {t('leaveUnsorted')}
+            </button>
+          </div>
+        </div>
       )}
 
       <AlertModal open={!!addErr} message={addErr} onClose={() => setAddErr(null)} />

@@ -107,6 +107,8 @@ service cloud.firestore {
                       // OOTD fields now on the unified doc:
                       'date', 'outfitId', 'linkedType', 'photoUrl', 'photoPath',
                       'photoCutUrl', 'photoCutPath', 'photoCutStatus', 'pieces', 'isCalendarRep', 'analyzedAt', 'style',
+                      // map of piece index -> [itemId] (linked worn pieces slotted under a detected piece)
+                      'pieceLinks',
                       // per-post hero choice: 'full' (with background) | 'cut'
                       'heroVariant'])
       ) || (

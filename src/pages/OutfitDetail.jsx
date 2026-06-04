@@ -148,6 +148,18 @@ export function OutfitDetail({ user, onSignIn }) {
   const pieceList = (Array.isArray(outfit.pieces) && outfit.pieces.length)
     ? outfit.pieces
     : (Array.isArray(outfit.detectedItems) ? outfit.detectedItems : []);
+
+  // #3 — linked items slotted under their detected piece. pieceLinks maps a
+  // piece index → [itemId]. Items not under any piece are shown flat under
+  // "Other items". No links → the whole strip stays flat (legacy outfits).
+  const pieceLinks = (outfit.pieceLinks && typeof outfit.pieceLinks === 'object') ? outfit.pieceLinks : {};
+  const itemsById = Object.fromEntries(items.map(it => [it.id, it]));
+  const linkedIdSet = new Set(Object.values(pieceLinks).flat());
+  const unmappedItems = items.filter(it => !linkedIdSet.has(it.id));
+  const hasGroupedItems = items.length > 0 && Object.values(pieceLinks).some(arr => Array.isArray(arr) && arr.length);
+  const pieceLabel = (piece) => piece?.name
+    || [(piece?.colors || [])[0], piece?.category].filter(Boolean).join(' ')
+    || (piece?.category ? t(`taxonomy.categories.${piece.category}`) : t('untitledItem'));
   const renderHero = () => {
     if (wornPhoto) {
       return <div className="outfit-hero outfit-hero-photo"><img src={wornPhoto} alt="" referrerPolicy="no-referrer" /></div>;
@@ -336,15 +348,52 @@ export function OutfitDetail({ user, onSignIn }) {
       {items.length > 0 && (
         <section className="outfit-items">
           <header><h2>{t('itemsInOutfit')}</h2></header>
-          <div className="outfit-items-strip">
-            {items.map(it => (
-              <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
-                {it.croppedUrl || it.originalUrl
-                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                  : <div className="item-card-skeleton" />}
-              </Link>
-            ))}
-          </div>
+          {hasGroupedItems ? (
+            <div className="outfit-items-grouped">
+              {pieceList.map((piece, i) => {
+                const groupItems = (pieceLinks[i] || []).map(id => itemsById[id]).filter(Boolean);
+                if (!groupItems.length) return null;
+                return (
+                  <div key={i} className="outfit-item-group">
+                    <span className="outfit-item-group-label">{pieceLabel(piece)}</span>
+                    <div className="outfit-items-strip">
+                      {groupItems.map(it => (
+                        <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+                          {it.croppedUrl || it.originalUrl
+                            ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                            : <div className="item-card-skeleton" />}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {unmappedItems.length > 0 && (
+                <div className="outfit-item-group">
+                  <span className="outfit-item-group-label">{t('otherItems')}</span>
+                  <div className="outfit-items-strip">
+                    {unmappedItems.map(it => (
+                      <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+                        {it.croppedUrl || it.originalUrl
+                          ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                          : <div className="item-card-skeleton" />}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="outfit-items-strip">
+              {items.map(it => (
+                <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+                  {it.croppedUrl || it.originalUrl
+                    ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                    : <div className="item-card-skeleton" />}
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
