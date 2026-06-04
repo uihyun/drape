@@ -311,6 +311,9 @@ export function ItemDetail({ user, onSignIn }) {
           </button>
         )}
         {isOwner && menuOpen && (
+          <div className="menu-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+        )}
+        {isOwner && menuOpen && (
           <div className="item-rail-menu" onMouseLeave={() => setMenuOpen(false)}>
             <button type="button" onClick={() => { setMenuOpen(false); setEditing(true); }}>
               <Pencil size={14} strokeWidth={1.7} /> {t('editTags')}

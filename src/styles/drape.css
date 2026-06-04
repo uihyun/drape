@@ -3188,6 +3188,13 @@ input[type="search"]::-webkit-search-decoration {
 .item-rail-btn:hover { background: #fff; }
 .item-rail-share { gap: 0; padding: 0; }
 .item-rail-share span { display: none; }
+/* Invisible full-screen catcher so a tap anywhere outside the menu closes
+   it (the old onMouseLeave only worked with a mouse, not on touch). */
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
 .item-rail-menu {
   position: absolute;
   right: 52px;
@@ -3201,7 +3208,7 @@ input[type="search"]::-webkit-search-decoration {
   flex-direction: column;
   gap: 0.1rem;
   min-width: 160px;
-  z-index: 3;
+  z-index: 31;
 }
 .item-rail-menu button {
   display: flex;
