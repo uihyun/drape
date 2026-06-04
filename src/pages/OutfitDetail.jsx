@@ -74,6 +74,11 @@ export function OutfitDetail({ user, onSignIn }) {
 
   if (!outfit) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && outfit.userId === user.uid;
+  // An analyzed look is a saved read of SOMEONE ELSE'S photo — it isn't your
+  // OOTD, so it can't be published to the feed and there are no "items you
+  // wore" to link. Keep those affordances off (the rest of the layout is
+  // shared with real outfits/OOTDs).
+  const isAnalyzed = outfit.kind === 'analyzed';
 
   // Unified visibility = isPublic (with legacy isListed as fallback read).
   const isPublic = outfit.isPublic === true || outfit.isListed === true;
@@ -352,7 +357,7 @@ export function OutfitDetail({ user, onSignIn }) {
           try-on for visitors with items) spanning wide, then a compact
           icon row — Delete pushed to the far right, off on its own. */}
       <div className="outfit-actions">
-        {isOwner ? (
+        {isOwner && !isAnalyzed ? (
           <button
             type="button"
             className={`outfit-action-primary${isPublic ? ' is-unlist' : ''}`}
@@ -427,7 +432,7 @@ export function OutfitDetail({ user, onSignIn }) {
               <Flag size={17} strokeWidth={1.7} />
             </button>
           )}
-          {isOwner && (
+          {isOwner && !isAnalyzed && (
             <Link to={`/o/${outfit.id}/link`} className="outfit-action-icon" aria-label={t('linkItemsCta')} title={t('linkItemsCta')}>
               <Shirt size={17} strokeWidth={1.7} />
             </Link>
