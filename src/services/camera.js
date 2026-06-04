@@ -20,13 +20,23 @@ export const CameraService = {
       const res = await fetch(`data:image/jpeg;base64,${photo.base64String}`);
       return await res.blob();
     } catch {
-      // Web fallback — synthesize an <input capture=environment>.
+      // Web fallback — synthesize an <input capture=environment>. The input
+      // MUST be in the DOM: iOS Safari / WKWebView don't fire `change` for a
+      // detached file input, so the capture would silently hang and no photo
+      // would ever come back (the "take photo gives no result" bug).
       return new Promise((resolve) => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
         input.capture = 'environment';
-        input.onchange = () => resolve(input.files?.[0] || null);
+        input.style.position = 'fixed';
+        input.style.left = '-9999px';
+        const cleanup = () => { try { input.remove(); } catch { /* ignore */ } };
+        input.onchange = () => { const f = input.files?.[0] || null; cleanup(); resolve(f); };
+        // If the user cancels, `change` never fires; the next focus/touch
+        // resolves null so the caller isn't left awaiting forever.
+        input.oncancel = () => { cleanup(); resolve(null); };
+        document.body.appendChild(input);
         input.click();
       });
     }
