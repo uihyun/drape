@@ -21,6 +21,9 @@ Running notes on what's been built, what's been deferred, and what would break r
 - **App Store / Play deploy (user-only):** Apple Sign-In portal, App Store Connect listing/screenshots/build upload.
 - **`pieceLinks` keys are positional** indexes into `outfit.pieces`. Stable today (pieces aren't reordered post-analysis); switch to per-piece ids if re-analysis ever reshuffles them.
 
+### Future TODO
+- **Auth providers** (memory `project_auth_future`): email/password deferred — Google+Apple+anon is enough (Apple 4.8 met, anonymous covers no-login). If expanding, prefer **Kakao (KR) / LINE (JP)** over email/password; magic-link over passwords if email is ever needed.
+
 ## Current state — 2026-06-02
 
 ### Shipped this session (web deployed; native needs a rebuild to pick up)
