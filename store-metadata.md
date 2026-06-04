@@ -3,7 +3,13 @@
 Single source for the ASC text fields + the **App Review 메모 (Review Notes)** body.
 Keep in sync with `APP_STORE_SUBMISSION.md` (the how-to) and the in-app legal copy.
 
-Contact: hello@uhzlab.com · Support/Marketing URL: https://drape.nyc · Privacy: https://drape.nyc/privacy
+Contact: hello@uhzlab.com
+- **Support URL** (ASC field): `https://drape-9e532.web.app/support.html`
+- **Privacy Policy URL** (ASC field): `https://drape-9e532.web.app/privacy.html`
+- Marketing URL (optional): `https://drape.nyc`
+- These three (`support/privacy/terms.html`) are standalone static pages (no app shell — external
+  visitors can't navigate into the web app). Generated from `src/data/legal.js` via
+  `node scripts/build-web-pages.mjs`. Swap to `https://drape.nyc/…` once that custom domain is wired.
 
 ---
 
@@ -132,7 +138,8 @@ These are the archive/build gotchas archelier (../voda) hit; for drape they're a
 - [ ] **Review Notes (메모)** — paste the block above (this is the empty field in the screenshot).
 - [ ] **로그인 정보** — uncheck "로그인 필요" OR note Sign in with Apple (fields can stay empty).
 - [ ] **Screenshots** — 6.7" (and any required sizes), EN + KO + JA.
-- [ ] **Privacy Policy URL** — https://drape.nyc/privacy reachable.
+- [ ] **Support URL** = `https://drape-9e532.web.app/support.html` (standalone, live).
+- [ ] **Privacy Policy URL** = `https://drape-9e532.web.app/privacy.html` (standalone, live).
 - [ ] **App Privacy** questionnaire matches the Privacy Policy (done earlier — re-verify after marketplace/DM).
 - [ ] **Export compliance** — `ITSAppUsesNonExemptEncryption = false` in Info.plist (HTTPS-only).
 - [ ] **Sign in with Apple** entitlement present (Guideline 4.8 — Google is offered, so Apple is required).

@@ -2,6 +2,30 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Current state — 2026-06-04 (web pages + landing + submission prep)
+
+### Shipped (web only — NO native rebuild required, except the one cosmetic note)
+- **Standalone web pages** `public/{support,privacy,terms}.html` — plain static HTML with NO app
+  shell (no nav / back), so the App Store **Support URL** + **Privacy Policy URL** don't let external
+  visitors wander into the web app. Generated from `src/data/legal.js` via
+  `scripts/build-web-pages.mjs` (re-run after editing legal). PWA `navigateFallbackDenylist` updated
+  so the SW serves them as static, not the SPA. ASC: Support = `…/support.html`, Privacy = `…/privacy.html`.
+- **Landing uses real screenshots** — `components/PhoneShowcase.jsx` now shows optimized webp
+  (`public/lp/{calendar,feed}.webp`) in the angled phone mockups instead of the CSS fakes. ⚠️
+  PhoneShowcase is ALSO used by the native **Welcome** screen, so that screen changed too — purely
+  cosmetic; a submitted build keeps the old CSS mockups, the next archive picks up the real ones.
+- **Sign-in sheet closes on auth-confirmed** (`App.jsx`) instead of waiting for the profile
+  bootstrap; renamed the misleading `initializeCredits` → `ensureUserProfile` (drape has no credits).
+- **App Store prep**: marketing screenshots/posters built (EN + JA, Bodoni / Shippori Mincho) under
+  `~/Desktop/idea/drape/screenshots/poster{,-ja}/`, order calendar→feed→closet→analyze→tryon→market→
+  board; `store-metadata.md` updated (review notes, archelier-audit gotchas, Support/Privacy URLs,
+  uhz LLC org-account TODO). Name `drape: closet & try-on`, subtitle `plan outfits & log your ootd`.
+
+### Domain
+- `drape.nyc` → connect as a Firebase Hosting custom domain on the SAME site; `App.jsx`
+  `isMarketingHost` already routes the marketing host's root to `/landing` (web app stays on web.app).
+  No separate hosting needed.
+
 ## Current state — 2026-06-04 (later)
 
 ### Shipped (web deployed; native needs a rebuild)
