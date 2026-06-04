@@ -5607,9 +5607,11 @@ input[type="search"]::-webkit-search-decoration {
   flex: 0 0 auto;
 }
 .welcome-brand {
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 0.18em;
+  font-family: 'Brand Didone', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 .welcome-lang { position: relative; }

@@ -1,3 +1,14 @@
+/* Brand display face — Bodoni Moda Italic (OFL, self-hosted so the splash
+   wordmark renders identically on every platform). The static icon/splash
+   PNGs bake the same outlines; this is for LIVE brand text (splash, wordmark). */
+@font-face {
+  font-family: 'Brand Didone';
+  font-style: italic;
+  font-weight: 500;
+  font-display: block;
+  src: url('/fonts/bodoni-moda-italic.woff2') format('woff2');
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5502,65 +5513,85 @@ body.is-native {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.4s ease-out;
-  /* Stay above iOS safe-area / notch */
+  transition: opacity 0.48s ease-out;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-.js-splash-exit {
-  opacity: 0;
-  pointer-events: none;
-}
-.js-splash-mark {
+.js-splash-exit { opacity: 0; pointer-events: none; }
+
+/* Stage centers the wordmark; the arc is absolutely centered on it (the 'd'). */
+.js-splash-stage {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
 }
-.js-splash-wordmark-img {
-  display: block;
-  width: clamp(120px, 28vw, 200px);
-  height: auto;
-  opacity: 0;
-  animation: js-splash-mark-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.js-splash-word {
+  margin: 0;
+  display: flex;
+  font-family: 'Brand Didone', Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(38px, 12vw, 68px);
+  line-height: 1;
+  color: #F4F1EA;
 }
-@keyframes js-splash-mark-in {
-  to { opacity: 1; }
-}
-.js-splash-tagline {
-  margin: 0.5rem 0 0;
-  font: 300 clamp(11px, 2.4vw, 14px)/1 'Helvetica Neue', 'Avenir Next', system-ui, sans-serif;
-  letter-spacing: 0.42em;
-  color: rgba(244, 241, 234, 0.55);
-  text-transform: uppercase;
-  opacity: 0;
-  animation: js-splash-tagline-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 2.0s forwards;
-}
-@keyframes js-splash-tagline-in {
-  to { opacity: 1; }
-}
+/* Two layers per letter: inner = staggered entrance (translateY/opacity),
+   outer = collapse into the d (translateX/scale) — separate transform owners
+   so the entrance animation and the collapse transition never fight. */
 .js-splash-letter {
   display: inline-block;
+  transition: opacity 0.5s ease,
+              transform 0.55s cubic-bezier(0.7, 0, 0.2, 1),
+              margin 0.55s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.js-splash-glyph {
+  display: inline-block;
   opacity: 0;
-  transform: translateY(8px);
-  animation: js-splash-letter-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  transform: translateY(10px);
+  animation: js-splash-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 70ms);
 }
-@keyframes js-splash-letter-in {
-  to { opacity: 1; transform: translateY(0); }
-}
-.js-splash-line {
-  margin-top: 0.5rem;
-  stroke-dasharray: 170;
-  stroke-dashoffset: 170;
-  /* delay 1.4s — 마지막 letter (delay 400+800=1200ms + duration 400ms = 1600ms) 가
-     끝난 직후 라인이 그려져서 모션이 한 박자에 맞물린다. */
-  animation: js-splash-line-draw 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 1.4s forwards;
-}
-@keyframes js-splash-line-draw {
-  to { stroke-dashoffset: 0; }
+@keyframes js-splash-rise { to { opacity: 1; transform: translateY(0); } }
+
+/* Collapse: r·a·p·e fold left into the d (and lose their width so the d
+   recenters); the d stays. */
+.js-splash-word.is-collapsed .js-splash-letter:not(.is-d) {
+  opacity: 0;
+  transform: translateX(-0.5em) scale(0.55);
+  margin-left: -0.2em;
+  margin-right: -0.2em;
 }
 
-/* Splash always renders D light variant — no dark-mode override.
-   Concept (splash-D-quiet-atelier.svg.png) is the single source of truth for splash visuals. */
+/* Pine accent arc orbiting the d — the loader. */
+.js-splash-arc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(56px, 17vw, 92px);
+  height: clamp(56px, 17vw, 92px);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.js-splash-arc.is-on { opacity: 1; }
+.js-splash-arc circle {
+  fill: none;
+  stroke: #2E4A3A;
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* r=46 → circumference ≈ 289; draw ~22%, spin it as a loader */
+  stroke-dasharray: 64 225;
+  transform-origin: 50% 50%;
+  animation: js-splash-spin 0.85s linear infinite;
+}
+@keyframes js-splash-spin { to { transform: rotate(360deg); } }
+/* Exit: complete the ring and stop. */
+.js-splash-arc.is-complete circle {
+  animation: none;
+  stroke-dasharray: 289 289;
+  transition: stroke-dasharray 0.4s ease;
+}
 
 /* Account 페이지 하단 — iOS 식 list cell 메뉴 (Room AI IMG_6691 톤).
    Support / Privacy / Terms / Sign out 아이콘 + 라벨 + chevron. */

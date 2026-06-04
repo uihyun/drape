@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
+import { calendarWarm } from '../services/uiCache.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -34,8 +35,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
     saveFilters(ckey, { y: cursor.getFullYear(), m: cursor.getMonth() });
   }, [ckey, cursor]);
   // byDate is now { [date]: ootd[] } — multi-OOTD per day. Calendar
-  // cell renders entries[0] (most recent) as the representative.
-  const [byDate, setByDate] = useState({});
+  // cell renders entries[0] (most recent) as the representative. Seeded from
+  // the splash warm-up so the current month paints without a flash.
+  const [byDate, setByDate] = useState(() => {
+    if (!user || user.isAnonymous) return {};
+    const mk = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`;
+    return calendarWarm.get(`${user.uid}|${mk}`) || {};
+  });
   const [sheetDate, setSheetDate] = useState(null); // 'YYYY-MM-DD' or null
   const [sheetExisting, setSheetExisting] = useState(null); // ootd doc or null = create new
   const [pickerDate, setPickerDate] = useState(null); // day with N>1 entries
@@ -79,7 +85,11 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const refetch = () => {};
   useEffect(() => {
     if (!user || user.isAnonymous) { setByDate({}); return; }
-    return OutfitService.subscribeMonth({ uid: user.uid, monthStart, monthEnd }, setByDate);
+    const mk = `${year}-${String(month0 + 1).padStart(2, '0')}`;
+    return OutfitService.subscribeMonth({ uid: user.uid, monthStart, monthEnd }, (map) => {
+      setByDate(map);
+      calendarWarm.set(`${user.uid}|${mk}`, map); // keep the warm cache fresh
+    });
   }, [user, monthStart, monthEnd]);
 
   if (!user || user.isAnonymous) {

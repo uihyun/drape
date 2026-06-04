@@ -10,6 +10,8 @@ import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
 import { Onboarding } from './components/Onboarding.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
+import { JsSplash } from './components/JsSplash.jsx';
+import { warmUp } from './services/warmup.js';
 
 import { Closet } from './pages/Closet.jsx';
 import { AddItem } from './pages/AddItem.jsx';
@@ -54,6 +56,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [signInModalOpen, setSignInModalOpen] = useState(false);
+  const [warmReady, setWarmReady] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
@@ -68,6 +71,22 @@ export default function App() {
       }
     });
   }, []);
+
+  // Splash warm-up: once auth is known, prefetch the first screens into the
+  // shared caches; the animated splash lifts when this resolves (warmUp is
+  // async + once-per-cold-start, so finally() always runs and can't hang the
+  // splash beyond its own hard cap).
+  useEffect(() => {
+    if (!authReady) return undefined;
+    let alive = true;
+    warmUp(user).finally(() => { if (alive) setWarmReady(true); });
+    return () => { alive = false; };
+  }, [authReady, user?.uid]);
+
+  // Animated cold-start splash — skip on the marketing host (drape.nyc) so the
+  // landing page isn't gated behind it.
+  const showSplash = typeof window === 'undefined'
+    || !/(^|\.)drape\.nyc$/i.test(window.location.hostname);
 
   // In-app "Sign in" CTAs open the provider chooser modal (Google +
   // Apple). The first-run Welcome page still calls each provider
@@ -94,6 +113,7 @@ export default function App() {
         open={signInModalOpen}
         onClose={() => setSignInModalOpen(false)}
       />
+      {showSplash && <JsSplash ready={warmReady} />}
     </BrowserRouter>
   );
 }

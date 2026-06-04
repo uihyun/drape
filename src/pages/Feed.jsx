@@ -9,15 +9,13 @@ import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { CardImage } from '../components/CardImage.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
+import { feedCache, feedKey as cacheKey } from '../services/uiCache.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Module-level cache of fetched feed pages, keyed by kind|sort|scope. The
-// Feed component unmounts when you open a detail and remounts on back —
-// without this it would re-query + flash a spinner every time. Cached
-// results seed state instantly; we still refetch in the background to pick
-// up new posts, but the list never blanks.
-const feedCache = new Map();
-const cacheKey = (kind, sort, scope) => `${kind}|${sort}|${scope}`;
+// Feed pages are cached in services/uiCache (shared with the splash warm-up),
+// keyed by kind|sort|scope. The Feed component unmounts when you open a detail
+// and remounts on back — the cache seeds state instantly (no spinner flash);
+// the effects still refetch in the background to pick up new posts.
 
 // Discovery feed — tapping a card opens its detail page. kind / sort /
 // scope all live in the URL so returning from a detail restores the exact

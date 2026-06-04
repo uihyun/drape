@@ -10,6 +10,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
+import { closetWarm } from '../services/uiCache.js';
 import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
@@ -37,7 +38,8 @@ const matchesFilters = itemMatchesFilters;
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
-  const [items, setItems] = useState(null);
+  // Seed from the splash warm-up so the grid paints instantly on first open.
+  const [items, setItems] = useState(() => (user && !user.isAnonymous ? (closetWarm.get(user.uid) || null) : null));
   // Top-row view: All (grid) / Brands (alpha groups) / Usage (recency).
   // View in the URL (?cv=) so back-navigation keeps all/brands/usage.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -61,7 +63,10 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   useEffect(() => {
     if (!authReady) return;
     if (!user) { setItems([]); return; }
-    return ItemService.subscribeMyCloset(user.uid, setItems);
+    return ItemService.subscribeMyCloset(user.uid, (list) => {
+      setItems(list);
+      if (!user.isAnonymous) closetWarm.set(user.uid, list); // keep warm cache fresh
+    });
   }, [user, authReady]);
 
   const filterCount = countFilters(filters);

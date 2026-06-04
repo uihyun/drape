@@ -28,7 +28,7 @@ export default defineConfig({
       workbox: {
         // Pre-cache built JS/CSS/HTML so repeat visits skip the network on
         // app shell. Cap to ~5MB so large source maps don't bloat the SW.
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // 새 SW 즉시 활성화 + 옛 client 들 takeover. 사용자가 탭 닫고 재오픈
         // 안 해도 새 cache 정책 적용. 이전 SW 가 활성 상태로 옛 cache 서비스하던

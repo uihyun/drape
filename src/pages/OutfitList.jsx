@@ -9,12 +9,11 @@ import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
+import { olCache, olKey } from '../services/uiCache.js';
 
-// Cache fetched lists by uid|tab so returning from a detail paints the
-// previous list instantly instead of blanking → spinner → refetch. Each
-// tab still refreshes in the background; the list never disappears.
-const olCache = new Map();
-const olKey = (uid, tab) => `${uid}|${tab}`;
+// Outfit lists cached by uid|tab in services/uiCache (shared with the splash
+// warm-up) so returning from a detail paints instantly instead of blanking →
+// spinner → refetch. Each tab still refreshes in the background.
 
 // 2-col grid of natural-ratio look photos — matches the discovery feed.
 // `showPrivacy` (own content only) flags looks that aren't published yet.

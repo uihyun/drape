@@ -1,44 +1,77 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isNativeApp } from '../services/platform-service.js';
 
-// Cross-platform splash that runs in the WebView. Native iOS shows a static
-// LaunchScreen with the same solid base background; this component fades
-// in once Capacitor calls SplashScreen.hide().
+// Animated cold-start splash (hims-style): the word "drape" settles, then
+// r·a·p·e collapse into the "d", and a pine accent arc orbits the "d" as a
+// real loader. It lifts the moment the warm-up finishes (`ready`), bounded by
+// a min show time (so the motion reads) and a hard cap (so it never traps).
+//
+// The native iOS LaunchScreen shows the same ink base first; this fades in and
+// takes over once Capacitor's SplashScreen.hide() runs.
+const MERGE_AT = 850;   // ms — word has settled, begin collapsing to "d"
+const LOAD_AT = 1500;   // ms — only the "d" remains, arc starts spinning
+const MIN_SHOW = 1700;  // ms — never lift before this (let the motion play)
+const MAX_SHOW = 5000;  // ms — hard cap regardless of warm-up
+const EXIT_MS = 480;    // ms — fade-out duration
 
-export function JsSplash() {
+const LETTERS = ['d', 'r', 'a', 'p', 'e'];
+
+export function JsSplash({ ready = false }) {
+  // enter → merge (rape fold into d) → loading (arc spins) → exit → done
   const [phase, setPhase] = useState('enter');
+  const [hardStop, setHardStop] = useState(false);
+  const mountTime = useRef(Date.now());
 
   useEffect(() => {
-    // Hide the native splash so the JS one can take over the same canvas.
-    // Native builds only — @vite-ignore keeps vite from trying to resolve
-    // the module at build time when @capacitor/splash-screen isn't installed.
+    mountTime.current = Date.now();
     if (isNativeApp()) {
       import(/* @vite-ignore */ '@capacitor/splash-screen')
         .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => {}))
         .catch(() => {});
     }
-
-    const exitTimer = setTimeout(() => setPhase('exit'), 2800);
-    const doneTimer = setTimeout(() => setPhase('done'), 3200);
-    return () => {
-      clearTimeout(exitTimer);
-      clearTimeout(doneTimer);
-    };
+    const t1 = setTimeout(() => setPhase(p => (p === 'enter' ? 'merge' : p)), MERGE_AT);
+    const t2 = setTimeout(() => setPhase(p => (p === 'merge' ? 'loading' : p)), LOAD_AT);
+    const cap = setTimeout(() => setHardStop(true), MAX_SHOW);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(cap); };
   }, []);
+
+  // Begin the exit once warm-up is done (or the cap fires), respecting MIN_SHOW.
+  useEffect(() => {
+    if (phase === 'exit' || phase === 'done') return undefined;
+    if (!ready && !hardStop) return undefined;
+    const wait = Math.max(0, MIN_SHOW - (Date.now() - mountTime.current));
+    const t = setTimeout(() => setPhase('exit'), wait);
+    return () => clearTimeout(t);
+  }, [ready, hardStop, phase]);
+
+  useEffect(() => {
+    if (phase !== 'exit') return undefined;
+    const t = setTimeout(() => setPhase('done'), EXIT_MS);
+    return () => clearTimeout(t);
+  }, [phase]);
 
   if (phase === 'done') return null;
 
+  const collapsed = phase === 'merge' || phase === 'loading' || phase === 'exit';
+  const showArc = phase === 'loading' || phase === 'exit';
+
   return (
-    <div className={`js-splash ${phase === 'exit' ? 'js-splash-exit' : ''}`} aria-hidden="true">
-      <div className="js-splash-mark">
-        {/* The wordmark IS the Didot-italic 'drape' (rasterized so the font is
-            guaranteed on every platform, not just where Didot is installed). */}
-        <img className="js-splash-wordmark-img" src="/wordmark.png" alt="drape" />
-        <svg className="js-splash-line" width="172" height="3" viewBox="0 0 172 3" aria-hidden="true">
-          <line x1="1.5" y1="1.5" x2="170.5" y2="1.5" stroke="#2E4A3A" strokeWidth="3" strokeLinecap="round" />
+    <div className={`js-splash${phase === 'exit' ? ' js-splash-exit' : ''}`} aria-hidden="true">
+      <div className="js-splash-stage">
+        <h1 className={`js-splash-word${collapsed ? ' is-collapsed' : ''}`} aria-label="drape">
+          {LETTERS.map((c, i) => (
+            <span key={i} className={`js-splash-letter${i === 0 ? ' is-d' : ''}`}>
+              <span className="js-splash-glyph" style={{ '--i': i }}>{c}</span>
+            </span>
+          ))}
+        </h1>
+        <svg className={`js-splash-arc${showArc ? ' is-on' : ''}${phase === 'exit' ? ' is-complete' : ''}`}
+             viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="46" />
         </svg>
-        <p className="js-splash-tagline">CLOSET · AI</p>
       </div>
     </div>
   );
 }
+
+export default JsSplash;

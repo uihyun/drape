@@ -91,3 +91,9 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 - [ ] **Export compliance** — `ITSAppUsesNonExemptEncryption = false` in Info.plist (HTTPS-only).
 - [ ] **Sign in with Apple** entitlement present (Guideline 4.8 — Google is offered, so Apple is required).
 - [ ] **Build** uploaded via TestFlight + export-compliance answered.
+- [ ] **Developer name → "uhz LLC"** — the App Store seller name follows the Apple Developer
+      account type: Individual shows the personal legal name (Uihyun Kim), Organization shows the
+      LLC. To show "uhz LLC" you need an **Organization account** (D-U-N-S # for the LLC). No
+      payout/tax impact while there are NO in-app purchases, so it's cleanest to set the entity
+      **before monetizing**. Individual→Org later = an app transfer + splitting that year's income
+      across two tax entities. Can be changed/re-applied later, but more friction.
