@@ -136,6 +136,16 @@ export function OutfitLink({ user, onSignIn }) {
     });
   }, [closet, filters, filterCount]);
 
+  // We were PUSHED here from the outfit detail (its live subscription already
+  // reflects the new links), so pop back to it instead of pushing another
+  // /o/:id entry — that left two detail entries in history, so back showed
+  // the detail twice before reaching the list. Fall back to a replace if this
+  // page was opened directly (no history to pop).
+  const backToDetail = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate(`/o/${outfit.id}`, { replace: true });
+  };
+
   const save = async () => {
     if (saving || !outfit) return;
     setSaving(true);
@@ -161,7 +171,7 @@ export function OutfitLink({ user, onSignIn }) {
       if (outfit.date && ids.length) {
         await ItemService.recordWear({ itemIds: ids, date: outfit.date, ootdId: outfit.id, outfitId: outfit.id });
       }
-      navigate(`/o/${outfit.id}`, { replace: true });
+      backToDetail();
     } catch (e) {
       console.warn('link items failed', e?.message);
     } finally { setSaving(false); }
@@ -323,7 +333,7 @@ export function OutfitLink({ user, onSignIn }) {
       </section>
 
       <div className="builder-cta">
-        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/o/${outfit.id}`, { replace: true })} disabled={saving}>
+        <button type="button" className="btn btn-secondary" onClick={backToDetail} disabled={saving}>
           {t('skip')}
         </button>
         <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>

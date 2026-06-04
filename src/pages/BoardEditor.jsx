@@ -174,9 +174,11 @@ export function BoardEditor({ user, onSignIn }) {
         navigate(`/boards/${id}`, { replace: true });
       } else {
         await BoardService.updateBoard(boardId, { name: name.trim(), stickers, coverUrl, isPublic, background, ratio });
-        // replace so the back button from the board detail exits to the
-        // list, not back into the editor we just left.
-        navigate(`/boards/${boardId}`, { replace: true });
+        // Pop back to the detail we were pushed from (it's a live snapshot, so
+        // it already shows the edit) instead of pushing another /boards/:id —
+        // that left two detail entries so back showed the board twice.
+        if (window.history.length > 1) navigate(-1);
+        else navigate(`/boards/${boardId}`, { replace: true });
       }
     } catch (e) {
       console.warn('save board failed', e?.message);
