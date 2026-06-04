@@ -57,14 +57,18 @@ export function JsSplash({ ready = false }) {
 
   return (
     <div className={`js-splash${phase === 'exit' ? ' js-splash-exit' : ''}`} aria-hidden="true">
-      <div className="js-splash-stage">
-        <h1 className={`js-splash-word${collapsed ? ' is-collapsed' : ''}`} aria-label="drape">
+      <div className={`js-splash-stage${collapsed ? ' is-collapsed' : ''}`}>
+        {/* Full word (in flow → centers the stage); fades out on collapse. */}
+        <h1 className="js-splash-word" aria-label="drape">
           {LETTERS.map((c, i) => (
-            <span key={i} className={`js-splash-letter${i === 0 ? ' is-d' : ''}`}>
+            <span key={i} className="js-splash-letter">
               <span className="js-splash-glyph" style={{ '--i': i }}>{c}</span>
             </span>
           ))}
         </h1>
+        {/* Lone 'd', absolutely centered on the stage so it's perfectly under
+            the arc (no residual-width drift from the collapsing letters). */}
+        <span className="js-splash-mono" aria-hidden="true">d</span>
         <svg className={`js-splash-arc${showArc ? ' is-on' : ''}${phase === 'exit' ? ' is-complete' : ''}`}
              viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="50" cy="50" r="46" />

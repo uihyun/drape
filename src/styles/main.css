@@ -5525,9 +5525,10 @@ body.is-native {
   align-items: center;
   justify-content: center;
 }
-.js-splash-word {
+/* Shared brand-wordmark type for both the full word and the lone d. */
+.js-splash-word,
+.js-splash-mono {
   margin: 0;
-  display: flex;
   font-family: 'Brand Didone', Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-weight: 500;
@@ -5535,15 +5536,16 @@ body.is-native {
   line-height: 1;
   color: #F4F1EA;
 }
-/* Two layers per letter: inner = staggered entrance (translateY/opacity),
-   outer = collapse into the d (translateX/scale) — separate transform owners
-   so the entrance animation and the collapse transition never fight. */
-.js-splash-letter {
-  display: inline-block;
-  transition: opacity 0.5s ease,
-              transform 0.55s cubic-bezier(0.7, 0, 0.2, 1),
-              margin 0.55s cubic-bezier(0.7, 0, 0.2, 1);
+/* Full "drape" — in flow, so it sizes/centers the stage. Fades out on collapse. */
+.js-splash-word {
+  display: flex;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
 }
+.js-splash-stage.is-collapsed .js-splash-word {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.js-splash-letter { display: inline-block; }
 .js-splash-glyph {
   display: inline-block;
   opacity: 0;
@@ -5553,13 +5555,20 @@ body.is-native {
 }
 @keyframes js-splash-rise { to { opacity: 1; transform: translateY(0); } }
 
-/* Collapse: r·a·p·e fold left into the d (and lose their width so the d
-   recenters); the d stays. */
-.js-splash-word.is-collapsed .js-splash-letter:not(.is-d) {
+/* Lone 'd' — absolutely centered on the stage (so it's exactly under the arc).
+   Fades/scales in as the full word collapses. */
+.js-splash-mono {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.82);
   opacity: 0;
-  transform: translateX(-0.5em) scale(0.55);
-  margin-left: -0.2em;
-  margin-right: -0.2em;
+  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.2, 0.9, 0.2, 1);
+  pointer-events: none;
+}
+.js-splash-stage.is-collapsed .js-splash-mono {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Pine accent arc orbiting the d — the loader. */
