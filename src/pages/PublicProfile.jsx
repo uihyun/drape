@@ -10,6 +10,8 @@ import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
+import { CardImage } from '../components/CardImage.jsx';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -222,21 +224,24 @@ function PublicOutfitsGrid({ ootds, t }) {
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   if (items.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
+  // Same 2-col natural-ratio grid the owner's Outfits tab uses (.ootd-feed).
   return (
-    <div className="outfit-grid">
-      {items.map(o => (
-        <Link key={o.id} to={`/o/${o.id}`} className="outfit-card">
-          <div className="outfit-card-cover">
-            {o.photoUrl
-              ? <img src={o.photoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-              : <div className="outfit-card-cover-empty"><span>{o.date}</span></div>}
-          </div>
-          <div className="outfit-card-meta">
-            <span className="card-meta-name">{o.title || o.note || t('untitledOutfit')}</span>
-            {o.date && <span className="card-meta-date">{o.date}</span>}
-          </div>
-        </Link>
-      ))}
+    <div className="ootd-feed">
+      {items.map(o => {
+        const photo = outfitCardPhoto(o);
+        return (
+          <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
+            {photo
+              ? <CardImage src={photo} />
+              : <div className="ootd-card-empty">◇</div>}
+            {(o.note || o.name) && (
+              <div className="ootd-card-overlay">
+                <h3 className="ootd-card-title">{o.note || o.name}</h3>
+              </div>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }
