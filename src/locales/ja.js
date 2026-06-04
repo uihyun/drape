@@ -174,6 +174,7 @@ export const ja = {
   browseFeed: 'フィードを見る',
   tryOnSource: '着せる写真',
   tryOnOutfitRefHead: '再現するルック',
+  tryOnPickItems: 'アイテムを選択',
   tryOnOutfitRefHint: 'このコーデ全体をあなたに着せます。',
   savedRefs: '保存中のレファレンス',
   editRefs: 'アイデンティティ写真を編集',

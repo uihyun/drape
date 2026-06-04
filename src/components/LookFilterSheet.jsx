@@ -1,7 +1,12 @@
 import { X } from 'lucide-react';
-import { CATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
+import { CATEGORIES, SUBCATEGORIES, COLORS, SEASONS, STYLES, FITS } from '../services/taxonomy.js';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+
+// subcategory → its parent category, so a subcategory filter only bites when
+// its parent category is actively selected.
+const SUB_PARENT = {};
+for (const [cat, subs] of Object.entries(SUBCATEGORIES)) for (const s of subs) SUB_PARENT[s] = cat;
 
 // THE single tag-filter module for the whole app (closet, outfits, OOTDs,
 // try-ons, boards — everything except the calendar). Same chip-grid UX
@@ -24,7 +29,7 @@ const FILTER_DIMS = [
 export const LOOK_DIMS = FILTER_DIMS;
 
 export function emptyLookFilters() {
-  return { styles: [], category: [], colors: [], seasons: [], fits: [] };
+  return { styles: [], category: [], subcategory: [], colors: [], seasons: [], fits: [] };
 }
 
 export function countLookFilters(f) {
@@ -43,6 +48,16 @@ export function itemMatchesFilters(item, filters) {
     const has = Array.isArray(v) ? v.some(x => sel.includes(x)) : sel.includes(v);
     if (!has) return false;
   }
+  // Subcategory refines a selected category — only enforced when the item's
+  // category is one the user actively filtered AND drilled into (so a hat
+  // filter doesn't hide bags). Orphaned subs (parent category not selected)
+  // are ignored, which avoids any cascade-cleanup on category deselect.
+  const subs = filters.subcategory;
+  if (subs?.length) {
+    const activeCats = new Set(filters.category || []);
+    const drilled = new Set(subs.map(s => SUB_PARENT[s]).filter(c => activeCats.has(c)));
+    if (drilled.has(tags.category) && !subs.includes(tags.subcategory)) return false;
+  }
   if (filters.forSale?.length && !item.forSale) return false;
   if (filters.kind?.length && !filters.kind.includes(item.kind || 'owned')) return false;
   return true;
@@ -54,6 +69,7 @@ export function itemMatchesFilters(item, filters) {
 export function lookTagSet(look, closetById = {}) {
   const styles = new Set();
   const category = new Set();
+  const subcategory = new Set();
   const colors = new Set();
   const seasons = new Set();
   const fits = new Set();
@@ -65,6 +81,7 @@ export function lookTagSet(look, closetById = {}) {
     if (!it) continue;
     const tg = it.tags || {};
     if (tg.category) category.add(tg.category);
+    if (tg.subcategory) subcategory.add(tg.subcategory);
     if (tg.fit) fits.add(tg.fit);
     for (const c of (tg.colors || [])) colors.add(c);
     for (const sn of (tg.seasons || [])) seasons.add(sn);
@@ -73,9 +90,10 @@ export function lookTagSet(look, closetById = {}) {
   // pieces (analyzed worn-garments) also contribute category/colors.
   for (const p of (look.pieces || [])) {
     if (p.category) category.add(p.category);
+    if (p.subcategory) subcategory.add(p.subcategory);
     for (const c of (p.colors || [])) colors.add(c);
   }
-  return { styles, category, colors, seasons, fits };
+  return { styles, category, subcategory, colors, seasons, fits };
 }
 
 /** Does a look pass the active filters? */
@@ -85,6 +103,13 @@ export function lookMatches(look, filters, closetById = {}) {
     const sel = filters[dim.key];
     if (!sel?.length) continue;
     if (!sel.some(v => tags[dim.key].has(v))) return false;
+  }
+  // Subcategory refinement (same rule as items): only for drilled-into cats.
+  const subs = filters.subcategory;
+  if (subs?.length) {
+    const activeCats = new Set(filters.category || []);
+    const drilled = subs.filter(s => activeCats.has(SUB_PARENT[s]));
+    if (drilled.length && !drilled.some(s => tags.subcategory.has(s))) return false;
   }
   return true;
 }
@@ -106,23 +131,53 @@ export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, re
 
         <div className="detail-filter-body">
           {FILTER_DIMS.map(dim => (
-            <div key={dim.key} className="detail-filter-dim">
-              <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
-              <div className="detail-filter-chips">
-                {dim.values.map(v => {
-                  const on = (filters[dim.key] || []).includes(v);
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      className={`chip-pill${on ? ' active' : ''}`}
-                      onClick={() => onToggle(dim.key, v)}
-                    >
-                      {t(`taxonomy.${dim.ns}.${v}`)}
-                    </button>
-                  );
-                })}
+            <div key={dim.key}>
+              <div className="detail-filter-dim">
+                <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
+                <div className="detail-filter-chips">
+                  {dim.values.map(v => {
+                    const on = (filters[dim.key] || []).includes(v);
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        className={`chip-pill${on ? ' active' : ''}`}
+                        onClick={() => onToggle(dim.key, v)}
+                      >
+                        {t(`taxonomy.${dim.ns}.${v}`)}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+              {/* Drill-down: selecting a top category reveals its subcategories
+                  right below, so you can narrow to e.g. accessory → hat. */}
+              {dim.key === 'category' && (filters.category || []).map(cat => {
+                const subs = SUBCATEGORIES[cat] || [];
+                if (!subs.length) return null;
+                return (
+                  <div key={`sub-${cat}`} className="detail-filter-dim detail-filter-sub">
+                    <span className="detail-filter-dim-label">
+                      {t(`taxonomy.categories.${cat}`)} · {t('tagSubcategory')}
+                    </span>
+                    <div className="detail-filter-chips">
+                      {subs.map(v => {
+                        const on = (filters.subcategory || []).includes(v);
+                        return (
+                          <button
+                            key={v}
+                            type="button"
+                            className={`chip-pill${on ? ' active' : ''}`}
+                            onClick={() => onToggle('subcategory', v)}
+                          >
+                            {t(`taxonomy.subcategories.${v}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
           {extras.map(section => (

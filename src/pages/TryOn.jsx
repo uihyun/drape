@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Sparkles, Upload, X } from 'lucide-react';
+import { Check, Sparkles, Upload, X, SlidersHorizontal } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -8,6 +8,9 @@ import { OutfitService } from '../services/outfit-service.js';
 import { CameraService } from '../services/camera.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { AlertModal } from '../components/AlertModal.jsx';
+import {
+  LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters,
+} from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
@@ -41,6 +44,22 @@ export function TryOn({ user, onSignIn }) {
   const [removeCustomBg, setRemoveCustomBg] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState(emptyLookFilters());
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const filterCount = countLookFilters(filters);
+
+  const toggleFilter = (dim, value) => {
+    setFilters(prev => {
+      const cur = prev[dim] || [];
+      const next = cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value];
+      return { ...prev, [dim]: next };
+    });
+  };
+
+  const visibleItems = useMemo(
+    () => (filterCount === 0 ? items : items.filter(it => itemMatchesFilters(it, filters))),
+    [items, filters, filterCount],
+  );
 
   useEffect(() => {
     if (!user || user.isAnonymous) return;
@@ -272,31 +291,56 @@ export function TryOn({ user, onSignIn }) {
             <Link to="/closet/add" className="btn btn-primary">{t('addItem')}</Link>
           </div>
         ) : (
-          <div className="closet-grid">
-            {items.map(it => {
-              const isSel = selected.has(it.id);
-              return (
-                <button
-                  key={it.id}
-                  type="button"
-                  className={`item-card builder-pickable ${isSel ? 'selected' : ''}`}
-                  onClick={() => toggleItem(it.id)}
-                >
-                  <div className="item-card-image">
-                    {it.croppedUrl || it.originalUrl
-                      ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                      : <div className="item-card-skeleton" />}
-                    {isSel && (
-                      <span className="item-card-check">
-                        <Check size={14} strokeWidth={2.4} />
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <>
+            <div className="closet-header" style={{ marginBottom: '0.75rem' }}>
+              <h3 className="tryon-section-head" style={{ margin: 0 }}>{t('tryOnPickItems')}</h3>
+              <button
+                type="button"
+                className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}
+                aria-label={t('detailedFilter')}
+                onClick={() => setSheetOpen(true)}
+              >
+                <SlidersHorizontal size={18} strokeWidth={1.7} />
+                {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
+              </button>
+            </div>
+            <div className="closet-grid">
+              {visibleItems.map(it => {
+                const isSel = selected.has(it.id);
+                return (
+                  <button
+                    key={it.id}
+                    type="button"
+                    className={`item-card builder-pickable ${isSel ? 'selected' : ''}`}
+                    onClick={() => toggleItem(it.id)}
+                  >
+                    <div className="item-card-image">
+                      {it.croppedUrl || it.originalUrl
+                        ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                        : <div className="item-card-skeleton" />}
+                      {isSel && (
+                        <span className="item-card-check">
+                          <Check size={14} strokeWidth={2.4} />
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
         )
+      )}
+
+      {sheetOpen && (
+        <LookFilterSheet
+          filters={filters}
+          onToggle={toggleFilter}
+          onClear={() => setFilters(emptyLookFilters())}
+          onClose={() => setSheetOpen(false)}
+          count={filterCount}
+          resultCount={visibleItems.length}
+        />
       )}
 
       <AlertModal open={!!error} message={error} onClose={() => setError(null)} />

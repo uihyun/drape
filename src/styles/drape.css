@@ -2374,6 +2374,13 @@ body.is-native {
 .detail-filter { max-height: 85vh; display: flex; flex-direction: column; }
 .detail-filter-body { overflow-y: auto; flex: 1; padding: 0.5rem 0 1rem; }
 .detail-filter-dim { margin-bottom: 1.1rem; }
+/* Subcategory drill-down sits under its category, slightly inset + tinted. */
+.detail-filter-sub {
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--border);
+  margin-top: -0.3rem;
+}
 .detail-filter-dim-label {
   display: block;
   font-size: 0.78rem;

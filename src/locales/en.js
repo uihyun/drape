@@ -172,6 +172,7 @@ export const en = {
   browseFeed: 'Browse feed',
   tryOnSource: 'Photo to dress',
   tryOnOutfitRefHead: 'The look to recreate',
+  tryOnPickItems: 'Pick items',
   tryOnOutfitRefHint: "We'll recreate this whole outfit on you.",
   savedRefs: 'saved references',
   editRefs: 'Edit identity references',

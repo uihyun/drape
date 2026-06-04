@@ -85,9 +85,19 @@ export function OutfitLink({ user, onSignIn }) {
   const [pieceLinks, setPieceLinks] = useState({});
   const [picker, setPicker] = useState(null); // { itemId, candidates: [{p, idx}] }
 
-  const piecesByCategory = (cat) => pieces
-    .map((p, idx) => ({ p, idx }))
-    .filter(({ p }) => p.category && cat && p.category === cat);
+  // Pieces an item could belong to. Category first; when subcategory narrows
+  // it further (e.g. accessory → hat among several accessories) prefer that,
+  // so a hat doesn't trigger the picker against sunglasses + watch.
+  const piecesForItem = (item) => {
+    const cat = item?.tags?.category;
+    const sub = item?.tags?.subcategory;
+    const sameCat = pieces
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p }) => p.category && cat && p.category === cat);
+    if (sameCat.length <= 1 || !sub) return sameCat;
+    const sameSub = sameCat.filter(({ p }) => p.subcategory && p.subcategory === sub);
+    return sameSub.length ? sameSub : sameCat;
+  };
 
   const assignToPiece = (idx, itemId) => {
     setPieceLinks(prev => {
@@ -127,7 +137,7 @@ export function OutfitLink({ user, onSignIn }) {
     if (wasSelected) {
       unassignItem(id);
     } else {
-      const cands = piecesByCategory(obj?.tags?.category);
+      const cands = piecesForItem(obj);
       if (cands.length === 1) assignToPiece(cands[0].idx, id);
       else if (cands.length >= 2) setPicker({ itemId: id, candidates: cands });
     }
@@ -181,7 +191,7 @@ export function OutfitLink({ user, onSignIn }) {
     valid.forEach(id => {
       if (allSel) { unassignItem(id); return; }
       if (selected.has(id)) return; // already in — keep its existing mapping
-      const cands = piecesByCategory(closetById[id]?.tags?.category);
+      const cands = piecesForItem(closetById[id]);
       if (cands.length === 1) assignToPiece(cands[0].idx, id);
     });
   };
