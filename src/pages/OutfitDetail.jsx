@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, ExternalLink, Plus, Check, X } from 'lucide-react';
+import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -10,7 +10,7 @@ import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ShareButton } from '../components/ShareButton.jsx';
-import { matchCloset } from '../utils/itemMatch.js';
+import { PieceRow } from '../components/PieceRow.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
@@ -352,7 +352,7 @@ export function OutfitDetail({ user, onSignIn }) {
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
           {pieceList.map((piece, i) => (
-            <PieceMatchRow
+            <PieceRow
               key={i}
               piece={piece}
               closet={closet}
@@ -360,7 +360,16 @@ export function OutfitDetail({ user, onSignIn }) {
               // Analyzed look = someone else's pieces → offer "save to
               // wishlist" (cropped from this look's photo) like the analyze
               // result screen does. Your own OOTD's pieces are already yours.
-              wishlist={isAnalyzed ? { photoUrl: outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl, photoPath: outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath } : null}
+              sale={isAnalyzed ? {
+                onSave: () => ItemService.createFromExistingPhoto({
+                  photoUrl: outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl,
+                  photoPath: outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath,
+                  detected: piece,
+                  owned: false,
+                }),
+                saveLabel: t('saveToWishlist'),
+                savedLabel: t('savedToWishlist'),
+              } : null}
             />
           ))}
         </section>
@@ -460,113 +469,6 @@ export function OutfitDetail({ user, onSignIn }) {
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
       <Comments parentColl="outfits" parentId={outfit.id} ownerId={outfit.userId} user={user} onSignInRequest={onSignIn} />
-    </div>
-  );
-}
-
-// One detected piece + closet items that tag-match it ("from your closet").
-// On analyzed looks (`wishlist` set) the Shirt icon opens the same
-// find-similar / save-to-wishlist actions the analyze-result screen offers —
-// otherwise those pieces would be stranded once the look is saved.
-function PieceMatchRow({ piece, closet, t, wishlist = null }) {
-  const matches = matchCloset(piece, closet);
-  const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const label = piece.name
-    || [(piece.colors || [])[0], piece.category].filter(Boolean).join(' ')
-    || t('untitledItem');
-  const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(piece.searchQuery || piece.description || label)}`;
-
-  async function saveToWishlist() {
-    if (saving || saved || !wishlist?.photoUrl) return;
-    setSaving(true);
-    try {
-      await ItemService.createFromExistingPhoto({
-        photoUrl: wishlist.photoUrl,
-        photoPath: wishlist.photoPath,
-        detected: piece,
-        owned: false,
-      });
-      setSaved(true);
-    } catch (e) {
-      console.warn('save to wishlist failed', e?.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  // Colour isn't shown separately — it's already in the name (e.g. "Gray
-  // Ribbed Tank"). Same rule across outfit / analysis / try-on piece rows.
-  return (
-    <div className="piece-match-row">
-      <div className="piece-match-head">
-        <span className="piece-match-name">{label}</span>
-        {piece.category && (
-          <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
-        )}
-        {wishlist && (
-          <button
-            type="button"
-            className="piece-add-closet"
-            aria-label={t('saveToWishlist')}
-            title={t('saveToWishlist')}
-            onClick={() => setOpen(true)}
-          >
-            <Shirt size={15} strokeWidth={1.8} />
-          </button>
-        )}
-      </div>
-      {piece.description && <p className="piece-match-desc">{piece.description}</p>}
-      {matches.length > 0 ? (
-        <div className="analyze-match-strip">
-          <span className="analyze-match-label">{t('fromYourCloset')}</span>
-          <div className="analyze-match-row">
-            {matches.map(({ item }) => {
-              const cover = item.croppedUrl || item.originalUrl;
-              return (
-                <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
-                  {cover
-                    ? <img src={cover} alt={item.name || ''} loading="lazy" />
-                    : <div className="item-card-skeleton" />}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <span className="piece-match-empty">{t('noClosetMatch')}</span>
-      )}
-
-      {open && wishlist && (
-        <div className="modal-backdrop" onClick={() => setOpen(false)}>
-          <div className="modal piece-wishlist-modal" onClick={e => e.stopPropagation()}>
-            <button type="button" className="modal-close" aria-label={t('close')} onClick={() => setOpen(false)}>
-              <X size={18} strokeWidth={1.8} />
-            </button>
-            <h3 className="piece-wishlist-title">{label}</h3>
-            {piece.category && (
-              <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
-            )}
-            {piece.description && <p className="piece-match-desc">{piece.description}</p>}
-            <div className="piece-wishlist-actions">
-              <a href={searchUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
-                <ExternalLink size={13} strokeWidth={1.8} /> {t('findSimilar')}
-              </a>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={saveToWishlist}
-                disabled={saved || saving}
-              >
-                {saved
-                  ? <><Check size={13} strokeWidth={2} /> {t('savedToWishlist')}</>
-                  : <><Plus size={13} strokeWidth={1.9} /> {t('saveToWishlist')}</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

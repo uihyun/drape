@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Image as ImageIcon, Camera as CameraIcon, ExternalLink, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Image as ImageIcon, Camera as CameraIcon, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
+import { PieceRow } from '../components/PieceRow.jsx';
 import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
-import { matchCloset } from '../utils/itemMatch.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // "What's in this photo?" — pick one or more photos (OOTD selfies,
@@ -199,6 +199,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       setSavedKeys(prev => new Set(prev).add(key));
     } catch (e) {
       setError(e.message || 'save_failed');
+      throw e; // let the caller (PieceRow) know not to mark the row saved
     } finally { setSavingKey(null); }
   };
 
@@ -273,7 +274,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
   const pendingCount = batches.filter(b => b.status === 'pending').length;
   const anyDone = batches.some(b => b.status === 'done');
-  const searchUrl = (q) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
 
   if (bulkAdding) {
     return (
@@ -458,7 +458,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
                 ) : (
                   <div className="analyze-items-v2">
                     <div className="analyze-items-headrow">
-                      <h3 className="analyze-items-head">{t('itemsInPhoto')}</h3>
+                      {/* Same header + row design as the saved-look detail's
+                          "Pieces in this look" — only the bulk "Save all"
+                          button is analyze-specific. Per-item save/find-similar
+                          live behind each row's shirt icon (PieceRow modal). */}
+                      <h3 className="analyze-items-head">{t('piecesInLook')}</h3>
                       {b.items.some((_, i) => !savedKeys.has(`${batchIdx}:${i}`)) && (
                         <button
                           type="button"
@@ -473,55 +477,20 @@ export function AnalyzePhoto({ user, onSignIn }) {
                     </div>
                     {b.items.map((it, itemIdx) => {
                       const key = `${batchIdx}:${itemIdx}`;
-                      const saved = savedKeys.has(key);
                       return (
-                        /* Same row layout as "Pieces in this look" (outfit
-                           detail) so analyze + saved-look read identically —
-                           but the analyze screen keeps its Find similar / Save
-                           actions exposed (no menu/modal indirection). */
-                        <div key={itemIdx} className="piece-match-row">
-                          <div className="piece-match-head">
-                            <span className="piece-match-name">
-                              {it.name || it.description || t('untitledItem')}
-                            </span>
-                            {it.category && (
-                              <span className="piece-match-cat">
-                                {t(`taxonomy.categories.${it.category}`)}
-                              </span>
-                            )}
-                          </div>
-                          {(it.name && it.description) && (
-                            <p className="piece-match-desc">{it.description}</p>
-                          )}
-                          {/* Colour omitted — it's already in the name. Show
-                              the brand only when we have a guess. */}
-                          {it.brand && (
-                            <p className="analyze-item-v2-meta"><strong>{it.brand}</strong></p>
-                          )}
-                          <div className="analyze-item-v2-actions">
-                            {!owned && (
-                              <a
-                                href={searchUrl(it.searchQuery || it.description)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn-secondary btn-sm"
-                              >
-                                <ExternalLink size={13} strokeWidth={1.8} /> {t('findSimilar')}
-                              </a>
-                            )}
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-sm"
-                              onClick={() => saveItem(batchIdx, itemIdx)}
-                              disabled={saved || savingKey === key}
-                            >
-                              {saved
-                                ? <><Check size={13} strokeWidth={2} /> {t(owned ? 'savedToCloset' : 'savedToWishlist')}</>
-                                : <><Plus size={13} strokeWidth={1.9} /> {t(owned ? 'saveToCloset' : 'saveToWishlist')}</>}
-                            </button>
-                          </div>
-                          <ClosetMatchStrip piece={it} closet={closet} t={t} />
-                        </div>
+                        <PieceRow
+                          key={itemIdx}
+                          piece={it}
+                          closet={closet}
+                          t={t}
+                          sale={{
+                            saved: savedKeys.has(key),
+                            onSave: () => saveItem(batchIdx, itemIdx),
+                            saveLabel: t(owned ? 'saveToCloset' : 'saveToWishlist'),
+                            savedLabel: t(owned ? 'savedToCloset' : 'savedToWishlist'),
+                            findSimilar: !owned,
+                          }}
+                        />
                       );
                     })}
                   </div>
@@ -545,35 +514,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
         onClose={() => setCameraOpen(false)}
         onDone={onBurstDone}
       />
-    </div>
-  );
-}
-
-// "From your closet" — tag-matched items the user already owns for this
-// detected piece. Pure tag scoring (utils/itemMatch). Tapping a card opens
-// the item; the strip only renders when there's at least one decent match.
-function ClosetMatchStrip({ piece, closet, t }) {
-  const matches = matchCloset(piece, closet);
-  // Mirror "Pieces in this look": show the empty state too, so every row has
-  // the same shape whether or not the closet has a match.
-  if (matches.length === 0) {
-    return <span className="piece-match-empty">{t('noClosetMatch')}</span>;
-  }
-  return (
-    <div className="analyze-match-strip">
-      <span className="analyze-match-label">{t('fromYourCloset')}</span>
-      <div className="analyze-match-row">
-        {matches.map(({ item }) => {
-          const cover = item.croppedUrl || item.originalUrl;
-          return (
-            <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
-              {cover
-                ? <img src={cover} alt={item.name || ''} loading="lazy" />
-                : <div className="item-card-skeleton" />}
-            </Link>
-          );
-        })}
-      </div>
     </div>
   );
 }
