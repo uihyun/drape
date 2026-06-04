@@ -208,19 +208,21 @@ export function OutfitLink({ user, onSignIn }) {
                   {piece.category && (
                     <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
                   )}
+                  <button
+                    type="button"
+                    className={`piece-add-closet${addedPieces.has(i) ? ' done' : ''}`}
+                    onClick={() => addPieceToCloset(piece, i)}
+                    disabled={addingPiece === i || addedPieces.has(i)}
+                    aria-label={t('addToCloset')}
+                    title={t('addToCloset')}
+                  >
+                    {addedPieces.has(i)
+                      ? <Check size={14} strokeWidth={2.6} />
+                      : addingPiece === i
+                        ? <Loader2 size={14} strokeWidth={2} className="spin" />
+                        : <Plus size={15} strokeWidth={2.4} />}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="piece-add-closet"
-                  onClick={() => addPieceToCloset(piece, i)}
-                  disabled={addingPiece === i || addedPieces.has(i)}
-                >
-                  {addedPieces.has(i)
-                    ? <><Check size={13} strokeWidth={2.4} /> {t('addedToCloset')}</>
-                    : addingPiece === i
-                      ? <><Loader2 size={13} strokeWidth={2} className="spin" /> {t('saving')}</>
-                      : <><Plus size={13} strokeWidth={2.2} /> {t('addToCloset')}</>}
-                </button>
                 {matches.length > 0 ? (
                   <div className="analyze-match-row">
                     {matches.map(({ item }) => {
