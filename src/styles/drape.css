@@ -4033,6 +4033,19 @@ input[type="search"]::-webkit-search-decoration {
   object-fit: cover;
   display: block;
 }
+/* Cutout still being made — quiet spinner instead of the raw photo. */
+.calendar-thumb-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinner-sm {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
 /* When the OOTD has a server-side person cutout (photoCutUrl), render
    it 'contain' so the full figure shows top-to-bottom inside the cell
    instead of being cropped, and inset a hair of padding so the head

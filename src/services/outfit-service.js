@@ -21,6 +21,7 @@ import {
   serverTimestamp,
   deleteDoc,
   updateDoc,
+  onSnapshot,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
@@ -253,7 +254,11 @@ async function upsertOotd({
     source: 'photo',
     outfitId,
     linkedType: outfitId ? (linkedType || 'outfit') : null,
-    ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null } : {}),
+    // photoCutStatus drives the calendar cell: 'processing' shows a spinner
+    // (not the with-background photo) until processOotdPhoto finishes, then it
+    // flips to 'ready' (cutout) or 'none' (keep original) — so the cell lands
+    // on its final look in one step instead of swapping bg→cutout on refresh.
+    ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null, photoCutStatus: 'processing' } : {}),
     note,
     ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),
@@ -412,16 +417,9 @@ async function listPublicByUser({ uid, pageSize = 200 } = {}) {
 }
 
 /** Month of dated outfits, bucketed by date with the calendar rep first. */
-async function listMonth({ uid, monthStart, monthEnd }) {
-  const snap = await getDocs(query(
-    collection(db, OUTFITS),
-    where('userId', '==', uid),
-    where('date', '>=', monthStart),
-    where('date', '<=', monthEnd),
-    orderBy('date', 'asc'),
-  ));
+function groupOotdsByDate(docs) {
   const byDate = {};
-  for (const d of snap.docs) {
+  for (const d of docs) {
     const data = { id: d.id, ...d.data() };
     if (!byDate[data.date]) byDate[data.date] = [];
     byDate[data.date].push(data);
@@ -433,6 +431,32 @@ async function listMonth({ uid, monthStart, monthEnd }) {
     });
   }
   return byDate;
+}
+
+function monthQuery(uid, monthStart, monthEnd) {
+  return query(
+    collection(db, OUTFITS),
+    where('userId', '==', uid),
+    where('date', '>=', monthStart),
+    where('date', '<=', monthEnd),
+    orderBy('date', 'asc'),
+  );
+}
+
+async function listMonth({ uid, monthStart, monthEnd }) {
+  const snap = await getDocs(monthQuery(uid, monthStart, monthEnd));
+  return groupOotdsByDate(snap.docs);
+}
+
+/** Live month subscription — the calendar uses this so a cutout finishing
+ *  server-side (processOotdPhoto) swaps in automatically, with no manual
+ *  refresh. cb receives the same { [date]: ootd[] } shape as listMonth. */
+function subscribeMonth({ uid, monthStart, monthEnd }, cb) {
+  return onSnapshot(
+    monthQuery(uid, monthStart, monthEnd),
+    snap => cb(groupOotdsByDate(snap.docs)),
+    err => { console.warn('subscribeMonth failed:', err?.message); cb({}); },
+  );
 }
 
 /** Mark one dated outfit as the calendar cover for its date. */
@@ -466,6 +490,7 @@ export const OutfitService = {
   deleteOotd,
   listForDate,
   listMonth,
+  subscribeMonth,
   listMyOotds,
   listPublicByUser,
   listPublicFeed,

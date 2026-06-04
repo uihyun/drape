@@ -805,6 +805,12 @@ exports.processOotdPhoto = onCall(
       const ratio = await maskOpacityRatio(cutout);
       if (ratio < 0.02 || ratio > 0.95) {
         console.warn('processOotdPhoto mask out of range:', ratio.toFixed(3));
+        // No usable cutout — mark done so the calendar stops the spinner and
+        // shows the original (with-background) photo as the final look.
+        await ootdRef.set({
+          photoCutStatus: 'none',
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
       } else {
         croppedPath = ootd.photoPath
           ? ootd.photoPath.replace(/\.(jpg|jpeg|png)$/i, `-cut-${Date.now()}.png`)
@@ -813,11 +819,19 @@ exports.processOotdPhoto = onCall(
         await ootdRef.set({
           photoCutUrl: croppedUrl,
           photoCutPath: croppedPath,
+          photoCutStatus: 'ready',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
       }
     } catch (err) {
       console.warn('processOotdPhoto failed:', err?.message);
+      // Failure also ends the spinner — fall back to the original photo.
+      try {
+        await ootdRef.set({
+          photoCutStatus: 'none',
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      } catch { /* ignore */ }
     }
     return { ok: !!croppedUrl, url: croppedUrl, path: croppedPath };
   }

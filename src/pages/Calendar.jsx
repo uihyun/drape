@@ -73,14 +73,14 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const monthStart = `${year}-${String(month0 + 1).padStart(2, '0')}-01`;
   const monthEnd = `${year}-${String(month0 + 1).padStart(2, '0')}-${String(days).padStart(2, '0')}`;
 
-  const refetch = () => {
-    if (!user || user.isAnonymous) return;
-    OutfitService.listMonth({ uid: user.uid, monthStart, monthEnd })
-      .then(setByDate)
-      .catch(() => setByDate({}));
-  };
-
-  useEffect(() => { refetch(); }, [user, monthStart, monthEnd]);
+  // Live month subscription so a cutout finishing server-side swaps in by
+  // itself — no manual refresh, no bg→cutout flash. (refetch() is kept as a
+  // no-op for the save/delete callbacks; the live stream already updates.)
+  const refetch = () => {};
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setByDate({}); return; }
+    return OutfitService.subscribeMonth({ uid: user.uid, monthStart, monthEnd }, setByDate);
+  }, [user, monthStart, monthEnd]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -149,14 +149,19 @@ export function Calendar({ user, onSignIn, embedded = false }) {
               aria-label={`${dateStr}${entries.length ? ' (logged)' : ''}`}
             >
               <span className="calendar-day-num">{d}</span>
-              {(rep?.photoCutUrl || rep?.photoUrl) && (
+              {/* While the cutout is still being made, show a spinner instead
+                  of the with-background photo, so the cell lands on its final
+                  look (cutout OR original) in one step, not bg→cutout. */}
+              {rep && !rep.photoCutUrl && rep.photoCutStatus === 'processing' ? (
+                <span className="calendar-thumb-loading"><span className="spinner spinner-sm" /></span>
+              ) : (rep?.photoCutUrl || rep?.photoUrl) ? (
                 <img
                   src={rep.photoCutUrl || rep.photoUrl}
                   alt=""
                   className={`calendar-thumb${rep.photoCutUrl ? ' is-cut' : ''}`}
                   loading="lazy"
                 />
-              )}
+              ) : null}
               {rep?.outfitId && !rep.photoUrl && (
                 <span className="calendar-pill">OOTD</span>
               )}
