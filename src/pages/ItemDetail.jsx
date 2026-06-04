@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, RefreshCw, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
+import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
@@ -36,6 +36,9 @@ export function ItemDetail({ user, onSignIn }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [ownerCurrency, setOwnerCurrency] = useState(null);
+  const [listingOpen, setListingOpen] = useState(false);
+  const [listingSaving, setListingSaving] = useState(false);
+  const [saleDraft, setSaleDraft] = useState(null);
   const changeInputRef = useRef(null);
   const stageRef = useRef(null);
 
@@ -50,6 +53,16 @@ export function ItemDetail({ user, onSignIn }) {
     el.style.transform = `translateY(${-y * 0.5}px)`;
     el.style.opacity = String(Math.max(0, 1 - y / 320));
   };
+
+  // Leaving edit mode (Save/Cancel) must clear the parallax transform/opacity
+  // the scroll handler left on the stage — otherwise the photo stays shifted
+  // up and faded to 0, i.e. an invisible (white) hero that won't tap-toggle.
+  useEffect(() => {
+    if (!editing && stageRef.current) {
+      stageRef.current.style.transform = '';
+      stageRef.current.style.opacity = '';
+    }
+  }, [editing]);
 
   useEffect(() => {
     if (!itemId) return;
@@ -141,46 +154,64 @@ export function ItemDetail({ user, onSignIn }) {
   };
 
   const save = async () => {
-    // Listing fields are gated: forSale only takes effect with a numeric
-    // asking price + a condition grade. If either is missing we warn and
-    // keep the toggle off — saves the user from a half-formed listing.
-    const wantsSale = !!draft.forSale;
-    const askingNum = Number(draft.priceAsking);
-    const originalNum = draft.priceOriginal === '' || draft.priceOriginal == null
-      ? null : Number(draft.priceOriginal);
-    if (wantsSale && (!Number.isFinite(askingNum) || askingNum <= 0)) {
-      alert(t('saleNeedsAsking'));
-      return;
-    }
-    if (wantsSale && !draft.conditionGrade) {
-      alert(t('saleNeedsGrade'));
-      return;
-    }
+    // Sale data is managed from the menu's listing modal now — the tag
+    // editor only touches name + tags.
     setSaving(true);
     try {
-      // Resolve the listing currency once, from the seller's profile
-      // location. Stamped onto the item so future viewers don't need to
-      // hit ProfileService just to format the price.
-      let currency = item.currency || null;
-      if (wantsSale && !currency) {
-        try {
-          const prof = await ProfileService.getByUid(item.userId);
-          currency = currencyForCountry(cityCountry(prof?.location));
-        } catch {
-          currency = 'KRW';
-        }
-      }
       await ItemService.updateItem(item.id, {
         name: draft.name,
         tags: draft.tags,
-        forSale: wantsSale,
-        priceOriginal: originalNum,
-        priceAsking: wantsSale ? askingNum : null,
-        conditionGrade: wantsSale ? draft.conditionGrade : null,
-        currency: wantsSale ? currency : null,
       });
       setEditing(false);
     } finally { setSaving(false); }
+  };
+
+  // Open the listing modal seeded from the item's last-known sale values, so
+  // re-listing an unlisted item restores its previous price/condition.
+  const openListing = () => {
+    setSaleDraft({
+      forSale: true,
+      priceOriginal: item.priceOriginal ?? '',
+      priceAsking: item.priceAsking ?? '',
+      conditionGrade: item.conditionGrade || '',
+    });
+    setListingOpen(true);
+  };
+
+  const saveListing = async () => {
+    // A listing needs a numeric asking price + a condition grade.
+    const askingNum = Number(saleDraft.priceAsking);
+    if (!Number.isFinite(askingNum) || askingNum <= 0) { alert(t('saleNeedsAsking')); return; }
+    if (!saleDraft.conditionGrade) { alert(t('saleNeedsGrade')); return; }
+    const originalNum = saleDraft.priceOriginal === '' || saleDraft.priceOriginal == null
+      ? null : Number(saleDraft.priceOriginal);
+    setListingSaving(true);
+    try {
+      // Stamp the listing currency from the seller's profile location so
+      // viewers don't need a ProfileService hit just to format the price.
+      let currency = item.currency || null;
+      if (!currency) {
+        try {
+          const prof = await ProfileService.getByUid(item.userId);
+          currency = currencyForCountry(cityCountry(prof?.location));
+        } catch { currency = 'KRW'; }
+      }
+      await ItemService.updateItem(item.id, {
+        forSale: true,
+        priceOriginal: originalNum,
+        priceAsking: askingNum,
+        conditionGrade: saleDraft.conditionGrade,
+        currency,
+      });
+      setListingOpen(false);
+    } finally { setListingSaving(false); }
+  };
+
+  // Take the item off the market but KEEP price/condition so a future
+  // re-list starts from the last values.
+  const unlist = async () => {
+    try { await ItemService.updateItem(item.id, { forSale: false }); }
+    catch (e) { console.warn('unlist failed', e?.message); }
   };
 
   const remove = async () => {
@@ -333,15 +364,28 @@ export function ItemDetail({ user, onSignIn }) {
                 ? <><Check size={14} strokeWidth={1.7} /> {t('itemMarkOwned')}</>
                 : <><Bookmark size={14} strokeWidth={1.7} /> {t('itemMarkWishlist')}</>}
             </button>
+            {/* Change photo re-runs the crop/tag pipeline on its own
+                (onChangeProduct → reprocessItem), so no standalone Reprocess. */}
             <button type="button" onClick={() => { setMenuOpen(false); changeInputRef.current?.click(); }}>
               <ImageIcon size={14} strokeWidth={1.7} /> {t('changeProduct')}
             </button>
             <button type="button" onClick={() => { setMenuOpen(false); onSave(); }}>
               <Download size={14} strokeWidth={1.7} /> {t('saveImage')}
             </button>
-            <button type="button" onClick={() => { setMenuOpen(false); ItemService.reprocessItem(item.id); }}>
-              <RefreshCw size={14} strokeWidth={1.7} /> {t('reprocess')}
-            </button>
+            {/* Marketplace lives in the menu, not buried in the tag editor.
+                Listing data (price/condition) survives an unlist so re-listing
+                keeps the last values. Wishlist items aren't owned → can't sell. */}
+            {item.kind !== 'wishlist' && (
+              item.forSale ? (
+                <button type="button" onClick={() => { setMenuOpen(false); unlist(); }}>
+                  <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemUnlistMarket')}
+                </button>
+              ) : (
+                <button type="button" onClick={() => { setMenuOpen(false); openListing(); }}>
+                  <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemListMarket')}
+                </button>
+              )
+            )}
             <button type="button" className="danger" onClick={() => { setMenuOpen(false); remove(); }}>
               <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
@@ -378,11 +422,6 @@ export function ItemDetail({ user, onSignIn }) {
               maxLength={80}
             />
             <TagsBlock t={t} tags={draft.tags} editing onChange={tags => setDraft({ ...draft, tags })} />
-            {/* Wishlist (analyze-detected) items aren't owned, so they can't
-                be listed for sale until promoted via "I own this". */}
-            {item.kind !== 'wishlist' && (
-              <SaleBlock t={t} draft={draft} setDraft={setDraft} currency={ownerCurrency} />
-            )}
             <div className="item-viewer-edit-actions">
               <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>{t('cancel')}</button>
               <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? t('saving') : t('save')}</button>
@@ -526,6 +565,17 @@ export function ItemDetail({ user, onSignIn }) {
       {reporting && (
         <ReportModal target={{ type: 'item', id: item.id }} user={user} onClose={() => setReporting(false)} />
       )}
+      {listingOpen && saleDraft && (
+        <div className="modal-backdrop" onClick={() => !listingSaving && setListingOpen(false)}>
+          <div className="modal sale-modal" onClick={e => e.stopPropagation()}>
+            <SaleBlock t={t} draft={saleDraft} setDraft={setSaleDraft} currency={ownerCurrency} forceOn />
+            <div className="item-viewer-edit-actions">
+              <button className="btn btn-secondary" onClick={() => setListingOpen(false)} disabled={listingSaving}>{t('cancel')}</button>
+              <button className="btn btn-primary" onClick={saveListing} disabled={listingSaving}>{listingSaving ? t('saving') : t('save')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -646,7 +696,7 @@ function Chip({ active, editable, onClick, children }) {
 
 const CONDITION_GRADES = ['S', 'A', 'B', 'C'];
 
-function SaleBlock({ t, draft, setDraft, currency }) {
+function SaleBlock({ t, draft, setDraft, currency, forceOn = false }) {
   const onToggle = (e) => setDraft({ ...draft, forSale: e.target.checked });
   const onNum = (key) => (e) => {
     // Strip non-digits, keep as string in draft so empty stays empty.
@@ -654,13 +704,20 @@ function SaleBlock({ t, draft, setDraft, currency }) {
     setDraft({ ...draft, [key]: v });
   };
   const sym = currencySymbol(currency);
+  // forceOn (listing modal): listing is the modal's whole purpose, so the
+  // fields are always shown and the toggle becomes a plain heading.
+  const showFields = forceOn || draft.forSale;
   return (
     <div className="sale-block">
-      <label className="sale-toggle">
-        <input type="checkbox" checked={!!draft.forSale} onChange={onToggle} />
-        <span>{t('saleToggle')}</span>
-      </label>
-      {draft.forSale && (
+      {forceOn ? (
+        <h3 className="sale-heading">{t('saleToggle')}</h3>
+      ) : (
+        <label className="sale-toggle">
+          <input type="checkbox" checked={!!draft.forSale} onChange={onToggle} />
+          <span>{t('saleToggle')}</span>
+        </label>
+      )}
+      {showFields && (
         <div className="sale-fields">
           <div className="sale-price-row">
             <label className="sale-field">

@@ -475,21 +475,23 @@ export function AnalyzePhoto({ user, onSignIn }) {
                       const key = `${batchIdx}:${itemIdx}`;
                       const saved = savedKeys.has(key);
                       return (
-                        <div key={itemIdx} className="analyze-item-v2">
-                          {/* name (left) — CATEGORY (right): same order as
-                              "Pieces in this look" so the two read alike. */}
-                          <div className="analyze-item-v2-head">
-                            <h4 className="analyze-item-v2-name">
+                        /* Same row layout as "Pieces in this look" (outfit
+                           detail) so analyze + saved-look read identically —
+                           but the analyze screen keeps its Find similar / Save
+                           actions exposed (no menu/modal indirection). */
+                        <div key={itemIdx} className="piece-match-row">
+                          <div className="piece-match-head">
+                            <span className="piece-match-name">
                               {it.name || it.description || t('untitledItem')}
-                            </h4>
+                            </span>
                             {it.category && (
-                              <span className="analyze-item-cat">
+                              <span className="piece-match-cat">
                                 {t(`taxonomy.categories.${it.category}`)}
                               </span>
                             )}
                           </div>
                           {(it.name && it.description) && (
-                            <p className="analyze-item-v2-desc">{it.description}</p>
+                            <p className="piece-match-desc">{it.description}</p>
                           )}
                           {/* Colour omitted — it's already in the name. Show
                               the brand only when we have a guess. */}
@@ -552,7 +554,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
 // the item; the strip only renders when there's at least one decent match.
 function ClosetMatchStrip({ piece, closet, t }) {
   const matches = matchCloset(piece, closet);
-  if (matches.length === 0) return null;
+  // Mirror "Pieces in this look": show the empty state too, so every row has
+  // the same shape whether or not the closet has a match.
+  if (matches.length === 0) {
+    return <span className="piece-match-empty">{t('noClosetMatch')}</span>;
+  }
   return (
     <div className="analyze-match-strip">
       <span className="analyze-match-label">{t('fromYourCloset')}</span>

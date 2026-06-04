@@ -269,6 +269,8 @@ export const ko = {
   itemKindWishlist: '위시리스트',
   itemMarkOwned: '내 옷이에요',
   itemMarkWishlist: '위시리스트로 옮기기',
+  itemListMarket: '마켓에 올리기',
+  itemUnlistMarket: '마켓에서 내리기',
   privateBadge: '비공개',
   filterForSale: '판매 중',
 

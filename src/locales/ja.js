@@ -271,6 +271,8 @@ export const ja = {
   itemKindWishlist: 'ウィッシュリスト',
   itemMarkOwned: '持っています',
   itemMarkWishlist: 'ウィッシュリストへ',
+  itemListMarket: 'マーケットに出品',
+  itemUnlistMarket: 'マーケットから取り下げ',
   privateBadge: '非公開',
   filterForSale: '販売中',
 

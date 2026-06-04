@@ -269,6 +269,8 @@ export const en = {
   itemKindWishlist: 'Wishlist',
   itemMarkOwned: 'I own this',
   itemMarkWishlist: 'Move to wishlist',
+  itemListMarket: 'List for sale',
+  itemUnlistMarket: 'Remove from sale',
   privateBadge: 'Private',
   filterForSale: 'For sale',
 
