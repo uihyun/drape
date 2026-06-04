@@ -4,7 +4,6 @@ import { isNativeApp } from '../services/platform-service.js';
 // Cross-platform splash that runs in the WebView. Native iOS shows a static
 // LaunchScreen with the same solid base background; this component fades
 // in once Capacitor calls SplashScreen.hide().
-const LETTERS = 'drape';
 
 export function JsSplash() {
   const [phase, setPhase] = useState('enter');
@@ -32,14 +31,11 @@ export function JsSplash() {
   return (
     <div className={`js-splash ${phase === 'exit' ? 'js-splash-exit' : ''}`} aria-hidden="true">
       <div className="js-splash-mark">
-        <img className="js-splash-a-mark" src="/mark-D.png" alt="" aria-hidden="true" />
-        <h1 className="js-splash-wordmark" aria-label="drape">
-          {Array.from(LETTERS).map((c, i) => (
-            <span key={i} className="js-splash-letter" style={{ animationDelay: `${400 + i * 100}ms` }}>{c}</span>
-          ))}
-        </h1>
+        {/* The wordmark IS the Didot-italic 'drape' (rasterized so the font is
+            guaranteed on every platform, not just where Didot is installed). */}
+        <img className="js-splash-wordmark-img" src="/wordmark.png" alt="drape" />
         <svg className="js-splash-line" width="172" height="3" viewBox="0 0 172 3" aria-hidden="true">
-          <line x1="1.5" y1="1.5" x2="170.5" y2="1.5" stroke="#5B5BD6" strokeWidth="3" strokeLinecap="round" />
+          <line x1="1.5" y1="1.5" x2="170.5" y2="1.5" stroke="#2E4A3A" strokeWidth="3" strokeLinecap="round" />
         </svg>
         <p className="js-splash-tagline">CLOSET · AI</p>
       </div>

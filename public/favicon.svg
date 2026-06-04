@@ -1,8 +1,5 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <!-- Drape favicon — ink background, ivory serif D, terracotta accent dot.
-       Matches the app icon. -->
   <rect width="1024" height="1024" fill="#141312"/>
-  <text x="496" y="512" font-family="Georgia, 'Times New Roman', serif" font-size="660"
-        font-weight="500" fill="#f4f1ea" text-anchor="middle" dominant-baseline="central">D</text>
-  <circle cx="700" cy="690" r="46" fill="#c0694a"/>
+  <text x="481" y="584" font-family="Didot, Georgia, 'Times New Roman', serif" font-style="italic"
+        font-size="560" text-anchor="middle" dominant-baseline="middle" fill="#F4F1EA">d</text>
 </svg>

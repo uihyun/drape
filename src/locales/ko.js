@@ -414,7 +414,9 @@ export const ko = {
   onboardSlide3Title: '아웃핏 만들고 하루 기록',
   onboardSlide3Body: '옷들을 조합해 아웃핏을 만들고, 매일 OOTD 를 캘린더에 기록하세요.',
   onboardSlide4Title: '발견하고 저장',
-  onboardSlide4Body: '피드를 둘러보고, 갖고 싶은 옷은 위시리스트에 저장하고, 내 룩을 커뮤니티와 공유하세요.',
+  onboardSlide4Body: '피드를 둘러보고, 아무 사진이나 분석해 어떤 옷인지 보고 비슷한 옷을 찾고, 마음에 드는 건 위시리스트에 저장하세요.',
+  onboardSlide5Title: '옷장에서 옷장으로, 사고팔기',
+  onboardSlide5Body: '내 옷장의 옷을 판매 등록하고 판매자와 바로 메시지로 거래하세요 — 사람 대 사람의 중고 패션.',
 
   // 랜딩 / 마케팅 페이지 (/landing)
   landingNavLookbook: '룩북',

@@ -414,7 +414,9 @@ export const en = {
   onboardSlide3Title: 'Build looks, log your days',
   onboardSlide3Body: 'Combine pieces into outfits and log a daily OOTD on your calendar.',
   onboardSlide4Title: 'Discover & save',
-  onboardSlide4Body: 'Explore the feed, save pieces you want to your wishlist, and share your looks with the community.',
+  onboardSlide4Body: 'Explore the feed, point drape at any photo to spot the pieces and find similar, and save what you love to your wishlist.',
+  onboardSlide5Title: 'Buy & sell, closet to closet',
+  onboardSlide5Body: 'List pieces from your closet for sale and message sellers directly — pre-loved fashion, person to person.',
 
   // Landing / marketing page (/landing)
   landingNavLookbook: 'Lookbook',

@@ -2,6 +2,25 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Current state — 2026-06-04
+
+### Shipped this session (web deployed; native needs a rebuild to pick up)
+- **Brand identity → ivory Didot-italic `drape` wordmark on espresso ink `#141312`.** App icon, native splash (`resources/*.svg` → PNG via `scripts/build-assets.cjs`), PWA web icons (`public/icons/*.webp`), and the JS splash (`components/JsSplash.jsx` now shows `public/wordmark.png`, not the old per-letter HTML wordmark; decorative line recolored indigo→pine). Favicon is a single ivory italic `d` monogram (wordmark is illegible at 16px). The old terracotta-`D` (`public/mark-D.png`) is gone. **Didot is a macOS system font** — sharp/librsvg rasterizes it on this machine, so the PNG/webp outputs bake it in (no end-user font dependency). SVG sources keep `font-family="Didot" font-style="italic"`; favicon.svg adds Georgia-italic fallback for the served SVG. **Native icon regen still pending** — run `npx capacitor-assets generate && npx cap sync` to push the new icon/splash into `ios/` + `android/`.
+- **Marketplace lives in the item `…` menu** (`pages/ItemDetail.jsx`): List for sale → focused sale modal (`SaleBlock` with `forceOn`); once listed it offers **Edit listing** (in place — keeps the listing + its DM threads) and **Remove from sale** (unlists but KEEPS price/condition so re-listing restores them). The standalone Reprocess menu item is gone (Change photo already re-runs the pipeline).
+- **Shared `components/PieceRow.jsx`** drives both the analyze result and the saved-analyzed-look detail — identical layout ("Pieces in this look" header, left-aligned rows, shirt-icon → wishlist modal with Find similar + Save). Analyze result keeps only the bulk "Save all to wishlist"; per-row actions moved into the modal.
+- **#3 — linked items slot under their detected piece.** `outfit.pieceLinks` = `{ pieceIndex: [itemId] }`. On link (`pages/OutfitLink.jsx`): 0 same-category pieces → unsorted; 1 → auto-assign; 2+ → picker modal. **Subcategory-aware** (`piecesForItem`) so a hat doesn't collide with sunglasses/watch. Outfit detail shows the linked item(s) under each piece (PieceRow `linkedItems`), leftovers under "Other items"; no more duplicate "Items in this outfit" + "No match" for already-linked pieces.
+- **Filter sheet gains category → subcategory drill-down** (`components/LookFilterSheet.jsx`) — selecting a top category reveals its subcategory chips; refinement only bites within actively-selected categories. Applies to items AND looks. **Try-on item picker now has the filter search** (was dumping the whole closet).
+- **Processing badges** on outfit thumbnails, linked-piece thumbnails, and the item-detail hero (`status === 'processing'|'uploading'`). OutfitDetail items are now **live-subscribed** (per-item `onSnapshot`) so the badge clears + the crop swaps in without a reload.
+- **Item photo no longer vanishes after edit Save/Cancel** — the edit-mode parallax transform/opacity is reset on exit (`ItemDetail` effect).
+- **Footwear always renders a pair (two), never three** — `functions/items.js` `processItem` crop prompt; deployed (applies to newly-processed items; existing need a reprocess).
+- **Onboarding is 5 slides now** — added a marketplace slide (`storefront`); slide 4 mentions analyzing any photo → find similar.
+
+### Deferred / pending
+- **Native icon/splash regen** — resources + web are updated; `ios/` + `android/` native icon sets are NOT until `npx capacitor-assets generate && npx cap sync` + an Xcode/Android Studio build.
+- **Invite share** (memory `project_invite_copy_todo`): native share shows the URL twice; copy should mention closet-building. Fix in `Settings.jsx onInvite`.
+- **App Store / Play deploy (user-only):** Apple Sign-In portal, App Store Connect listing/screenshots/build upload.
+- **`pieceLinks` keys are positional** indexes into `outfit.pieces`. Stable today (pieces aren't reordered post-analysis); switch to per-piece ids if re-analysis ever reshuffles them.
+
 ## Current state — 2026-06-02
 
 ### Shipped this session (web deployed; native needs a rebuild to pick up)

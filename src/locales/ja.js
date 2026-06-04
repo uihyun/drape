@@ -416,7 +416,9 @@ export const ja = {
   onboardSlide3Title: 'コーデを作って毎日を記録',
   onboardSlide3Body: 'アイテムを組み合わせてコーデを作り、毎日の OOTD をカレンダーに記録しましょう。',
   onboardSlide4Title: '見つけて保存',
-  onboardSlide4Body: 'フィードを探索し、欲しいアイテムをウィッシュリストに保存、自分のルックをコミュニティと共有しましょう。',
+  onboardSlide4Body: 'フィードを探索し、どんな写真からでもアイテムを見つけて似たものを探し、気に入ったものをウィッシュリストに保存しましょう。',
+  onboardSlide5Title: 'クローゼットからクローゼットへ、売買',
+  onboardSlide5Body: 'クローゼットのアイテムを出品し、出品者と直接メッセージで取引 — 人から人へのプレラブドファッション。',
 
   // ランディング / マーケティングページ (/landing)
   landingNavLookbook: 'ルックブック',

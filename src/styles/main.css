@@ -5516,23 +5516,15 @@ body.is-native {
   align-items: center;
   gap: 0.5rem;
 }
-.js-splash-a-mark {
+.js-splash-wordmark-img {
   display: block;
-  width: clamp(180px, 44vw, 320px);
+  width: clamp(220px, 56vw, 400px);
   height: auto;
-  margin-bottom: 0.25rem;
   opacity: 0;
-  animation: js-splash-mark-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: js-splash-mark-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 @keyframes js-splash-mark-in {
   to { opacity: 1; }
-}
-.js-splash-wordmark {
-  margin: 0.5rem 0 0;
-  font: 400 clamp(36px, 10vw, 60px)/1 'Hoefler Text', 'Cochin', 'Cormorant Garamond', 'Garamond', 'Times New Roman', serif;
-  letter-spacing: 0.04em;
-  color: #f4f1ea;
-  display: flex;
 }
 .js-splash-tagline {
   margin: 0.5rem 0 0;
