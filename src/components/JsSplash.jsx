@@ -8,11 +8,11 @@ import { isNativeApp } from '../services/platform-service.js';
 //
 // The native iOS LaunchScreen shows the same ink base first; this fades in and
 // takes over once Capacitor's SplashScreen.hide() runs.
-const MERGE_AT = 850;   // ms — word has settled, begin collapsing to "d"
-const LOAD_AT = 1500;   // ms — only the "d" remains, arc starts spinning
-const MIN_SHOW = 1700;  // ms — never lift before this (let the motion play)
-const MAX_SHOW = 5000;  // ms — hard cap regardless of warm-up
-const EXIT_MS = 480;    // ms — fade-out duration
+const MERGE_AT = 1100;  // ms — word holds, then begins collapsing to "d"
+const LOAD_AT = 1800;   // ms — only the "d" remains, arc starts spinning
+const MIN_SHOW = 3000;  // ms — never lift before this (let the arc spin ~1.2s)
+const MAX_SHOW = 6000;  // ms — hard cap regardless of warm-up
+const EXIT_MS = 520;    // ms — fade-out duration
 
 const LETTERS = ['d', 'r', 'a', 'p', 'e'];
 
