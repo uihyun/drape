@@ -452,7 +452,8 @@ function PieceMatchRow({ piece, closet, t }) {
   const label = piece.name
     || [(piece.colors || [])[0], piece.category].filter(Boolean).join(' ')
     || t('untitledItem');
-  const colorText = (piece.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ');
+  // Colour isn't shown separately — it's already in the name (e.g. "Gray
+  // Ribbed Tank"). Same rule across outfit / analysis / try-on piece rows.
   return (
     <div className="piece-match-row">
       <div className="piece-match-head">
@@ -462,7 +463,6 @@ function PieceMatchRow({ piece, closet, t }) {
         )}
       </div>
       {piece.description && <p className="piece-match-desc">{piece.description}</p>}
-      {colorText && <span className="piece-match-colors">{colorText}</span>}
       {matches.length > 0 ? (
         <div className="analyze-match-strip">
           <span className="analyze-match-label">{t('fromYourCloset')}</span>

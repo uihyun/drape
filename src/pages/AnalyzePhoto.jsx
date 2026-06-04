@@ -458,10 +458,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
                           {(it.name && it.description) && (
                             <p className="analyze-item-v2-desc">{it.description}</p>
                           )}
-                          <p className="analyze-item-v2-meta">
-                            {(it.colors || []).map(c => t(`taxonomy.colors.${c}`)).join(' · ')}
-                            {it.brand && <> · <strong>{it.brand}</strong></>}
-                          </p>
+                          {/* Colour omitted — it's already in the name. Show
+                              the brand only when we have a guess. */}
+                          {it.brand && (
+                            <p className="analyze-item-v2-meta"><strong>{it.brand}</strong></p>
+                          )}
                           <div className="analyze-item-v2-actions">
                             {!owned && (
                               <a

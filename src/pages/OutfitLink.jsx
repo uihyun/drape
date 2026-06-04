@@ -227,22 +227,25 @@ export function OutfitLink({ user, onSignIn }) {
                   </button>
                 </div>
                 {matches.length > 0 ? (
-                  <div className="analyze-match-row">
-                    {matches.map(({ item }) => {
-                      const on = selected.has(item.id);
-                      const cover = item.croppedUrl || item.originalUrl;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={`analyze-match-card${on ? ' selected' : ''}`}
-                          onClick={() => toggle(item.id)}
-                        >
-                          {cover ? <img src={cover} alt="" loading="lazy" /> : <div className="item-card-skeleton" />}
-                          {on && <span className="item-card-check"><Check size={12} strokeWidth={2.6} /></span>}
-                        </button>
-                      );
-                    })}
+                  <div className="analyze-match-strip">
+                    <span className="analyze-match-label">{t('fromYourCloset')}</span>
+                    <div className="analyze-match-row">
+                      {matches.map(({ item }) => {
+                        const on = selected.has(item.id);
+                        const cover = item.croppedUrl || item.originalUrl;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={`analyze-match-card${on ? ' selected' : ''}`}
+                            onClick={() => toggle(item.id)}
+                          >
+                            {cover ? <img src={cover} alt="" loading="lazy" /> : <div className="item-card-skeleton" />}
+                            {on && <span className="item-card-check"><Check size={12} strokeWidth={2.6} /></span>}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : (
                   <span className="piece-match-empty">{t('noClosetMatch')}</span>
