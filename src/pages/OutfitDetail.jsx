@@ -35,9 +35,13 @@ export function OutfitDetail({ user, onSignIn }) {
 
   useEffect(() => {
     if (!outfitId) return;
-    return onSnapshot(doc(db, 'outfits', outfitId), snap => {
-      setOutfit(snap.exists() ? { id: snap.id, ...snap.data() } : null);
-    });
+    return onSnapshot(
+      doc(db, 'outfits', outfitId),
+      snap => setOutfit(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+      // A private outfit you don't own denies the read — treat it as
+      // "unavailable" instead of letting the listener throw uncaught.
+      err => { console.warn('outfit read denied:', err?.code); setOutfit(null); },
+    );
   }, [outfitId]);
 
   // Owner's closet powers the "from your closet" piece-match strip.

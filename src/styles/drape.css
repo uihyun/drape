@@ -952,31 +952,33 @@ body.is-native {
 
 /* Result mode: hero photo + style card + items list. Edge-to-edge to
    beat the .page horizontal padding for the hero only. */
-.analyze-result-v2 { margin: 0 -1rem; }
 .analyze-result-batch + .analyze-result-batch {
   border-top: 1px solid var(--border);
   margin-top: 1.5rem;
   padding-top: 1.5rem;
 }
+/* Clean rounded hero (no grey letterbox frame) so it matches the saved
+   detail, and so it lines up with the palette / style sections below. */
 .analyze-hero {
   width: 100%;
-  background: var(--surface-elevated);
-  max-height: 70vh;
+  max-height: 76vh;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 1rem;
 }
 .analyze-hero img {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 70vh;
+  max-height: 76vh;
   object-fit: contain;
+  border-radius: 16px;
 }
 
 .analyze-style-card {
-  padding: 1.25rem 1rem 1rem;
+  padding: 0.5rem 0 1rem;
   border-bottom: 1px solid var(--border);
 }
 .analyze-style-eyebrow {
