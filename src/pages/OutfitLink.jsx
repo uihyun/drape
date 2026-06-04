@@ -91,13 +91,12 @@ export function OutfitLink({ user, onSignIn }) {
   const addPieceToCloset = async (piece, i) => {
     if (addingPiece !== -1 || addedPieces.has(i)) return;
     const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
-    if (!photoUrl) return;
+    const photoPath = outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath;
+    if (!photoUrl || !photoPath) { setAddErr(t('addToClosetFailed')); return; }
     setAddingPiece(i);
     try {
-      const res = await fetch(photoUrl, { mode: 'cors' });
-      if (!res.ok) throw new Error(`photo ${res.status}`);
-      const blob = await res.blob();
-      const { id } = await ItemService.createFromDetected({ blob, detected: piece, owned: true });
+      // Server reads the existing photo + crops — no client cross-origin fetch.
+      const { id } = await ItemService.createFromExistingPhoto({ photoUrl, photoPath, detected: piece, owned: true });
       setSelected(prev => new Set(prev).add(id));        // link the new item
       setAddedPieces(prev => new Set(prev).add(i));
     } catch (e) {

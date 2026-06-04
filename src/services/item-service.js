@@ -298,6 +298,50 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   return { id };
 }
 
+/** Like createFromDetected, but the photo is ALREADY in Storage (e.g. an
+ *  OOTD's worn-look photo). We point the new item's originalPath at that
+ *  existing object and let processItem (admin SDK) read + crop it server-
+ *  side — so the client never has to fetch the photo cross-origin (the
+ *  firebasestorage download endpoint doesn't return CORS headers, which was
+ *  breaking the blob-fetch path). */
+async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = false }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('AUTH_REQUIRED');
+  if (!photoPath || !photoUrl) throw new Error('NO_SOURCE_PHOTO');
+  const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  await setDoc(doc(db, ITEMS, id), {
+    userId: user.uid,
+    kind: owned ? 'owned' : 'wishlist',
+    name: detected.name || detected.description || 'detected',
+    notes: '',
+    // Reuse the existing photo as the original — processItem crops a clean
+    // cutout into a NEW items/ path, so the displayed image is independent
+    // even if the source OOTD is later deleted.
+    originalUrl: photoUrl,
+    originalPath: photoPath,
+    status: 'processing',
+    tags: {
+      category: detected.category || null,
+      subcategory: detected.subcategory || null,
+      colors: detected.colors || [],
+      seasons: [],
+      styles: [],
+      fit: null,
+      description: detected.description || '',
+      brand: detected.brand || null,
+    },
+    detectedSearchQuery: detected.searchQuery || '',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  const processFn = httpsCallable(functions, 'processItem');
+  processFn({
+    itemId: id,
+    focus: { category: detected.category || null, description: detected.description || '' },
+  }).catch(err => console.warn('processItem (existing photo) failed:', err?.message));
+  return { id };
+}
+
 export const ItemService = {
   createItem,
   subscribeMyCloset,
@@ -309,6 +353,7 @@ export const ItemService = {
   recordWear,
   analyzePhoto,
   createFromDetected,
+  createFromExistingPhoto,
 };
 
 export default ItemService;
