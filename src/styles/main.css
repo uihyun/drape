@@ -5525,10 +5525,10 @@ body.is-native {
   align-items: center;
   justify-content: center;
 }
-/* Shared brand-wordmark type for both the full word and the lone d. */
-.js-splash-word,
-.js-splash-mono {
+.js-splash-word {
   margin: 0;
+  display: flex;
+  align-items: baseline;
   font-family: 'Brand Didone', Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-weight: 500;
@@ -5536,16 +5536,8 @@ body.is-native {
   line-height: 1;
   color: #F4F1EA;
 }
-/* Full "drape" — in flow, so it sizes/centers the stage. Fades out on collapse. */
-.js-splash-word {
-  display: flex;
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
-}
-.js-splash-stage.is-collapsed .js-splash-word {
-  opacity: 0;
-  transform: scale(0.9);
-}
 .js-splash-letter { display: inline-block; }
+/* Staggered entrance for every glyph. */
 .js-splash-glyph {
   display: inline-block;
   opacity: 0;
@@ -5555,20 +5547,27 @@ body.is-native {
 }
 @keyframes js-splash-rise { to { opacity: 1; transform: translateY(0); } }
 
-/* Lone 'd' — absolutely centered on the stage (so it's exactly under the arc).
-   Fades/scales in as the full word collapses. */
-.js-splash-mono {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0.82);
-  opacity: 0;
-  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.2, 0.9, 0.2, 1);
-  pointer-events: none;
+/* r·a·p·e wrapper — its width collapses to 0 on merge, so the flex word
+   shrinks to just the 'd' and the (always viewport-centered) stage re-centers
+   the 'd' exactly. The letters also slide left + fade as they clip away, for
+   the "fold into d" feel. */
+.js-splash-rest {
+  display: inline-flex;
+  overflow: hidden;
+  max-width: 2.6em;
+  white-space: nowrap;
+  transition: max-width 0.6s cubic-bezier(0.7, 0, 0.2, 1),
+              opacity 0.45s ease;
 }
-.js-splash-stage.is-collapsed .js-splash-mono {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+.js-splash-rest .js-splash-letter {
+  transition: transform 0.55s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.js-splash-stage.is-collapsed .js-splash-rest {
+  max-width: 0;
+  opacity: 0;
+}
+.js-splash-stage.is-collapsed .js-splash-rest .js-splash-letter {
+  transform: translateX(-0.45em);
 }
 
 /* Pine accent arc orbiting the d — the loader. */
