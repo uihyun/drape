@@ -73,3 +73,7 @@ build/
 public/firebase-config.js
 # debugging screenshots
 /[0-9]*.png
+
+# capacitor-assets PWA output at repo root — unused (the app serves public/icons)
+/icons/
+/splash/

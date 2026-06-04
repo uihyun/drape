@@ -50,12 +50,10 @@ USER-GENERATED CONTENT (Guideline 1.2)
 MARKETPLACE (physical goods)
 - Listings are pre-owned clothing (physical goods). Buyers and sellers arrange
   the transaction OFF-PLATFORM via in-app direct messages.
-- There is NO in-app payment for marketplace items, so no in-app purchase is
-  used for buying/selling (physical goods are exempt from IAP).
+- There is NO in-app payment for marketplace items.
 
-IN-APP PURCHASES
-- The current build has no purchasable in-app products. [CONFIRM before submit:
-  if a credit/paywall is enabled, describe the path to it here.]
+IN-APP PURCHASES / SUBSCRIPTIONS
+- drape has NO in-app purchases and NO subscriptions. All features are free.
 
 ACCOUNT DELETION (Guideline 5.1.1(v))
 - Settings → Delete Account → confirm. This deletes the Firebase Auth user and
@@ -65,9 +63,6 @@ ACCOUNT DELETION (Guideline 5.1.1(v))
 CONTACT
 - hello@uhzlab.com
 ```
-
-> ⚠️ Confirm the IN-APP PURCHASES line before submitting — verify whether any
-> credit purchase / paywall is actually reachable in the shipped build.
 
 ---
 
