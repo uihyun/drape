@@ -2,10 +2,27 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Current state — 2026-06-04 (later)
+
+### Shipped (web deployed; native needs a rebuild)
+- **Animated cold-start splash** (`components/JsSplash.jsx`, now mounted in `App.jsx`): `drape` →
+  r·a·p·e collapse into `d` → pine `#2E4A3A` arc orbits the `d` as a real loader → lifts when the
+  **splash warm-up** resolves (min 1.7s / max 5s cap). Live text in the brand webfont.
+- **Splash warm-up** (`services/warmup.js` + shared `services/uiCache.js`): on auth-ready, prefetch
+  the public feed + (logged-in) following feed, my/saved outfits, profile, current-month calendar,
+  and closet into shared caches; `Feed`/`OutfitList` read the shared Maps, `Calendar`/`Closet` seed
+  from warm snapshots then go live. Sets `warmReady` → dismisses the splash. Skipped on drape.nyc.
+- **Brand face → OFL `Bodoni Moda` Italic** (replaces macOS system Didot — legal + cross-platform).
+  Self-hosted `public/fonts/bodoni-moda-italic.woff2` (`@font-face 'Brand Didone'`); icon/splash/
+  favicon/PWA rasters regenerated from **glyph outlines** (opentype.js per-glyph) + `capacitor-assets
+  generate --assetPath resources`. Source TTF+OFL in `resources/fonts/`.
+- **App Store**: native icon/splash regenerated to the new brand; `store-metadata.md` review notes
+  confirm no IAP/subscriptions + added the **uhz LLC Organization-account** TODO.
+
 ## Current state — 2026-06-04
 
 ### Shipped this session (web deployed; native needs a rebuild to pick up)
-- **Brand identity → ivory Didot-italic `drape` wordmark on espresso ink `#141312`.** App icon, native splash (`resources/*.svg` → PNG via `scripts/build-assets.cjs`), PWA web icons (`public/icons/*.webp`), and the JS splash (`components/JsSplash.jsx` now shows `public/wordmark.png`, not the old per-letter HTML wordmark; decorative line recolored indigo→pine). Favicon is a single ivory italic `d` monogram (wordmark is illegible at 16px). The old terracotta-`D` (`public/mark-D.png`) is gone. **Didot is a macOS system font** — sharp/librsvg rasterizes it on this machine, so the PNG/webp outputs bake it in (no end-user font dependency). SVG sources keep `font-family="Didot" font-style="italic"`; favicon.svg adds Georgia-italic fallback for the served SVG. **Native icon regen still pending** — run `npx capacitor-assets generate && npx cap sync` to push the new icon/splash into `ios/` + `android/`.
+- **Brand identity → ivory italic `drape` wordmark on espresso ink `#141312`.** App icon, native splash (`resources/*.svg` → PNG via `scripts/build-assets.cjs`), PWA web icons (`public/icons/*.webp`), and the JS splash (`components/JsSplash.jsx` now shows `public/wordmark.png`, not the old per-letter HTML wordmark; decorative line recolored indigo→pine). Favicon is a single ivory italic `d` monogram (wordmark is illegible at 16px). The old terracotta-`D` (`public/mark-D.png`) is gone. **Didot is a macOS system font** — sharp/librsvg rasterizes it on this machine, so the PNG/webp outputs bake it in (no end-user font dependency). SVG sources keep `font-family="Didot" font-style="italic"`; favicon.svg adds Georgia-italic fallback for the served SVG. **Native icon regen still pending** — run `npx capacitor-assets generate && npx cap sync` to push the new icon/splash into `ios/` + `android/`.
 - **Marketplace lives in the item `…` menu** (`pages/ItemDetail.jsx`): List for sale → focused sale modal (`SaleBlock` with `forceOn`); once listed it offers **Edit listing** (in place — keeps the listing + its DM threads) and **Remove from sale** (unlists but KEEPS price/condition so re-listing restores them). The standalone Reprocess menu item is gone (Change photo already re-runs the pipeline).
 - **Shared `components/PieceRow.jsx`** drives both the analyze result and the saved-analyzed-look detail — identical layout ("Pieces in this look" header, left-aligned rows, shirt-icon → wishlist modal with Find similar + Save). Analyze result keeps only the bulk "Save all to wishlist"; per-row actions moved into the modal.
 - **#3 — linked items slot under their detected piece.** `outfit.pieceLinks` = `{ pieceIndex: [itemId] }`. On link (`pages/OutfitLink.jsx`): 0 same-category pieces → unsorted; 1 → auto-assign; 2+ → picker modal. **Subcategory-aware** (`piecesForItem`) so a hat doesn't collide with sunglasses/watch. Outfit detail shows the linked item(s) under each piece (PieceRow `linkedItems`), leftovers under "Other items"; no more duplicate "Items in this outfit" + "No match" for already-linked pieces.
