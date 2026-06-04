@@ -273,6 +273,7 @@ export const ja = {
   itemMarkWishlist: 'ウィッシュリストへ',
   itemListMarket: 'マーケットに出品',
   itemUnlistMarket: 'マーケットから取り下げ',
+  itemEditListing: '出品情報を編集',
   privateBadge: '非公開',
   filterForSale: '販売中',
 

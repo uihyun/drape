@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -51,15 +51,20 @@ export function OutfitDetail({ user, onSignIn }) {
       setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
   }, [user?.uid]);
 
+  // Live, not one-shot: a just-added "+" item lands as status='processing'
+  // (uncropped) and flips to 'ready' a beat later. Subscribing lets the
+  // Processing badge clear and the cropped image swap in without a reload.
   useEffect(() => {
-    if (!outfit?.itemIds?.length) { setItems([]); return; }
-    let cancelled = false;
-    Promise.all(outfit.itemIds.map(id => getDoc(doc(db, 'items', id))))
-      .then(snaps => {
-        if (cancelled) return;
-        setItems(snaps.filter(s => s.exists()).map(s => ({ id: s.id, ...s.data() })));
-      });
-    return () => { cancelled = true; };
+    const ids = outfit?.itemIds || [];
+    if (!ids.length) { setItems([]); return; }
+    const map = new Map();
+    const apply = () => setItems(ids.map(id => map.get(id)).filter(Boolean));
+    const unsubs = ids.map(id => onSnapshot(
+      doc(db, 'items', id),
+      snap => { if (snap.exists()) map.set(id, { id: snap.id, ...snap.data() }); else map.delete(id); apply(); },
+      () => { map.delete(id); apply(); },
+    ));
+    return () => unsubs.forEach(u => u());
   }, [outfit?.itemIds]);
 
   useEffect(() => {
@@ -161,6 +166,7 @@ export function OutfitDetail({ user, onSignIn }) {
   // pieces, or a visitor) it shows the full worn set.
   const piecesShown = isOwner && pieceList.length > 0;
   const flatItems = piecesShown ? unmappedItems : items;
+  const isProcessing = (it) => it?.status === 'processing' || it?.status === 'uploading';
   const renderHero = () => {
     if (wornPhoto) {
       return <div className="outfit-hero outfit-hero-photo"><img src={wornPhoto} alt="" referrerPolicy="no-referrer" /></div>;
@@ -357,6 +363,9 @@ export function OutfitDetail({ user, onSignIn }) {
                 {it.croppedUrl || it.originalUrl
                   ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
                   : <div className="item-card-skeleton" />}
+                {isProcessing(it) && (
+                  <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>
+                )}
               </Link>
             ))}
           </div>
@@ -403,6 +412,9 @@ export function OutfitDetail({ user, onSignIn }) {
                 {it.croppedUrl || it.originalUrl
                   ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
                   : <div className="item-card-skeleton" />}
+                {isProcessing(it) && (
+                  <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>
+                )}
               </Link>
             ))}
           </div>

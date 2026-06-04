@@ -1083,6 +1083,7 @@ body.is-native {
 }
 .analyze-match-row::-webkit-scrollbar { display: none; }
 .analyze-match-card {
+  position: relative;
   flex: 0 0 52px;
   height: 64px;
   border-radius: 8px;
@@ -1090,6 +1091,14 @@ body.is-native {
   background: var(--surface-elevated);
   border: 1px solid var(--border);
 }
+/* Compact "still processing" scrim for small thumbnails (linked piece items,
+   outfit item strip) — a pulsing dot, no room for the full pill. */
+.thumb-proc {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(14, 14, 16, 0.45);
+}
+.thumb-proc .dot-pulse { width: 9px; height: 9px; }
 .analyze-match-card img { width: 100%; height: 100%; object-fit: cover; }
 
 /* "Pieces in this look" — OOTD/outfit detail: each detected garment + its
@@ -3964,6 +3973,7 @@ input[type="search"]::-webkit-search-decoration {
   padding-bottom: 0.5rem;
 }
 .outfit-item-thumb {
+  position: relative;
   flex-shrink: 0;
   width: 88px; height: 88px;
   border-radius: 8px; overflow: hidden;

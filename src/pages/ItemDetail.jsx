@@ -302,6 +302,9 @@ export function ItemDetail({ user, onSignIn }) {
         {cover
           ? <img src={cover} alt={item.name || ''} draggable={false} />
           : <div className="item-card-skeleton" />}
+        {(item.status === 'processing' || item.status === 'uploading') && (
+          <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>
+        )}
         {hasBoth && (
           <span className="item-viewer-toggle">
             {showOriginal ? t('before') : t('after')}
@@ -377,9 +380,16 @@ export function ItemDetail({ user, onSignIn }) {
                 keeps the last values. Wishlist items aren't owned → can't sell. */}
             {item.kind !== 'wishlist' && (
               item.forSale ? (
-                <button type="button" onClick={() => { setMenuOpen(false); unlist(); }}>
-                  <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemUnlistMarket')}
-                </button>
+                // Already listed: edit the price/condition in place (keeps the
+                // listing + its DM threads alive) or take it down.
+                <>
+                  <button type="button" onClick={() => { setMenuOpen(false); openListing(); }}>
+                    <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemEditListing')}
+                  </button>
+                  <button type="button" onClick={() => { setMenuOpen(false); unlist(); }}>
+                    <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemUnlistMarket')}
+                  </button>
+                </>
               ) : (
                 <button type="button" onClick={() => { setMenuOpen(false); openListing(); }}>
                   <ShoppingBag size={14} strokeWidth={1.7} /> {t('itemListMarket')}

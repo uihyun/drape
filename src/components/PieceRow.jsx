@@ -68,11 +68,13 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
           <div className="analyze-match-row">
             {linkedItems.map(item => {
               const cover = item.croppedUrl || item.originalUrl;
+              const proc = item.status === 'processing' || item.status === 'uploading';
               return (
                 <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card is-linked" title={item.name || ''}>
                   {cover
                     ? <img src={cover} alt={item.name || ''} loading="lazy" />
                     : <div className="item-card-skeleton" />}
+                  {proc && <span className="thumb-proc"><span className="dot-pulse" /></span>}
                 </Link>
               );
             })}

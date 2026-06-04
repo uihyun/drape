@@ -283,8 +283,10 @@ in the standard catalog product view for its category:
   as if photographed from directly above on a flat surface or worn on
   an invisible body. Top of the garment at the top of the frame, hem
   at the bottom. Symmetric and centered.
-- Shoes: clean side profile (right shoe facing right). If a pair, show
-  the pair from the same angle.
+- Footwear (shoes, boots, sandals, heels): ALWAYS render exactly TWO —
+  a matching left + right pair, side by side, same side-profile angle.
+  Never one shoe, never three or more. If the photo shows only a single
+  shoe, still output the matching pair (two). A pair is two, never three.
 - Bags: upright, frontal, handles up.
 - Accessories (hats, jewelry, belts, glasses): centered, in the angle
   that shows the design most clearly.
