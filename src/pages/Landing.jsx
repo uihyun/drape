@@ -88,8 +88,9 @@ export function Landing() {
       <footer className="lp-footer">
         <span className="lp-foot-brand">drape</span>
         <nav>
-          <a href={`${WEB_APP}/privacy`}>{t('privacyPolicy')}</a>
-          <a href={`${WEB_APP}/terms`}>{t('termsOfService')}</a>
+          <a href="/support.html">{t('supportContactTitle')}</a>
+          <a href="/privacy.html">{t('privacyPolicy')}</a>
+          <a href="/terms.html">{t('termsOfService')}</a>
         </nav>
       </footer>
     </div>

@@ -75,6 +75,9 @@ export default defineConfig({
           /^\/__\//, // Firebase reserved
           /^\/\.well-known\//,
           /^\/.*googleapis\.com/,
+          // Standalone web pages (support/privacy/terms) — served as static
+          // HTML, NOT the SPA shell, so external visitors don't leak into the app.
+          /^\/(support|privacy|terms)\.html$/,
         ],
       },
     }),
