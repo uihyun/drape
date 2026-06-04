@@ -7,6 +7,7 @@ import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { AlertModal } from '../components/AlertModal.jsx';
 import { matchCloset } from '../utils/itemMatch.js';
 import {
   LookFilterSheet, emptyLookFilters, countLookFilters,
@@ -86,6 +87,7 @@ export function OutfitLink({ user, onSignIn }) {
   // linked to an existing item or freshly added — without leaving here.
   const [addingPiece, setAddingPiece] = useState(-1);
   const [addedPieces, setAddedPieces] = useState(new Set());
+  const [addErr, setAddErr] = useState(null);
   const addPieceToCloset = async (piece, i) => {
     if (addingPiece !== -1 || addedPieces.has(i)) return;
     const photoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
@@ -93,12 +95,14 @@ export function OutfitLink({ user, onSignIn }) {
     setAddingPiece(i);
     try {
       const res = await fetch(photoUrl, { mode: 'cors' });
+      if (!res.ok) throw new Error(`photo ${res.status}`);
       const blob = await res.blob();
       const { id } = await ItemService.createFromDetected({ blob, detected: piece, owned: true });
       setSelected(prev => new Set(prev).add(id));        // link the new item
       setAddedPieces(prev => new Set(prev).add(i));
     } catch (e) {
       console.warn('add piece to closet failed:', e?.message);
+      setAddErr(t('addToClosetFailed'));
     } finally { setAddingPiece(-1); }
   };
 
@@ -332,6 +336,8 @@ export function OutfitLink({ user, onSignIn }) {
           resultCount={visibleCloset.length}
         />
       )}
+
+      <AlertModal open={!!addErr} message={addErr} onClose={() => setAddErr(null)} />
     </div>
   );
 }

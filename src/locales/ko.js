@@ -139,6 +139,7 @@ export const ko = {
   savedToCloset: '저장됨',
   addToCloset: '옷장에 추가',
   addedToCloset: '추가됨',
+  addToClosetFailed: '추가하지 못했어요. 다시 시도해 주세요.',
   saveToWishlist: '위시리스트에 저장',
   savedToWishlist: '위시리스트에 저장됨',
   addAllToCloset: '전부 옷장에 추가',

@@ -1,0 +1,14 @@
+[
+  {
+    "origin": [
+      "https://drape-9e532.web.app",
+      "https://drape-9e532.firebaseapp.com",
+      "http://localhost:3000",
+      "https://localhost",
+      "capacitor://localhost"
+    ],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type", "Content-Length", "Access-Control-Allow-Origin"],
+    "maxAgeSeconds": 3600
+  }
+]

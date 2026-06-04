@@ -139,6 +139,7 @@ export const en = {
   savedToCloset: 'Saved',
   addToCloset: 'Add to closet',
   addedToCloset: 'Added',
+  addToClosetFailed: 'Couldn’t add this piece. Please try again.',
   saveToWishlist: 'Save to wishlist',
   savedToWishlist: 'Saved to wishlist',
   addAllToCloset: 'Add all to closet',

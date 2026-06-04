@@ -141,6 +141,7 @@ export const ja = {
   savedToCloset: '追加済み',
   addToCloset: 'クローゼットに追加',
   addedToCloset: '追加済み',
+  addToClosetFailed: '追加できませんでした。もう一度お試しください。',
   saveToWishlist: 'ウィッシュに保存',
   savedToWishlist: 'ウィッシュに保存済み',
   addAllToCloset: 'すべてクローゼットに追加',
