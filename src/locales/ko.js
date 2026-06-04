@@ -393,6 +393,9 @@ export const ko = {
   support: '고객지원',
   legalEffective: '시행일 {date}',
   supportBody: '도움이 필요하신가요?',
+  supportContactTitle: '문의하기',
+  supportReply: '궁금한 점·버그·피드백이 있으면 메일 주세요. 보통 하루 안에 답해드려요.',
+  supportLegalTitle: '약관',
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: '내 옷장이 손 안에',

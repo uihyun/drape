@@ -393,6 +393,9 @@ export const en = {
   support: 'Support',
   legalEffective: 'Effective {date}',
   supportBody: 'Need help? Email us:',
+  supportContactTitle: 'Get in touch',
+  supportReply: 'Questions, bugs, or feedback? Email us — we usually reply within a day.',
+  supportLegalTitle: 'Legal',
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'Your closet, on your phone',

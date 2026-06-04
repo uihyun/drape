@@ -395,6 +395,9 @@ export const ja = {
   support: 'サポート',
   legalEffective: '施行日 {date}',
   supportBody: 'お困りですか?',
+  supportContactTitle: 'お問い合わせ',
+  supportReply: 'ご質問・不具合・ご要望はメールでどうぞ。通常1日以内に返信します。',
+  supportLegalTitle: '規約',
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'クローゼットを、手の中に',

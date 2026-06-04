@@ -181,6 +181,9 @@ body.is-native {
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  /* Board thumbnails stack stickers with z-index i+1; keep the selected
+     check above all of them so it never hides behind a garment. */
+  z-index: 20;
 }
 
 /* Disabled label-as-button (used when AddItem's camera input is busy). */
@@ -2836,6 +2839,12 @@ input[type="search"]::-webkit-search-decoration {
   font-size: 1rem;
   color: var(--text-primary);
   padding: 0.4rem 0;
+}
+.support-version {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-top: 1.25rem;
 }
 .settings-hint {
   font-size: 0.78rem;
