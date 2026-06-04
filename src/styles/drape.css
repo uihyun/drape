@@ -2750,6 +2750,21 @@ input[type="search"]::-webkit-search-decoration {
   box-shadow: var(--shadow-lg);
 }
 .modal h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.6rem; }
+/* Piece → wishlist modal (analyzed-look detail): mirrors the analyze-result
+   find-similar / save actions so a saved look isn't a dead end. */
+.modal { position: relative; }
+.modal-close {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border: none; border-radius: 50%;
+  background: var(--surface-2, rgba(0,0,0,0.05));
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.piece-wishlist-modal { padding-right: 1.5rem; }
+.piece-wishlist-title { font-size: 1.1rem; font-weight: 600; margin: 0 2rem 0.4rem 0; }
+.piece-wishlist-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
 /* AlertModal — message + single confirm button. */
 .alert-modal { max-width: 340px; text-align: center; }
 .alert-modal-msg { color: var(--text-primary); font-size: 0.95rem; line-height: 1.5; margin: 0.2rem 0 1.2rem; }
