@@ -15,8 +15,9 @@ import { matchCloset } from '../utils/itemMatch.js';
 //   savedLabel: string,           // button label after save
 //   findSimilar?: boolean,        // show the Find similar link (default true)
 // }
-export function PieceRow({ piece, closet, t, sale = null }) {
+export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
   const matches = matchCloset(piece, closet);
+  const hasLinked = Array.isArray(linkedItems) && linkedItems.length > 0;
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedLocal, setSavedLocal] = useState(false);
@@ -60,7 +61,24 @@ export function PieceRow({ piece, closet, t, sale = null }) {
         )}
       </div>
       {piece.description && <p className="piece-match-desc">{piece.description}</p>}
-      {matches.length > 0 ? (
+      {/* The item(s) actually linked to this piece take priority — once you've
+          said "this is what I wore", the tag-match suggestions are noise. */}
+      {hasLinked ? (
+        <div className="analyze-match-strip">
+          <div className="analyze-match-row">
+            {linkedItems.map(item => {
+              const cover = item.croppedUrl || item.originalUrl;
+              return (
+                <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card is-linked" title={item.name || ''}>
+                  {cover
+                    ? <img src={cover} alt={item.name || ''} loading="lazy" />
+                    : <div className="item-card-skeleton" />}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ) : matches.length > 0 ? (
         <div className="analyze-match-strip">
           <span className="analyze-match-label">{t('fromYourCloset')}</span>
           <div className="analyze-match-row">

@@ -156,10 +156,11 @@ export function OutfitDetail({ user, onSignIn }) {
   const itemsById = Object.fromEntries(items.map(it => [it.id, it]));
   const linkedIdSet = new Set(Object.values(pieceLinks).flat());
   const unmappedItems = items.filter(it => !linkedIdSet.has(it.id));
-  const hasGroupedItems = items.length > 0 && Object.values(pieceLinks).some(arr => Array.isArray(arr) && arr.length);
-  const pieceLabel = (piece) => piece?.name
-    || [(piece?.colors || [])[0], piece?.category].filter(Boolean).join(' ')
-    || (piece?.category ? t(`taxonomy.categories.${piece.category}`) : t('untitledItem'));
+  // When the per-piece breakdown is on screen the linked items live there, so
+  // the flat list only carries the leftovers ("Other items"). Otherwise (no
+  // pieces, or a visitor) it shows the full worn set.
+  const piecesShown = isOwner && pieceList.length > 0;
+  const flatItems = piecesShown ? unmappedItems : items;
   const renderHero = () => {
     if (wornPhoto) {
       return <div className="outfit-hero outfit-hero-photo"><img src={wornPhoto} alt="" referrerPolicy="no-referrer" /></div>;
@@ -345,59 +346,24 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
-      {items.length > 0 && (
+      {/* Visitor / no-pieces view: the full worn set, flat. (Owner-with-pieces
+          shows items under each piece below; only leftovers list here.) */}
+      {!piecesShown && items.length > 0 && (
         <section className="outfit-items">
           <header><h2>{t('itemsInOutfit')}</h2></header>
-          {hasGroupedItems ? (
-            <div className="outfit-items-grouped">
-              {pieceList.map((piece, i) => {
-                const groupItems = (pieceLinks[i] || []).map(id => itemsById[id]).filter(Boolean);
-                if (!groupItems.length) return null;
-                return (
-                  <div key={i} className="outfit-item-group">
-                    <span className="outfit-item-group-label">{pieceLabel(piece)}</span>
-                    <div className="outfit-items-strip">
-                      {groupItems.map(it => (
-                        <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
-                          {it.croppedUrl || it.originalUrl
-                            ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                            : <div className="item-card-skeleton" />}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              {unmappedItems.length > 0 && (
-                <div className="outfit-item-group">
-                  <span className="outfit-item-group-label">{t('otherItems')}</span>
-                  <div className="outfit-items-strip">
-                    {unmappedItems.map(it => (
-                      <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
-                        {it.croppedUrl || it.originalUrl
-                          ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                          : <div className="item-card-skeleton" />}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="outfit-items-strip">
-              {items.map(it => (
-                <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
-                  {it.croppedUrl || it.originalUrl
-                    ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
-                    : <div className="item-card-skeleton" />}
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="outfit-items-strip">
+            {items.map(it => (
+              <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+                {it.croppedUrl || it.originalUrl
+                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                  : <div className="item-card-skeleton" />}
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
-      {isOwner && pieceList.length > 0 && (
+      {piecesShown && (
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
           {pieceList.map((piece, i) => (
@@ -406,6 +372,9 @@ export function OutfitDetail({ user, onSignIn }) {
               piece={piece}
               closet={closet}
               t={t}
+              // #3 — the closet items you linked under this piece (shown in
+              // place of the tag-match suggestions once they exist).
+              linkedItems={(pieceLinks[i] || []).map(id => itemsById[id]).filter(Boolean)}
               // Analyzed look = someone else's pieces → offer "save to
               // wishlist" (cropped from this look's photo) like the analyze
               // result screen does. Your own OOTD's pieces are already yours.
@@ -421,6 +390,22 @@ export function OutfitDetail({ user, onSignIn }) {
               } : null}
             />
           ))}
+        </section>
+      )}
+
+      {/* Leftovers: linked items whose category matched no detected piece. */}
+      {piecesShown && flatItems.length > 0 && (
+        <section className="outfit-items">
+          <header><h2>{t('otherItems')}</h2></header>
+          <div className="outfit-items-strip">
+            {flatItems.map(it => (
+              <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+                {it.croppedUrl || it.originalUrl
+                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                  : <div className="item-card-skeleton" />}
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
