@@ -476,15 +476,17 @@ export function AnalyzePhoto({ user, onSignIn }) {
                       const saved = savedKeys.has(key);
                       return (
                         <div key={itemIdx} className="analyze-item-v2">
+                          {/* name (left) — CATEGORY (right): same order as
+                              "Pieces in this look" so the two read alike. */}
                           <div className="analyze-item-v2-head">
+                            <h4 className="analyze-item-v2-name">
+                              {it.name || it.description || t('untitledItem')}
+                            </h4>
                             {it.category && (
                               <span className="analyze-item-cat">
                                 {t(`taxonomy.categories.${it.category}`)}
                               </span>
                             )}
-                            <h4 className="analyze-item-v2-name">
-                              {it.name || it.description || t('untitledItem')}
-                            </h4>
                           </div>
                           {(it.name && it.description) && (
                             <p className="analyze-item-v2-desc">{it.description}</p>

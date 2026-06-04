@@ -776,11 +776,11 @@ body.is-native {
 }
 .analyze-item-text { flex: 1; min-width: 0; }
 .analyze-item-cat {
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 600;
+  flex-shrink: 0;
 }
 .analyze-item-desc {
   font-size: 0.95rem;
@@ -1011,7 +1011,7 @@ body.is-native {
 }
 
 .analyze-items-v2 {
-  padding: 1rem 1rem 1.25rem;
+  padding: 1rem 0 1.25rem;
 }
 .analyze-items-head {
   font-size: 0.72rem;
@@ -1038,6 +1038,8 @@ body.is-native {
   margin: 0;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
 }
 .analyze-item-v2-desc {
   font-size: 0.88rem;
@@ -1089,7 +1091,9 @@ body.is-native {
 
 /* "Pieces in this look" — OOTD/outfit detail: each detected garment + its
    closet matches. Reuses .analyze-match-strip/.analyze-match-row above. */
-.outfit-pieces { padding: 0 1rem; margin-bottom: 1.5rem; }
+/* No extra inset — align the pieces section to the same width as the notes
+   / style sections above it (the 1rem padding made it look cramped). */
+.outfit-pieces { margin-bottom: 1.5rem; }
 .outfit-pieces > header h2 {
   font-size: 0.95rem;
   font-weight: 600;
