@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
+import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -20,7 +21,18 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const today = new Date();
-  const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  // Remember the month the user was viewing (30-min TTL, same store as the
+  // tag filters) so leaving and coming back doesn't snap back to this month.
+  const ckey = `calendar:${user?.uid || 'anon'}`;
+  const [cursor, setCursor] = useState(() => {
+    const saved = loadFilters(ckey, null);
+    return (saved && Number.isInteger(saved.y) && Number.isInteger(saved.m))
+      ? new Date(saved.y, saved.m, 1)
+      : new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+  useEffect(() => {
+    saveFilters(ckey, { y: cursor.getFullYear(), m: cursor.getMonth() });
+  }, [ckey, cursor]);
   // byDate is now { [date]: ootd[] } — multi-OOTD per day. Calendar
   // cell renders entries[0] (most recent) as the representative.
   const [byDate, setByDate] = useState({});
@@ -41,7 +53,15 @@ export function Calendar({ user, onSignIn, embedded = false }) {
     const o = search.get('ootd');
     if (!o) return;
     const date = o === 'today' ? ymd(new Date()) : o;
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) setSheetDate(date);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setSheetDate(date);
+      // Snap the visible month to the deep-linked date so the calendar
+      // behind the sheet matches (it may have restored a different month).
+      // Parse parts directly — `new Date('YYYY-MM-DD')` is UTC and can land
+      // on the previous month at boundaries.
+      const [yy, mm] = date.split('-').map(Number);
+      setCursor(new Date(yy, mm - 1, 1));
+    }
     const next = new URLSearchParams(search);
     next.delete('ootd');
     setSearch(next, { replace: true });
