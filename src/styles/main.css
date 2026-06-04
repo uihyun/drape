@@ -5554,8 +5554,9 @@ body.is-native {
 .js-splash-rest {
   display: inline-flex;
   overflow: hidden;
-  max-width: 2.6em;
   white-space: nowrap;
+  /* max-width is driven inline (measured px) so the collapse has no dead-zone
+     and the d recenters in lockstep with the fold. */
   transition: max-width 0.6s cubic-bezier(0.7, 0, 0.2, 1),
               opacity 0.45s ease;
 }
@@ -5563,7 +5564,6 @@ body.is-native {
   transition: transform 0.55s cubic-bezier(0.7, 0, 0.2, 1);
 }
 .js-splash-stage.is-collapsed .js-splash-rest {
-  max-width: 0;
   opacity: 0;
 }
 .js-splash-stage.is-collapsed .js-splash-rest .js-splash-letter {

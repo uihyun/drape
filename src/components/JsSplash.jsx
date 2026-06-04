@@ -20,7 +20,20 @@ export function JsSplash({ ready = false }) {
   // enter → merge (rape fold into d) → loading (arc spins) → exit → done
   const [phase, setPhase] = useState('enter');
   const [hardStop, setHardStop] = useState(false);
+  const [restW, setRestW] = useState(null); // measured px width of "rape"
+  const restRef = useRef(null);
   const mountTime = useRef(Date.now());
+
+  // Measure the exact width of the collapsing letters once the font is ready,
+  // so the merge transition starts from that width (no dead-zone) — the 'd'
+  // then glides to center FROM THE START of the fold, in lockstep with it.
+  useEffect(() => {
+    let alive = true;
+    const measure = () => { if (alive && restRef.current) setRestW(restRef.current.scrollWidth); };
+    if (document.fonts?.ready) document.fonts.ready.then(measure).catch(measure);
+    else measure();
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     mountTime.current = Date.now();
@@ -66,7 +79,11 @@ export function JsSplash({ ready = false }) {
           <span className="js-splash-letter js-splash-d">
             <span className="js-splash-glyph" style={{ '--i': 0 }}>d</span>
           </span>
-          <span className="js-splash-rest">
+          <span
+            className="js-splash-rest"
+            ref={restRef}
+            style={{ maxWidth: collapsed ? 0 : (restW != null ? `${restW}px` : '2.6em') }}
+          >
             {REST.map((c, i) => (
               <span key={i} className="js-splash-letter">
                 <span className="js-splash-glyph" style={{ '--i': i + 1 }}>{c}</span>
