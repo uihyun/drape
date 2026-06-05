@@ -8,6 +8,7 @@ import { FollowButton } from '../components/FollowButton.jsx';
 import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { Masonry } from '../components/Masonry.jsx';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
 import { CardImage } from '../components/CardImage.jsx';
@@ -226,19 +227,19 @@ function PublicOutfitsGrid({ ootds, t }) {
   if (items.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
   // Same 2-col natural-ratio grid the owner's Outfits tab uses (.ootd-feed).
   return (
-    <div className="ootd-feed">
-      {items.map(o => {
+    <Masonry items={items}>
+      {o => {
         const photo = outfitCardPhoto(o);
         return (
-          <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
+          <Link to={`/o/${o.id}`} className="ootd-card">
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
             {/* Clean cover — name/memo lives on the detail only (like the feed). */}
           </Link>
         );
-      })}
-    </div>
+      }}
+    </Masonry>
   );
 }
 
@@ -246,16 +247,16 @@ function PublicBoardsGrid({ boards, t }) {
   if (boards === null) return <div className="loading"><div className="spinner" /></div>;
   if (boards.length === 0) return <div className="empty-state"><p>{t('publicBoardsEmpty')}</p></div>;
   return (
-    <div className="board-list-grid">
-      {boards.map(b => (
-        <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
+    <Masonry items={boards}>
+      {b => (
+        <Link to={`/boards/${b.id}`} className="board-card">
           <BoardThumbnail board={b} />
           <div className="board-card-meta">
             <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
           </div>
         </Link>
-      ))}
-    </div>
+      )}
+    </Masonry>
   );
 }
 

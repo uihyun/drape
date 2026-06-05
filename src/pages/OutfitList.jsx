@@ -7,6 +7,7 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
+import { Masonry } from '../components/Masonry.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { olCache, olKey } from '../services/uiCache.js';
@@ -19,12 +20,12 @@ import { olCache, olKey } from '../services/uiCache.js';
 // `showPrivacy` (own content only) flags looks that aren't published yet.
 function OotdGrid({ ootds, t, showPrivacy = false }) {
   return (
-    <div className="ootd-feed">
-      {ootds.map(o => {
+    <Masonry items={ootds}>
+      {o => {
         const photo = outfitCardPhoto(o);
         const isPrivate = showPrivacy && !o.isPublic && !o.isListed;
         return (
-          <Link key={o.id} to={`/o/${o.id}`} className="ootd-card">
+          <Link to={`/o/${o.id}`} className="ootd-card">
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
@@ -36,8 +37,8 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
             {/* Clean cover — name/memo lives on the detail only (like the feed). */}
           </Link>
         );
-      })}
-    </div>
+      }}
+    </Masonry>
   );
 }
 

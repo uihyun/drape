@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Users } from 'lucide-react';
+import { Masonry } from '../components/Masonry.jsx';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
 import { FollowService, FOLLOWING_FEED_LIMIT } from '../services/follow-service.js';
@@ -216,17 +217,9 @@ export function Feed({ user, onSignIn }) {
           {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
         </div>
       ) : showingBoards ? (
-        <div className="board-feed">
-          {boards.map(b => (
-            <BoardCard key={b.id} board={b} />
-          ))}
-        </div>
+        <Masonry items={boards}>{b => <BoardCard board={b} />}</Masonry>
       ) : (
-        <div className="ootd-feed">
-          {ootds.map(o => (
-            <OotdCard key={o.id} ootd={o} />
-          ))}
-        </div>
+        <Masonry items={ootds}>{o => <OotdCard ootd={o} />}</Masonry>
       )}
     </div>
   );
