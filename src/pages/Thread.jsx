@@ -66,9 +66,11 @@ export function Thread({ user }) {
     PushService.clearThreadNotifications(threadId);
   }, [threadId, created, user?.uid, messages.length]);
 
-  // Presence flag → sendMessage uses it to skip bumping unread for the
-  // other party while we're both watching the room. Tab-hide also
-  // counts as "left" so a backgrounded tab still gets badges.
+  // Presence flag → the push fan-out skips notifying me while I'm watching the
+  // room. CRITICAL: this MUST flip to false when I background the app, or the
+  // server keeps thinking I'm here and never sends a push. On iOS WKWebView
+  // `visibilitychange` doesn't fire on app background — so we also listen to
+  // Capacitor's native App state (the reliable signal).
   useEffect(() => {
     if (!threadId || !created || !user || user.isAnonymous) return;
     MessageService.setActive(threadId, true);
@@ -77,8 +79,24 @@ export function Thread({ user }) {
       if (!document.hidden) MessageService.markThreadRead(threadId);
     };
     document.addEventListener('visibilitychange', onVisibility);
+
+    let removeAppListener = null;
+    (async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) return;
+        const { App } = await import('@capacitor/app');
+        const handle = await App.addListener('appStateChange', ({ isActive }) => {
+          MessageService.setActive(threadId, isActive);
+          if (isActive) MessageService.markThreadRead(threadId);
+        });
+        removeAppListener = () => handle.remove();
+      } catch { /* web / plugin missing */ }
+    })();
+
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      if (removeAppListener) removeAppListener();
       MessageService.setActive(threadId, false);
     };
   }, [threadId, created, user?.uid]);
