@@ -15,6 +15,8 @@ const HIDE_ON = [
   // close button.
   /^\/i\//,
   /^\/s\//,
+  // Thread has its own header back button (→ /messages).
+  /^\/messages\/[^/]+$/,
 ];
 
 export function MobileHeader() {

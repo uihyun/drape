@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
@@ -168,6 +168,20 @@ const HIDE_NAV = [
 
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Notification-tap deep link → open the thread via the router (no reload).
+  // Warm taps arrive as the event; a cold-start tap is drained once authed.
+  useEffect(() => {
+    const onOpen = (e) => { if (e.detail) navigate(`/messages/${e.detail}`); };
+    window.addEventListener('drape:open-thread', onOpen);
+    return () => window.removeEventListener('drape:open-thread', onOpen);
+  }, [navigate]);
+  useEffect(() => {
+    if (!authReady) return;
+    const pending = PushService.consumePendingThread();
+    if (pending) navigate(`/messages/${pending}`);
+  }, [authReady, navigate]);
 
   // Reset scroll to the top on every route change. React Router keeps the
   // window scroll offset across navigations, so jumping from a scrolled

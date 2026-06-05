@@ -184,7 +184,9 @@ export function Thread({ user }) {
   return (
     <div className="thread">
       <header className="thread-head">
-        <button type="button" className="thread-back" onClick={() => navigate(-1)} aria-label={t('back')}>
+        {/* Always go to the inbox — navigate(-1) strands you on a blank/loading
+            screen when the thread was opened cold from a push (no history). */}
+        <button type="button" className="thread-back" onClick={() => navigate('/messages')} aria-label={t('back')}>
           <ChevronLeft size={20} strokeWidth={1.6} />
         </button>
         {/* Tap avatar / name to inspect the other party's profile —

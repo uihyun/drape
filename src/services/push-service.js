@@ -25,6 +25,8 @@ import { db, auth } from '../firebase.js';
 let registered = false;
 let tapHandlerReady = false;
 let cachedToken = null;
+// Thread id from a notification tap, awaiting in-app router navigation.
+let pendingThreadNav = null;
 
 async function persistToken(uid, token, platform) {
   if (!uid || !token) return;
@@ -54,12 +56,26 @@ export const PushService = {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
         const threadId = event?.notification?.data?.threadId;
-        if (threadId) window.location.assign(`/messages/${threadId}`);
+        if (!threadId) return;
+        // Hand off to the router (NOT window.location.assign — a hard reload
+        // re-runs the whole splash/auth boot and strands the chat on a spinner).
+        // App.jsx listens for this event (warm) and drains pendingThreadNav
+        // once authed (cold start).
+        pendingThreadNav = threadId;
+        try { window.dispatchEvent(new CustomEvent('drape:open-thread', { detail: threadId })); } catch { /* ignore */ }
       });
     } catch (err) {
       tapHandlerReady = false;
       console.warn('initTapHandler failed:', err.message);
     }
+  },
+
+  // Drain a queued notification-tap target (cold start: the tap fired before
+  // the router/auth was ready). Returns the threadId once, or null.
+  consumePendingThread() {
+    const t = pendingThreadNav;
+    pendingThreadNav = null;
+    return t;
   },
 
   // Remove any delivered notifications for a thread once the user opens it —
