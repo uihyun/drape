@@ -90,6 +90,8 @@ export function Welcome() {
         <PhoneShowcase />
       </section>
 
+      <p className="welcome-copy">{t('landingTagline')}</p>
+
       <section className="welcome-actions">
         <button
           type="button"

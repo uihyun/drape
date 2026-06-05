@@ -5769,6 +5769,16 @@ input[type="search"]::-webkit-search-decoration {
 .welcome-showcase .lp-phone {
   width: clamp(165px, 46vw, 220px);
 }
+.welcome-copy {
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  max-width: 360px;
+  margin: 0.25rem auto 0.6rem;
+  padding: 0 1rem;
+}
 
 .welcome-actions {
   display: flex;
