@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Image as ImageIcon, Camera as CameraIcon, Trash2 } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { OutfitService } from '../services/outfit-service.js';
@@ -14,7 +14,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
   const { t } = useLocale();
   const { sheetStyle: ootdSheetStyle, handleProps: ootdHandleProps } = useSheetDrag(onClose);
-  const fileRef = useRef();
   const [photoBlob, setPhotoBlob] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [note, setNote] = useState('');
@@ -113,7 +112,16 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             </div>
           ) : (
             <div className="add-sheet-pickers">
-              <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    const blob = await CameraService.pickFromLibrary();
+                    if (blob) stagePicked(blob);
+                  } catch (err) { setError(err.message); }
+                }}
+              >
                 <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
               </button>
               <button
@@ -134,13 +142,6 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               </button>
             </div>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={e => stagePicked(e.target.files?.[0])}
-          />
 
           {/* Title */}
           <label className="add-sheet-label">{t('ootdNoteLabel')}</label>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, UploadCloud, Camera as CameraIcon, Image as ImageIcon, Lock, Layers, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
@@ -19,7 +19,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function AddItem({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
-  const fileInputRef = useRef();
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -82,18 +81,18 @@ export function AddItem({ user, onSignIn }) {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={async () => {
+              try {
+                const blob = await CameraService.pickFromLibrary();
+                if (blob) stagePicked(blob);
+              } catch (err) {
+                setError(err.message);
+              }
+            }}
             disabled={uploading}
           >
             <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
-            className="hidden"
-            onChange={e => stagePicked(e.target.files?.[0])}
-          />
 
           <button
             type="button"

@@ -112,21 +112,18 @@ export function TryOn({ user, onSignIn }) {
           <p>{t('addIdentityRefsBody')}</p>
           <div className="empty-state-actions">
             <Link to="/settings" className="btn btn-primary">{t('goToSettings')}</Link>
-            <label className="btn btn-secondary">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={async () => {
+                const f = await CameraService.pickFromLibrary();
+                if (!f) return;
+                const blob = await CameraService.compressImage(f);
+                setCustomBlob(blob);
+              }}
+            >
               <Upload size={14} strokeWidth={1.8} /> {t('useCustomPhoto')}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  const blob = await CameraService.compressImage(f);
-                  setCustomBlob(blob);
-                  e.target.value = '';
-                }}
-              />
-            </label>
+            </button>
           </div>
         </div>
       </div>
@@ -242,15 +239,16 @@ export function TryOn({ user, onSignIn }) {
                 {refs?.length || 0} {t('savedRefs')}
               </span>
             </Link>
-            <label className="btn btn-secondary btn-sm">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={async () => {
+                const f = await CameraService.pickFromLibrary();
+                if (f) onCustomFile(f);
+              }}
+            >
               <Upload size={13} strokeWidth={1.8} /> {t('useCustomPhoto')}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => { onCustomFile(e.target.files?.[0]); e.target.value = ''; }}
-              />
-            </label>
+            </button>
           </div>
         )}
       </section>

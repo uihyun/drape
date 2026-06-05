@@ -1,45 +1,73 @@
 // Camera capture and image processing utilities
+import { isNativeApp } from './platform-service.js';
+
+// Web fallback picker — a hidden <input type="file"> appended to the DOM
+// (iOS WKWebView won't fire `change` on a detached input). `capture` forces
+// the rear camera; omit it to open the file/photo picker. Resolves a Blob,
+// or null if the user cancels (so callers never await forever).
+function webFilePick({ capture = false } = {}) {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    if (capture) input.capture = 'environment';
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    const cleanup = () => { try { input.remove(); } catch { /* ignore */ } };
+    input.onchange = () => { const f = input.files?.[0] || null; cleanup(); resolve(f); };
+    input.oncancel = () => { cleanup(); resolve(null); };
+    document.body.appendChild(input);
+    input.click();
+  });
+}
 
 export const CameraService = {
-  // Open the system camera (native via Capacitor when available, falls back
-  // to hidden file input with capture attribute on web). Returns a Blob.
+  // Open the system camera. Native: Capacitor Camera forced to the CAMERA
+  // source (so it never shows the Photo Library / Take Photo / Choose File
+  // menu). Web: hidden file input with capture=environment. Returns a Blob.
   async takePhoto() {
-    // Native Capacitor: lazy-load @capacitor/camera to avoid pulling it
-    // into the web bundle. We don't depend on it directly.
-    try {
-      // Dynamic-string import — vite leaves it alone (no static resolution).
-      // @capacitor/camera is not in deps yet; the web fallback below covers
-      // the dev / web build.
-      const mod = '@capacitor/camera';
-      const { Camera, CameraResultType } = await import(/* @vite-ignore */ mod);
-      const photo = await Camera.getPhoto({
-        quality: 85,
-        resultType: CameraResultType.Base64,
-        allowEditing: false,
-      });
-      const res = await fetch(`data:image/jpeg;base64,${photo.base64String}`);
-      return await res.blob();
-    } catch {
-      // Web fallback — synthesize an <input capture=environment>. The input
-      // MUST be in the DOM: iOS Safari / WKWebView don't fire `change` for a
-      // detached file input, so the capture would silently hang and no photo
-      // would ever come back (the "take photo gives no result" bug).
-      return new Promise((resolve) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.capture = 'environment';
-        input.style.position = 'fixed';
-        input.style.left = '-9999px';
-        const cleanup = () => { try { input.remove(); } catch { /* ignore */ } };
-        input.onchange = () => { const f = input.files?.[0] || null; cleanup(); resolve(f); };
-        // If the user cancels, `change` never fires; the next focus/touch
-        // resolves null so the caller isn't left awaiting forever.
-        input.oncancel = () => { cleanup(); resolve(null); };
-        document.body.appendChild(input);
-        input.click();
-      });
+    if (isNativeApp()) {
+      try {
+        const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        const photo = await Camera.getPhoto({
+          quality: 85,
+          resultType: CameraResultType.Base64,
+          allowEditing: false,
+          source: CameraSource.Camera,
+        });
+        const res = await fetch(`data:image/jpeg;base64,${photo.base64String}`);
+        return await res.blob();
+      } catch (e) {
+        // User cancelled the native camera → no blob, don't fall through to a
+        // file input (that would re-open a picker). Only fall back if the
+        // plugin itself is unavailable.
+        if (/cancel/i.test(e?.message || '')) return null;
+      }
     }
+    return webFilePick({ capture: true });
+  },
+
+  // Pick an existing photo. Native: Capacitor Camera forced to the PHOTOS
+  // source, so it opens the photo library DIRECTLY (no intermediate menu).
+  // Web: hidden file input (no capture) → the browser's file/photo picker.
+  // Returns a Blob, or null if cancelled.
+  async pickFromLibrary() {
+    if (isNativeApp()) {
+      try {
+        const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        const photo = await Camera.getPhoto({
+          quality: 90,
+          resultType: CameraResultType.Base64,
+          allowEditing: false,
+          source: CameraSource.Photos,
+        });
+        const res = await fetch(`data:image/jpeg;base64,${photo.base64String}`);
+        return await res.blob();
+      } catch (e) {
+        if (/cancel/i.test(e?.message || '')) return null;
+      }
+    }
+    return webFilePick({ capture: false });
   },
 
   // Image compression settings

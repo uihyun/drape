@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, X, Layers, ChevronRight } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
@@ -15,7 +15,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 export function AddItemSheet({ open, user, onClose, onSaved }) {
   const { t } = useLocale();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
-  const fileRef = useRef();
   const [blob, setBlob] = useState(null);
   const [preview, setPreview] = useState(null);
   const [url, setUrl] = useState('');
@@ -38,6 +37,17 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
   if (!open) return null;
 
   const pick = (file) => { if (file) setBlob(file); };
+
+  // Upload = pick an existing photo. Native goes straight to the photo library
+  // (no Photo Library / Take Photo / Choose File menu); web opens the file picker.
+  const handleUpload = async () => {
+    try {
+      const b = await CameraService.pickFromLibrary();
+      if (b) pick(b);
+    } catch (e) {
+      setError(e?.message || 'upload_failed');
+    }
+  };
 
   // Take photo must reach the actual camera on every platform: the native
   // Capacitor camera on device, the web getUserMedia modal on desktop.
@@ -100,7 +110,7 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
             </div>
           ) : (
             <div className="add-sheet-pickers">
-              <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
+              <button type="button" className="btn btn-primary" onClick={handleUpload}>
                 <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
               </button>
               <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
@@ -108,13 +118,6 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
               </button>
             </div>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={e => { pick(e.target.files?.[0]); e.target.value = ''; }}
-          />
 
           {/* Several garments in one photo → the bulk path (analyze pipeline
               in owned mode). Only offered before a single photo is staged. */}

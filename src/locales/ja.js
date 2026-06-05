@@ -85,6 +85,8 @@ export const ja = {
   tryOnEmptyCloset: 'クローゼットが空です。試着するアイテムを追加してください。',
   tryOnMaxItems: '一度に最大 {max} 点まで試着できます。',
   analyzeMaxPhotos: '一度に最大 {max} 枚までです。先にクローゼットへ追加してから続けてください。',
+  analyzeUploadHint: '1枚の写真からすべてのアイテムを検出します',
+  analyzeSnapHint: 'アイテムを1つずつ続けて撮影',
   cameraUnsupported: 'このブラウザはカメラに対応していません。',
   cameraPermissionDenied: 'カメラへのアクセスが拒否されました。ブラウザの設定で許可してください。',
   cameraMaxShots: '一度に最大{max}枚まで撮影できます。チェックを押して先に追加してください。',

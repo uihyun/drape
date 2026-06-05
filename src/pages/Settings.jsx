@@ -222,7 +222,6 @@ function ProfileSection({ profile, user, t }) {
 }
 
 function ProfilePhotoRow({ profile, user, t }) {
-  const fileRef = useRef();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   // Optimistic preview so the user sees the new photo immediately while
@@ -264,7 +263,12 @@ function ProfilePhotoRow({ profile, user, t }) {
     <div className="settings-photo-row">
       <Avatar src={photoURL} name={profile?.displayName || user?.displayName} size={76} className="settings-photo-avatar" />
       <div className="settings-photo-actions">
-        <button type="button" className="btn btn-secondary" onClick={() => fileRef.current?.click()} disabled={busy}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={async () => { const f = await CameraService.pickFromLibrary(); if (f) onPick(f); }}
+          disabled={busy}
+        >
           <Upload size={14} strokeWidth={1.7} />
           {photoURL ? t('changePhoto') : t('addPhoto')}
         </button>
@@ -273,13 +277,6 @@ function ProfilePhotoRow({ profile, user, t }) {
             {t('removePhoto')}
           </button>
         )}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={e => onPick(e.target.files?.[0])}
-        />
         {err && <p className="settings-error" style={{ margin: '0.4rem 0 0' }}>{err}</p>}
       </div>
     </div>
@@ -339,7 +336,6 @@ function IdentitySection({ user, t }) {
   // the click event fires regardless of how we handled the pointer
   // sequence).
   const justDraggedRef = useRef(false);
-  const fileInput = useRef();
   const DRAG_THRESHOLD = 6;
 
   // Live subscription is the source of truth — so a background-removal that
@@ -470,18 +466,11 @@ function IdentitySection({ user, t }) {
           <button
             type="button"
             className="identity-ref identity-ref-add"
-            onClick={() => fileInput.current?.click()}
+            onClick={async () => { const f = await CameraService.pickFromLibrary(); if (f) onAdd(f); }}
             disabled={adding}
           >
             <Camera size={20} strokeWidth={1.5} />
             <span>{adding ? t('uploading') : t('addRef')}</span>
-            <input
-              ref={fileInput}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={e => onAdd(e.target.files?.[0])}
-            />
           </button>
         )}
       </div>

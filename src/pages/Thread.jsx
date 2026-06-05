@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Send, ImagePlus, X } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { CameraService } from '../services/camera.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -21,7 +22,6 @@ export function Thread({ user }) {
   const [sending, setSending] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const scrollRef = useRef(null);
-  const fileRef = useRef(null);
 
   useEffect(() => {
     if (!threadId) return;
@@ -163,17 +163,10 @@ export function Thread({ user }) {
       </div>
 
       <footer className="thread-input">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) sendImage(f); }}
-        />
         <button
           type="button"
           className="thread-attach"
-          onClick={() => fileRef.current?.click()}
+          onClick={async () => { const f = await CameraService.pickFromLibrary(); if (f) sendImage(f); }}
           disabled={sending}
           aria-label={t('sendPhoto')}
         >

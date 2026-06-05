@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
@@ -74,7 +74,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // the two flows are fully independent — entering one never shows the
   // other's leftover results.
   const cache = analyzeCaches[ownedParam ? 'owned' : 'wishlist'];
-  const fileRef = useRef();
   // getUserMedia drives the burst modal; present in modern WebViews too.
   const canBurst = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
   // batches: [{ blob, previewUrl, status: 'pending'|'analyzing'|'done'|'failed', style, notes, items: [...] }]
@@ -95,6 +94,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const [error, setError] = useState(null);
   // Shown when an add was clamped (or blocked) by the MAX_PHOTOS session cap.
   const [limitNotice, setLimitNotice] = useState(false);
+  // 'upload' | 'snap' | null — which owned input mode is active (mutual lock).
+  const [inputMode, setInputMode] = useState(null);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
   const [closet, setCloset] = useState([]);
@@ -124,13 +125,16 @@ export function AnalyzePhoto({ user, onSignIn }) {
     );
   }
 
-  const addFiles = (filesLike) => {
+  const addFiles = (filesLike, source = 'upload') => {
     const incoming = Array.from(filesLike || []).filter(Boolean);
     if (incoming.length === 0) return;
     setError(null);
-    // Cap by REMAINING session capacity, not per-call — otherwise repeated
-    // adds (upload, then take more) blow past MAX_PHOTOS unbounded.
-    const room = MAX_PHOTOS - batches.length;
+    // The two owned modes are mutually exclusive: "Upload photo" = ONE photo we
+    // detect every piece in; "Snap several" = up to MAX_PHOTOS shots. Lock to
+    // whichever was used first this session (cleared by reset/empty).
+    if (owned && !inputMode) setInputMode(source);
+    const cap = owned && source === 'upload' ? 1 : MAX_PHOTOS;
+    const room = cap - batches.length;
     if (room <= 0) { setLimitNotice(true); return; }
     const accepted = incoming.slice(0, room);
     setLimitNotice(accepted.length < incoming.length);
@@ -151,6 +155,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       const copy = [...prev];
       const [removed] = copy.splice(idx, 1);
       if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      if (copy.length === 0) setInputMode(null); // empty → both modes unlocked
       return copy;
     });
     // Drop saved markers tied to this batch index — and shift later ones down.
@@ -291,16 +296,25 @@ export function AnalyzePhoto({ user, onSignIn }) {
     setSavedBatchIds(new Map());
     setError(null);
     setLimitNotice(false);
+    setInputMode(null);
   };
 
   // Burst capture (web modal) hands back several photos at once.
   const onBurstDone = (blobs) => {
     setCameraOpen(false);
-    if (blobs?.length) addFiles(blobs);
+    if (blobs?.length) addFiles(blobs, 'snap');
   };
 
   const pendingCount = batches.filter(b => b.status === 'pending').length;
   const anyDone = batches.some(b => b.status === 'done');
+  // Mutually-exclusive owned modes: upload = one photo (lock after it's staged
+  // or once snap is in use); snap = up to MAX_PHOTOS (lock once upload is used).
+  const uploadDisabled = owned
+    ? (inputMode === 'snap' || batches.length >= 1)
+    : batches.length >= MAX_PHOTOS;
+  const snapDisabled = owned
+    ? (inputMode === 'upload' || batches.length >= MAX_PHOTOS)
+    : batches.length >= MAX_PHOTOS;
 
   return (
     <div className="page analyze-photo">
@@ -345,45 +359,48 @@ export function AnalyzePhoto({ user, onSignIn }) {
           )}
 
           <div className="analyze-input-actions">
-            <button
-              type="button"
-              className="btn btn-primary analyze-input-btn"
-              onClick={() => fileRef.current?.click()}
-              disabled={batches.length >= MAX_PHOTOS}
-            >
-              <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              // Multi-select only in the owned bulk-add flow. Plain analyze
-              // reads ONE look at a time, so a single photo is all it needs.
-              multiple={owned}
-              className="hidden"
-              onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
-            />
-            <button
-              type="button"
-              className="btn btn-secondary analyze-input-btn"
-              disabled={batches.length >= MAX_PHOTOS}
-              onClick={async () => {
-                // Burst (multi-shot) belongs to the owned bulk-add flow only.
-                // The in-page getUserMedia modal works inside the iOS/Android
-                // WebView too (NSCameraUsageDescription is set). Plain analyze
-                // takes a single shot; fall back to the native single-shot
-                // picker when getUserMedia is unavailable.
-                if (owned && canBurst) { setCameraOpen(true); return; }
-                try {
-                  const blob = await CameraService.takePhoto();
-                  if (blob) addFiles([blob]);
-                } catch (err) {
-                  setError(err.message);
-                }
-              }}
-            >
-              <CameraIcon size={16} strokeWidth={1.6} /> {owned && canBurst ? t('burstCapture') : t('takePhoto')}
-            </button>
+            <div className="analyze-input-choice">
+              <button
+                type="button"
+                className="btn btn-primary analyze-input-btn"
+                disabled={uploadDisabled}
+                onClick={async () => {
+                  try {
+                    const blob = await CameraService.pickFromLibrary();
+                    if (blob) addFiles([blob], 'upload');
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+              >
+                <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
+              </button>
+              {owned && <span className="analyze-input-hint">{t('analyzeUploadHint')}</span>}
+            </div>
+            <div className="analyze-input-choice">
+              <button
+                type="button"
+                className="btn btn-secondary analyze-input-btn"
+                disabled={snapDisabled}
+                onClick={async () => {
+                  // Burst (multi-shot) belongs to the owned bulk-add flow only.
+                  // The in-page getUserMedia modal works inside the iOS/Android
+                  // WebView too (NSCameraUsageDescription is set). Plain analyze
+                  // takes a single shot; fall back to the native single-shot
+                  // picker when getUserMedia is unavailable.
+                  if (owned && canBurst) { setCameraOpen(true); return; }
+                  try {
+                    const blob = await CameraService.takePhoto();
+                    if (blob) addFiles([blob], 'snap');
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+              >
+                <CameraIcon size={16} strokeWidth={1.6} /> {owned && canBurst ? t('burstCapture') : t('takePhoto')}
+              </button>
+              {owned && canBurst && <span className="analyze-input-hint">{t('analyzeSnapHint')}</span>}
+            </div>
           </div>
 
           {batches.length > 0 && (

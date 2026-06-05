@@ -83,6 +83,8 @@ export const ko = {
   tryOnEmptyCloset: '옷장이 비어있어요. 입어볼 옷을 먼저 추가해 주세요.',
   tryOnMaxItems: '한 번에 최대 {max}개까지 입어볼 수 있어요.',
   analyzeMaxPhotos: '한 번에 최대 {max}장까지예요. 먼저 옷장에 추가한 뒤 더 진행해 주세요.',
+  analyzeUploadHint: '사진 한 장에서 모든 아이템을 찾아드려요',
+  analyzeSnapHint: '옷을 하나씩 연달아 찍으세요',
   cameraUnsupported: '이 브라우저는 카메라 접근을 지원하지 않아요.',
   cameraPermissionDenied: '카메라 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.',
   cameraMaxShots: '한 번에 최대 {max}장까지 찍을 수 있어요. 체크를 눌러 먼저 추가해 주세요.',

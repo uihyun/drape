@@ -39,7 +39,6 @@ export function ItemDetail({ user, onSignIn }) {
   const [listingOpen, setListingOpen] = useState(false);
   const [listingSaving, setListingSaving] = useState(false);
   const [saleDraft, setSaleDraft] = useState(null);
-  const changeInputRef = useRef(null);
   const stageRef = useRef(null);
 
   // While editing, the photo follows the scroll: as the form is pulled up
@@ -369,7 +368,7 @@ export function ItemDetail({ user, onSignIn }) {
             </button>
             {/* Change photo re-runs the crop/tag pipeline on its own
                 (onChangeProduct → reprocessItem), so no standalone Reprocess. */}
-            <button type="button" onClick={() => { setMenuOpen(false); changeInputRef.current?.click(); }}>
+            <button type="button" onClick={async () => { setMenuOpen(false); const f = await CameraService.pickFromLibrary(); if (f) onChangeProduct(f); }}>
               <ImageIcon size={14} strokeWidth={1.7} /> {t('changeProduct')}
             </button>
             <button type="button" onClick={() => { setMenuOpen(false); onSave(); }}>
@@ -399,13 +398,6 @@ export function ItemDetail({ user, onSignIn }) {
             <button type="button" className="danger" onClick={() => { setMenuOpen(false); remove(); }}>
               <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
-            <input
-              ref={changeInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={e => onChangeProduct(e.target.files?.[0])}
-            />
           </div>
         )}
       </aside>
