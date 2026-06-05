@@ -8,6 +8,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 
@@ -53,18 +54,40 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     itemsById,
   );
 
+  // Mine: live subscription window grows by 30 as the user scrolls.
+  const [mineLimit, setMineLimit] = useState(30);
   useEffect(() => {
     if (!user || user.isAnonymous) { setMine([]); return; }
-    return BoardService.subscribeMyBoards(setMine);
-  }, [user]);
+    return BoardService.subscribeMyBoards(setMine, { pageSize: mineLimit });
+  }, [user, mineLimit]);
 
+  // Saved: cursor pagination over bookmarks.
+  const [savedCursor, setSavedCursor] = useState(null);
+  const [savedHasMore, setSavedHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   useEffect(() => {
     if (!user || user.isAnonymous) { setSaved([]); return; }
     if (tab !== 'saved') return; // lazy — only fetch when the tab opens
-    BoardService.listBookmarkedBoards({ uid: user.uid, pageSize: 150 })
-      .then(setSaved)
-      .catch(() => setSaved([]));
+    let cancelled = false;
+    setSavedCursor(null); setSavedHasMore(false);
+    BoardService.listBookmarkedBoards({ uid: user.uid, pageSize: 30 })
+      .then(r => { if (cancelled) return; setSaved(r.boards); setSavedCursor(r.lastVisible); setSavedHasMore(r.hasMore); })
+      .catch(() => { if (!cancelled) setSaved([]); });
+    return () => { cancelled = true; };
   }, [user, tab]);
+
+  const mineHasMore = !!mine && mine.length >= mineLimit;
+  const hasMore = tab === 'saved' ? savedHasMore : mineHasMore;
+  const loadMore = () => {
+    if (tab !== 'saved') { setMineLimit(n => n + 30); return; }
+    if (loadingMore || !savedHasMore || !savedCursor) return;
+    setLoadingMore(true);
+    BoardService.listBookmarkedBoards({ uid: user.uid, pageSize: 30, cursor: savedCursor })
+      .then(r => { setSaved(prev => [...(prev || []), ...r.boards]); setSavedCursor(r.lastVisible); setSavedHasMore(r.hasMore); })
+      .catch(err => console.warn('boards loadMore failed:', err?.message))
+      .finally(() => setLoadingMore(false));
+  };
+  const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
   // Closet items power the mini-canvas thumbnails (each sticker references
   // an itemId, and the card preview needs the cropped image). Only used
@@ -173,6 +196,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           ))}
         </div>
       )}
+      {hasMore && <div ref={sentinelRef} className="feed-sentinel">{loadingMore && <div className="spinner" />}</div>}
 
       {sheetOpen && (
         <LookFilterSheet

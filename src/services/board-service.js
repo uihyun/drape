@@ -80,24 +80,27 @@ async function toggleBookmark(boardId, currentlyBookmarked) {
 /** All boards the user has bookmarked, newest-bookmark first. Same
  *  client-side filter+sort as listBookmarkedOotds — avoids needing a
  *  per-user subcollection composite index. */
-async function listBookmarkedBoards({ uid, pageSize = 30 } = {}) {
-  const snap = await getDocs(collection(db, 'users', uid, 'bookmarks'));
-  const rows = snap.docs
+async function listBookmarkedBoards({ uid, pageSize = 30, cursor = null } = {}) {
+  // Paginate bookmarks by createdAt (cursor = last bookmark doc), hydrate the
+  // board docs for this page. hasMore = raw page full (keep loading even if a
+  // page is mostly OOTD bookmarks).
+  let q = query(collection(db, 'users', uid, 'bookmarks'), orderBy('createdAt', 'desc'), limit(pageSize));
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  const ids = snap.docs
     .map(d => ({ id: d.id, ...d.data() }))
-    .filter(r => r.type === 'board');
-  rows.sort((a, b) => {
-    const at = a.createdAt?.toMillis?.() ?? 0;
-    const bt = b.createdAt?.toMillis?.() ?? 0;
-    return bt - at;
-  });
-  const ids = rows.slice(0, pageSize).map(r => r.boardId || r.id).filter(Boolean);
-  if (!ids.length) return [];
+    .filter(r => r.type === 'board')
+    .map(r => r.boardId || r.id).filter(Boolean);
   const hydrated = await Promise.all(
     ids.map(id => getDoc(doc(db, BOARDS, id))
       .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
       .catch(() => null))
   );
-  return hydrated.filter(Boolean);
+  return {
+    boards: hydrated.filter(Boolean),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** This user's public boards — used by PublicProfile's Boards tab.

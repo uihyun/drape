@@ -376,39 +376,47 @@ async function toggleBookmark(outfitId, currentlyBookmarked) {
   }
 }
 
-async function listBookmarkedOotds({ uid, pageSize = 60 } = {}) {
-  const snap = await getDocs(collection(db, 'users', uid, 'bookmarks'));
-  const rows = snap.docs
+async function listBookmarkedOotds({ uid, pageSize = 60, cursor = null } = {}) {
+  // Paginate the bookmarks subcollection by createdAt (cursor = last bookmark
+  // doc), then hydrate the OOTD docs for this page. `hasMore` is the raw page
+  // being full, so the caller keeps loading even if a page is mostly boards.
+  let q = query(collection(db, 'users', uid, 'bookmarks'), orderBy('createdAt', 'desc'), limit(pageSize));
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  const ids = snap.docs
     .map(d => ({ id: d.id, ...d.data() }))
-    .filter(r => (r.type || 'ootd') === 'ootd');
-  rows.sort((a, b) =>
-    (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-  const ids = rows.slice(0, pageSize).map(r => r.ootdId || r.id).filter(Boolean);
-  if (!ids.length) return { ootds: [] };
+    .filter(r => (r.type || 'ootd') === 'ootd')
+    .map(r => r.ootdId || r.id).filter(Boolean);
   const hydrated = await Promise.all(
     ids.map(id => getDoc(doc(db, OUTFITS, id))
       .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
       .catch(() => null)));
-  return { ootds: hydrated.filter(Boolean) };
+  return {
+    ootds: hydrated.filter(Boolean),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** All the user's dated outfits (OOTDs), newest date first. */
-async function listMyOotds({ uid, pageSize = 60 } = {}) {
-  // Order by createdAt desc (index: userId ASC, createdAt DESC) so the
-  // newest outfits are in the fetched window — a just-made OOTD must be
-  // here. Without an order the limit returned an arbitrary doc-ID slice,
-  // so a new OOTD could fall outside it (showed in Calendar's range query
-  // but not here). Fetch a bit wide, then keep the dated ones (= OOTDs).
-  const snap = await getDocs(query(
+async function listMyOotds({ uid, pageSize = 60, cursor = null } = {}) {
+  // Order by createdAt desc (index: userId ASC, createdAt DESC) and keep the
+  // dated docs (= OOTDs) client-side. `lastVisible` is the last RAW doc so the
+  // next page continues from there (cursor-clean, no new index, no over-fetch).
+  let q = query(
     collection(db, OUTFITS),
     where('userId', '==', uid),
     orderBy('createdAt', 'desc'),
-    limit(pageSize * 3),
-  ));
-  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-    .filter(o => !!o.date);
-  ootds.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  return { ootds: ootds.slice(0, pageSize) };
+    limit(pageSize),
+  );
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  const ootds = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(o => !!o.date);
+  return {
+    ootds,
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** Public dated outfits by a user (PublicProfile). */

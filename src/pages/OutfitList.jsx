@@ -8,6 +8,7 @@ import {
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
 import { Masonry } from '../components/Masonry.jsx';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { olCache, olKey } from '../services/uiCache.js';
@@ -71,37 +72,59 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
     });
   };
 
-  // Each tab populates a different source:
-  //   mine     → OutfitService.listMyOotds
-  //   saved    → OutfitService.listBookmarkedOotds (feed bookmarks)
-  //   analyzed → OutfitService.listMyOutfits (kind='analyzed')
+  // Each tab populates a different source. Mine (OOTDs) + Analyzed paginate via
+  // cursor (your own content can grow unbounded); Saved reads all bookmarks in
+  // one go (bookmarks are naturally bounded).
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const setActiveList = tab === 'analyzed' ? setOutfits : setOotds;
+
+  const fetchPage = (cur) => {
+    if (tab === 'mine') {
+      return OutfitService.listMyOotds({ uid: user.uid, pageSize: 60, cursor: cur })
+        .then(r => ({ items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore }));
+    }
+    if (tab === 'analyzed') {
+      return OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed', pageSize: 60, cursor: cur })
+        .then(r => ({ items: r.outfits, cursor: r.lastVisible, hasMore: r.hasMore }));
+    }
+    return OutfitService.listBookmarkedOotds({ uid: user.uid, pageSize: 60, cursor: cur })
+      .then(r => ({ items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore }));
+  };
+
   useEffect(() => {
     if (!user || user.isAnonymous) { setOutfits([]); setOotds([]); return; }
     const key = olKey(user.uid, tab);
     const cached = olCache.get(key);
+    setActiveList(cached ?? null);
+    setCursor(null); setHasMore(false);
     let cancelled = false;
-    const apply = (setter, rows) => { if (cancelled) return; olCache.set(key, rows); setter(rows); };
-    if (tab === 'mine') {
-      setOotds(cached ?? null); // keep cached list visible; spinner only if none
-      OutfitService.listMyOotds({ uid: user.uid, pageSize: 150 })
-        .then(({ ootds }) => apply(setOotds, ootds))
-        .catch(() => { if (!cancelled && !cached) setOotds([]); });
-    } else if (tab === 'saved') {
-      setOotds(cached ?? null);
-      OutfitService.listBookmarkedOotds({ uid: user.uid, pageSize: 150 })
-        .then(({ ootds }) => apply(setOotds, ootds))
-        .catch((err) => {
-          console.warn('saved bookmarks query failed:', err?.code, err?.message);
-          if (!cancelled && !cached) setOotds([]);
-        });
-    } else {
-      setOutfits(cached ?? null);
-      OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed', pageSize: 150 })
-        .then(({ outfits }) => apply(setOutfits, outfits))
-        .catch(() => { if (!cancelled && !cached) setOutfits([]); });
-    }
+    fetchPage(null).then(res => {
+      if (cancelled) return;
+      olCache.set(key, res.items);
+      setActiveList(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
+    }).catch((err) => {
+      console.warn('outfit list query failed:', err?.code, err?.message);
+      if (!cancelled && !cached) setActiveList([]);
+    });
     return () => { cancelled = true; };
-  }, [user, tab]);
+  }, [user, tab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore || !cursor) return;
+    setLoadingMore(true);
+    fetchPage(cursor).then(res => {
+      setActiveList(prev => {
+        const merged = [...(prev || []), ...res.items];
+        olCache.set(olKey(user.uid, tab), merged);
+        return merged;
+      });
+      setCursor(res.cursor); setHasMore(res.hasMore);
+    }).catch(err => console.warn('outfit loadMore failed:', err?.message))
+      .finally(() => setLoadingMore(false));
+  };
+  const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
   if (!user || user.isAnonymous) {
     return (
@@ -185,6 +208,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       ) : (
         <OotdGrid ootds={activeList} t={t} showPrivacy={tab === 'mine'} />
       )}
+      {hasMore && <div ref={sentinelRef} className="feed-sentinel">{loadingMore && <div className="spinner" />}</div>}
 
       {sheetOpen && (
         <LookFilterSheet
