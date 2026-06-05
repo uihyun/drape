@@ -6,7 +6,7 @@
 
 import {
   collection, doc, addDoc, getDoc, getDocs, deleteDoc,
-  query, where, orderBy, limit, onSnapshot, setDoc, updateDoc, serverTimestamp,
+  query, where, orderBy, limit, startAfter, onSnapshot, setDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase.js';
 
@@ -116,31 +116,43 @@ async function listPublicBoardsByUser({ uid, pageSize = 30 } = {}) {
 /** Public board feed — every board with isPublic=true, newest first.
  *  Owner-agnostic, so the caller hydrates author profiles separately
  *  (same pattern as listPublicFeed for OOTDs). */
-async function listPublicBoards({ pageSize = 24, sortBy = 'latest' } = {}) {
+async function listPublicBoards({ pageSize = 24, sortBy = 'latest', cursor = null } = {}) {
   const orderField = sortBy === 'popular' ? 'likeCount' : 'updatedAt';
-  const snap = await getDocs(query(
+  let q = query(
     collection(db, BOARDS),
     where('isPublic', '==', true),
     orderBy(orderField, 'desc'),
     limit(pageSize),
-  ));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  );
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  return {
+    boards: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** Following feed — public boards from the given set of authors,
  *  newest first. Mirrors OutfitService.listFollowingFeed. Firestore `in`
  *  caps at 30. */
-async function listFollowingBoards({ followingIds, pageSize = 24 } = {}) {
-  if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
+async function listFollowingBoards({ followingIds, pageSize = 24, cursor = null } = {}) {
+  if (!Array.isArray(followingIds) || followingIds.length === 0) return { boards: [], lastVisible: null, hasMore: false };
   const ids = followingIds.slice(0, 30);
-  const snap = await getDocs(query(
+  let q = query(
     collection(db, BOARDS),
     where('isPublic', '==', true),
     where('userId', 'in', ids),
     orderBy('updatedAt', 'desc'),
     limit(pageSize),
-  ));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  );
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  return {
+    boards: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** Like / unlike a public board. Mirrors OutfitService.toggleLike. */

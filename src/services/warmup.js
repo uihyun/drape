@@ -49,7 +49,7 @@ export async function warmUp(user) {
       FollowService.getFollowingIds(uid, { max: FOLLOWING_FEED_LIMIT })
         .then(ids => (ids?.length
           ? OutfitService.listFollowingFeed({ followingIds: ids, pageSize: 24 })
-            .then(rows => feedCache.set(feedKey('ootds', 'latest', 'following'), rows))
+            .then(r => feedCache.set(feedKey('ootds', 'latest', 'following'), r.ootds))
           : null))
         .catch(() => {}),
     );

@@ -345,17 +345,23 @@ async function listPublicFeed({ pageSize = 24, cursor = null, sortBy = 'latest' 
   };
 }
 
-async function listFollowingFeed({ followingIds, pageSize = 24 } = {}) {
-  if (!Array.isArray(followingIds) || followingIds.length === 0) return [];
+async function listFollowingFeed({ followingIds, pageSize = 24, cursor = null } = {}) {
+  if (!Array.isArray(followingIds) || followingIds.length === 0) return { ootds: [], lastVisible: null, hasMore: false };
   const ids = followingIds.slice(0, 30);
-  const snap = await getDocs(query(
+  let q = query(
     collection(db, OUTFITS),
     where('isPublic', '==', true),
     where('userId', 'in', ids),
     orderBy('date', 'desc'),
     limit(pageSize),
-  ));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  );
+  if (cursor) q = query(q, startAfter(cursor));
+  const snap = await getDocs(q);
+  return {
+    ootds: snap.docs.map(d => ({ id: d.id, ...d.data() })),
+    lastVisible: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
 }
 
 /** Bookmark / unbookmark — stored under /users/{uid}/bookmarks/{outfitId}. */

@@ -5902,6 +5902,7 @@ input[type="search"]::-webkit-search-decoration {
    ordering would need JS, but this delivers the gap-free look. */
 /* Index-based 2-column masonry (see Masonry.jsx) — replaces CSS multi-column,
    which reflowed/rebalanced as image heights loaded. */
+.feed-sentinel { display: flex; justify-content: center; padding: 1.5rem 0 2.5rem; min-height: 1px; }
 .masonry { display: flex; align-items: flex-start; gap: 0.6rem; margin-top: 1rem; }
 .masonry-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 /* BoardList keeps a CSS-multi-column pinch grid (variable 1–3 cols), so its

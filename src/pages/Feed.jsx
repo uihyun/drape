@@ -11,7 +11,13 @@ import { CardImage } from '../components/CardImage.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { feedCache, feedKey as cacheKey } from '../services/uiCache.js';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+
+// Returning to the feed within this window restores your scrolled-down list
+// (items + cursor) so you don't lose your place; after it, the feed resets to
+// a fresh first page (so memory doesn't grow unbounded across the session).
+const FEED_TTL_MS = 5 * 60 * 1000;
 
 // Feed pages are cached in services/uiCache (shared with the splash warm-up),
 // keyed by kind|sort|scope. The Feed component unmounts when you open a detail
@@ -36,13 +42,19 @@ export function Feed({ user, onSignIn }) {
   const scope = searchParams.get('scope') === 'following' ? 'following' : 'forYou';
   const setScope = (s) => setParam('scope', s);
   // Seed from cache for the current view so back-navigation paints
-  // immediately (no spinner) — the effects below still refresh in place.
+  // immediately (no spinner) — the effect below still refreshes in place.
+  // Cache holds { items, cursor, hasMore, ts } (or a bare array from warm-up).
   const seeded = feedCache.get(cacheKey(kind, sort, scope));
-  const [ootds, setOotds] = useState(kind === 'ootds' ? (seeded ?? null) : null);
-  const [boards, setBoards] = useState(kind === 'boards' ? (seeded ?? null) : null);
-  const [listings, setListings] = useState(kind === 'market' ? (seeded ?? null) : null);
+  const seededItems = seeded ? (Array.isArray(seeded) ? seeded : seeded.items) : null;
+  const [ootds, setOotds] = useState(kind === 'ootds' ? seededItems : null);
+  const [boards, setBoards] = useState(kind === 'boards' ? seededItems : null);
+  const [listings, setListings] = useState(kind === 'market' ? seededItems : null);
   // null = not yet loaded, [] = signed in but follows nobody.
   const [followingIds, setFollowingIds] = useState(null);
+  // Pagination for the active kind (only one kind is visible at a time).
+  const [cursor, setCursor] = useState(() => (seeded && !Array.isArray(seeded) ? seeded.cursor : null));
+  const [hasMore, setHasMore] = useState(() => (seeded && !Array.isArray(seeded) ? !!seeded.hasMore : false));
+  const [loadingMore, setLoadingMore] = useState(false);
   const isFollowingScope = scope === 'following';
   const isLoggedIn = user && !user.isAnonymous;
 
@@ -59,65 +71,68 @@ export function Feed({ user, onSignIn }) {
     return () => { cancelled = true; };
   }, [user?.uid, isFollowingScope, isLoggedIn]);
 
-  useEffect(() => {
-    if (kind !== 'ootds') return;
-    const key = cacheKey(kind, sort, scope);
-    const cached = feedCache.get(key);
-    setOotds(cached ?? null); // keep showing cached results; spinner only if none
-    let cancelled = false;
-    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setOotds(rows); };
-    if (isFollowingScope) {
-      if (followingIds === null) return; // wait for ids
-      OutfitService.listFollowingFeed({ followingIds, pageSize: 24 })
-        .then(apply)
-        .catch(err => { console.warn('following ootd query failed:', err?.code, err?.message); if (!cancelled && !cached) setOotds([]); });
-      return () => { cancelled = true; };
-    }
-    OutfitService.listPublicFeed({ pageSize: 24, sortBy: sort })
-      .then(({ ootds }) => apply(ootds))
-      .catch((err) => { console.warn('ootd feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setOotds([]); });
-    return () => { cancelled = true; };
-  }, [sort, kind, scope, isFollowingScope, followingIds]);
+  const setActive = kind === 'market' ? setListings : kind === 'boards' ? setBoards : setOotds;
 
-  useEffect(() => {
-    if (kind !== 'boards') return;
-    const key = cacheKey(kind, sort, scope);
-    const cached = feedCache.get(key);
-    setBoards(cached ?? null);
-    let cancelled = false;
-    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setBoards(rows); };
-    if (isFollowingScope) {
-      if (followingIds === null) return;
-      BoardService.listFollowingBoards({ followingIds, pageSize: 24 })
-        .then(apply)
-        .catch(err => { console.warn('following boards query failed:', err?.code, err?.message); if (!cancelled && !cached) setBoards([]); });
-      return () => { cancelled = true; };
+  // One paginated fetcher for whatever (kind, scope, sort) is active. Returns
+  // a normalized { items, cursor, hasMore } regardless of the underlying call.
+  const fetchPage = (cur) => {
+    if (kind === 'ootds') {
+      return isFollowingScope
+        ? OutfitService.listFollowingFeed({ followingIds, pageSize: 24, cursor: cur }).then(r => ({ items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore }))
+        : OutfitService.listPublicFeed({ pageSize: 24, sortBy: sort, cursor: cur }).then(r => ({ items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore }));
     }
-    BoardService.listPublicBoards({ pageSize: 24, sortBy: sort })
-      .then(apply)
-      .catch((err) => { console.warn('boards feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setBoards([]); });
-    return () => { cancelled = true; };
-  }, [kind, sort, scope, isFollowingScope, followingIds]);
+    if (kind === 'boards') {
+      return isFollowingScope
+        ? BoardService.listFollowingBoards({ followingIds, pageSize: 24, cursor: cur }).then(r => ({ items: r.boards, cursor: r.lastVisible, hasMore: r.hasMore }))
+        : BoardService.listPublicBoards({ pageSize: 24, sortBy: sort, cursor: cur }).then(r => ({ items: r.boards, cursor: r.lastVisible, hasMore: r.hasMore }));
+    }
+    return isFollowingScope
+      ? MarketplaceService.listBySellers({ sellerIds: followingIds, pageSize: 30 }).then(rows => ({ items: rows, cursor: null, hasMore: false }))
+      : MarketplaceService.listRecent({ pageSize: 30, lastDoc: cur }).then(r => ({ items: r.listings, cursor: r.lastVisible, hasMore: r.hasMore }));
+  };
 
+  // Initial load (and refresh) for the active view.
   useEffect(() => {
-    if (kind !== 'market') return;
+    if (isFollowingScope && followingIds === null) return; // wait for follow ids
     const key = cacheKey(kind, sort, scope);
     const cached = feedCache.get(key);
-    setListings(cached ?? null);
-    let cancelled = false;
-    const apply = (rows) => { if (cancelled) return; feedCache.set(key, rows); setListings(rows); };
-    if (isFollowingScope) {
-      if (followingIds === null) return; // wait for ids
-      MarketplaceService.listBySellers({ sellerIds: followingIds, pageSize: 30 })
-        .then(apply)
-        .catch(err => { console.warn('market following query failed:', err?.code, err?.message); if (!cancelled && !cached) setListings([]); });
-      return () => { cancelled = true; };
+    // Within the TTL, restore the whole scrolled-down list + cursor — don't
+    // refetch, so the user keeps their place.
+    if (cached && !Array.isArray(cached) && cached.ts && Date.now() - cached.ts < FEED_TTL_MS) {
+      setActive(cached.items); setCursor(cached.cursor); setHasMore(!!cached.hasMore);
+      return;
     }
-    MarketplaceService.listRecent({ pageSize: 30 })
-      .then(res => apply(res.listings))
-      .catch(err => { console.warn('market feed query failed:', err?.code, err?.message); if (!cancelled && !cached) setListings([]); });
+    // Otherwise paint any stale cache, then refetch a fresh first page.
+    setActive(cached ? (Array.isArray(cached) ? cached : cached.items) : null);
+    setCursor(null); setHasMore(false);
+    let cancelled = false;
+    fetchPage(null).then(res => {
+      if (cancelled) return;
+      setActive(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
+      feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
+    }).catch(err => {
+      console.warn('feed load failed:', err?.code, err?.message);
+      if (!cancelled && !cached) setActive([]);
+    });
     return () => { cancelled = true; };
-  }, [kind, sort, scope, isFollowingScope, followingIds]);
+  }, [kind, sort, scope, isFollowingScope, followingIds]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore || !cursor) return;
+    setLoadingMore(true);
+    const key = cacheKey(kind, sort, scope);
+    fetchPage(cursor).then(res => {
+      setActive(prev => {
+        const merged = [...(prev || []), ...res.items];
+        feedCache.set(key, { items: merged, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
+        return merged;
+      });
+      setCursor(res.cursor); setHasMore(res.hasMore);
+    }).catch(err => console.warn('feed loadMore failed:', err?.message))
+      .finally(() => setLoadingMore(false));
+  };
+
+  const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
@@ -212,14 +227,23 @@ export function Feed({ user, onSignIn }) {
           onSignIn={onSignIn}
           onSwitchScope={() => setScope('forYou')}
         />
-      ) : showingMarket ? (
-        <div className="marketplace-grid feed-market-grid">
-          {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
-        </div>
-      ) : showingBoards ? (
-        <Masonry items={boards}>{b => <BoardCard board={b} />}</Masonry>
       ) : (
-        <Masonry items={ootds}>{o => <OotdCard ootd={o} />}</Masonry>
+        <>
+          {showingMarket ? (
+            <div className="marketplace-grid feed-market-grid">
+              {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
+            </div>
+          ) : showingBoards ? (
+            <Masonry items={boards}>{b => <BoardCard board={b} />}</Masonry>
+          ) : (
+            <Masonry items={ootds}>{o => <OotdCard ootd={o} />}</Masonry>
+          )}
+          {hasMore && (
+            <div ref={sentinelRef} className="feed-sentinel">
+              {loadingMore && <div className="spinner" />}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
