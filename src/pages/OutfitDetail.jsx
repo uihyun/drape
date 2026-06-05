@@ -18,7 +18,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // editorial title, then the palette / style / notes blocks. Each
 // editorial block renders only when its data is present — outfits created
 // before the auto-analysis pipeline lands still render fine, just sparser.
-const NOTES_MAX_LEN = 280;
+const NOTES_MAX_LEN = 200;
 export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
@@ -361,7 +361,7 @@ export function OutfitDetail({ user, onSignIn }) {
         <section className="outfit-notes">
           <header><h2>{t('notesOnComposition')}</h2></header>
           <p className={notesExpanded ? '' : 'is-clamped'}>{notes}</p>
-          {notes.length > 110 && (
+          {notes.length > 70 && (
             <button type="button" className="notes-more" onClick={() => setNotesExpanded(v => !v)}>
               {notesExpanded ? t('showLess') : t('showMore')}
             </button>

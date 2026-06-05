@@ -5520,14 +5520,14 @@ input[type="search"]::-webkit-search-decoration {
   margin-bottom: 0.5rem;
 }
 .outfit-notes p {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
-/* Collapsed long note — clamp to ~4 lines, "Show more" reveals the rest. */
+/* Collapsed long note — clamp to 2 lines, "Show more" reveals the rest. */
 .outfit-notes p.is-clamped {
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
