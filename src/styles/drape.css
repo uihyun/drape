@@ -5403,13 +5403,13 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-muted);
 }
 .outfit-title {
-  font-size: 1.25rem;
+  /* Same size as the style-note body, but a different colour (secondary vs the
+     note's primary) so the title and the editorial note read as distinct. */
+  font-size: 0.95rem;
   font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  color: var(--text-primary);
-  margin-bottom: 1.4rem;
-  /* Keep a runaway title from ballooning the header — wrap, don't overflow. */
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 1.1rem;
   overflow-wrap: anywhere;
 }
 

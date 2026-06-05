@@ -234,9 +234,10 @@ function PublicOutfitsGrid({ ootds, t }) {
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
-            {(o.note || o.name) && (
+            {/* OOTD memo only — built/analyzed outfits keep a clean cover. */}
+            {o.date && o.note && (
               <div className="ootd-card-overlay">
-                <h3 className="ootd-card-title">{o.note || o.name}</h3>
+                <h3 className="ootd-card-title">{o.note}</h3>
               </div>
             )}
           </Link>
