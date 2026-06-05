@@ -138,7 +138,10 @@ export const MessageService = {
       text: trimmed,
       createdAt: serverTimestamp(),
     });
-    await bumpThread(threadId, user.uid, { text: trimmed, fromUid: user.uid, createdAt: serverTimestamp() });
+    // Explicit type so a later text message overwrites a prior image's
+    // lastMessage.type (setDoc merge deep-merges maps — without this, an old
+    // type:'image' would stick and the inbox would show "Photo" forever).
+    await bumpThread(threadId, user.uid, { type: 'text', text: trimmed, fromUid: user.uid, createdAt: serverTimestamp() });
   },
 
   // Photo message. The blob is recompressed client-side before upload so

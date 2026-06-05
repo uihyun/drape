@@ -57,11 +57,24 @@ async function authedFetch(url, body) {
   return response.json();
 }
 
+// Module-level cache of resolved profiles (uid → profile). Lets repeat reads
+// (re-opening a thread, the inbox, a byline) paint the avatar/name instantly
+// instead of flashing empty → loaded on every mount.
+const profileCache = new Map();
+
 export const ProfileService = {
+  // Synchronous peek — returns the cached profile or null. Use to seed initial
+  // state so the UI never flashes "Unknown" when we already know the user.
+  getCached(uid) {
+    return uid ? (profileCache.get(uid) || null) : null;
+  },
+
   async getByUid(uid) {
     if (!uid) return null;
     const snap = await getDoc(doc(db, 'profiles', uid));
-    return snap.exists() ? { uid: snap.id, ...snap.data() } : null;
+    const prof = snap.exists() ? { uid: snap.id, ...snap.data() } : null;
+    if (prof) profileCache.set(uid, prof);
+    return prof;
   },
 
   // Resolve a handle (case-insensitive) to a profile. Two reads — handle

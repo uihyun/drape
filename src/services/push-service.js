@@ -50,48 +50,51 @@ export const PushService = {
     const user = auth.currentUser;
     if (!user || user.isAnonymous) return;
 
-    let PushNotifications;
+    // Use @capacitor-firebase/messaging, NOT @capacitor/push-notifications:
+    // on iOS the latter hands back the raw APNs device token, but our server
+    // sends via FCM (admin.messaging) which needs the FCM registration token.
+    // FirebaseMessaging.getToken() returns the FCM token (it owns the APNs↔FCM
+    // exchange internally).
+    let FirebaseMessaging;
     try {
-      ({ PushNotifications } = await import('@capacitor/push-notifications'));
+      ({ FirebaseMessaging } = await import('@capacitor-firebase/messaging'));
     } catch (err) {
-      console.warn('push-notifications import failed:', err.message);
+      console.warn('firebase-messaging import failed:', err.message);
       return;
     }
 
     if (!registered) {
       registered = true;
-      const perm = await PushNotifications.checkPermissions();
+      const perm = await FirebaseMessaging.checkPermissions();
       if (perm.receive !== 'granted') {
-        const req = await PushNotifications.requestPermissions();
+        const req = await FirebaseMessaging.requestPermissions();
         if (req.receive !== 'granted') {
           console.info('push permission denied');
+          registered = false; // let a later launch retry once enabled
           return;
         }
       }
 
-      PushNotifications.addListener('registration', async (token) => {
+      // Token refresh (reinstall / APNs re-issue) → re-persist.
+      FirebaseMessaging.addListener('tokenReceived', async (event) => {
         const u = auth.currentUser;
-        if (!u || u.isAnonymous) return;
-        await persistToken(u.uid, token.value, Capacitor.getPlatform());
+        if (!u || u.isAnonymous || !event?.token) return;
+        await persistToken(u.uid, event.token, Capacitor.getPlatform());
       });
 
-      PushNotifications.addListener('registrationError', (err) => {
-        console.warn('push registration error:', err);
-      });
-
-      // Foreground notification — Firestore listeners already surface
-      // the new message in-app, so this is just a no-op hook left for
-      // future custom handling (e.g. flashing the inbox icon).
-      PushNotifications.addListener('pushNotificationReceived', () => {});
-
-      // Tapping a notification in the tray. Payload from the Cloud
-      // Function includes `threadId` — deep-link straight to the chat.
-      PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        const threadId = action?.notification?.data?.threadId;
+      // Tapping a notification in the tray → deep-link straight to the chat.
+      FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+        const threadId = event?.notification?.data?.threadId;
         if (threadId) window.location.assign(`/messages/${threadId}`);
       });
 
-      await PushNotifications.register();
+      // Fetch + persist the current FCM token now.
+      try {
+        const { token } = await FirebaseMessaging.getToken();
+        if (token) await persistToken(user.uid, token, Capacitor.getPlatform());
+      } catch (err) {
+        console.warn('FCM getToken failed:', err.message);
+      }
     } else if (cachedToken) {
       // Auth changed (user switched accounts) — re-bind cached token to the new uid.
       await persistToken(user.uid, cachedToken, Capacitor.getPlatform());

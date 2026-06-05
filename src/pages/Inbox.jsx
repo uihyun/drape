@@ -48,7 +48,8 @@ export function Inbox({ user }) {
       <ul className="inbox-list">
         {threads.map(th => {
           const otherUid = th.participants.find(p => p !== user.uid);
-          const author = authors.get(otherUid);
+          // Cache fallback so a row never flashes "Unknown" on re-entry.
+          const author = authors.get(otherUid) || ProfileService.getCached(otherUid);
           const isPhoto = th.lastMessage?.type === 'image';
           const fromMe = th.lastMessage?.fromUid === user.uid;
           const unread = th.unreadFor?.[user.uid] || 0;

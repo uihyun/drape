@@ -84,7 +84,11 @@ export function Thread({ user }) {
     if (!thread || !user) return;
     const otherUid = thread.participants.find(p => p !== user.uid);
     if (!otherUid) return;
-    ProfileService.getByUid(otherUid).then(setOther).catch(() => setOther(null));
+    // Paint from cache synchronously (no flash to "Unknown" on re-entry),
+    // then refresh in the background.
+    const cached = ProfileService.getCached(otherUid);
+    if (cached) setOther(cached);
+    ProfileService.getByUid(otherUid).then(p => p && setOther(p)).catch(() => {});
   }, [thread, user?.uid]);
 
   // Stick to the bottom whenever messages change — chat UX expectation.
