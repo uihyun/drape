@@ -180,7 +180,9 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   useEffect(() => {
     if (!authReady) return;
     const pending = PushService.consumePendingThread();
-    if (pending) navigate(`/messages/${pending}`);
+    // Cold start: replace the boot route so there's no stray history entry —
+    // the thread's back button then correctly falls back to the inbox.
+    if (pending) navigate(`/messages/${pending}`, { replace: true });
   }, [authReady, navigate]);
 
   // Reset scroll to the top on every route change. React Router keeps the
