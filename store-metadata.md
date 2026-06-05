@@ -110,12 +110,13 @@ These are the archive/build gotchas archelier (../voda) hit; for drape they're a
    setup was previously flagged outstanding. **On a real device, complete a full Apple sign-in →
    land in the app** before submitting. (Firebase Apple provider enabled + key; native iOS uses
    the device Apple ID.) A broken reviewer login = rejection.
-2. **Push notifications** — `PushService` requests permission + registers, but the iOS **Push
-   Notifications capability / `aps-environment` entitlement is NOT set**, and no APNs key is wired.
-   So push is non-functional on iOS today. For v1 either (a) add the Push Notifications capability
-   in Xcode + enable Push on the App ID + upload an APNs auth key to Firebase, or (b) ship without
-   push (the in-app Firestore badge already covers it) — just confirm the permission prompt doesn't
-   misfire. Not a review blocker either way.
+2. **Push notifications** — ✅ WIRED (2026-06-05). `aps-environment` entitlement added to
+   `App.entitlements`; APNs **auth key** `L2JVATZ6W2` (team `WG75TG59NJ`, Sandbox & Production)
+   uploaded to Firebase → Cloud Messaging → Apple app config (covers dev + prod). `PushService`
+   registers tokens to `users/{uid}/fcmTokens`; `onMessageCreated` fans out push for text + image
+   DMs. The `.p8` lives OUTSIDE the repo (`~/Desktop/idea/drape/keys/apple_push/`) — back it up,
+   Apple won't re-issue. Remaining: rebuild in Xcode (Automatic signing provisions Push on the App
+   ID) + test on a REAL device (sim can't receive push).
 3. **App Review 메모** — paste the block above into ASC → App Review Information → Notes (it was
    empty in the screenshot). This is the #1 thing reviewers read.
 4. **Cold-start with a brand-new account** — no crash, empty feed/marketplace shows a placeholder
