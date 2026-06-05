@@ -112,7 +112,10 @@ exports.onMessageCreated = onDocumentCreated(
         for (const uid of recipients) {
             // Suppress when recipient is actively in the room — Thread.jsx
             // flips activeIn[uid] true on mount, false on unmount/hide.
-            if (thread.activeIn && thread.activeIn[uid] === true) continue;
+            if (thread.activeIn && thread.activeIn[uid] === true) {
+                console.log(`onMessageCreated: ${uid} is active in ${threadId}, skipping push`);
+                continue;
+            }
 
             let tokens;
             try {
@@ -123,7 +126,11 @@ exports.onMessageCreated = onDocumentCreated(
                 console.warn('fcmTokens read failed for', uid, err.message);
                 continue;
             }
-            if (!tokens.length) continue;
+            if (!tokens.length) {
+                console.log(`onMessageCreated: no fcmTokens for ${uid} — device hasn't registered for push`);
+                continue;
+            }
+            console.log(`onMessageCreated: sending to ${uid} (${tokens.length} token(s))`);
 
             try {
                 const res = await admin.messaging().sendEachForMulticast({
@@ -149,6 +156,7 @@ exports.onMessageCreated = onDocumentCreated(
                         notification: { tag: threadId },
                     },
                 });
+                console.log(`onMessageCreated: ${uid} delivered ${res.successCount}/${tokens.length}`);
                 await pruneInvalidTokens(uid, tokens, res.responses);
             } catch (err) {
                 console.warn('sendEachForMulticast failed for', uid, err.message);
