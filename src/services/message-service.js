@@ -57,23 +57,17 @@ async function bumpThread(threadId, uid, lastMessage) {
 }
 
 export const MessageService = {
-  // Open (or create) a thread between the current user and a seller for
-  // a specific item. Returns the threadId. Idempotent via deterministic id.
-  //
-  // We deliberately skip the existence check here — getDoc on a missing
-  // thread denies under the participants-only read rule (rule evaluates
-  // resource.data on null). setDoc with merge:true handles both cases:
-  // first call hits the CREATE rule, repeat calls hit UPDATE (which only
-  // requires participants + itemId to stay the same — they always do
-  // because the threadId encodes both). lastMessage is omitted so the
-  // preview from sendMessage isn't clobbered on reopen.
-  async openThread({ sellerUid, item }) {
+  // Prepare a thread WITHOUT writing anything. Returns the deterministic
+  // threadId + a `draft` of the thread doc the UI can render from. The thread
+  // is only persisted on the FIRST message (ensureThread, below) — so a buyer
+  // who taps "Contact seller" and leaves without typing never creates an empty
+  // room that clutters both inboxes.
+  prepareThread({ sellerUid, item }) {
     const user = auth.currentUser;
     if (!user || user.isAnonymous) throw new Error('AUTH_REQUIRED');
     if (user.uid === sellerUid) throw new Error('CANNOT_DM_SELF');
     const id = threadIdFor(user.uid, sellerUid, item.id);
-    const ref = doc(db, THREADS, id);
-    await setDoc(ref, {
+    const draft = {
       participants: [user.uid, sellerUid].sort(),
       itemId: item.id,
       itemName: item.name || '',
@@ -82,9 +76,19 @@ export const MessageService = {
       currency: item.currency || 'KRW',
       sellerUid,
       buyerUid: user.uid,
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-    return id;
+    };
+    return { id, draft };
+  },
+
+  // Create the thread doc from a draft if it isn't there yet. Idempotent
+  // (setDoc merge); called once, right before the first message is sent.
+  async ensureThread(threadId, draft) {
+    if (!draft) throw new Error('NO_DRAFT');
+    await setDoc(
+      doc(db, THREADS, threadId),
+      { ...draft, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
   },
 
   // Live list of the current user's threads, newest activity first.

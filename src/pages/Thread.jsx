@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Send, ImagePlus, X } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -15,7 +15,14 @@ export function Thread({ user }) {
   const { t, lang } = useLocale();
   const { threadId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Thread metadata carried from "Contact seller" before the room exists.
+  const seed = location.state?.draft || null;
   const [thread, setThread] = useState(undefined);
+  // Whether the thread doc actually exists in Firestore yet. In draft mode
+  // (buyer opened but hasn't sent) it's false — we render from `seed` and
+  // create the room on the first message.
+  const [created, setCreated] = useState(undefined);
   const [messages, setMessages] = useState([]);
   const [other, setOther] = useState(null);
   const [draft, setDraft] = useState('');
@@ -25,28 +32,42 @@ export function Thread({ user }) {
 
   useEffect(() => {
     if (!threadId) return;
+    let cancelled = false;
     MessageService.getThread(threadId)
-      .then(t => setThread(t || null))
-      .catch(() => setThread(null));
-  }, [threadId]);
+      .then(doc => {
+        if (cancelled) return;
+        if (doc) { setThread(doc); setCreated(true); }
+        else if (seed) { setThread(seed); setCreated(false); }
+        else { setThread(null); setCreated(false); }
+      })
+      .catch(() => {
+        // Missing thread → read denies. Fall back to the draft if we have one.
+        if (cancelled) return;
+        if (seed) { setThread(seed); setCreated(false); }
+        else { setThread(null); setCreated(false); }
+      });
+    return () => { cancelled = true; };
+  }, [threadId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Only stream messages / touch read+presence flags once the room exists —
+  // before that there's nothing to read and writing would create an empty room.
   useEffect(() => {
-    if (!threadId) return;
+    if (!threadId || !created) { setMessages([]); return; }
     return MessageService.subscribeMessages(threadId, setMessages);
-  }, [threadId]);
+  }, [threadId, created]);
 
   // Opening the conversation = reading it. Clear my unread badge on
   // mount and also whenever new messages arrive while I have it open.
   useEffect(() => {
-    if (!threadId || !user || user.isAnonymous) return;
+    if (!threadId || !created || !user || user.isAnonymous) return;
     MessageService.markThreadRead(threadId);
-  }, [threadId, user?.uid, messages.length]);
+  }, [threadId, created, user?.uid, messages.length]);
 
   // Presence flag → sendMessage uses it to skip bumping unread for the
   // other party while we're both watching the room. Tab-hide also
   // counts as "left" so a backgrounded tab still gets badges.
   useEffect(() => {
-    if (!threadId || !user || user.isAnonymous) return;
+    if (!threadId || !created || !user || user.isAnonymous) return;
     MessageService.setActive(threadId, true);
     const onVisibility = () => {
       MessageService.setActive(threadId, !document.hidden);
@@ -57,7 +78,7 @@ export function Thread({ user }) {
       document.removeEventListener('visibilitychange', onVisibility);
       MessageService.setActive(threadId, false);
     };
-  }, [threadId, user?.uid]);
+  }, [threadId, created, user?.uid]);
 
   useEffect(() => {
     if (!thread || !user) return;
@@ -77,6 +98,12 @@ export function Thread({ user }) {
     setSending(true);
     setDraft('');
     try {
+      if (!created) {
+        // First message persists the room (then the recipient gets it in
+        // their inbox + a push). ensureThread is idempotent.
+        await MessageService.ensureThread(threadId, seed);
+        setCreated(true);
+      }
       await MessageService.sendMessage(threadId, text);
     } catch (err) {
       console.warn('send failed:', err.message);
@@ -100,6 +127,10 @@ export function Thread({ user }) {
     if (!file || sending) return;
     setSending(true);
     try {
+      if (!created) {
+        await MessageService.ensureThread(threadId, seed);
+        setCreated(true);
+      }
       await MessageService.sendImage(threadId, file);
     } catch (err) {
       console.warn('image send failed:', err.message);

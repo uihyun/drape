@@ -27,7 +27,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
     if (!open) return;
     setPhotoBlob(null);
     setPhotoPreview(existing?.photoUrl || null);
-    setNote(existing?.note || '');
+    setNote(existing?.name || existing?.note || '');
     setIsPublic(existing?.isPublic === true);
     setError(null);
   }, [open, existing?.id]);
@@ -61,7 +61,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
         id: existing?.id || null,
         date,
         photoBlob: blob, // only re-uploads if a new blob is staged
-        note: note.trim(),
+        name: note.trim(),
         isPublic,
       });
       onSaved?.(id);

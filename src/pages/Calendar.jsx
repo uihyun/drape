@@ -283,7 +283,7 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
                     <Check size={14} strokeWidth={2.2} />
                   </button>
                 )}
-                {e.note && <span className="day-picker-note">{e.note}</span>}
+                {(e.name || e.note) && <span className="day-picker-note">{e.name || e.note}</span>}
               </div>
             );
           })}

@@ -498,11 +498,13 @@ export function ItemDetail({ user, onSignIn }) {
               <button
                 type="button"
                 className="btn btn-primary item-viewer-contact"
-                onClick={async () => {
+                onClick={() => {
                   if (!user || user.isAnonymous) { onSignIn?.(); return; }
                   try {
-                    const id = await MessageService.openThread({ sellerUid: item.userId, item });
-                    navigate(`/messages/${id}`);
+                    // Don't create the room yet — carry a draft and let the
+                    // first message persist it (see Thread / ensureThread).
+                    const { id, draft } = MessageService.prepareThread({ sellerUid: item.userId, item });
+                    navigate(`/messages/${id}`, { state: { draft } });
                   } catch (err) {
                     console.warn('open thread failed:', err.message);
                     alert(err.message);

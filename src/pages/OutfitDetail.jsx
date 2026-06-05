@@ -109,9 +109,9 @@ export function OutfitDetail({ user, onSignIn }) {
   };
 
   const openEdit = () => {
-    // A dated OOTD uses `note` as its title (no separate name); a built/
-    // analyzed outfit uses `name` + a longer `notes` body.
-    setEditName(outfit.date ? (outfit.note || '') : (outfit.name || ''));
+    // Unified title/memo field is `name` (legacy OOTDs used `note`); the
+    // longer editorial body stays `notes`.
+    setEditName(outfit.name || outfit.note || '');
     setEditNotes(outfit.notes || '');
     setEditHeroVariant(outfit.heroVariant === 'cut' ? 'cut' : 'full');
     setEditing(true);
@@ -121,7 +121,7 @@ export function OutfitDetail({ user, onSignIn }) {
     setBusy(true);
     try {
       const patch = outfit.date
-        ? { note: editName.trim() }
+        ? { name: editName.trim() }
         : { name: editName.trim(), notes: editNotes.trim() };
       if (outfit.photoCutUrl) patch.heroVariant = editHeroVariant;
       await OutfitService.updateOutfit(outfit.id, patch);

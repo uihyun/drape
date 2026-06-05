@@ -234,10 +234,10 @@ function PublicOutfitsGrid({ ootds, t }) {
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
-            {/* OOTD memo only — built/analyzed outfits keep a clean cover. */}
-            {o.date && o.note && (
+            {/* OOTD memo only (in `name`; legacy `note`) — outfits stay clean. */}
+            {o.date && (o.name || o.note) && (
               <div className="ootd-card-overlay">
-                <h3 className="ootd-card-title">{o.note}</h3>
+                <h3 className="ootd-card-title">{o.name || o.note}</h3>
               </div>
             )}
           </Link>

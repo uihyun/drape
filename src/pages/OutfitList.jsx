@@ -33,11 +33,12 @@ function OotdGrid({ ootds, t, showPrivacy = false }) {
                 <Lock size={12} strokeWidth={2.2} />
               </span>
             )}
-            {/* Only OOTDs caption the card (the day's memo). Built/analyzed
-                outfits keep their cover clean — the name shows on the detail. */}
-            {o.date && o.note && (
+            {/* Only OOTDs caption the card (the day's memo, stored in `name`;
+                legacy OOTDs used `note`). Built/analyzed outfits keep a clean
+                cover — their name shows on the detail. */}
+            {o.date && (o.name || o.note) && (
               <div className="ootd-card-overlay">
-                <h3 className="ootd-card-title">{o.note}</h3>
+                <h3 className="ootd-card-title">{o.name || o.note}</h3>
               </div>
             )}
           </Link>

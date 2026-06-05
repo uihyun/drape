@@ -232,7 +232,7 @@ async function toggleSelfLike(outfitId, selfLiked) {
  *  omit to create a new entry for the date (multiple OOTDs per day OK). */
 async function upsertOotd({
   id = null, date, outfitId = null, linkedType = null,
-  photoBlob = null, note = '', isPublic = undefined,
+  photoBlob = null, name = '', isPublic = undefined,
 }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -259,7 +259,8 @@ async function upsertOotd({
     // flips to 'ready' (cutout) or 'none' (keep original) — so the cell lands
     // on its final look in one step instead of swapping bg→cutout on refresh.
     ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null, photoCutStatus: 'processing' } : {}),
-    note,
+    // Unified title/memo field across OOTDs + outfits (was `note` for OOTDs).
+    name,
     ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),
   };
