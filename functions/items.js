@@ -288,11 +288,8 @@ in the standard catalog product view for its category:
   Never one shoe, never three or more. If the photo shows only a single
   shoe, still output the matching pair (two). A pair is two, never three.
 - Bags: upright, frontal, handles up.
-- Caps & hats: show the FRONT of the hat facing the viewer — front panel
-  and brim visible, as a catalog would shoot it. NEVER the back/strap side.
-  A baseball cap shows its front crown, not the adjuster.
-- Accessories (jewelry, belts, glasses): centered, in the angle that
-  shows the design most clearly.
+- Accessories (hats, jewelry, belts, glasses): centered, in the angle
+  that shows the design most clearly — for caps and hats, the front.
 
 You MAY rotate, flatten, and re-orient the item to achieve this view.
 You may NOT change length, silhouette, proportions, color, fabric
@@ -449,14 +446,9 @@ ONLY valid JSON with this exact schema:
 }
 
 Rules: only describe garments and accessories that are clearly visible.
-Skip skin, body parts, and identifying features of the wearer.
-
-ONLY the primary, foreground garments — the pieces this photo is OF. Do
-NOT include partially-hidden, blurred, or background clothing that merely
-happens to be in frame (e.g. other items hanging on the same rack, clothes
-on a shelf behind, a garment draped in the background). If a piece is not
-the clear subject and mostly occluded, leave it out. Better to return the
-2 items the photo is showing than to invent 5 from a cluttered background.
+Skip skin, body parts, and identifying features of the wearer. Cover only
+the primary foreground pieces the photo is OF — skip clothing that's just in
+the background or mostly hidden (e.g. other items on the same rack).
 
 CRITICAL — IGNORE THE BACKGROUND. The photo may sit on a studio backdrop
 (white/seamless, grey, or any flat color), a hanger, a wall, or a scene.
