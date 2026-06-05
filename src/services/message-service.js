@@ -168,8 +168,8 @@ export const MessageService = {
       height,
       createdAt: serverTimestamp(),
     });
-    // Emoji preview keeps the thread-list snippet language-neutral.
-    await bumpThread(threadId, user.uid, { text: '📷', type: 'image', fromUid: user.uid, createdAt: serverTimestamp() });
+    // No text — the inbox renders a photo icon + localized label off `type`.
+    await bumpThread(threadId, user.uid, { type: 'image', fromUid: user.uid, createdAt: serverTimestamp() });
   },
 
   // Presence flag — Thread.jsx flips this on mount / off on unmount.

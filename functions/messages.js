@@ -18,9 +18,41 @@
 // See CAPACITOR_SETUP.md §6 for the full checklist.
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
 
 const db = admin.firestore();
+
+// Auto-cleanup: drop marketplace threads (their messages + DM images) that
+// have been inactive for 30+ days. Runs daily so the inbox stays tidy and
+// stale conversations don't accumulate forever. updatedAt is bumped on every
+// message, so "inactive" = no message in 30 days.
+const THREAD_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+exports.cleanupOldThreads = onSchedule('every 24 hours', async () => {
+    const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - THREAD_TTL_MS);
+    let deleted = 0;
+    try {
+        const snap = await db.collection('threads')
+            .where('updatedAt', '<', cutoff)
+            .limit(400)
+            .get();
+        for (const docSnap of snap.docs) {
+            const threadId = docSnap.id;
+            const participants = Array.isArray(docSnap.data().participants) ? docSnap.data().participants : [];
+            // Thread doc + its messages subcollection.
+            await db.recursiveDelete(docSnap.ref);
+            // DM images either participant uploaded for this thread.
+            await Promise.all(participants.map(uid =>
+                admin.storage().bucket().deleteFiles({ prefix: `dm/${uid}/${threadId}/` })
+                    .catch(err => console.warn('dm image cleanup failed', threadId, err.message)),
+            ));
+            deleted += 1;
+        }
+    } catch (err) {
+        console.warn('cleanupOldThreads failed:', err.message);
+    }
+    console.log(`cleanupOldThreads: removed ${deleted} stale threads`);
+});
 
 async function pruneInvalidTokens(uid, tokens, responses) {
     const dead = [];
@@ -43,7 +75,10 @@ exports.onMessageCreated = onDocumentCreated(
     'threads/{threadId}/messages/{messageId}',
     async (event) => {
         const message = event.data?.data();
-        if (!message || !message.fromUid || !message.text) return;
+        // Text OR image messages notify; only truly empty docs are skipped.
+        if (!message || !message.fromUid) return;
+        const isImage = message.type === 'image';
+        if (!isImage && !message.text) return;
         const { threadId } = event.params;
 
         let thread;
@@ -70,9 +105,9 @@ exports.onMessageCreated = onDocumentCreated(
             else if (p?.handle) title = `@${p.handle}`;
         } catch (_) { /* ignore */ }
 
-        const body = message.text.length > 140
-            ? `${message.text.slice(0, 137)}...`
-            : message.text;
+        const body = isImage
+            ? 'Photo'
+            : (message.text.length > 140 ? `${message.text.slice(0, 137)}...` : message.text);
 
         for (const uid of recipients) {
             // Suppress when recipient is actively in the room — Thread.jsx

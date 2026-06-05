@@ -133,3 +133,4 @@ exports.deleteAccount = accountFns.deleteAccount;
 // ── Push notifications for marketplace DMs ─────────────────────────────
 const messageFns = require('./messages.js');
 exports.onMessageCreated = messageFns.onMessageCreated;
+exports.cleanupOldThreads = messageFns.cleanupOldThreads;

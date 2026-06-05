@@ -477,6 +477,7 @@ export const ko = {
   inboxEmpty: '아직 대화가 없어요.',
   inboxNoMessages: '메시지 없음',
   inboxYou: '나',
+  inboxPhoto: '사진',
   inboxSignInRequired: '메시지를 보려면 로그인하세요.',
   threadNotFound: '대화를 찾을 수 없어요.',
   threadEmptyHint: '인사를 건네보세요 — 사이즈, 상태, 거래 방식 등을 물어볼 수 있어요.',

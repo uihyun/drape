@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Image as ImageIcon } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
@@ -48,7 +49,7 @@ export function Inbox({ user }) {
         {threads.map(th => {
           const otherUid = th.participants.find(p => p !== user.uid);
           const author = authors.get(otherUid);
-          const preview = th.lastMessage?.text || t('inboxNoMessages');
+          const isPhoto = th.lastMessage?.type === 'image';
           const fromMe = th.lastMessage?.fromUid === user.uid;
           const unread = th.unreadFor?.[user.uid] || 0;
           return (
@@ -64,7 +65,11 @@ export function Inbox({ user }) {
                   </div>
                   <div className="inbox-row-preview">
                     {fromMe && <span className="inbox-row-from-me">{t('inboxYou')}: </span>}
-                    {preview}
+                    {isPhoto ? (
+                      <span className="inbox-row-photo">
+                        <ImageIcon size={13} strokeWidth={1.8} /> {t('inboxPhoto')}
+                      </span>
+                    ) : (th.lastMessage?.text || t('inboxNoMessages'))}
                   </div>
                 </div>
                 {unread > 0 && (

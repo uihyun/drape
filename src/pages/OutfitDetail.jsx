@@ -32,7 +32,6 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editNotes, setEditNotes] = useState('');
-  const [editHeroVariant, setEditHeroVariant] = useState('full'); // 'full' | 'cut'
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [closet, setCloset] = useState([]);
@@ -113,7 +112,6 @@ export function OutfitDetail({ user, onSignIn }) {
     // longer editorial body stays `notes`.
     setEditName(outfit.name || outfit.note || '');
     setEditNotes(outfit.notes || '');
-    setEditHeroVariant(outfit.heroVariant === 'cut' ? 'cut' : 'full');
     setEditing(true);
   };
 
@@ -123,7 +121,6 @@ export function OutfitDetail({ user, onSignIn }) {
       const patch = outfit.date
         ? { name: editName.trim() }
         : { name: editName.trim(), notes: editNotes.trim() };
-      if (outfit.photoCutUrl) patch.heroVariant = editHeroVariant;
       await OutfitService.updateOutfit(outfit.id, patch);
       setEditing(false);
     } finally { setBusy(false); }
@@ -265,29 +262,6 @@ export function OutfitDetail({ user, onSignIn }) {
               rows={4}
               placeholder={t('notesPlaceholder')}
             />
-          )}
-          {/* Hero photo choice — only when a background-removed cut-out
-              exists for this post. Full (with background) is the default. */}
-          {outfit.photoCutUrl && (outfit.photoUrl || outfit.sourcePhotoUrl) && (
-            <div className="outfit-hero-choice">
-              <span className="outfit-hero-choice-label">{t('heroPhotoLabel')}</span>
-              <div className="filter-chips filter-chips--text">
-                <button
-                  type="button"
-                  className={`chip${editHeroVariant === 'full' ? ' active' : ''}`}
-                  onClick={() => setEditHeroVariant('full')}
-                >
-                  {t('heroPhotoFull')}
-                </button>
-                <button
-                  type="button"
-                  className={`chip${editHeroVariant === 'cut' ? ' active' : ''}`}
-                  onClick={() => setEditHeroVariant('cut')}
-                >
-                  {t('heroPhotoCut')}
-                </button>
-              </div>
-            </div>
           )}
           <div className="outfit-edit-actions">
             <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={busy}>
