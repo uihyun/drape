@@ -80,7 +80,7 @@ export function PublicProfile({ user, onSignIn }) {
 
   useEffect(() => {
     if (!profile?.uid) { setBoards(null); return; }
-    BoardService.listPublicBoardsByUser({ uid: profile.uid, pageSize: 30 })
+    BoardService.listPublicBoardsByUser({ uid: profile.uid, pageSize: 150 })
       .then(setBoards)
       .catch((err) => {
         console.warn('public boards failed:', err?.code, err?.message);

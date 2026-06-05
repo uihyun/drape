@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Sparkles, SlidersHorizontal, X } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
 import { ItemService } from '../services/item-service.js';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
@@ -16,10 +17,17 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const filterCount = countLookFilters(filters);
 
+  // Live subscription window grows by 60 as the user scrolls (real-time kept).
+  const [genLimit, setGenLimit] = useState(60);
   useEffect(() => {
     if (!user || user.isAnonymous) { setGens([]); return; }
-    return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: 60 });
-  }, [user]);
+    return GenerationService.subscribeMyGenerations(user.uid, setGens, { pageSize: genLimit });
+  }, [user, genLimit]);
+
+  const genHasMore = !!gens && gens.length >= genLimit;
+  const genSentinelRef = useInfiniteScroll({
+    hasMore: genHasMore, loading: false, onLoadMore: () => setGenLimit(n => n + 60),
+  });
 
   // Closet (keyed by id) supplies item tags for the look filter — a try-on
   // is filtered by the tags of the items it used (+ its own style breakdown).
@@ -140,6 +148,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
           })}
         </div>
       )}
+      {genHasMore && <div ref={genSentinelRef} className="feed-sentinel" />}
 
       {sheetOpen && (
         <LookFilterSheet

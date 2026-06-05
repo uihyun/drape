@@ -11,6 +11,7 @@ import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { closetWarm } from '../services/uiCache.js';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
@@ -60,14 +61,23 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
 
+  // Live subscription window — grows by 60 as the user scrolls (re-subscribes
+  // with a bigger limit) so the closet is effectively infinite while staying
+  // real-time (a new item still streams in instantly).
+  const [closetLimit, setClosetLimit] = useState(60);
   useEffect(() => {
     if (!authReady) return;
     if (!user) { setItems([]); return; }
     return ItemService.subscribeMyCloset(user.uid, (list) => {
       setItems(list);
       if (!user.isAnonymous) closetWarm.set(user.uid, list); // keep warm cache fresh
-    });
-  }, [user, authReady]);
+    }, { pageSize: closetLimit });
+  }, [user, authReady, closetLimit]);
+
+  const closetHasMore = !!items && items.length >= closetLimit;
+  const closetSentinelRef = useInfiniteScroll({
+    hasMore: closetHasMore, loading: false, onLoadMore: () => setClosetLimit(n => n + 60),
+  });
 
   const filterCount = countFilters(filters);
 
@@ -258,6 +268,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           {filtered.map(item => <ItemCard key={item.id} item={item} t={t} />)}
         </div>
       )}
+      {closetHasMore && <div ref={closetSentinelRef} className="feed-sentinel" />}
     </div>
   );
 }

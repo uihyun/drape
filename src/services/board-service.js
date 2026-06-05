@@ -171,7 +171,7 @@ async function toggleLike(boardId, uid, currentlyLiked) {
   }, { merge: true });
 }
 
-function subscribeMyBoards(cb) {
+function subscribeMyBoards(cb, { pageSize = 150 } = {}) {
   const user = auth.currentUser;
   if (!user) { cb([]); return () => {}; }
   return onSnapshot(
@@ -179,7 +179,7 @@ function subscribeMyBoards(cb) {
       collection(db, BOARDS),
       where('userId', '==', user.uid),
       orderBy('updatedAt', 'desc'),
-      limit(30),
+      limit(pageSize),
     ),
     (snap) => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
     (err) => {

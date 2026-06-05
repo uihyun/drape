@@ -61,7 +61,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   useEffect(() => {
     if (!user || user.isAnonymous) { setSaved([]); return; }
     if (tab !== 'saved') return; // lazy — only fetch when the tab opens
-    BoardService.listBookmarkedBoards({ uid: user.uid })
+    BoardService.listBookmarkedBoards({ uid: user.uid, pageSize: 150 })
       .then(setSaved)
       .catch(() => setSaved([]));
   }, [user, tab]);

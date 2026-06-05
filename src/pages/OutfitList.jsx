@@ -83,12 +83,12 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
     const apply = (setter, rows) => { if (cancelled) return; olCache.set(key, rows); setter(rows); };
     if (tab === 'mine') {
       setOotds(cached ?? null); // keep cached list visible; spinner only if none
-      OutfitService.listMyOotds({ uid: user.uid, pageSize: 60 })
+      OutfitService.listMyOotds({ uid: user.uid, pageSize: 150 })
         .then(({ ootds }) => apply(setOotds, ootds))
         .catch(() => { if (!cancelled && !cached) setOotds([]); });
     } else if (tab === 'saved') {
       setOotds(cached ?? null);
-      OutfitService.listBookmarkedOotds({ uid: user.uid })
+      OutfitService.listBookmarkedOotds({ uid: user.uid, pageSize: 150 })
         .then(({ ootds }) => apply(setOotds, ootds))
         .catch((err) => {
           console.warn('saved bookmarks query failed:', err?.code, err?.message);
@@ -96,7 +96,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
         });
     } else {
       setOutfits(cached ?? null);
-      OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed' })
+      OutfitService.listMyOutfits({ uid: user.uid, kind: 'analyzed', pageSize: 150 })
         .then(({ outfits }) => apply(setOutfits, outfits))
         .catch(() => { if (!cancelled && !cached) setOutfits([]); });
     }

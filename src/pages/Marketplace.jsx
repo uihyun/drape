@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketplaceService } from '../services/marketplace-service.js';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -18,22 +19,38 @@ export function Marketplace() {
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    MarketplaceService.listRecent({ conditionGrade: grade || null, pageSize: 60 })
-      .then(res => { if (!cancelled) { setListings(res.listings); setLoading(false); } })
+    MarketplaceService.listRecent({ conditionGrade: grade || null, pageSize: 30 })
+      .then(res => { if (!cancelled) { setListings(res.listings); setCursor(res.lastVisible); setHasMore(res.hasMore); setLoading(false); } })
       .catch(err => {
         if (cancelled) return;
         console.warn('marketplace list failed:', err.code, err.message);
         setError(err.message || String(err));
-        setListings([]);
+        setListings([]); setHasMore(false);
         setLoading(false);
       });
     return () => { cancelled = true; };
   }, [grade]);
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore || !cursor) return;
+    setLoadingMore(true);
+    MarketplaceService.listRecent({ conditionGrade: grade || null, pageSize: 30, lastDoc: cursor })
+      .then(res => {
+        setListings(prev => [...(prev || []), ...res.listings]);
+        setCursor(res.lastVisible); setHasMore(res.hasMore);
+      })
+      .catch(err => console.warn('marketplace loadMore failed:', err.message))
+      .finally(() => setLoadingMore(false));
+  };
+  const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
   const empty = !loading && (listings?.length ?? 0) === 0;
   const filters = useMemo(() => GRADES, []);
@@ -63,9 +80,12 @@ export function Marketplace() {
       ) : empty ? (
         <div className="empty-state"><p>{t('marketplaceEmpty')}</p></div>
       ) : (
-        <div className="marketplace-grid">
-          {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
-        </div>
+        <>
+          <div className="marketplace-grid">
+            {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
+          </div>
+          {hasMore && <div ref={sentinelRef} className="feed-sentinel">{loadingMore && <div className="spinner" />}</div>}
+        </>
       )}
     </div>
   );
