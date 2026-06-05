@@ -86,21 +86,30 @@ textarea,
 }
 
 /* This is an app, not a web page: links never get the browser's default
-   underline (intentional underlines opt back in with their own class). */
+   underline (intentional underlines opt back in with their own class), and a
+   long-press must NOT pop iOS's link-preview callout (the dark
+   `capacitor://localhost/...` bubble). touch-callout must sit on the <a>
+   itself — inheriting it from <body> isn't enough for WKWebView. */
 a {
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-/* Block the web-y long-press behaviours on images — no drag-to-float ghost,
-   no "Save Image / Copy" callout. Images stay tap/clickable. */
+/* Belt-and-braces: kill the long-press callout on every element + the
+   drag-to-float ghost on images. Inputs/textareas re-enable the callout above
+   so text editing still works. Images stay tap/clickable. */
+* {
+  -webkit-touch-callout: none;
+}
 img {
   -webkit-user-drag: none;
   -khtml-user-drag: none;
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
-  -webkit-touch-callout: none;
 }
 
 .app {
