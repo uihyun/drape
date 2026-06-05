@@ -471,6 +471,7 @@ export const ko = {
   feedFollowingQuietTitle: '아직 조용해요',
   feedFollowingQuietBody: '팔로우한 사람들의 새 글이 아직 없어요.',
   contactSeller: '판매자에게 문의',
+  openChat: '대화 열기',
   today: '오늘',
   yesterday: '어제',
   inboxTitle: '메시지',

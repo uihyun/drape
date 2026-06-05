@@ -473,6 +473,7 @@ export const ja = {
   feedFollowingQuietTitle: 'まだ静かですね',
   feedFollowingQuietBody: 'フォロー中の人からの新しい投稿はまだありません。',
   contactSeller: '出品者に問い合わせる',
+  openChat: 'チャットを開く',
   today: '今日',
   yesterday: '昨日',
   inboxTitle: 'メッセージ',

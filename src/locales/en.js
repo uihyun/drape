@@ -471,6 +471,7 @@ export const en = {
   feedFollowingQuietTitle: 'Quiet over here',
   feedFollowingQuietBody: 'No new posts from people you follow yet.',
   contactSeller: 'Contact seller',
+  openChat: 'Open chat',
   today: 'Today',
   yesterday: 'Yesterday',
   inboxTitle: 'Messages',

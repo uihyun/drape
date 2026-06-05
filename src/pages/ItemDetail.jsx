@@ -9,7 +9,7 @@ import { CATEGORIES, SUBCATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel
 import { BrandInput } from '../components/BrandInput.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
-import { MessageService } from '../services/message-service.js';
+import { MessageService, threadIdFor } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { shareOrDownloadImage } from '../services/share-service.js';
 import { elapsedLabel, daysSince } from '../utils/elapsed.js';
@@ -39,6 +39,12 @@ export function ItemDetail({ user, onSignIn }) {
   const [listingOpen, setListingOpen] = useState(false);
   const [listingSaving, setListingSaving] = useState(false);
   const [saleDraft, setSaleDraft] = useState(null);
+  // If a thread for (me, seller, this item) already exists, "Contact seller"
+  // becomes "Open chat" → reuse it instead of looking like a fresh start.
+  // (Deterministic thread id means it's the same room either way; this just
+  // reflects that in the button. A 30-day-deleted thread reads as absent →
+  // back to "Contact seller".)
+  const [existingThreadId, setExistingThreadId] = useState(null);
   const stageRef = useRef(null);
 
   // While editing, the photo follows the scroll: as the form is pulled up
@@ -135,6 +141,20 @@ export function ItemDetail({ user, onSignIn }) {
     load();
     return () => { cancelled = true; };
   }, [user?.uid, itemId]);
+
+  // Does a thread already exist for this listing + me?
+  useEffect(() => {
+    setExistingThreadId(null);
+    if (!user || user.isAnonymous || !item) return;
+    if (item.userId === user.uid) return;          // I'm the seller
+    if (!item.forSale || !(item.priceAsking > 0)) return;
+    const id = threadIdFor(user.uid, item.userId, item.id);
+    let cancelled = false;
+    MessageService.getThread(id)
+      .then(th => { if (!cancelled && th) setExistingThreadId(id); })
+      .catch(() => {}); // missing thread denies the read → stays absent
+    return () => { cancelled = true; };
+  }, [user?.uid, item?.id, item?.userId, item?.forSale, item?.priceAsking]);
 
   if (!item) return <div className="loading"><div className="spinner" /></div>;
   const isOwner = user && item.userId === user.uid;
@@ -500,6 +520,8 @@ export function ItemDetail({ user, onSignIn }) {
                 className="btn btn-primary item-viewer-contact"
                 onClick={() => {
                   if (!user || user.isAnonymous) { onSignIn?.(); return; }
+                  // Existing conversation → just open it (no new draft).
+                  if (existingThreadId) { navigate(`/messages/${existingThreadId}`); return; }
                   try {
                     // Don't create the room yet — carry a draft and let the
                     // first message persist it (see Thread / ensureThread).
@@ -511,7 +533,7 @@ export function ItemDetail({ user, onSignIn }) {
                   }
                 }}
               >
-                {t('contactSeller')}
+                {existingThreadId ? t('openChat') : t('contactSeller')}
               </button>
             ) : null}
           </>
