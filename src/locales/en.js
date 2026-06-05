@@ -478,6 +478,7 @@ export const en = {
   inboxNoMessages: 'No messages',
   inboxYou: 'You',
   inboxPhoto: 'Photo',
+  inboxClosingIn: 'Closes in {days}d if quiet',
   inboxSignInRequired: 'Sign in to see your messages.',
   threadNotFound: 'Conversation not found.',
   threadEmptyHint: 'Say hi — ask about size, condition, or pickup.',

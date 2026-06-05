@@ -52,6 +52,11 @@ export function Inbox({ user }) {
           const isPhoto = th.lastMessage?.type === 'image';
           const fromMe = th.lastMessage?.fromUid === user.uid;
           const unread = th.unreadFor?.[user.uid] || 0;
+          // Threads auto-close after 30 days of inactivity (cleanupOldThreads).
+          // Warn in the last week so a stale-but-wanted chat can be revived.
+          const lastActive = th.updatedAt?.toDate ? th.updatedAt.toDate().getTime() : null;
+          const daysLeft = lastActive ? Math.ceil((lastActive + 30 * 864e5 - Date.now()) / 864e5) : null;
+          const closingSoon = daysLeft != null && daysLeft > 0 && daysLeft <= 7;
           return (
             <li key={th.id}>
               <Link to={`/messages/${th.id}`} className={`inbox-row${unread ? ' is-unread' : ''}`}>
@@ -71,6 +76,9 @@ export function Inbox({ user }) {
                       </span>
                     ) : (th.lastMessage?.text || t('inboxNoMessages'))}
                   </div>
+                  {closingSoon && (
+                    <div className="inbox-row-expiry">{t('inboxClosingIn', { days: daysLeft })}</div>
+                  )}
                 </div>
                 {unread > 0 && (
                   <span className="inbox-row-badge" aria-label={`${unread} unread`}>

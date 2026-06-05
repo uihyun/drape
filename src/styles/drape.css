@@ -3588,6 +3588,7 @@ input[type="search"]::-webkit-search-decoration {
 .inbox-row-from-me { color: var(--text-primary); font-weight: 500; }
 .inbox-row-photo { display: inline-flex; align-items: center; gap: 0.25rem; vertical-align: middle; }
 .inbox-row-photo svg { flex-shrink: 0; }
+.inbox-row-expiry { margin-top: 0.15rem; font-size: 0.72rem; color: var(--text-muted); }
 .inbox-row-thumb { width: 42px; height: 56px; border-radius: 6px; overflow: hidden; background: var(--surface); }
 .inbox-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
 

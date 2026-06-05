@@ -480,6 +480,7 @@ export const ja = {
   inboxNoMessages: 'メッセージなし',
   inboxYou: 'あなた',
   inboxPhoto: '写真',
+  inboxClosingIn: '動きがないと{days}日後に閉じます',
   inboxSignInRequired: 'メッセージを見るにはログインしてください。',
   threadNotFound: '会話が見つかりません。',
   threadEmptyHint: '挨拶してみましょう — サイズ・状態・受け渡しなどを聞いてみてください。',
