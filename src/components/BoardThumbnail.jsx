@@ -26,20 +26,27 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
   // reference doesn't retrigger a fetch that briefly blanks the thumbnail.
   const idKey = Array.from(new Set(stickers.map(s => s.itemId).filter(Boolean))).sort().join(',');
 
+  // ids the parent already supplies — we only self-fetch the rest.
+  const suppliedKey = itemsById
+    ? Array.from(new Set(stickers.map(s => s.itemId).filter(id => id && itemsById[id]))).sort().join(',')
+    : '';
+
   // Seed initial state from the shared cache so a warm re-mount paints the
   // stickers on the first frame — no blank → re-fetch flash.
   const [fetched, setFetched] = useState(() => {
-    if (itemsById || !idKey) return null;
+    if (!idKey) return null;
     const hit = {};
     for (const id of idKey.split(',')) if (itemCache.has(id)) hit[id] = itemCache.get(id);
     return Object.keys(hit).length ? hit : null;
   });
 
   useEffect(() => {
-    if (itemsById) return; // parent supplies items; nothing to fetch
     if (!idKey) { setFetched({}); return; }
-    const ids = idKey.split(',');
-    // Show whatever the cache already has, then fetch only the misses.
+    const supplied = itemsById || {};
+    // Self-fetch ANY referenced item the parent didn't supply (e.g. a board
+    // pins a closet item that's since been removed, or the closet map is mid
+    // load) so the card renders the full board, exactly like the detail.
+    const ids = idKey.split(',').filter(id => !supplied[id]);
     const cached = {};
     for (const id of ids) if (itemCache.has(id)) cached[id] = itemCache.get(id);
     if (Object.keys(cached).length) setFetched(prev => ({ ...(prev || {}), ...cached }));
@@ -59,12 +66,11 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
       setFetched(prev => ({ ...(prev || {}), ...map }));
     });
     return () => { cancelled = true; };
-  }, [idKey, itemsById]);
+  }, [idKey, suppliedKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When the parent supplies items, prefer them but fall back to anything we
-  // already self-fetched, so a momentarily-empty itemsById (closet
-  // subscription mid-refresh) doesn't wipe the board.
-  const lookup = itemsById ? { ...(fetched || {}), ...itemsById } : (fetched ?? {});
+  // Parent-supplied items win (fresh), self-fetched fill every gap — so a
+  // partial itemsById never drops stickers.
+  const lookup = { ...(fetched || {}), ...(itemsById || {}) };
   // Background + the board's own aspect ratio (portrait/square/landscape).
   const style = { ...boardBgStyle(board?.background), aspectRatio: boardRatioCss(board?.ratio) };
 
@@ -97,7 +103,7 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
               zIndex: i + 1,
             }}
           >
-            <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" draggable={false} />
+            <img src={cover} alt="" referrerPolicy="no-referrer" draggable={false} />
           </div>
         );
       })}
