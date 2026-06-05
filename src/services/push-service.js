@@ -23,6 +23,7 @@ import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/fi
 import { db, auth } from '../firebase.js';
 
 let registered = false;
+let tapHandlerReady = false;
 let cachedToken = null;
 
 async function persistToken(uid, token, platform) {
@@ -42,6 +43,39 @@ async function removeToken(uid, token) {
 }
 
 export const PushService = {
+  // Register the notification-tap handler as EARLY as possible (on app launch,
+  // before auth) so a cold-start tap — which fires once, right after boot —
+  // isn't missed because ensureRegistered hadn't run yet. Deep-links to the
+  // thread. Idempotent.
+  async initTapHandler() {
+    if (!Capacitor.isNativePlatform() || tapHandlerReady) return;
+    tapHandlerReady = true;
+    try {
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+      FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+        const threadId = event?.notification?.data?.threadId;
+        if (threadId) window.location.assign(`/messages/${threadId}`);
+      });
+    } catch (err) {
+      tapHandlerReady = false;
+      console.warn('initTapHandler failed:', err.message);
+    }
+  },
+
+  // Remove any delivered notifications for a thread once the user opens it —
+  // so the tray doesn't keep stale alerts for messages already read.
+  async clearThreadNotifications(threadId) {
+    if (!Capacitor.isNativePlatform() || !threadId) return;
+    try {
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+      const { notifications } = await FirebaseMessaging.getDeliveredNotifications();
+      const match = (notifications || []).filter(n => n?.data?.threadId === threadId);
+      if (match.length) await FirebaseMessaging.removeDeliveredNotifications({ notifications: match });
+    } catch (err) {
+      console.warn('clearThreadNotifications failed:', err.message);
+    }
+  },
+
   // Idempotent — safe to call on every auth state change. Registers
   // listeners once; on subsequent calls just refreshes the stored token
   // mapping for the current uid.
@@ -80,12 +114,6 @@ export const PushService = {
         const u = auth.currentUser;
         if (!u || u.isAnonymous || !event?.token) return;
         await persistToken(u.uid, event.token, Capacitor.getPlatform());
-      });
-
-      // Tapping a notification in the tray → deep-link straight to the chat.
-      FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
-        const threadId = event?.notification?.data?.threadId;
-        if (threadId) window.location.assign(`/messages/${threadId}`);
       });
 
       // Fetch + persist the current FCM token now.

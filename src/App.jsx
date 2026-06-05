@@ -61,6 +61,9 @@ export default function App() {
   // Native chrome: hide the iOS keyboard's prev/next/Done accessory bar — it's
   // dead space above the keyboard for a single-line composer.
   useEffect(() => {
+    // Register the push-tap handler early so a cold-start tap deep-links to the
+    // right thread (before auth/ensureRegistered runs).
+    PushService.initTapHandler();
     (async () => {
       try {
         const { Capacitor } = await import('@capacitor/core');

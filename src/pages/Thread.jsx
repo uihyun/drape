@@ -4,6 +4,7 @@ import { ChevronLeft, Send, ImagePlus, X } from 'lucide-react';
 import { MessageService } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { CameraService } from '../services/camera.js';
+import { PushService } from '../services/push-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -58,9 +59,11 @@ export function Thread({ user }) {
 
   // Opening the conversation = reading it. Clear my unread badge on
   // mount and also whenever new messages arrive while I have it open.
+  // Also drop any delivered push notifications for this thread from the tray.
   useEffect(() => {
     if (!threadId || !created || !user || user.isAnonymous) return;
     MessageService.markThreadRead(threadId);
+    PushService.clearThreadNotifications(threadId);
   }, [threadId, created, user?.uid, messages.length]);
 
   // Presence flag → sendMessage uses it to skip bumping unread for the
