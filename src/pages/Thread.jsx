@@ -80,6 +80,12 @@ export function Thread({ user }) {
     };
     document.addEventListener('visibilitychange', onVisibility);
 
+    // Heartbeat: refresh the presence timestamp while genuinely viewing, so a
+    // long session stays "active" (and so it auto-expires if the app dies).
+    const heartbeat = setInterval(() => {
+      if (!document.hidden) MessageService.setActive(threadId, true);
+    }, 25000);
+
     let removeAppListener = null;
     (async () => {
       try {
@@ -96,6 +102,7 @@ export function Thread({ user }) {
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      clearInterval(heartbeat);
       if (removeAppListener) removeAppListener();
       MessageService.setActive(threadId, false);
     };

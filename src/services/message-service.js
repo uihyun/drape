@@ -37,6 +37,14 @@ function blobDimensions(blob) {
 // refresh the thread preview. Shared by sendMessage / sendImage.
 // activeIn[uid] (set by Thread.jsx) suppresses the badge while the other
 // side is watching; the sender's own count always resets.
+// "Actively in the room" = a presence timestamp within the last 45s. A plain
+// boolean (legacy) or a stale timestamp counts as NOT active.
+const ACTIVE_TTL_MS = 45 * 1000;
+function isRecentlyActive(ts) {
+  const ms = ts && typeof ts.toMillis === 'function' ? ts.toMillis() : 0;
+  return ms > 0 && (Date.now() - ms) < ACTIVE_TTL_MS;
+}
+
 async function bumpThread(threadId, uid, lastMessage) {
   try {
     const snap = await getDoc(doc(db, THREADS, threadId));
@@ -45,7 +53,9 @@ async function bumpThread(threadId, uid, lastMessage) {
     const prev = (data.unreadFor && typeof data.unreadFor === 'object') ? data.unreadFor : {};
     const active = (data.activeIn && typeof data.activeIn === 'object') ? data.activeIn : {};
     const next = { ...prev, [uid]: 0 };
-    for (const o of others) next[o] = active[o] ? 0 : (prev[o] || 0) + 1;
+    // activeIn[uid] is a Timestamp of last presence — honor only if recent, so
+    // a stale value (old build / force-quit) can't suppress unread forever.
+    for (const o of others) next[o] = isRecentlyActive(active[o]) ? 0 : (prev[o] || 0) + 1;
     await setDoc(
       doc(db, THREADS, threadId),
       { updatedAt: serverTimestamp(), lastMessage, unreadFor: next },
@@ -175,18 +185,17 @@ export const MessageService = {
     await bumpThread(threadId, user.uid, { type: 'image', fromUid: user.uid, createdAt: serverTimestamp() });
   },
 
-  // Presence flag — Thread.jsx flips this on mount / off on unmount.
-  // sendMessage reads it to decide whether to bump unread on the
-  // recipient. Best-effort: if the tab closes abruptly the stale 'true'
-  // means the other party briefly doesn't get a badge until they
-  // re-enter — acceptable trade-off vs. server-side presence.
+  // Presence — Thread.jsx writes a TIMESTAMP while the room is open+foreground
+  // (refreshed by a heartbeat) and clears it (null) on leave/background. Both
+  // the push fan-out and unread bump only suppress when this timestamp is
+  // recent, so a stale value (force-quit, old build) can never perma-suppress.
   async setActive(threadId, isActive) {
     const user = auth.currentUser;
     if (!user || user.isAnonymous) return;
     try {
       await setDoc(
         doc(db, THREADS, threadId),
-        { activeIn: { [user.uid]: !!isActive } },
+        { activeIn: { [user.uid]: isActive ? serverTimestamp() : null } },
         { merge: true },
       );
     } catch (err) {

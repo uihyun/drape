@@ -109,11 +109,17 @@ exports.onMessageCreated = onDocumentCreated(
             ? 'Photo'
             : (message.text.length > 140 ? `${message.text.slice(0, 137)}...` : message.text);
 
+        // activeIn[uid] is a presence TIMESTAMP refreshed while the recipient
+        // has the room open+foreground. Only a RECENT one suppresses the push —
+        // a stale value (force-quit / old build / missed background event) or a
+        // legacy boolean must never perma-suppress.
+        const ACTIVE_TTL_MS = 45 * 1000;
+        const now = Date.now();
         for (const uid of recipients) {
-            // Suppress when recipient is actively in the room — Thread.jsx
-            // flips activeIn[uid] true on mount, false on unmount/hide.
-            if (thread.activeIn && thread.activeIn[uid] === true) {
-                console.log(`onMessageCreated: ${uid} is active in ${threadId}, skipping push`);
+            const activeAt = thread.activeIn && thread.activeIn[uid];
+            const activeMs = activeAt && typeof activeAt.toMillis === 'function' ? activeAt.toMillis() : 0;
+            if (activeMs && (now - activeMs) < ACTIVE_TTL_MS) {
+                console.log(`onMessageCreated: ${uid} recently active in ${threadId}, skipping push`);
                 continue;
             }
 
