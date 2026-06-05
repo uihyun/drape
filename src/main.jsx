@@ -47,6 +47,10 @@ if (document.fonts && document.fonts.load) {
   document.body.classList.add('icons-ready');
 }
 
+// iOS WKWebView only fires :active on tap when the document carries a
+// touch listener — without this, CSS :active press feedback never paints.
+document.addEventListener('touchstart', () => {}, { passive: true });
+
 window.onerror = (message, source, lineno, colno, error) => {
   AIService.logError(error || new Error(String(message)), {
     source, lineno, colno, type: 'uncaught',

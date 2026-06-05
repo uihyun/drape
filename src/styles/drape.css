@@ -4126,6 +4126,7 @@ input[type="search"]::-webkit-search-decoration {
   cursor: pointer;
   font-family: inherit;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
 }
 /* Cell border drawn by a pseudo-element so it sits on top of the
    thumbnail img (otherwise an inset box-shadow on .calendar-cell gets
@@ -4137,7 +4138,15 @@ input[type="search"]::-webkit-search-decoration {
   pointer-events: none;
   box-shadow: inset -1px -1px 0 0 var(--border);
 }
-.calendar-cell:hover { background: var(--surface-elevated); }
+/* Hover tint only on real pointers — on touch, tap/scroll leaves a sticky
+   :hover that paints a stray gray cell. */
+@media (hover: hover) {
+  .calendar-cell:hover { background: var(--surface-elevated); }
+}
+/* Press feedback: only while the finger is held down. iOS rules out a
+   scroll before applying :active, so swiping past a cell won't tint it,
+   and lifting the finger clears it immediately. */
+.calendar-cell:active { background: var(--surface-elevated); }
 .calendar-cell:disabled { cursor: default; }
 .calendar-cell.empty { background: transparent; }
 /* Today: a thin accent (olive) hairline on the cell + accent-colored
