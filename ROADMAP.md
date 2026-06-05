@@ -43,6 +43,7 @@ The point of v0 is to prove **the loop**: snap clothes → tag automatically →
 - [ ] Marketplace v2 — city / location filter (denormalize sellerCity), price-range, Toss Payments escrow, CJ방문수거 합배송.
 - [ ] Push notifications — code scaffold complete (`functions/messages.js` for DM + `push-service.js` for token registration). Pending user actions: APNs key upload to Firebase, Xcode Push + Background Modes capabilities, Android google-services.json. See `CAPACITOR_SETUP.md` §8-3.
 - [ ] Per-user notification settings page (`/settings/notifications`).
+- [ ] Native analytics — web `firebase/analytics` is gated to web-only (`if (!isNativeApp())` in `src/firebase.js`; the JS SDK doesn't work in the Capacitor webview), so iOS/Android currently collect no analytics. Add `@capacitor-firebase/analytics` (same family as the auth/messaging plugins) to feed the same Firebase project from native, route `logEvent` through it on native. NOTE: changes the Play Data safety declaration — must add App interactions, Device or other IDs (AD_ID), approximate location, "Analytics" purpose, and the Android 13+ AD_ID permission. Do as a fast-follow after first launch and update Data safety + Data types then.
 - [ ] Push triggers for like / follow / weekly digest / dormant OOTD reminder — same `messages.js` shape, different Firestore events.
 - [ ] Hair / lip / makeup variations on the existing try-on result *(same Nano Banana Pro call, different prompt template)*.
 - [ ] "Same outfit, different place / TPO" backgrounds.
