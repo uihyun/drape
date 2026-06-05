@@ -28,6 +28,24 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const makeAnalyzeCache = () => ({ batches: [], savedKeys: new Set(), savedBatchIds: new Map() });
 const analyzeCaches = { owned: makeAnalyzeCache(), wishlist: makeAnalyzeCache() };
 
+// Owned "several pieces" bulk-add runs entirely in the background so the user
+// drops straight into the closet instead of waiting behind a spinner. Detect
+// each photo, then create every detected piece — items stream in as Processing
+// cards via the live closet subscription. Fire-and-forget (not awaited), so it
+// keeps running after AnalyzePhoto unmounts on navigate.
+async function bulkAddOwnedInBackground(photos) {
+  for (const blob of photos) {
+    try {
+      const data = await ItemService.analyzePhoto({ blob, mime: blob.type || 'image/jpeg' });
+      for (const piece of (data.items || [])) {
+        try {
+          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', owned: true });
+        } catch { /* one failed create = one missing card; the rest still land */ }
+      }
+    } catch { /* detection failure on one photo shouldn't abort the others */ }
+  }
+}
+
 // Pick readable ink for a palette swatch background (same as OutfitDetail,
 // so the analyze result palette renders identically to the saved detail).
 function contrastInk(hex) {
@@ -68,9 +86,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // was removed — the two intents are separate flows with their own entries.
   const owned = ownedParam;
   const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
-  // True while the owned flow is detecting + auto-adding to the closet, so we
-  // show a single "adding…" screen instead of flashing the review UI.
-  const [bulkAdding, setBulkAdding] = useState(false);
   const [error, setError] = useState(null);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
@@ -141,8 +156,24 @@ export function AnalyzePhoto({ user, onSignIn }) {
       .filter(({ b }) => b.status === 'pending' || b.status === 'failed');
     if (queue.length === 0) return;
     setError(null);
-    if (owned) setBulkAdding(true);
-    const detected = []; // {blob, items, style} collected for owned auto-add
+
+    // Owned "several pieces" is a one-shot add: don't trap the user behind an
+    // "Adding…" spinner (and don't make them wait before they can back out).
+    // Snapshot the photos, jump straight to the closet, and run detect→create
+    // in the background — new items appear as Processing cards via the live
+    // closet subscription. Clear this mode's cache so re-entry starts fresh.
+    if (owned) {
+      const photos = queue.map(({ idx }) => batches[idx].blob);
+      cache.batches = [];
+      cache.savedKeys = new Set();
+      cache.savedBatchIds = new Map();
+      setBatches([]);
+      navigate('/profile/closet');
+      bulkAddOwnedInBackground(photos);
+      return;
+    }
+
+    // Wishlist analyze: detect in place, then show the review screen.
     for (const { idx } of queue) {
       setBatches(prev => prev.map((x, i) => i === idx ? { ...x, status: 'analyzing' } : x));
       try {
@@ -155,30 +186,10 @@ export function AnalyzePhoto({ user, onSignIn }) {
           ? { ...x, status: 'done', style: data.style || '', notes: data.notes || '', items: data.items || [],
               palette: data.palette || [], mood: data.mood || '' }
           : x));
-        detected.push({ blob, items: data.items || [], style: data.style || '' });
       } catch (e) {
         setBatches(prev => prev.map((x, i) => i === idx ? { ...x, status: 'failed' } : x));
         setError(e.message || 'analyze_failed');
       }
-    }
-    // Owned bulk-add is a one-shot action: the user already curated this set
-    // of photos, so don't drop them on a review screen and ask them to tap
-    // "add all" again — add every detected piece straight to the closet and
-    // land there, exactly like single add-item.
-    if (owned) {
-      for (const d of detected) {
-        for (const piece of d.items) {
-          try {
-            await ItemService.createFromDetected({ blob: d.blob, detected: piece, sourceLabel: d.style, owned: true });
-          } catch (e) { setError(e.message || 'save_failed'); }
-        }
-      }
-      // One-shot flow: clear this mode's cache so re-entering "several pieces"
-      // starts on a fresh input screen, not on these just-added results.
-      cache.batches = [];
-      cache.savedKeys = new Set();
-      cache.savedBatchIds = new Map();
-      navigate('/profile/closet');
     }
   };
 
@@ -274,17 +285,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
 
   const pendingCount = batches.filter(b => b.status === 'pending').length;
   const anyDone = batches.some(b => b.status === 'done');
-
-  if (bulkAdding) {
-    return (
-      <div className="page analyze-photo">
-        <div className="loading" style={{ flexDirection: 'column', gap: '1rem', paddingTop: '4rem' }}>
-          <div className="spinner" />
-          <p className="page-sub">{t('bulkAddingToCloset')}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="page analyze-photo">
