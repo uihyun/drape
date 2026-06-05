@@ -4,6 +4,7 @@ import { logEvent, analytics } from '../firebase.js';
 import { FollowService } from '../services/follow-service.js';
 import { ProfileService, DEFAULT_DISPLAY_NAME } from '../services/profile-service.js';
 import { FollowButton } from './FollowButton.jsx';
+import { Avatar } from './Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Instagram 식 followers/following 모달. 두 탭 (Followers / Following) 사이
@@ -141,13 +142,7 @@ export function FollowListModal({
                       className="follow-list-row-user"
                       onClick={() => handleRowClick(p.handle)}
                     >
-                      {p.photoURL ? (
-                        <img src={p.photoURL} alt="" className="follow-list-avatar" />
-                      ) : (
-                        <div className="follow-list-avatar follow-list-avatar-placeholder">
-                          <i className="material-icons">person</i>
-                        </div>
-                      )}
+                      <Avatar src={p.photoURL} name={p.handle || p.displayName} size={44} className="follow-list-avatar" />
                       <div className="follow-list-row-meta">
                         <span className="follow-list-row-name">@{p.handle}</span>
                         {hasCustomName && (

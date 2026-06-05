@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocale, LANG_LABELS } from '../hooks/useLocale.jsx';
+import { Avatar } from './Avatar.jsx';
 
 // Desktop header — brand wordmark + primary nav + lang + user chip.
 // MobileTabBar handles small screens; this is hidden under 768px via CSS.
@@ -42,9 +43,7 @@ export function Header({ user, onSignIn, onSignOut }) {
               onClick={() => navigate('/settings')}
               title={t('settings')}
             >
-              {user.photoURL
-                ? <img src={user.photoURL} alt="" />
-                : <i className="material-icons">person</i>}
+              <Avatar src={user.photoURL} name={user.displayName} size={30} />
             </button>
           ) : (
             <button className="btn btn-primary" onClick={onSignIn}>

@@ -45,12 +45,16 @@ export const CommentService = {
     // render the author chip without an extra profile read per comment.
     let handle = null;
     let profileDisplayName = null;
+    let profilePhotoURL = null;
     try {
       const profSnap = await getDoc(doc(db, 'profiles', user.uid));
       if (profSnap.exists()) {
         const p = profSnap.data();
         handle = p.handle || null;
         profileDisplayName = p.displayName || null;
+        // Use the profile's uploaded photo, NOT user.photoURL (the auth
+        // provider photo, which is null for users who set a photo in-app).
+        profilePhotoURL = p.photoURL || null;
       }
     } catch (e) {
       console.warn('comment addComment: profile read failed', e?.message);
@@ -59,7 +63,7 @@ export const CommentService = {
       userId: user.uid,
       displayName: profileDisplayName || user.displayName || '',
       handle: handle || null,
-      photoURL: user.photoURL || null,
+      photoURL: profilePhotoURL || user.photoURL || null,
       text: trimmed,
       createdAt: serverTimestamp(),
     });

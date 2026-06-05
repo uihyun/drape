@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { logEvent, analytics } from '../firebase.js';
+import { Avatar } from './Avatar.jsx';
 import { CommentService, COMMENT_MAX_LEN } from '../services/comment-service.js';
 import { DEFAULT_DISPLAY_NAME } from '../services/profile-service.js';
 import { FollowButton } from './FollowButton.jsx';
@@ -83,12 +84,13 @@ export function Comments({ parentColl = 'outfits', parentId, ownerId, user, onSi
             return (
               <li key={c.id} className="comment-item">
                 {(() => {
-                  const avatar = c.photoURL ? (
-                    <img src={c.photoURL} alt="" className="comment-avatar" />
-                  ) : (
-                    <div className="comment-avatar comment-avatar-placeholder">
-                      {(c.handle || c.displayName || '?').slice(0, 1).toUpperCase()}
-                    </div>
+                  const avatar = (
+                    <Avatar
+                      src={c.photoURL}
+                      name={c.handle || c.displayName}
+                      size={32}
+                      className="comment-avatar"
+                    />
                   );
                   return c.handle
                     ? <Link to={`/u/${c.handle}`} className="comment-avatar-link">{avatar}</Link>
