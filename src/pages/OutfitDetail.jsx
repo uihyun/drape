@@ -11,12 +11,14 @@ import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { PieceRow } from '../components/PieceRow.jsx';
+import { Avatar } from '../components/Avatar.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
 // editorial block renders only when its data is present — outfits created
 // before the auto-analysis pipeline lands still render fine, just sparser.
+const NOTES_MAX_LEN = 280;
 export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
@@ -31,6 +33,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const [editHeroVariant, setEditHeroVariant] = useState('full'); // 'full' | 'cut'
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
   const [closet, setCloset] = useState([]);
 
   useEffect(() => {
@@ -222,14 +225,19 @@ export function OutfitDetail({ user, onSignIn }) {
       )}
 
       <header className="outfit-byline">
-        <div className="outfit-byline-author">
-          <div className="outfit-byline-avatar">
-            {owner?.photoURL
-              ? <img src={owner.photoURL} alt="" />
-              : <div className="profile-avatar-fallback">{(owner?.displayName || owner?.handle || '?').slice(0,1).toUpperCase()}</div>}
-          </div>
+        <Link
+          to={owner?.handle ? `/u/${owner.handle}` : '#'}
+          className="outfit-byline-author"
+          onClick={(e) => { if (!owner?.handle) e.preventDefault(); }}
+        >
+          <Avatar
+            src={owner?.photoURL}
+            name={owner?.displayName || owner?.handle}
+            size={32}
+            className="outfit-byline-avatar"
+          />
           <span className="outfit-byline-handle">{owner?.handle ? `@${owner.handle}` : ''}</span>
-        </div>
+        </Link>
         {isOwner && !editing && (
           <button type="button" className="btn-edit" onClick={openEdit}>
             <Pencil size={14} strokeWidth={1.6} /> {t('edit')}
@@ -248,13 +256,17 @@ export function OutfitDetail({ user, onSignIn }) {
             placeholder={outfit.date ? t('ootdNotePlaceholder') : t('untitledOutfit')}
           />
           {!outfit.date && (
-            <textarea
-              className="input"
-              value={editNotes}
-              onChange={e => setEditNotes(e.target.value)}
-              rows={4}
-              placeholder={t('notesPlaceholder')}
-            />
+            <>
+              <textarea
+                className="input"
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value.slice(0, NOTES_MAX_LEN))}
+                rows={4}
+                maxLength={NOTES_MAX_LEN}
+                placeholder={t('notesPlaceholder')}
+              />
+              <span className="notes-count">{editNotes.length}/{NOTES_MAX_LEN}</span>
+            </>
           )}
           {/* Hero photo choice — only when a background-removed cut-out
               exists for this post. Full (with background) is the default. */}
@@ -348,7 +360,12 @@ export function OutfitDetail({ user, onSignIn }) {
       {notes && !editing && (
         <section className="outfit-notes">
           <header><h2>{t('notesOnComposition')}</h2></header>
-          <p>{notes}</p>
+          <p className={notesExpanded ? '' : 'is-clamped'}>{notes}</p>
+          {notes.length > 110 && (
+            <button type="button" className="notes-more" onClick={() => setNotesExpanded(v => !v)}>
+              {notesExpanded ? t('showLess') : t('showMore')}
+            </button>
+          )}
         </section>
       )}
 

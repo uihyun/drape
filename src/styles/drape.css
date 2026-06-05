@@ -1350,11 +1350,17 @@ body.is-native {
   flex-shrink: 0;
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-/* Empty state: bland gray bg + faint icon. Deliberately joyless so a
-   freshly-signed-up user is nudged to upload their own photo. */
+/* Empty state: neutral gray disc with the name's first-letter monogram
+   (or a faint User glyph when there's no name). */
 .avatar-empty {
   background: var(--surface-elevated);
-  color: var(--text-muted);
+  color: var(--text-secondary);
+}
+.avatar-letter {
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-secondary);
+  user-select: none;
 }
 .brand {
   display: inline-flex;
@@ -5514,9 +5520,33 @@ input[type="search"]::-webkit-search-decoration {
   margin-bottom: 0.5rem;
 }
 .outfit-notes p {
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: var(--text-primary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+/* Collapsed long note — clamp to ~4 lines, "Show more" reveals the rest. */
+.outfit-notes p.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.notes-more {
+  margin-top: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.notes-count {
+  display: block;
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
 }
 
 .outfit-items { margin-bottom: 1.5rem; }

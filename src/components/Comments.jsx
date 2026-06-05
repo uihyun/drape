@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { logEvent, analytics } from '../firebase.js';
 import { CommentService, COMMENT_MAX_LEN } from '../services/comment-service.js';
 import { DEFAULT_DISPLAY_NAME } from '../services/profile-service.js';
@@ -81,24 +82,31 @@ export function Comments({ parentColl = 'outfits', parentId, ownerId, user, onSi
             const canDelete = isLoggedIn && (c.userId === user.uid || isOwner);
             return (
               <li key={c.id} className="comment-item">
-                {c.photoURL ? (
-                  <img src={c.photoURL} alt="" className="comment-avatar" />
-                ) : (
-                  <div className="comment-avatar comment-avatar-placeholder">
-                    {(c.handle || c.displayName || '?').slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                {(() => {
+                  const avatar = c.photoURL ? (
+                    <img src={c.photoURL} alt="" className="comment-avatar" />
+                  ) : (
+                    <div className="comment-avatar comment-avatar-placeholder">
+                      {(c.handle || c.displayName || '?').slice(0, 1).toUpperCase()}
+                    </div>
+                  );
+                  return c.handle
+                    ? <Link to={`/u/${c.handle}`} className="comment-avatar-link">{avatar}</Link>
+                    : avatar;
+                })()}
                 <div className="comment-body">
                   <div className="comment-meta">
                     {/* Instagram 식 — 댓글은 @handle 이 primary identity (단일 슬롯).
                         old comments 는 handle 없을 수 있어 displayName fallback. */}
-                    <span className="comment-name">
-                      {c.handle
-                        ? `@${c.handle}`
-                        : (c.displayName && c.displayName !== DEFAULT_DISPLAY_NAME
-                            ? c.displayName
-                            : DEFAULT_DISPLAY_NAME)}
-                    </span>
+                    {c.handle ? (
+                      <Link to={`/u/${c.handle}`} className="comment-name">@{c.handle}</Link>
+                    ) : (
+                      <span className="comment-name">
+                        {c.displayName && c.displayName !== DEFAULT_DISPLAY_NAME
+                          ? c.displayName
+                          : DEFAULT_DISPLAY_NAME}
+                      </span>
+                    )}
                     {isLoggedIn && c.userId !== user.uid && (
                       <FollowButton targetUid={c.userId} user={user} onSignInRequest={onSignInRequest} size="sm" />
                     )}

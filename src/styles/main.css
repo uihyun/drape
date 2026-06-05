@@ -85,6 +85,24 @@ textarea,
   user-select: text;
 }
 
+/* This is an app, not a web page: links never get the browser's default
+   underline (intentional underlines opt back in with their own class). */
+a {
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Block the web-y long-press behaviours on images — no drag-to-float ghost,
+   no "Save Image / Copy" callout. Images stay tap/clickable. */
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+
 .app {
   min-height: 100vh;
   min-height: 100dvh;
@@ -1500,6 +1518,7 @@ textarea,
   object-fit: cover;
   background: var(--surface);
 }
+.comment-avatar-link { display: inline-flex; flex-shrink: 0; }
 
 .comment-avatar-placeholder {
   display: flex;
