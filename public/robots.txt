@@ -5,4 +5,4 @@ Allow: /
 # Auth handler / webhook endpoints — no crawl needed.
 Disallow: /__/
 
-Sitemap: https://drape-9e532.web.app/sitemap.xml
+Sitemap: https://drape.nyc/sitemap.xml
