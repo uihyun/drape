@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "284753548556-5g2afr28qe9mgdf62dj7ga8jeshjspi8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uihyun.drape",
+            "certificate_hash": "4f27ae058d7d5c0d5320b3eed1691bad2f44f5de"
+          }
+        },
+        {
+          "client_id": "284753548556-br9i2gi81enccurpgilbhuaq4noap91t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uihyun.drape",
+            "certificate_hash": "6660b15dc09501dec4cbf576f77ef44828e39fd1"
+          }
+        },
+        {
           "client_id": "284753548556-vf3pc40e2ae3s2fs61glpu89qctbqodj.apps.googleusercontent.com",
           "client_type": 3
         }
