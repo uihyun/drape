@@ -58,6 +58,19 @@ export default function App() {
   const [signInModalOpen, setSignInModalOpen] = useState(false);
   const [warmReady, setWarmReady] = useState(false);
 
+  // Native chrome: hide the iOS keyboard's prev/next/Done accessory bar — it's
+  // dead space above the keyboard for a single-line composer.
+  useEffect(() => {
+    (async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) return;
+        const { Keyboard } = await import('@capacitor/keyboard');
+        await Keyboard.setAccessoryBarVisible({ isVisible: false });
+      } catch { /* web / plugin missing — no-op */ }
+    })();
+  }, []);
+
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
       setUser(u || null);

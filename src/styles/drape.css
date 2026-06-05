@@ -5063,6 +5063,10 @@ input[type="search"]::-webkit-search-decoration {
      it — so the notch inset lives here. */
   padding: calc(var(--safe-top) + 0.25rem) 1rem 1.25rem;
 }
+/* PublicProfile (/u/:handle) sits UNDER the sticky .page-back-bar, which
+   already consumes the notch inset — so don't add it again (that doubled the
+   top gap on native; desktop has safe-top:0 so it never showed there). */
+.profile--sub { padding-top: 0.25rem; }
 .profile-topbar {
   display: flex;
   align-items: center;

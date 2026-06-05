@@ -109,7 +109,7 @@ export function PublicProfile({ user, onSignIn }) {
   const isSelf = user && profile.uid === user.uid;
 
   return (
-    <div className="profile">
+    <div className="profile profile--sub">
       <header className="profile-topbar">
         <span className="profile-handle">@{profile.handle}</span>
         <div className="profile-topbar-actions">
@@ -234,12 +234,7 @@ function PublicOutfitsGrid({ ootds, t }) {
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
-            {/* OOTD memo only (in `name`; legacy `note`) — outfits stay clean. */}
-            {o.date && (o.name || o.note) && (
-              <div className="ootd-card-overlay">
-                <h3 className="ootd-card-title">{o.name || o.note}</h3>
-              </div>
-            )}
+            {/* Clean cover — name/memo lives on the detail only (like the feed). */}
           </Link>
         );
       })}
