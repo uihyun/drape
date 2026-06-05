@@ -82,6 +82,7 @@ export const ko = {
   outfitSignInBody: '로그인 하고 내 옷장으로 아웃핏을 만들어 보세요.',
   tryOnEmptyCloset: '옷장이 비어있어요. 입어볼 옷을 먼저 추가해 주세요.',
   tryOnMaxItems: '한 번에 최대 {max}개까지 입어볼 수 있어요.',
+  analyzeMaxPhotos: '한 번에 최대 {max}장까지예요. 먼저 옷장에 추가한 뒤 더 진행해 주세요.',
   cameraUnsupported: '이 브라우저는 카메라 접근을 지원하지 않아요.',
   cameraPermissionDenied: '카메라 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.',
   cameraMaxShots: '한 번에 최대 {max}장까지 찍을 수 있어요. 체크를 눌러 먼저 추가해 주세요.',

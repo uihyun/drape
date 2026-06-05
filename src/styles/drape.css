@@ -962,6 +962,15 @@ body.is-native {
   gap: 0.55rem;
   margin: 1rem 0 0.75rem;
 }
+.analyze-limit-note {
+  margin: 0.85rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(0,0,0,0.04));
+  color: var(--text-secondary, #555);
+  font-size: 0.85rem;
+  text-align: center;
+}
 .btn.analyze-input-btn {
   display: flex;
   width: 100%;

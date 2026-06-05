@@ -28,6 +28,12 @@ import { useLocale } from '../hooks/useLocale.jsx';
 const makeAnalyzeCache = () => ({ batches: [], savedKeys: new Set(), savedBatchIds: new Map() });
 const analyzeCaches = { owned: makeAnalyzeCache(), wishlist: makeAnalyzeCache() };
 
+// Hard cap on photos per analyze session — total across ALL sources (burst
+// camera, single take-photo, and upload-photo multi-select combined). Each
+// photo fans out to a vision call + a crop+tag call per detected piece on a
+// shared Gemini key, so an unbounded batch is a real overload/rate-limit risk.
+const MAX_PHOTOS = 8;
+
 // Owned "several pieces" bulk-add runs entirely in the background so the user
 // drops straight into the closet instead of waiting behind a spinner. Detect
 // each photo, then create every detected piece — items stream in as Processing
@@ -87,6 +93,8 @@ export function AnalyzePhoto({ user, onSignIn }) {
   const owned = ownedParam;
   const [bulkBatchIdx, setBulkBatchIdx] = useState(-1);
   const [error, setError] = useState(null);
+  // Shown when an add was clamped (or blocked) by the MAX_PHOTOS session cap.
+  const [limitNotice, setLimitNotice] = useState(false);
   // Closet items power the "from your closet" match strip under each
   // detected piece (tag-based, no model call). Ready + non-archived only.
   const [closet, setCloset] = useState([]);
@@ -117,10 +125,16 @@ export function AnalyzePhoto({ user, onSignIn }) {
   }
 
   const addFiles = (filesLike) => {
-    const files = Array.from(filesLike || []).filter(Boolean).slice(0, 8); // cap per batch
-    if (files.length === 0) return;
+    const incoming = Array.from(filesLike || []).filter(Boolean);
+    if (incoming.length === 0) return;
     setError(null);
-    const newBatches = files.map(blob => ({
+    // Cap by REMAINING session capacity, not per-call — otherwise repeated
+    // adds (upload, then take more) blow past MAX_PHOTOS unbounded.
+    const room = MAX_PHOTOS - batches.length;
+    if (room <= 0) { setLimitNotice(true); return; }
+    const accepted = incoming.slice(0, room);
+    setLimitNotice(accepted.length < incoming.length);
+    const newBatches = accepted.map(blob => ({
       blob,
       previewUrl: URL.createObjectURL(blob),
       status: 'pending',
@@ -132,6 +146,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
   };
 
   const removeBatch = (idx) => {
+    setLimitNotice(false); // dropping a photo frees capacity
     setBatches(prev => {
       const copy = [...prev];
       const [removed] = copy.splice(idx, 1);
@@ -275,6 +290,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
     setSavedKeys(new Set());
     setSavedBatchIds(new Map());
     setError(null);
+    setLimitNotice(false);
   };
 
   // Burst capture (web modal) hands back several photos at once.
@@ -324,11 +340,16 @@ export function AnalyzePhoto({ user, onSignIn }) {
             </div>
           )}
 
+          {limitNotice && (
+            <p className="analyze-limit-note">{t('analyzeMaxPhotos', { max: MAX_PHOTOS })}</p>
+          )}
+
           <div className="analyze-input-actions">
             <button
               type="button"
               className="btn btn-primary analyze-input-btn"
               onClick={() => fileRef.current?.click()}
+              disabled={batches.length >= MAX_PHOTOS}
             >
               <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
             </button>
@@ -345,6 +366,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
             <button
               type="button"
               className="btn btn-secondary analyze-input-btn"
+              disabled={batches.length >= MAX_PHOTOS}
               onClick={async () => {
                 // Burst (multi-shot) belongs to the owned bulk-add flow only.
                 // The in-page getUserMedia modal works inside the iOS/Android
@@ -511,6 +533,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       <CameraCaptureModal
         open={cameraOpen}
         burst
+        maxShots={Math.max(0, MAX_PHOTOS - batches.length)}
         onClose={() => setCameraOpen(false)}
         onDone={onBurstDone}
       />
