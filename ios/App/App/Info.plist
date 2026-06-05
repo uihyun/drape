@@ -56,11 +56,11 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Drape saves your try-on results and outfit images to your Photos when you tap Save.</string>
+	<string>drape saves your try-on results and outfit images to your Photos when you tap Save.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Drape uses the camera to photograph your clothes and outfits for your closet and virtual try-on.</string>
+	<string>drape uses the camera to photograph your clothes and outfits for your closet and virtual try-on.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Drape lets you pick existing photos of your clothes and outfits to add to your closet.</string>
+	<string>drape lets you pick existing photos of your clothes and outfits to add to your closet.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

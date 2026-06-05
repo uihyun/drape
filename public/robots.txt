@@ -1,4 +1,4 @@
-# Drape robots.txt
+# drape robots.txt
 User-agent: *
 Allow: /
 
