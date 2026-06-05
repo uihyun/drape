@@ -18,6 +18,9 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // editorial title, then the palette / style / notes blocks. Each
 // editorial block renders only when its data is present — outfits created
 // before the auto-analysis pipeline lands still render fine, just sparser.
+// Title = outfit name (built/analyzed) or the OOTD memo. Cap it so the headline
+// can't balloon; the editorial "Notes on style" body is a separate field.
+const TITLE_MAX_LEN = 100;
 export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
@@ -250,7 +253,8 @@ export function OutfitDetail({ user, onSignIn }) {
           <input
             className="input"
             value={editName}
-            onChange={e => setEditName(e.target.value)}
+            onChange={e => setEditName(e.target.value.slice(0, TITLE_MAX_LEN))}
+            maxLength={TITLE_MAX_LEN}
             placeholder={outfit.date ? t('ootdNotePlaceholder') : t('untitledOutfit')}
           />
           {!outfit.date && (

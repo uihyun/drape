@@ -5403,12 +5403,14 @@ input[type="search"]::-webkit-search-decoration {
   color: var(--text-muted);
 }
 .outfit-title {
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.25;
   letter-spacing: -0.015em;
   color: var(--text-primary);
   margin-bottom: 1.4rem;
+  /* Keep a runaway title from ballooning the header — wrap, don't overflow. */
+  overflow-wrap: anywhere;
 }
 
 .outfit-edit-form {

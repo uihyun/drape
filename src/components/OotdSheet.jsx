@@ -148,10 +148,10 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
           <textarea
             className="ootd-sheet-note"
             value={note}
-            onChange={e => setNote(e.target.value)}
+            onChange={e => setNote(e.target.value.slice(0, 100))}
             placeholder={t('ootdNotePlaceholder')}
             rows={2}
-            maxLength={200}
+            maxLength={100}
           />
 
           {/* Publish toggle */}

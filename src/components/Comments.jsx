@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { logEvent, analytics } from '../firebase.js';
 import { Avatar } from './Avatar.jsx';
 import { CommentService, COMMENT_MAX_LEN } from '../services/comment-service.js';
-import { DEFAULT_DISPLAY_NAME } from '../services/profile-service.js';
+import { DEFAULT_DISPLAY_NAME, ProfileService } from '../services/profile-service.js';
 import { FollowButton } from './FollowButton.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useBlockedUids } from '../hooks/useBlockedUids.js';
@@ -33,10 +33,27 @@ export function Comments({ parentColl = 'outfits', parentId, ownerId, user, onSi
   // 차단한 사용자의 댓글은 숨김 (Apple Guideline 1.2).
   const blockedUids = useBlockedUids(user);
 
+  // Live author profiles, joined by userId. We render the avatar/handle from
+  // THESE (current profile), never the values denormalized onto the comment
+  // doc — old comments stored the Google auth photo (a generated lh3.google…
+  // avatar), which must never appear. Profile photo (in-app upload) or the
+  // name's first letter only.
+  const [authorProfiles, setAuthorProfiles] = useState(new Map());
+
   useEffect(() => {
     if (!parentId) return;
     return CommentService.subscribe(parentColl, parentId, setComments);
   }, [parentColl, parentId]);
+
+  const authorUidsKey = Array.from(new Set(comments.map(c => c.userId).filter(Boolean))).sort().join(',');
+  useEffect(() => {
+    if (!authorUidsKey) { setAuthorProfiles(new Map()); return; }
+    let cancelled = false;
+    ProfileService.getProfilesByUids(authorUidsKey.split(','))
+      .then(map => { if (!cancelled) setAuthorProfiles(map); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [authorUidsKey]);
 
   const isLoggedIn = user && !user.isAnonymous;
   const isOwner = isLoggedIn && ownerId === user.uid;
@@ -81,31 +98,38 @@ export function Comments({ parentColl = 'outfits', parentId, ownerId, user, onSi
         <ul className="comment-list">
           {visibleComments.map(c => {
             const canDelete = isLoggedIn && (c.userId === user.uid || isOwner);
+            // Live profile wins over the comment's denormalized fields. Photo
+            // is ONLY the in-app uploaded profile photo (or none → letter);
+            // the stored c.photoURL (possibly a Google avatar) is ignored.
+            const prof = authorProfiles.get(c.userId);
+            const handle = prof?.handle || c.handle || null;
+            const displayName = prof?.displayName || c.displayName;
+            const photoURL = prof?.photoURL || null;
             return (
               <li key={c.id} className="comment-item">
                 {(() => {
                   const avatar = (
                     <Avatar
-                      src={c.photoURL}
-                      name={c.handle || c.displayName}
+                      src={photoURL}
+                      name={handle || displayName}
                       size={32}
                       className="comment-avatar"
                     />
                   );
-                  return c.handle
-                    ? <Link to={`/u/${c.handle}`} className="comment-avatar-link">{avatar}</Link>
+                  return handle
+                    ? <Link to={`/u/${handle}`} className="comment-avatar-link">{avatar}</Link>
                     : avatar;
                 })()}
                 <div className="comment-body">
                   <div className="comment-meta">
                     {/* Instagram 식 — 댓글은 @handle 이 primary identity (단일 슬롯).
                         old comments 는 handle 없을 수 있어 displayName fallback. */}
-                    {c.handle ? (
-                      <Link to={`/u/${c.handle}`} className="comment-name">@{c.handle}</Link>
+                    {handle ? (
+                      <Link to={`/u/${handle}`} className="comment-name">@{handle}</Link>
                     ) : (
                       <span className="comment-name">
-                        {c.displayName && c.displayName !== DEFAULT_DISPLAY_NAME
-                          ? c.displayName
+                        {displayName && displayName !== DEFAULT_DISPLAY_NAME
+                          ? displayName
                           : DEFAULT_DISPLAY_NAME}
                       </span>
                     )}
