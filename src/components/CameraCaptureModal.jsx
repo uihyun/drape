@@ -13,7 +13,14 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // return all of them at once via onDone(blobs[]). onCapture still fires per
 // shot so callers that want streaming can use it; single-shot callers leave
 // burst off and get the original close-on-capture behaviour.
-export function CameraCaptureModal({ open, onClose, onCapture, burst = false, onDone }) {
+// Max photos per burst session. Keep in sync with AnalyzePhoto's per-batch cap.
+const MAX_SHOTS = 8;
+// Longest-edge cap for captured JPEGs — phone sensors hand back far more than we
+// need, and full-res blobs pile up in memory across a burst. Detection/tagging
+// is plenty accurate at this size.
+const MAX_EDGE = 1280;
+
+export function CameraCaptureModal({ open, onClose, onCapture, burst = false, onDone, maxShots = MAX_SHOTS }) {
   const { t } = useLocale();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -23,16 +30,27 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
   const [facingMode, setFacingMode] = useState(burst ? 'environment' : 'user');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
-  // Burst-mode accumulator: { url, blob }[]. Reset whenever the modal opens.
+  // Shown briefly when the user tries to shoot past maxShots.
+  const [limitHit, setLimitHit] = useState(false);
+  // Burst-mode accumulator: { id, url, blob }[]. Reset whenever the modal opens.
   const [shots, setShots] = useState([]);
+  // Stable, monotonic ids so a deleted thumbnail never makes React remap the
+  // surviving <img>s onto a different (or already-revoked) src.
+  const nextId = useRef(0);
+  // Mirror the live shots so the unmount-only cleanup can revoke whatever's
+  // current without re-running (and revoking still-shown URLs) on every change.
+  const shotsRef = useRef([]);
+  useEffect(() => { shotsRef.current = shots; }, [shots]);
 
   useEffect(() => {
     if (!open) return;
     setShots([]);
+    setLimitHit(false);
   }, [open]);
 
-  // Revoke thumbnail object URLs on unmount to avoid leaking them.
-  useEffect(() => () => { shots.forEach(s => URL.revokeObjectURL(s.url)); }, [shots]);
+  // Revoke any remaining thumbnail URLs only on unmount (individual removals
+  // already revoke their own URL). Empty deps = runs once, reads via the ref.
+  useEffect(() => () => { shotsRef.current.forEach(s => URL.revokeObjectURL(s.url)); }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -46,7 +64,11 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
           throw new Error(t('cameraUnsupported'));
         }
         current = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 1280 } },
+          // Don't force a square (or any) aspect — let the device hand back its
+          // native frame so the preview fills the stage and rotates with the
+          // device (portrait fills more vertical space, landscape works too).
+          // We cap the captured JPEG size ourselves at MAX_EDGE.
+          video: { facingMode, width: { ideal: 1920 } },
           audio: false,
         });
         if (cancelled) {
@@ -83,12 +105,18 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
 
   const capture = () => {
     if (!videoRef.current || !canvasRef.current || busy) return;
+    // Don't silently drop shots past the cap — tell the user to add these first.
+    if (burst && shots.length >= maxShots) { setLimitHit(true); return; }
     setBusy(true);
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const w = video.videoWidth;
-    const h = video.videoHeight;
-    if (!w || !h) { setBusy(false); return; }
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (!vw || !vh) { setBusy(false); return; }
+    // Downscale to MAX_EDGE on the longest side so blobs stay small.
+    const scale = Math.min(1, MAX_EDGE / Math.max(vw, vh));
+    const w = Math.round(vw * scale);
+    const h = Math.round(vh * scale);
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
@@ -98,12 +126,12 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
       if (!blob) return;
       if (burst) {
         // Keep shooting — stash a thumbnail + blob and leave the camera live.
-        setShots(prev => [...prev, { url: URL.createObjectURL(blob), blob }]);
+        setShots(prev => [...prev, { id: nextId.current++, url: URL.createObjectURL(blob), blob }]);
         onCapture?.(blob);
       } else {
         onCapture?.(blob);
       }
-    }, 'image/jpeg', 0.9);
+    }, 'image/jpeg', 0.85);
   };
 
   const finishBurst = () => {
@@ -146,20 +174,25 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
+      {!error && burst && limitHit && (
+        <div className="camera-limit" role="status">{t('cameraMaxShots', { max: maxShots })}</div>
+      )}
+
       {!error && burst && shots.length > 0 && (
         <div className="camera-filmstrip">
-          {shots.map((s, i) => (
-            <div key={i} className="camera-filmstrip-thumb">
+          {shots.map((s) => (
+            <div key={s.id} className="camera-filmstrip-thumb">
               <img src={s.url} alt="" />
               <button
                 type="button"
                 className="camera-filmstrip-rm"
-                onClick={() => setShots(prev => {
-                  const next = [...prev];
-                  const [removed] = next.splice(i, 1);
-                  if (removed) URL.revokeObjectURL(removed.url);
-                  return next;
-                })}
+                onClick={() => {
+                  setLimitHit(false);
+                  setShots(prev => prev.filter(x => {
+                    if (x.id === s.id) { URL.revokeObjectURL(x.url); return false; }
+                    return true;
+                  }));
+                }}
                 aria-label={t('remove')}
               >
                 <X size={12} strokeWidth={2.4} />
@@ -183,7 +216,7 @@ export function CameraCaptureModal({ open, onClose, onCapture, burst = false, on
           )}
           <button
             type="button"
-            className="camera-shutter"
+            className={`camera-shutter${burst && shots.length >= maxShots ? ' is-full' : ''}`}
             onClick={capture}
             disabled={busy || !stream}
             aria-label={t('capture')}

@@ -220,7 +220,9 @@ body.is-native {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem 1.5rem;
+  /* Tight side/bottom padding so the native-aspect preview fills the space;
+     top padding clears the absolute close button. */
+  padding: 3rem 0.5rem 0.75rem;
   min-height: 0;
 }
 .camera-preview {
@@ -231,6 +233,18 @@ body.is-native {
   background: #000;
   width: auto;
   height: auto;
+}
+/* Brief notice when the user shoots past the per-burst cap. */
+.camera-limit {
+  align-self: center;
+  margin: 0 1rem 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 0.82rem;
+  text-align: center;
+  max-width: 90%;
 }
 .camera-error {
   color: #fff;
@@ -320,6 +334,9 @@ body.is-native {
 }
 .camera-shutter:active { transform: scale(0.95); }
 .camera-shutter:disabled { opacity: 0.5; cursor: default; }
+/* At the per-burst cap: dim + accent ring to signal "full" (still tappable so
+   the tap surfaces the limit notice). */
+.camera-shutter.is-full { opacity: 0.55; border-color: var(--accent, #6b7cff); }
 .camera-flip {
   justify-self: start;
   width: 44px;

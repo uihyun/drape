@@ -86,6 +86,7 @@ export const ja = {
   tryOnMaxItems: '一度に最大 {max} 点まで試着できます。',
   cameraUnsupported: 'このブラウザはカメラに対応していません。',
   cameraPermissionDenied: 'カメラへのアクセスが拒否されました。ブラウザの設定で許可してください。',
+  cameraMaxShots: '一度に最大{max}枚まで撮影できます。チェックを押して先に追加してください。',
   flipCamera: 'カメラ切替',
   capture: '撮影',
   stats: '統計',

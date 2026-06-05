@@ -84,6 +84,7 @@ export const en = {
   tryOnMaxItems: 'You can try on up to {max} items at once.',
   cameraUnsupported: 'Your browser doesn’t support camera access.',
   cameraPermissionDenied: 'Camera permission was denied. Allow access in your browser settings.',
+  cameraMaxShots: 'You can capture up to {max} photos at a time. Tap the check to add these first.',
   flipCamera: 'Flip camera',
   capture: 'Capture',
   stats: 'Stats',

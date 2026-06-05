@@ -84,6 +84,7 @@ export const ko = {
   tryOnMaxItems: '한 번에 최대 {max}개까지 입어볼 수 있어요.',
   cameraUnsupported: '이 브라우저는 카메라 접근을 지원하지 않아요.',
   cameraPermissionDenied: '카메라 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.',
+  cameraMaxShots: '한 번에 최대 {max}장까지 찍을 수 있어요. 체크를 눌러 먼저 추가해 주세요.',
   flipCamera: '카메라 전환',
   capture: '촬영',
   stats: '통계',
