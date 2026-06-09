@@ -24,7 +24,10 @@ export function FollowListSheet({ open, uid, kind, onClose }) {
         if (!uids?.length) { if (!cancelled) setProfiles([]); return; }
         const map = await ProfileService.getProfilesByUids(uids);
         if (cancelled) return;
-        setProfiles(uids.map(u => map.get(u)).filter(Boolean));
+        // Drop ghosts: a deleted account can leave a handle-less profile shell
+        // (or a dangling follow edge). No handle → the row can't navigate
+        // anywhere, so hide it instead of rendering a dead "@" entry.
+        setProfiles(uids.map(u => map.get(u)).filter(p => p && p.handle));
       })
       .catch((err) => {
         console.warn('follow list fetch failed:', err?.code, err?.message);

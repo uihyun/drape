@@ -47,9 +47,10 @@ export function FollowListModal({
       const lastDoc = reset ? null : data[which].lastVisible;
       const { uids, lastVisible, hasMore } = await fn(uid, { lastDoc });
       // UID → profile 일괄 resolve. 일부 uid 의 profile 이 없을 수도 있어
-      // (handle 미생성 / 마이그레이션 잔재) Map 에서 lookup 후 null 거르기.
+      // (handle 미생성 / 마이그레이션 잔재 / 삭제된 계정의 빈 껍데기) — handle
+      // 없는 행은 어디로도 못 가는 유령이라 거른다.
       const profMap = await ProfileService.getProfilesByUids(uids);
-      const profiles = uids.map(u => profMap.get(u)).filter(Boolean);
+      const profiles = uids.map(u => profMap.get(u)).filter(p => p && p.handle);
       setData(prev => ({
         ...prev,
         [which]: {
