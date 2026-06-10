@@ -248,10 +248,11 @@ function PublicOutfitsGrid({ ootds, t }) {
 function PublicBoardsGrid({ boards, t }) {
   if (boards === null) return <div className="loading"><div className="spinner" /></div>;
   if (boards.length === 0) return <div className="empty-state"><p>{t('publicBoardsEmpty')}</p></div>;
+  const ids = boards.map(b => b.id);
   return (
     <Masonry items={boards}>
-      {b => (
-        <Link to={`/boards/${b.id}`} className="board-card">
+      {(b, i) => (
+        <Link to={`/boards/${b.id}`} state={buildSwipeState(ids, i, 'board')} className="board-card">
           <BoardThumbnail board={b} />
           <div className="board-card-meta">
             <span className="card-meta-name">{b.name || t('untitledBoard')}</span>
@@ -300,6 +301,10 @@ function PublicCalendar({ ootds, t }) {
   while (cells.length % 7 !== 0) cells.push(null);
   const monthLabel = cursor.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
   const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  // Chronological order of the dated looks → swipe between them from a detail.
+  const calIds = Object.values(byDate)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+    .map(e => e.id);
 
   return (
     <div className="calendar calendar-embedded">
@@ -342,6 +347,7 @@ function PublicCalendar({ ootds, t }) {
             <Link
               key={i}
               to={`/o/${entry.id}`}
+              state={buildSwipeState(calIds, calIds.indexOf(entry.id), 'outfit')}
               className={`calendar-cell ${isToday ? 'today' : ''}`}
               aria-label={dateStr}
             >{inner}</Link>

@@ -31,6 +31,10 @@ export function useSwipeNavigate() {
   const startX = useRef(null);
   const startY = useRef(null);
   const axis = useRef(null); // 'x' | 'y' | null — locked on the first real move
+  // True once a gesture has moved horizontally past a small threshold. Lets a
+  // detail with a tap action (e.g. ItemDetail before/after toggle) skip the
+  // tap when the touch was actually a swipe.
+  const moved = useRef(false);
   const [dx, setDx] = useState(0);
 
   const go = useCallback((dir) => {
@@ -46,6 +50,7 @@ export function useSwipeNavigate() {
     startX.current = e.touches[0].clientX;
     startY.current = e.touches[0].clientY;
     axis.current = null;
+    moved.current = false;
   };
   const onTouchMove = (e) => {
     if (!swipeable || startX.current === null) return;
@@ -56,6 +61,7 @@ export function useSwipeNavigate() {
       axis.current = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
     }
     if (axis.current !== 'x') return; // vertical scroll — leave it to the page
+    if (Math.abs(mx) > 8) moved.current = true;
     // Rubber-band when there's nothing past this end.
     let v = mx;
     if ((mx > 0 && atStart) || (mx < 0 && atEnd)) v = mx * 0.32;
@@ -81,5 +87,5 @@ export function useSwipeNavigate() {
     touchAction: swipeable ? 'pan-y' : undefined,
   };
 
-  return { swipeable, bind, style, atStart, atEnd, index, total: ids?.length ?? 0 };
+  return { swipeable, bind, style, atStart, atEnd, index, total: ids?.length ?? 0, moved };
 }

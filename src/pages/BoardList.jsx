@@ -9,6 +9,7 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 
@@ -179,8 +180,8 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           className="board-list-grid pinch-grid"
           style={{ columns: cols }}
         >
-          {list.map(b => (
-            <Link key={b.id} to={`/boards/${b.id}`} className="board-card">
+          {list.map((b, i) => (
+            <Link key={b.id} to={`/boards/${b.id}`} state={buildSwipeState(list.map(x => x.id), i, 'board')} className="board-card">
               <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
               {tab === 'mine' && !b.isPublic && (
                 <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>

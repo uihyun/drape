@@ -141,9 +141,11 @@ export function Feed({ user, onSignIn }) {
   const showingBoards = kind === 'boards';
   const showingMarket = kind === 'market';
   const list = showingMarket ? listings : showingBoards ? boards : ootds;
-  // Ordered ids of the visible OOTD feed → handed to each card so the detail
-  // page can swipe between siblings.
+  // Ordered ids of the visible list → handed to each card so the detail page
+  // can swipe between siblings.
   const ootdIds = (ootds || []).map(o => o.id);
+  const boardIds = (boards || []).map(b => b.id);
+  const listingIds = (listings || []).map(it => it.id);
 
   const setKindAnd = (k) => setKind(k);
 
@@ -235,10 +237,12 @@ export function Feed({ user, onSignIn }) {
         <>
           {showingMarket ? (
             <div className="marketplace-grid feed-market-grid">
-              {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
+              {listings.map((it, i) => <ListingCard key={it.id} item={it} ids={listingIds} index={i} t={t} />)}
             </div>
           ) : showingBoards ? (
-            <Masonry items={boards}>{b => <BoardCard board={b} />}</Masonry>
+            <Masonry items={boards}>
+              {(b, i) => <BoardCard board={b} ids={boardIds} index={i} />}
+            </Masonry>
           ) : (
             <Masonry items={ootds}>
               {(o, i) => <OotdCard ootd={o} ids={ootdIds} index={i} />}
@@ -255,9 +259,9 @@ export function Feed({ user, onSignIn }) {
   );
 }
 
-function BoardCard({ board }) {
+function BoardCard({ board, ids, index }) {
   return (
-    <Link to={`/boards/${board.id}`} className="board-feed-card">
+    <Link to={`/boards/${board.id}`} state={buildSwipeState(ids, index, 'board')} className="board-feed-card">
       <BoardThumbnail board={board} className="board-feed-thumb" />
     </Link>
   );

@@ -4134,17 +4134,33 @@ input[type="search"]::-webkit-search-decoration {
   border-radius: 18px;
   box-shadow: 0 14px 44px rgba(0, 0, 0, 0.28);
 }
-.swipe-hint-arrows {
+.swipe-hint-demo {
+  position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 0.6rem;
+  height: 66px;
+  margin-bottom: 0.7rem;
+}
+.swipe-hint-pointer {
+  color: var(--text-primary);
+  animation: swipe-hint-hand 1.8s ease-in-out infinite;
+}
+@keyframes swipe-hint-hand {
+  0%, 100% { transform: translateX(-30px) rotate(-7deg); }
+  50% { transform: translateX(30px) rotate(7deg); }
+}
+.swipe-hint-chevron {
+  position: absolute;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 300;
   color: var(--accent-strong);
-  animation: swipe-hint-slide 1.4s ease-in-out infinite;
 }
-@keyframes swipe-hint-slide {
-  0%, 100% { transform: translateX(-9px); }
-  50% { transform: translateX(9px); }
-}
+.swipe-hint-chevron--left { left: 6px; animation: swipe-hint-pulse-l 1.8s ease-in-out infinite; }
+.swipe-hint-chevron--right { right: 6px; animation: swipe-hint-pulse-r 1.8s ease-in-out infinite; }
+@keyframes swipe-hint-pulse-l { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@keyframes swipe-hint-pulse-r { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
 .swipe-hint-text {
   margin: 0.2rem 0 1.1rem;
   font-size: 0.95rem;

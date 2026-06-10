@@ -15,6 +15,8 @@ import { shareOrDownloadImage } from '../services/share-service.js';
 import { elapsedLabel, daysSince } from '../utils/elapsed.js';
 import { currencyForCountry, currencySymbol, formatPrice } from '../utils/currency.js';
 import { cityCountry } from '../data/cities.js';
+import { SwipeHint } from '../components/SwipeHint.jsx';
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Full-screen single-item viewer modeled on Image 24:
@@ -28,6 +30,7 @@ export function ItemDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { itemId } = useParams();
   const navigate = useNavigate();
+  const swipe = useSwipeNavigate();
   const [item, setItem] = useState(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({});
@@ -314,7 +317,12 @@ export function ItemDetail({ user, onSignIn }) {
       <div
         ref={stageRef}
         className="item-viewer-stage"
-        onClick={() => hasBoth && setShowOriginal(s => !s)}
+        {...swipe.bind}
+        style={swipe.style}
+        // A horizontal swipe navigates to the next item; a plain tap toggles
+        // before/after. moved.current tells them apart so a swipe doesn't also
+        // flip the image on the way out.
+        onClick={() => { if (swipe.moved?.current) return; if (hasBoth) setShowOriginal(s => !s); }}
         role={hasBoth ? 'button' : undefined}
         aria-label={hasBoth ? (showOriginal ? t('showProcessed') : t('showOriginal')) : undefined}
       >
@@ -330,6 +338,7 @@ export function ItemDetail({ user, onSignIn }) {
           </span>
         )}
       </div>
+      {swipe.swipeable && <SwipeHint />}
 
       <aside className="item-viewer-rail" aria-label="actions">
         {isOwner && (

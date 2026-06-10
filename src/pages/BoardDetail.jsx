@@ -10,6 +10,8 @@ import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { Comments } from '../components/Comments.jsx';
+import { SwipeHint } from '../components/SwipeHint.jsx';
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Read-only board view at /b/:boardId. Anyone can hit this URL but
@@ -20,6 +22,7 @@ export function BoardDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { boardId } = useParams();
   const navigate = useNavigate();
+  const swipe = useSwipeNavigate();
   const [board, setBoard] = useState(undefined); // undefined=loading, null=not-found
   const [author, setAuthor] = useState(null);
   const [items, setItems] = useState([]);
@@ -94,9 +97,10 @@ export function BoardDetail({ user, onSignIn }) {
 
   return (
     <div className="page board-detail">
-      <div className="board-detail-hero-wrap">
+      <div className="board-detail-hero-wrap" {...swipe.bind} style={swipe.style}>
         <BoardThumbnail board={board} itemsById={itemsById} className="board-detail-hero" />
       </div>
+      {swipe.swipeable && <SwipeHint />}
       {reporting && (
         <ReportModal target={{ type: 'board', id: board.id }} user={user} onClose={() => setReporting(false)} />
       )}

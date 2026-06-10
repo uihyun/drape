@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X, Bookmark } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { CATEGORIES, categoryLabel } from '../services/taxonomy.js';
 import {
   LookFilterSheet, LOOK_DIMS, countLookFilters, itemMatchesFilters,
@@ -89,6 +90,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
     if (filterCount > 0) live = live.filter(i => matchesFilters(i, filters));
     return live;
   }, [items, filters, filterCount, kind]);
+  // Flat-grid order → handed to each card for swipe-between-items. (Grouped
+  // views build their own per-group order below.)
+  const filteredIds = (filtered || []).map(i => i.id);
 
   const toggleDim = (key, value) => {
     setFilters(prev => {
@@ -265,7 +269,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           className="closet-grid pinch-grid"
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
-          {filtered.map(item => <ItemCard key={item.id} item={item} t={t} />)}
+          {filtered.map((item, i) => <ItemCard key={item.id} item={item} ids={filteredIds} index={i} t={t} />)}
         </div>
       )}
       {closetHasMore && <div ref={closetSentinelRef} className="feed-sentinel" />}
@@ -331,11 +335,13 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
             className="closet-grid"
             style={cols ? { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` } : undefined}
           >
-            {g.items.map(item => (
+            {g.items.map((item, idx) => (
               <ItemCard
                 key={item.id}
                 item={item}
                 t={t}
+                ids={g.items.map(it => it.id)}
+                index={idx}
                 elapsed={showElapsed ? elapsedLabel(item.lastWornAt, t) : null}
               />
             ))}
@@ -346,12 +352,12 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
   );
 }
 
-function ItemCard({ item, t, elapsed = null }) {
+function ItemCard({ item, t, elapsed = null, ids, index }) {
   const processing = item.status === 'processing' || item.status === 'uploading';
   const failed = item.status === 'failed';
   const cover = item.croppedUrl || item.originalUrl;
   return (
-    <Link to={`/i/${item.id}`} className={`item-card ${processing ? 'processing' : ''}`}>
+    <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className={`item-card ${processing ? 'processing' : ''}`}>
       <div className="item-card-image">
         {cover
           ? <img src={cover} alt={item.name || ''} loading="lazy" />

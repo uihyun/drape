@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketplaceService } from '../services/marketplace-service.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -53,6 +54,7 @@ export function Marketplace() {
   const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
   const empty = !loading && (listings?.length ?? 0) === 0;
+  const listingIds = (listings || []).map(it => it.id);
   const filters = useMemo(() => GRADES, []);
 
   return (
@@ -82,7 +84,7 @@ export function Marketplace() {
       ) : (
         <>
           <div className="marketplace-grid">
-            {listings.map(it => <ListingCard key={it.id} item={it} t={t} />)}
+            {listings.map((it, i) => <ListingCard key={it.id} item={it} ids={listingIds} index={i} t={t} />)}
           </div>
           {hasMore && <div ref={sentinelRef} className="feed-sentinel">{loadingMore && <div className="spinner" />}</div>}
         </>
@@ -91,10 +93,10 @@ export function Marketplace() {
   );
 }
 
-export function ListingCard({ item, t }) {
+export function ListingCard({ item, t, ids, index }) {
   const cover = item.croppedUrl || item.originalUrl;
   return (
-    <Link to={`/i/${item.id}`} className="listing-card">
+    <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className="listing-card">
       <div className="listing-card-image">
         {cover
           ? <img src={cover} alt={item.name || ''} loading="lazy" />
