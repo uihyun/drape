@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { calendarWarm } from '../services/uiCache.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -205,8 +206,10 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           onPick={(entry) => {
             // Tapping an existing look opens its full detail page (not the
             // edit sheet) — photo change / linking lives on the detail.
+            // Hand over the day's entries so the detail can swipe between them.
+            const ids = (byDate[pickerDate] || []).map(e => e.id);
             setPickerDate(null);
-            navigate(`/o/${entry.id}`);
+            navigate(`/o/${entry.id}`, { state: buildSwipeState(ids, ids.indexOf(entry.id), 'outfit') });
           }}
           onAddNew={() => {
             setSheetExisting(null);

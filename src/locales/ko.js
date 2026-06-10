@@ -222,6 +222,8 @@ export const ko = {
   remove: '제거',
   close: '닫기',
   ok: '확인',
+  swipeHint: '좌우로 넘기면 다음 룩을 볼 수 있어요.',
+  swipeHintCta: '확인',
   submit: '제출',
   submitting: '제출 중…',
   uploading: '업로드 중…',

@@ -11,6 +11,7 @@ import { CardImage } from '../components/CardImage.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ListingCard } from './Marketplace.jsx';
 import { feedCache, feedKey as cacheKey } from '../services/uiCache.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -140,6 +141,9 @@ export function Feed({ user, onSignIn }) {
   const showingBoards = kind === 'boards';
   const showingMarket = kind === 'market';
   const list = showingMarket ? listings : showingBoards ? boards : ootds;
+  // Ordered ids of the visible OOTD feed → handed to each card so the detail
+  // page can swipe between siblings.
+  const ootdIds = (ootds || []).map(o => o.id);
 
   const setKindAnd = (k) => setKind(k);
 
@@ -236,7 +240,9 @@ export function Feed({ user, onSignIn }) {
           ) : showingBoards ? (
             <Masonry items={boards}>{b => <BoardCard board={b} />}</Masonry>
           ) : (
-            <Masonry items={ootds}>{o => <OotdCard ootd={o} />}</Masonry>
+            <Masonry items={ootds}>
+              {(o, i) => <OotdCard ootd={o} ids={ootdIds} index={i} />}
+            </Masonry>
           )}
           {hasMore && (
             <div ref={sentinelRef} className="feed-sentinel">
@@ -257,9 +263,9 @@ function BoardCard({ board }) {
   );
 }
 
-function OotdCard({ ootd }) {
+function OotdCard({ ootd, ids, index }) {
   return (
-    <Link to={`/o/${ootd.id}`} className="ootd-card">
+    <Link to={`/o/${ootd.id}`} state={buildSwipeState(ids, index, 'outfit')} className="ootd-card">
       {outfitCardPhoto(ootd)
         ? <CardImage src={outfitCardPhoto(ootd)} />
         : <div className="ootd-card-empty">◇</div>}

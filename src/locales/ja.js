@@ -224,6 +224,8 @@ export const ja = {
   remove: '取り除く',
   close: '閉じる',
   ok: 'OK',
+  swipeHint: '左右にスワイプして次のルックを見られます。',
+  swipeHintCta: 'OK',
   submit: '送信',
   submitting: '送信中…',
   uploading: 'アップロード中…',

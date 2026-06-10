@@ -222,6 +222,8 @@ export const en = {
   remove: 'Remove',
   close: 'Close',
   ok: 'OK',
+  swipeHint: 'Swipe left or right to browse the next look.',
+  swipeHintCta: 'Got it',
   submit: 'Submit',
   submitting: 'Submitting…',
   uploading: 'Uploading…',

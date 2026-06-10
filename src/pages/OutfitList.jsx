@@ -8,6 +8,7 @@ import {
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
 import { Masonry } from '../components/Masonry.jsx';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
@@ -20,13 +21,14 @@ import { olCache, olKey } from '../services/uiCache.js';
 // 2-col grid of natural-ratio look photos — matches the discovery feed.
 // `showPrivacy` (own content only) flags looks that aren't published yet.
 function OotdGrid({ ootds, t, showPrivacy = false }) {
+  const ids = ootds.map(o => o.id);
   return (
     <Masonry items={ootds}>
-      {o => {
+      {(o, i) => {
         const photo = outfitCardPhoto(o);
         const isPrivate = showPrivacy && !o.isPublic && !o.isListed;
         return (
-          <Link to={`/o/${o.id}`} className="ootd-card">
+          <Link to={`/o/${o.id}`} state={buildSwipeState(ids, i, 'outfit')} className="ootd-card">
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}

@@ -12,6 +12,8 @@ import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { PieceRow } from '../components/PieceRow.jsx';
 import { Avatar } from '../components/Avatar.jsx';
+import { SwipeHint } from '../components/SwipeHint.jsx';
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
@@ -25,6 +27,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
   const navigate = useNavigate();
+  const swipe = useSwipeNavigate();
   const [outfit, setOutfit] = useState(null);
   const [items, setItems] = useState([]);
   const [owner, setOwner] = useState(null);
@@ -214,10 +217,12 @@ export function OutfitDetail({ user, onSignIn }) {
 
   return (
     <div className="outfit-detail">
-      {/* Hero photo — clean, no overlay actions on it. */}
-      <div className="outfit-hero-wrap">
+      {/* Hero photo — clean, no overlay actions on it. Swipe left/right here
+          jumps to the previous/next look in the list you came from. */}
+      <div className="outfit-hero-wrap" {...swipe.bind} style={swipe.style}>
         {renderHero()}
       </div>
+      {swipe.swipeable && <SwipeHint />}
       {reporting && (
         <ReportModal target={{ type: 'outfit', id: outfit.id }} user={user} onClose={() => setReporting(false)} />
       )}

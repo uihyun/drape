@@ -11,8 +11,11 @@ export function Masonry({ items = [], getKey, children, className = '' }) {
       {cols.map((col, ci) => (
         <div className="masonry-col" key={ci}>
           {col.map((it, i) => {
+            // Recover the item's index in the ORIGINAL (pre-split) array so
+            // callers can pass it downstream (e.g. swipe-between-details order).
+            const originalIndex = i * 2 + ci;
             const key = getKey ? getKey(it) : (it?.id ?? `${ci}-${i}`);
-            return <div key={key}>{children(it)}</div>;
+            return <div key={key}>{children(it, originalIndex)}</div>;
           })}
         </div>
       ))}

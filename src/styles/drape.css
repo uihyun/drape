@@ -4112,6 +4112,47 @@ input[type="search"]::-webkit-search-decoration {
   gap: 0;
   box-shadow: inset 1px 1px 0 var(--border);
 }
+/* Swipe-between-details coachmark (one-time). */
+.swipe-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(20, 19, 18, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.swipe-hint-card {
+  width: 100%;
+  max-width: 300px;
+  padding: 1.7rem 1.5rem;
+  text-align: center;
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.28);
+}
+.swipe-hint-arrows {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.6rem;
+  color: var(--accent-strong);
+  animation: swipe-hint-slide 1.4s ease-in-out infinite;
+}
+@keyframes swipe-hint-slide {
+  0%, 100% { transform: translateX(-9px); }
+  50% { transform: translateX(9px); }
+}
+.swipe-hint-text {
+  margin: 0.2rem 0 1.1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.swipe-hint-btn { width: 100%; }
+
 .calendar-cell {
   /* Tall portrait so a person-cutout thumbnail reads as a figure (not
      a squished square). 2:5 (1 : 2.5) matches the Lekondo reference. */

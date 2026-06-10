@@ -9,6 +9,7 @@ import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { Masonry } from '../components/Masonry.jsx';
+import { buildSwipeState } from '../services/swipeNav.js';
 import { ExpandableBio } from '../components/ExpandableBio.jsx';
 import { MoreMenu } from '../components/MoreMenu.jsx';
 import { CardImage } from '../components/CardImage.jsx';
@@ -225,13 +226,14 @@ function PublicOutfitsGrid({ ootds, t }) {
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   if (items.length === 0) return <div className="empty-state"><p>{t('publicProfileEmpty')}</p></div>;
+  const ids = items.map(o => o.id);
   // Same 2-col natural-ratio grid the owner's Outfits tab uses (.ootd-feed).
   return (
     <Masonry items={items}>
-      {o => {
+      {(o, i) => {
         const photo = outfitCardPhoto(o);
         return (
-          <Link to={`/o/${o.id}`} className="ootd-card">
+          <Link to={`/o/${o.id}`} state={buildSwipeState(ids, i, 'outfit')} className="ootd-card">
             {photo
               ? <CardImage src={photo} />
               : <div className="ootd-card-empty">◇</div>}
