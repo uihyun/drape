@@ -67,20 +67,30 @@ export function Landing() {
           <p className="lp-tagline">{t('landingTagline')}</p>
 
           <div className="lp-stores">
-            <span className="lp-store">
+            <a
+              className="lp-store"
+              href="https://apps.apple.com/app/id6775511709"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <AppleGlyph />
               <span className="lp-store-text">
                 <small>{t('landingStoreOn')}</small>
                 <strong>App Store</strong>
               </span>
-            </span>
-            <span className="lp-store">
+            </a>
+            <a
+              className="lp-store"
+              href="https://play.google.com/store/apps/details?id=com.uihyun.drape"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <PlayGlyph />
               <span className="lp-store-text">
                 <small>{t('landingStoreGet')}</small>
                 <strong>Google Play</strong>
               </span>
-            </span>
+            </a>
           </div>
         </div>
       </main>

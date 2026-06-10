@@ -53,6 +53,7 @@ The point of v0 is to prove **the loop**: snap clothes → tag automatically →
 
 ## Later
 
+- Rebrand consideration (decide after traction). "drape" is generic + crowded in App Store search (many fashion/wardrobe "Drape*" apps, some with hundreds of ratings) — hurts *organic store-search* discovery and is hard to trademark/defend. Mitigation for now: drive acquisition through owned channels (drape.nyc + direct store links) and ASO subtitle/keywords rather than the bare name. A distinctive Lekondo-style name would help long-term organic discovery + trademark, but a post-launch rename is costly (brand assets, both store names, domain). Revisit only with traction signal.
 - "Find me this look" — snap a shop product, search across the community closet.
 - Self-hosted try-on (IDM-VTON / CatVTON / Leffa) trained on the accumulated Generation table — only worthwhile once we have signal on the closed-API ceiling.
 
