@@ -104,12 +104,19 @@ export function Feed({ user, onSignIn }) {
       return;
     }
     // Otherwise paint any stale cache, then refetch a fresh first page.
-    setActive(cached ? (Array.isArray(cached) ? cached : cached.items) : null);
+    const shownItems = cached ? (Array.isArray(cached) ? cached : cached.items) : null;
+    setActive(shownItems);
     setCursor(null); setHasMore(false);
     let cancelled = false;
     fetchPage(null).then(res => {
       if (cancelled) return;
-      setActive(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
+      // Don't replace the list when the fresh first page matches what's already
+      // shown — a full swap re-renders the whole grid and reads as a re-sort.
+      // Only swap in genuinely-changed content.
+      const sameList = shownItems && shownItems.length === res.items.length
+        && shownItems.every((it, i) => it.id === res.items[i].id);
+      if (!sameList) setActive(res.items);
+      setCursor(res.cursor); setHasMore(res.hasMore);
       feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
     }).catch(err => {
       console.warn('feed load failed:', err?.code, err?.message);

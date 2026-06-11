@@ -36,10 +36,14 @@ export async function warmUp(user) {
 
   const tasks = [];
 
-  // Public discovery feed — everyone, including anonymous/guest.
+  // Public discovery feed — everyone, including anonymous/guest. Store the
+  // FULL page shape ({items, cursor, hasMore, ts}) the Feed component uses, not
+  // a bare array — otherwise Feed treats the warmed data as stale and refetches
+  // + replaces the list on first view, which visibly re-sorts the grid.
   tasks.push(
     OutfitService.listPublicFeed({ pageSize: 24, sortBy: 'latest' })
-      .then(({ ootds }) => feedCache.set(feedKey('ootds', 'latest', 'forYou'), ootds))
+      .then(r => feedCache.set(feedKey('ootds', 'latest', 'forYou'),
+        { items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore, ts: Date.now() }))
       .catch(() => {}),
   );
 
@@ -49,7 +53,8 @@ export async function warmUp(user) {
       FollowService.getFollowingIds(uid, { max: FOLLOWING_FEED_LIMIT })
         .then(ids => (ids?.length
           ? OutfitService.listFollowingFeed({ followingIds: ids, pageSize: 24 })
-            .then(r => feedCache.set(feedKey('ootds', 'latest', 'following'), r.ootds))
+            .then(r => feedCache.set(feedKey('ootds', 'latest', 'following'),
+              { items: r.ootds, cursor: r.lastVisible, hasMore: r.hasMore, ts: Date.now() }))
           : null))
         .catch(() => {}),
     );
