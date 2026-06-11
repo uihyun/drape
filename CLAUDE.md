@@ -35,6 +35,7 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 - Don't reintroduce voda's interior-design helpers (`paint-match`, `shopping-links`, `EditRegionModal`, the 38 interior styles). They were deliberately removed.
 - Don't reintroduce a Flash try-on tier or any model-tier selector. Try-on is Pro-only — the split wasn't worth the quality drop. `virtualTryOn` ignores any `modelTier` param older clients still send.
 - Don't write planning / spec docs unless asked — keep notes in `PROGRESS.md`.
+- Keep `CHANGELOG.md` current: every shippable change gets a detailed entry under the right version (newest first). The store-facing release notes are a short subset; `CHANGELOG.md` is the full internal record. Bump the version in 3 places together when building native — `package.json`, `android/app/build.gradle` (versionName + versionCode), iOS `project.pbxproj` (MARKETING_VERSION + CURRENT_PROJECT_VERSION).
 - Don't commit secrets. `GEMINI_API_KEY` lives in a Firebase secret; the dev value is in `.env` (gitignored).
 
 ## Conventions worth keeping
