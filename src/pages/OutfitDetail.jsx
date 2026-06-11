@@ -436,23 +436,22 @@ export function OutfitDetail({ user, onSignIn }) {
         )}
 
         <div className="outfit-action-row">
-          {/* Visitor social actions share this row with Share — same format,
-              not a separate bar under the photo. */}
-          {!isOwner && (
-            <button
-              type="button"
-              className={`outfit-action-icon${(outfit.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
-              aria-label={t('like')}
-              onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
-                catch (e) { console.warn('outfit like failed', e?.message); }
-              }}
-            >
-              <Heart size={18} strokeWidth={1.7} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(outfit.likeCount || 0) > 0 && <span className="outfit-action-count">{outfit.likeCount}</span>}
-            </button>
-          )}
+          {/* Like + count visible to everyone, including the owner — you can
+              like your own look and always see the tally. Share sits in the
+              same row, not a separate bar under the photo. */}
+          <button
+            type="button"
+            className={`outfit-action-icon${(outfit.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
+            aria-label={t('like')}
+            onClick={async () => {
+              if (!user || user.isAnonymous) { onSignIn?.(); return; }
+              try { await OutfitService.toggleLike(outfit.id, user?.uid, (outfit.likedBy || []).includes(user?.uid)); }
+              catch (e) { console.warn('outfit like failed', e?.message); }
+            }}
+          >
+            <Heart size={18} strokeWidth={1.7} fill={(outfit.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+            {(outfit.likeCount || 0) > 0 && <span className="outfit-action-count">{outfit.likeCount}</span>}
+          </button>
           {!isOwner && (
             <button
               type="button"

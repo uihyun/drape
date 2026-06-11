@@ -143,21 +143,20 @@ export function BoardDetail({ user, onSignIn }) {
           </button>
         )}
         <div className="outfit-action-row">
-          {!isOwner && (
-            <button
-              type="button"
-              className={`outfit-action-icon${(board.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
-              aria-label={t('like')}
-              onClick={async () => {
-                if (!user || user.isAnonymous) { onSignIn?.(); return; }
-                try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
-                catch (err) { console.warn('board like failed', err?.message); }
-              }}
-            >
-              <Heart size={18} strokeWidth={1.7} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
-              {(board.likeCount || 0) > 0 && <span className="outfit-action-count">{board.likeCount}</span>}
-            </button>
-          )}
+          {/* Like + count visible to everyone, owner included. */}
+          <button
+            type="button"
+            className={`outfit-action-icon${(board.likedBy || []).includes(user?.uid) ? ' is-liked' : ''}`}
+            aria-label={t('like')}
+            onClick={async () => {
+              if (!user || user.isAnonymous) { onSignIn?.(); return; }
+              try { await BoardService.toggleLike(board.id, user.uid, (board.likedBy || []).includes(user.uid)); }
+              catch (err) { console.warn('board like failed', err?.message); }
+            }}
+          >
+            <Heart size={18} strokeWidth={1.7} fill={(board.likedBy || []).includes(user?.uid) ? 'currentColor' : 'none'} />
+            {(board.likeCount || 0) > 0 && <span className="outfit-action-count">{board.likeCount}</span>}
+          </button>
           {!isOwner && (
             <button
               type="button"
