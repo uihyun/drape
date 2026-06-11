@@ -22,7 +22,9 @@ export function SignInModal({ open, onClose, onSignedIn }) {
   // User-driven cancellations (closed the popup, denied the OAuth
   // consent screen) aren't errors worth surfacing — the user already
   // knows they backed out. Only true failures (network, misconfig,
-  // blocked popup) hit the error line.
+  // blocked popup) hit the error line. Native cancellations arrive as a
+  // "...canceled the sign-in flow." message rather than a web auth/* code,
+  // so match the message too.
   const CANCEL_CODES = new Set([
     'auth/user-cancelled',
     'auth/popup-closed-by-user',
@@ -30,6 +32,7 @@ export function SignInModal({ open, onClose, onSignedIn }) {
   ]);
   const handleSignInError = (e) => {
     if (e?.code && CANCEL_CODES.has(e.code)) return;
+    if (/cancel/i.test(String(e?.message || ''))) return;
     setError(e?.message || 'Sign-in failed');
   };
 

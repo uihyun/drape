@@ -15,32 +15,28 @@ export function Welcome() {
   const { t, lang, setLang } = useLocale();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(null); // 'google' | 'apple' | 'email' | null
-  const [error, setError] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
 
   const afterSignIn = () => navigate('/feed', { replace: true });
 
-  // Swallow user-driven cancellations so closing the OAuth popup or
-  // denying consent doesn't show a scary red error message.
-  const CANCEL_CODES = new Set([
-    'auth/user-cancelled',
-    'auth/popup-closed-by-user',
-    'auth/cancelled-popup-request',
-  ]);
+  // Cancelling sign-in is a choice, not an error — never surface it. We don't
+  // show any sign-in error banner on the welcome screen at all: a genuine
+  // failure is logged for diagnostics, but new visitors shouldn't be greeted
+  // by scary red text. (Native cancellations come through as a "...canceled
+  // the sign-in flow." message rather than a web auth/* code, so match both.)
   const onSignInErr = (e) => {
-    if (e?.code && CANCEL_CODES.has(e.code)) return;
-    setError(e?.message || 'Sign-in failed');
+    console.warn('sign-in not completed:', e?.code, e?.message);
   };
 
   const onGoogle = async () => {
-    setBusy('google'); setError(null);
+    setBusy('google');
     try { await AuthService.signInWithGoogle(); afterSignIn(); }
     catch (e) { onSignInErr(e); }
     finally { setBusy(null); }
   };
 
   const onApple = async () => {
-    setBusy('apple'); setError(null);
+    setBusy('apple');
     try { await AuthService.signInWithApple(); afterSignIn(); }
     catch (e) { onSignInErr(e); }
     finally { setBusy(null); }
@@ -124,8 +120,6 @@ export function Welcome() {
           <Compass size={18} strokeWidth={1.8} />
           <span>{t('browseWithoutSignIn')}</span>
         </button>
-
-        {error && <p className="welcome-error">{error}</p>}
       </section>
 
       <footer className="welcome-footer">
