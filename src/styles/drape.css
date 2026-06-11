@@ -5720,7 +5720,7 @@ input[type="search"]::-webkit-search-decoration {
   display: flex;
   flex-direction: column;
   background: #fff;
-  padding: var(--safe-top) 1.25rem calc(var(--safe-bottom) + 0.75rem);
+  padding: var(--safe-top) 1.25rem calc(var(--safe-bottom) + 0.25rem);
 }
 .welcome-header {
   display: flex;
@@ -5820,20 +5820,29 @@ input[type="search"]::-webkit-search-decoration {
    like on the landing. Slightly smaller than landing to fit one screen;
    overflow:hidden clips gracefully on very short phones. */
 .welcome-showcase {
-  overflow: hidden;
+  /* visible so the angled phones' soft shadow feathers out instead of being
+     clipped into a hard band that reads as a divider under the mockups. */
+  overflow: visible;
   align-items: center;
   justify-content: center;
   padding: 0;
 }
 .welcome-showcase .lp-visual {
-  /* Fill the hero so the phones read big like the landing — no dead space. */
-  height: clamp(380px, 108vw, 560px);
+  /* Fill the hero's flex space instead of a fixed height, so the phones scale
+     to whatever vertical room is left and never overflow / get clipped on any
+     screen. */
+  height: 100%;
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
 }
 .welcome-showcase .lp-phone {
-  width: clamp(165px, 46vw, 220px);
+  /* Size by height (width derives from the 1:2.05 aspect) so the mockups fit
+     top-to-bottom everywhere; the small gap below 100% keeps the front/back
+     stagger. Lighter shadow so there's no heavy grey pool below the phones. */
+  height: min(88%, 460px);
+  width: auto;
+  box-shadow: 0 16px 36px -20px rgba(20, 23, 26, 0.32);
 }
 .welcome-copy {
   flex: 0 0 auto;
@@ -5929,11 +5938,11 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 .welcome-footer {
-  margin-top: 0.75rem;
+  margin-top: 0.4rem;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.78rem;
-  line-height: 1.5;
+  line-height: 1.4;
   flex: 0 0 auto;
 }
 .welcome-footer a { color: var(--text-secondary); text-decoration: underline; }
