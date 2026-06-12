@@ -204,12 +204,22 @@ async function deleteItem(itemId) {
  * reverts to a skeleton card until the function writes results.
  */
 async function reprocessItem(itemId) {
+  // For items from the multi-item detect-add flow, the original photo holds
+  // several garments. Pass the stored category/description as `focus` so
+  // processItem re-extracts THAT piece (and keeps its tags) instead of
+  // re-cropping whichever garment dominates the frame. Single-item adds have
+  // no detected tags yet → no focus → a full crop+tag pass.
+  const snap = await getDoc(doc(db, ITEMS, itemId));
+  const tags = (snap.exists() && snap.data().tags) || {};
   await updateDoc(doc(db, ITEMS, itemId), {
     status: 'processing',
     updatedAt: serverTimestamp(),
   });
   const processItem = httpsCallable(functions, 'processItem');
-  await processItem({ itemId });
+  const focus = tags.category
+    ? { category: tags.category, description: tags.description || '' }
+    : null;
+  await processItem(focus ? { itemId, focus } : { itemId });
 }
 
 /**

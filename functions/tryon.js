@@ -129,11 +129,15 @@ accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
-body proportions, height. Match the FIRST identity photo's pose and framing
-— keep their natural stance. Show exactly ONE person, full body head to
-feet; do not add a second person from the reference photos. Do NOT copy the
-other person's face, body, or identity from the outfit photo — only their
-clothing and styling.
+body proportions, height. Give them a natural full-body standing pose. Show
+exactly ONE person, full body head to feet; do not add a second person from
+the reference photos. Do NOT copy the other person's face, body, or identity
+from the outfit photo — only their clothing and styling.
+
+CRITICAL — you MUST synthesize a NEW image. Do NOT return, crop, or lightly
+edit any of the input photos. The identity person must be shown WEARING THE
+NEW OUTFIT from the outfit photo — never their own original clothes from the
+identity photos. If the output looks like one of the input photos, it is wrong.
 
 Render fabric texture, drape, fold, and shadow naturally on the body.
 
@@ -402,8 +406,20 @@ exports.virtualTryOn = onCall(
     parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) });
 
     // ── Run N variants in parallel ─────────────────────────────────────
+    // Relax safety to BLOCK_ONLY_HIGH: at the default MEDIUM threshold the
+    // image model over-refuses ordinary fashion photos of people (esp. young
+    // women in skirts/dresses) and, instead of erroring, silently returns one
+    // of the INPUT photos unchanged — which surfaced as "the try-on just shows
+    // my reference photo". This is legitimate styling content; loosen it so
+    // the model actually generates.
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
-    const model = genai.getGenerativeModel({ model: modelId });
+    const safetySettings = [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+    ];
+    const model = genai.getGenerativeModel({ model: modelId, safetySettings });
 
     const runs = Array.from({ length: n }, async (_, idx) => {
       try {
