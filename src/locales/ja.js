@@ -263,6 +263,7 @@ export const ja = {
   brandUnbranded: 'ブランドなし',
   processing: '処理中',
   processFailed: '失敗',
+  retry: '再試行',
 
   // ── Closet ─────────────────────────────────────────────────────────
   closetSignInTitle: 'デジタルクローゼット',

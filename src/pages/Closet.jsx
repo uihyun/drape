@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, X, Bookmark } from 'lucide-react';
+import { SlidersHorizontal, X, Bookmark, RefreshCw } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { CATEGORIES, categoryLabel } from '../services/taxonomy.js';
@@ -353,9 +353,25 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
 }
 
 function ItemCard({ item, t, elapsed = null, ids, index }) {
-  const processing = item.status === 'processing' || item.status === 'uploading';
-  const failed = item.status === 'failed';
+  const [retrying, setRetrying] = useState(false);
+  const processing = item.status === 'processing' || item.status === 'uploading' || retrying;
+  const failed = item.status === 'failed' && !retrying;
   const cover = item.croppedUrl || item.originalUrl;
+  // Re-run the crop/tag pipeline on a stuck/failed item without leaving the
+  // closet. The card is a Link, so stop the tap from navigating.
+  const retry = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRetrying(true);
+    try {
+      await ItemService.reprocessItem(item.id);
+      // status flips to 'processing' via the live subscription; the
+      // processing badge takes over from here.
+    } catch (err) {
+      console.warn('item reprocess failed:', err?.message);
+      setRetrying(false);
+    }
+  };
   return (
     <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className={`item-card ${processing ? 'processing' : ''}`}>
       <div className="item-card-image">
@@ -363,14 +379,15 @@ function ItemCard({ item, t, elapsed = null, ids, index }) {
           ? <img src={cover} alt={item.name || ''} loading="lazy" />
           : <div className="item-card-skeleton" />}
         {processing && (
-          <span className="item-card-badge">
-            <span className="dot-pulse" /> {t('processing')}
+          <span className="item-card-loading" aria-label={t('processing')}>
+            <span className="spinner spinner-sm" />
           </span>
         )}
         {failed && (
-          <span className="item-card-badge item-card-badge-error">
-            {t('processFailed')}
-          </span>
+          <button type="button" className="item-card-retry" onClick={retry}>
+            <RefreshCw size={15} strokeWidth={1.9} />
+            <span>{t('retry')}</span>
+          </button>
         )}
         {item.forSale && item.priceAsking > 0 && (
           <span className="item-card-sale">

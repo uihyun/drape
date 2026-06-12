@@ -896,25 +896,28 @@ exports.detectItems = onCall(
 // overwhelmed the client), nothing ever flips the status and the closet is
 // left with a broken 'processing' card forever. processItem itself has a
 // 120s timeout, so anything still 'processing' after a generous grace window
-// is definitely dead — delete it (doc + storage) so it doesn't linger.
+// is definitely dead. We do NOT delete it silently — we mark it 'failed' so
+// the closet card surfaces a Retry button (the original photo is kept, so
+// reprocessItem can re-run the crop/tag). The user stays in control.
 const STUCK_ITEM_TTL_MS = 20 * 60 * 1000;
 
-exports.cleanupStuckItems = onSchedule('every 6 hours', async () => {
+exports.cleanupStuckItems = onSchedule('every 1 hours', async () => {
   const db = admin.firestore();
-  const bucket = admin.storage().bucket();
   const cutoffMs = Date.now() - STUCK_ITEM_TTL_MS;
   const snap = await db.collection('items')
     .where('status', 'in', ['uploading', 'processing'])
     .get();
-  let removed = 0;
+  let flagged = 0;
   for (const docSnap of snap.docs) {
     const d = docSnap.data();
     const created = d.createdAt?.toMillis ? d.createdAt.toMillis() : 0;
     if (!created || created > cutoffMs) continue; // still inside the grace window
-    const paths = [d.originalPath, d.croppedPath].filter(Boolean);
-    await Promise.allSettled(paths.map(p => bucket.file(p).delete().catch(() => {})));
-    await docSnap.ref.delete().catch(() => {});
-    removed++;
+    await docSnap.ref.update({
+      status: 'failed',
+      errors: ['processing timed out — tap to retry'],
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }).catch(() => {});
+    flagged++;
   }
-  if (removed) console.info(`cleanupStuckItems: removed ${removed} stuck item(s)`);
+  if (flagged) console.info(`cleanupStuckItems: flagged ${flagged} stuck item(s) as failed`);
 });

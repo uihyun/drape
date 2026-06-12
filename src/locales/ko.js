@@ -261,6 +261,7 @@ export const ko = {
   brandUnbranded: '브랜드 없음',
   processing: '처리 중',
   processFailed: '실패',
+  retry: '재시도',
 
   // ── Closet ─────────────────────────────────────────────────────────
   closetSignInTitle: '내 디지털 옷장',

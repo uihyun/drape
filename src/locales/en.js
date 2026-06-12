@@ -261,6 +261,7 @@ export const en = {
   brandUnbranded: 'No brand',
   processing: 'Processing',
   processFailed: 'Failed',
+  retry: 'Retry',
 
   // ── Closet ─────────────────────────────────────────────────────────
   closetSignInTitle: 'Your digital closet',

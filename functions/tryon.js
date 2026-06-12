@@ -39,6 +39,21 @@ async function downloadAsInlineData(bucket, path) {
   };
 }
 
+// Same as above but from a download URL — used when an outfit only carries a
+// photo URL (e.g. seed / older OOTDs) and not a storage path. Node 22 has a
+// global fetch.
+async function fetchAsInlineData(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`fetch ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  return {
+    inlineData: {
+      data: buf.toString('base64'),
+      mimeType: res.headers.get('content-type') || 'image/jpeg',
+    },
+  };
+}
+
 // Gemini Image often echoes the input photos back in candidates[0].parts
 // before appending the actual generated output. Taking the FIRST inline
 // image therefore saves one of the inputs (the reference selfie, or one
@@ -322,20 +337,34 @@ exports.virtualTryOn = onCall(
         await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         throw new HttpsError('permission-denied', 'outfit not public');
       }
-      // Use the FULL worn photo (with its scene), NOT the person-cutout.
-      // The cutout is a person on a white/transparent plate — visually
-      // identical to the user's identity refs (also white-bg cutouts), so
-      // feeding it makes the model confuse "person to copy clothes FROM" with
-      // "person to keep the identity OF", and it either keeps the identity's
-      // own clothes or copies the wrong face. A full scene photo reads clearly
-      // as "someone else wearing the look" (this is why analyzed posts — which
-      // have no cutout — already work). Cutout stays as a last resort.
-      const garmentPath = o.photoPath || o.sourcePhotoPath || o.coverPath || o.photoCutPath;
-      if (!garmentPath) {
-        await genRef.update({ status: 'failed', errors: ['outfit has no photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      // Use the FULL worn photo (scene intact), NOT the person-cutout. The
+      // cutout is a person on a white/transparent plate — visually identical
+      // to the user's identity refs (also white-bg cutouts), so feeding it
+      // makes the model confuse "person to copy clothes FROM" with "person to
+      // keep the identity OF": it keeps the identity's own clothes or copies
+      // the wrong face. A full scene photo reads clearly as "someone else
+      // wearing the look" — which is why analyzed posts (no cutout) already
+      // work. Try each source as a storage PATH first, then as a download URL
+      // (seed/older OOTDs may carry only the URL); the cutout is the last
+      // resort.
+      const sources = [
+        [o.photoPath, o.photoUrl],
+        [o.sourcePhotoPath, o.sourcePhotoUrl],
+        [o.coverPath, o.coverUrl],
+        [o.photoCutPath, o.photoCutUrl],
+      ];
+      for (const [p, u] of sources) {
+        try {
+          if (p) { outfitRefPart = await downloadAsInlineData(bucket, p); break; }
+          if (u) { outfitRefPart = await fetchAsInlineData(u); break; }
+        } catch (e) {
+          console.warn('outfit-ref source load failed, trying next:', e?.message);
+        }
+      }
+      if (!outfitRefPart) {
+        await genRef.update({ status: 'failed', errors: ['outfit has no usable photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         throw new HttpsError('failed-precondition', 'outfit has no photo');
       }
-      outfitRefPart = await downloadAsInlineData(bucket, garmentPath);
     } else {
       const itemDocs = await Promise.all(
         itemIds.map(id => db.collection('items').doc(id).get())
