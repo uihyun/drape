@@ -176,6 +176,14 @@ photo's own pose/crop entirely). Show exactly ONE person; do not add a second
 person from the reference photos. Do NOT copy the other person's face, body,
 or identity from the outfit photo — only their clothing and styling.
 
+FACE — the single most important thing: reproduce the EXACT face from the
+identity photos — same eyes, nose, mouth, lips, jawline, face shape, and
+overall look. The person wearing the outfit in the outfit photo is a DIFFERENT
+person; their face, face shape, and features must NOT influence the result at
+all. Treat the outfit photo purely as a clothing reference (like a flat catalog
+image), never as a person to resemble. The result's face must be
+unmistakably the identity person — not a blend, not a lookalike.
+
 CRITICAL — you MUST synthesize a NEW image. Do NOT return, crop, or lightly
 edit any of the input photos. The identity person must be shown WEARING THE
 NEW OUTFIT from the outfit photo — never their own original clothes from the
