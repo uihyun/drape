@@ -42,6 +42,13 @@ versionCode/build: TBD (bump from 3 when building native)
      seated result; full-body ref → full-body). Outfit photo is treated as a
      clothing catalog only.
   4. Off-center figure → center by the segmented ALPHA bbox, not color-trim.
+  5. **Wrong face still leaking** ("rina's face on an amy try-on"): a crisp,
+     front-facing face in the borrowed look photo overrode the user's identity
+     refs — text couldn't stop a salient face. Now the outfit photo's face is
+     **blurred at the source** (Flash returns the face box → sharp blurs just
+     that region) before it's fed to the model, so there's no competing
+     identity to copy. Styling/visor/hat survive; vision failure falls back to
+     the untouched photo. `blurOutfitFace` in `functions/tryon.js`.
   `functions/tryon.js`.
 - **Stuck 'Processing' closet items.** processItem is fire-and-forget; a
   killed app / failed call left permanent 'Processing' cards. Recovery is now

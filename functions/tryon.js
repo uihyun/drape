@@ -54,6 +54,46 @@ async function fetchAsInlineData(url) {
   };
 }
 
+// Outfit-ref mode feeds a photo of a DIFFERENT person wearing the look. A
+// crisp, front-facing face in that photo leaks into the result — the model
+// copies it over the user's own identity refs (the "rina's face on an amy
+// try-on" bug). Text alone can't stop a salient face, so we remove the signal
+// at the source: ask Flash for the face box and blur just that region. The
+// clothing/styling (and a visor/hat above the brow) stay intact; only the
+// eyes/nose/mouth/jaw identity is destroyed. Best-effort — any failure returns
+// the photo untouched (same behavior as before this fix).
+async function blurOutfitFace(buf, genai) {
+  try {
+    const vision = genai.getGenerativeModel({
+      model: 'gemini-3-flash-preview',
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+    const res = await vision.generateContent([
+      { inlineData: { data: buf.toString('base64'), mimeType: 'image/jpeg' } },
+      { text: `Return the bounding box of the most prominent human FACE in this photo — forehead to chin, cheek to cheek, the face skin only (NOT the hair, hat, or visor). JSON: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. If no human face is visible, return {"x":null}.` },
+    ]);
+    const box = JSON.parse(res.response.text());
+    if (!box || box.x == null || box.width == null || box.height == null) return buf;
+    const { width: W, height: H } = await sharp(buf).metadata();
+    // Pad ~18% so the jaw/cheek edges (the parts the model leans on) are fully
+    // covered even if the box is tight.
+    const padX = box.width * 0.18, padY = box.height * 0.18;
+    let left = Math.max(0, Math.round((box.x - padX) * W));
+    let top = Math.max(0, Math.round((box.y - padY) * H));
+    let bw = Math.min(W - left, Math.round((box.width + padX * 2) * W));
+    let bh = Math.min(H - top, Math.round((box.height + padY * 2) * H));
+    if (bw < 8 || bh < 8) return buf;
+    const region = await sharp(buf)
+      .extract({ left, top, width: bw, height: bh })
+      .blur(Math.max(12, Math.round(Math.min(bw, bh) / 3)))
+      .toBuffer();
+    return await sharp(buf).composite([{ input: region, left, top }]).toBuffer();
+  } catch (e) {
+    console.warn('outfit-ref face blur skipped:', e?.message);
+    return buf;
+  }
+}
+
 // Gemini Image often echoes the input photos back in candidates[0].parts
 // before appending the actual generated output. Taking the FIRST inline
 // image therefore saves one of the inputs (the reference selfie, or one
@@ -448,6 +488,16 @@ exports.virtualTryOn = onCall(
       }
     }
 
+    const genai = new GoogleGenerativeAI(geminiApiKey.value());
+
+    // Outfit-ref: blur the (other person's) face in the look photo so it can't
+    // override the user's identity refs. Done before the parts are assembled.
+    if (isOutfitRef && outfitRefPart) {
+      const rawBuf = Buffer.from(outfitRefPart.inlineData.data, 'base64');
+      const blurred = await blurOutfitFace(rawBuf, genai);
+      outfitRefPart = { inlineData: { data: blurred.toString('base64'), mimeType: 'image/jpeg' } };
+    }
+
     // ── Build prompt parts ─────────────────────────────────────────────
     const parts = [...referenceParts];
     if (isOutfitRef) {
@@ -469,7 +519,6 @@ exports.virtualTryOn = onCall(
     // of the INPUT photos unchanged — which surfaced as "the try-on just shows
     // my reference photo". This is legitimate styling content; loosen it so
     // the model actually generates.
-    const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const safetySettings = [
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
