@@ -235,9 +235,6 @@ export function TryOn({ user, onSignIn }) {
                   <img src={r.url} alt="" referrerPolicy="no-referrer" />
                 </span>
               ))}
-              <span className="tryon-source-label">
-                {refs?.length || 0} {t('savedRefs')}
-              </span>
             </Link>
             <button
               type="button"

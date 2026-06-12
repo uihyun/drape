@@ -359,6 +359,7 @@ export const ja = {
   regenerate: '再生成',
   regenerating: '再生成中…',
   itemsUsed: 'この試着で使ったアイテム',
+  basedOnLook: 'この投稿を参考にしたルック',
   selfLike: 'いいね',
   selfUnlike: 'いいね',
   filterLiked: 'いいね済み',

@@ -93,6 +93,7 @@ exports.processIdentityRef = itemFns.processIdentityRef;
 exports.analyzeOotd = itemFns.analyzeOotd;
 exports.analyzeGeneration = itemFns.analyzeGeneration;
 exports.processOotdPhoto = itemFns.processOotdPhoto;
+exports.cleanupStuckItems = itemFns.cleanupStuckItems;
 
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');

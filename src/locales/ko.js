@@ -357,6 +357,7 @@ export const ko = {
   regenerate: '다시 생성',
   regenerating: '재생성 중…',
   itemsUsed: '이번 피팅에 쓴 아이템',
+  basedOnLook: '이 게시물 보고 만든 룩',
   selfLike: '좋아요',
   selfUnlike: '좋아요',
   filterLiked: '좋아요한 것',

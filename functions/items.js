@@ -13,6 +13,7 @@
 
 const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { removeBackground } = require('@imgly/background-removal-node');
@@ -887,3 +888,33 @@ exports.detectItems = onCall(
     }
   }
 );
+
+// ── cleanupStuckItems ──────────────────────────────────────────────────
+// Items are created at status='processing' and flipped to 'ready'/'failed'
+// by processItem, which the client invokes fire-and-forget. If that call
+// never lands (app killed mid-upload, network drop, a bulk batch that
+// overwhelmed the client), nothing ever flips the status and the closet is
+// left with a broken 'processing' card forever. processItem itself has a
+// 120s timeout, so anything still 'processing' after a generous grace window
+// is definitely dead — delete it (doc + storage) so it doesn't linger.
+const STUCK_ITEM_TTL_MS = 20 * 60 * 1000;
+
+exports.cleanupStuckItems = onSchedule('every 6 hours', async () => {
+  const db = admin.firestore();
+  const bucket = admin.storage().bucket();
+  const cutoffMs = Date.now() - STUCK_ITEM_TTL_MS;
+  const snap = await db.collection('items')
+    .where('status', 'in', ['uploading', 'processing'])
+    .get();
+  let removed = 0;
+  for (const docSnap of snap.docs) {
+    const d = docSnap.data();
+    const created = d.createdAt?.toMillis ? d.createdAt.toMillis() : 0;
+    if (!created || created > cutoffMs) continue; // still inside the grace window
+    const paths = [d.originalPath, d.croppedPath].filter(Boolean);
+    await Promise.allSettled(paths.map(p => bucket.file(p).delete().catch(() => {})));
+    await docSnap.ref.delete().catch(() => {});
+    removed++;
+  }
+  if (removed) console.info(`cleanupStuckItems: removed ${removed} stuck item(s)`);
+});

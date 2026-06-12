@@ -4,6 +4,8 @@ import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
+import { OutfitService } from '../services/outfit-service.js';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -27,6 +29,7 @@ export function GenerationDetail({ user }) {
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
   const [items, setItems] = useState([]);
+  const [sourceOutfit, setSourceOutfit] = useState(null);
 
   useEffect(() => {
     if (!generationId) return;
@@ -62,6 +65,18 @@ export function GenerationDetail({ user }) {
     return () => { cancelled = true; };
   }, [gen?.id, gen?.itemIds?.join('|')]);
 
+  // Outfit-reference try-ons recreate a whole look from a post (someone's
+  // OOTD or an analyzed look). Hydrate that source so the result links back
+  // to what it was based on — the same way item try-ons list their items.
+  useEffect(() => {
+    if (!gen?.outfitRefId) { setSourceOutfit(null); return; }
+    let cancelled = false;
+    OutfitService.getOutfit(gen.outfitRefId)
+      .then(o => { if (!cancelled) setSourceOutfit(o); })
+      .catch(() => { if (!cancelled) setSourceOutfit(null); });
+    return () => { cancelled = true; };
+  }, [gen?.outfitRefId]);
+
   if (!gen) return <div className="loading"><div className="spinner" /></div>;
   if (user && gen.userId !== user.uid) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
@@ -76,6 +91,11 @@ export function GenerationDetail({ user }) {
     try {
       const promise = GenerationService.startTryOn({
         itemIds: gen.itemIds,
+        // Carry the original source mode forward — an outfit-ref try-on has no
+        // itemIds, so regenerating without this hit "itemIds required" and
+        // silently failed.
+        outfitRefId: gen.outfitRefId || null,
+        prompt: gen.prompt || '',
         modelTier: gen.modelTier,
         title: gen.title || '',
         regenerateOf: gen.id,
@@ -195,6 +215,21 @@ export function GenerationDetail({ user }) {
             <section className="outfit-notes">
               <header><h2>{t('notesOnComposition')}</h2></header>
               <p>{gen.notes}</p>
+            </section>
+          )}
+
+          {sourceOutfit && (
+            <section className="gen-items">
+              <h3 className="gen-items-head">{t('basedOnLook')}</h3>
+              <div className="gen-items-row">
+                <Link to={`/o/${sourceOutfit.id}`} className="gen-item-card">
+                  <div className="gen-item-thumb">
+                    {outfitCardPhoto(sourceOutfit)
+                      ? <img src={outfitCardPhoto(sourceOutfit)} alt="" referrerPolicy="no-referrer" loading="lazy" />
+                      : <div className="item-card-skeleton" />}
+                  </div>
+                </Link>
+              </div>
             </section>
           )}
 

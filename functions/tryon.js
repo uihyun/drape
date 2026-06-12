@@ -322,9 +322,15 @@ exports.virtualTryOn = onCall(
         await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         throw new HttpsError('permission-denied', 'outfit not public');
       }
-      // Prefer the cutout (person removed → cleaner garment read) then the
-      // full photo. Stored path fields mirror outfit-service.
-      const garmentPath = o.photoCutPath || o.photoPath || o.sourcePhotoPath || o.coverPath;
+      // Use the FULL worn photo (with its scene), NOT the person-cutout.
+      // The cutout is a person on a white/transparent plate — visually
+      // identical to the user's identity refs (also white-bg cutouts), so
+      // feeding it makes the model confuse "person to copy clothes FROM" with
+      // "person to keep the identity OF", and it either keeps the identity's
+      // own clothes or copies the wrong face. A full scene photo reads clearly
+      // as "someone else wearing the look" (this is why analyzed posts — which
+      // have no cutout — already work). Cutout stays as a last resort.
+      const garmentPath = o.photoPath || o.sourcePhotoPath || o.coverPath || o.photoCutPath;
       if (!garmentPath) {
         await genRef.update({ status: 'failed', errors: ['outfit has no photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
         throw new HttpsError('failed-precondition', 'outfit has no photo');

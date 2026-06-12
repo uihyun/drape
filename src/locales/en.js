@@ -357,6 +357,7 @@ export const en = {
   regenerate: 'Regenerate',
   regenerating: 'Regenerating…',
   itemsUsed: 'Items in this try-on',
+  basedOnLook: 'Based on this look',
   selfLike: 'Like',
   selfUnlike: 'Like',
   filterLiked: 'Liked',
