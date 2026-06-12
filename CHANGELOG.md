@@ -26,6 +26,8 @@ versionCode/build: TBD (bump from 3 when building native)
 - `7e68946` feat: owners can like their own outfit/board and always see the count
 - `f4d151e` docs: add internal CHANGELOG + maintenance note in CLAUDE.md
 
+**Release commit:** _pending_ — set at the next native build (bump from versionCode 3).
+
 ---
 
 ## [1.1.0] — 2026-06-10 (iOS + Android submitted)
@@ -85,7 +87,7 @@ versionCode/build: 3 · versionName 1.1.0
   community-search "Find me this look" still on the roadmap.
 
 **Commits** (`f6d4d16` → `4351eed`):
-- `4351eed` chore: bump to 1.1.0 (versionCode/build 3)
+- `4351eed` chore: bump to 1.1.0 (versionCode/build 3) ← release commit
 - `37ed742` fix(welcome): fit phone mockups to the screen, drop the clipped-shadow divider
 - `c7ab71f` fix: feed no longer re-sorts on load (warm-up freshness + no-op refetch)
 - `6e33ef3` fix: don't show a sign-in error banner for user cancellation
