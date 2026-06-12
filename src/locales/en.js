@@ -189,6 +189,7 @@ export const en = {
   tryOnBackgroundLabel: 'Background (optional)',
   tryOnBackgroundPlaceholder: 'e.g. city rooftop at golden hour',
   tryOnAnalyzing: 'Reading your look…',
+  fromOriginalLook: 'From the original look',
   tryOnSearchPlaceholder: 'Search by tag, color, style…',
   tryOnSearchEmpty: 'No try-ons match.',
   goToCloset: 'Go to closet',

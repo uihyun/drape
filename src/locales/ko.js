@@ -189,6 +189,7 @@ export const ko = {
   tryOnBackgroundLabel: '배경 (선택)',
   tryOnBackgroundPlaceholder: '예: 황금시간 도시 옥상',
   tryOnAnalyzing: '룩을 분석하는 중…',
+  fromOriginalLook: '원본 룩 분석',
   tryOnSearchPlaceholder: '태그·색·스타일로 검색',
   tryOnSearchEmpty: '일치하는 트라이온이 없어요.',
   goToCloset: '옷장으로',

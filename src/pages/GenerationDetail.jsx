@@ -41,13 +41,18 @@ export function GenerationDetail({ user }) {
   // Once a try-on is ready and the viewer owns it, run the palette /
   // style analysis (once) — same editorial read dated outfits get. Guard
   // on !palette so it fires exactly once per generation.
+  // Outfit-ref try-ons skip this entirely: they recreate an already-styled
+  // post, so its analysis would just duplicate the source look's. We reuse
+  // the borrowed outfit's existing palette/style/notes instead (one fewer
+  // Gemini call, and the two screens stay consistent).
   useEffect(() => {
     if (!gen || gen.status !== 'ready') return;
+    if (gen.outfitRefId) return;
     if (!user || gen.userId !== user.uid) return;
     if (gen.palette || gen.analyzedAt) return;
     GenerationService.analyzeGeneration(gen.id)
       .catch(e => console.warn('analyzeGeneration skipped:', e?.message));
-  }, [gen?.id, gen?.status, gen?.palette, gen?.analyzedAt, user?.uid]);
+  }, [gen?.id, gen?.status, gen?.outfitRefId, gen?.palette, gen?.analyzedAt, user?.uid]);
 
   // Hydrate the items that were used in this try-on so we can show
   // them on the result page (so the user remembers what they picked).
@@ -81,6 +86,15 @@ export function GenerationDetail({ user }) {
   if (user && gen.userId !== user.uid) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
   }
+
+  // Where the palette/style/notes come from: the try-on's own analysis for
+  // item/custom modes, or the borrowed look's analysis for outfit-ref.
+  const isOutfitRef = !!gen.outfitRefId;
+  const analysis = isOutfitRef ? (sourceOutfit || {}) : gen;
+  const hasAnalysis =
+    (Array.isArray(analysis.palette) && analysis.palette.length > 0) ||
+    (Array.isArray(analysis.style) && analysis.style.length > 0) ||
+    !!analysis.notes;
 
   // Same async pattern as the initial try-on: kick off in the background,
   // race a 1.5s timeout — if the function returns fast, navigate to the
@@ -162,19 +176,23 @@ export function GenerationDetail({ user }) {
             ))}
           </div>
 
-          {/* Analysis runs async after the image is ready. Show a calm
-              "analyzing" placeholder so the empty space reads as
-              in-progress, not broken, while title/palette/notes load. */}
-          {!gen.analyzedAt && !gen.palette && (
+          {/* Analysis source: item/custom try-ons get their own async read
+              (calm "analyzing" placeholder while it loads); outfit-ref
+              try-ons reuse the borrowed look's existing analysis — no extra
+              call, no placeholder (the source either has it or it doesn't). */}
+          {!isOutfitRef && !gen.analyzedAt && !gen.palette && (
             <div className="gen-analyzing">
               <span className="dot-pulse" /> {t('tryOnAnalyzing')}
             </div>
           )}
 
+          {isOutfitRef && hasAnalysis && (
+            <p className="gen-analysis-source">{t('fromOriginalLook')}</p>
+          )}
 
-          {Array.isArray(gen.palette) && gen.palette.length > 0 && (
+          {Array.isArray(analysis.palette) && analysis.palette.length > 0 && (
             <section className="outfit-palette">
-              {gen.palette.map((c, i) => (
+              {analysis.palette.map((c, i) => (
                 <div
                   key={i}
                   className="palette-card"
@@ -190,13 +208,13 @@ export function GenerationDetail({ user }) {
             </section>
           )}
 
-          {Array.isArray(gen.style) && gen.style.length > 0 && (
+          {Array.isArray(analysis.style) && analysis.style.length > 0 && (
             <section className="outfit-style-bars">
               <header>
                 <h2>{t('styleSection')}</h2>
               </header>
               <ul>
-                {gen.style.map((c, i) => {
+                {analysis.style.map((c, i) => {
                   const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
                   return (
                     <li key={i} className="style-bars-row">
@@ -211,10 +229,10 @@ export function GenerationDetail({ user }) {
             </section>
           )}
 
-          {gen.notes && (
+          {analysis.notes && (
             <section className="outfit-notes">
               <header><h2>{t('notesOnComposition')}</h2></header>
-              <p>{gen.notes}</p>
+              <p>{analysis.notes}</p>
             </section>
           )}
 

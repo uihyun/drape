@@ -191,6 +191,7 @@ export const ja = {
   tryOnBackgroundLabel: '背景 (任意)',
   tryOnBackgroundPlaceholder: '例: ゴールデンアワーの屋上',
   tryOnAnalyzing: 'ルックを分析中…',
+  fromOriginalLook: '元のルックの分析',
   tryOnSearchPlaceholder: 'タグ・色・スタイルで検索',
   tryOnSearchEmpty: '一致する試着がありません。',
   goToCloset: 'クローゼットへ',
