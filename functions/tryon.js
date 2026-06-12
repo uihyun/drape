@@ -195,7 +195,12 @@ function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
   // clothing head-to-toe from the reference look.
   if (mode === 'outfit-ref') {
     const bgClause = backgroundDesc
-      ? `Place them against this background: ${backgroundDesc}.`
+      // Photograph the identity person FRESH in the requested place. Without
+      // this, when the outfit photo's own scene resembles the request (e.g. a
+      // Korean street ≈ "Seongsu"), the model keeps the outfit photo and just
+      // tweaks its backdrop — echoing the source person/pose (and any face
+      // blur we applied surfaces as a smudge) instead of re-rendering.
+      ? `Photograph the identity person freshly in this setting: ${backgroundDesc}. Build the scene ANEW — do NOT reuse, keep, or lightly edit the outfit photo's own background, street, buildings, composition, or the person standing in it. The only thing taken from the outfit photo is the clothing.`
       : `Place them against a plain white fashion lookbook background.`;
     return `You are given identity reference photo(s) of a person FIRST,
 then a photo showing a complete outfit/look worn by someone else (or laid

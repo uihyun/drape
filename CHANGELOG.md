@@ -49,6 +49,12 @@ versionCode/build: TBD (bump from 3 when building native)
      that region) before it's fed to the model, so there's no competing
      identity to copy. Styling/visor/hat survive; vision failure falls back to
      the untouched photo. `blurOutfitFace` in `functions/tryon.js`.
+  6. **Custom background → echo.** With a requested background that resembled
+     the borrowed photo's own scene (a Korean street ≈ "Seongsu"), the model
+     kept the outfit photo and just retouched its backdrop — echoing the source
+     person/pose, and the face blur from (5) then surfaced as a smudge. The
+     outfit-ref background clause now forces a fresh re-render ("build the scene
+     ANEW; the only thing from the outfit photo is the clothing").
   `functions/tryon.js`.
 - **Stuck 'Processing' closet items.** processItem is fire-and-forget; a
   killed app / failed call left permanent 'Processing' cards. Recovery is now
