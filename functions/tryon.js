@@ -75,26 +75,6 @@ function extractImage(response) {
 // Plain-English region per item category, used in custom-photo mode so
 // the model knows exactly what to clear out. Subcategory word overrides
 // catch common mis-tags (e.g. boots auto-tagged as 'outerwear').
-// Perceptual average-hash (64-bit) for echo detection. The model sometimes
-// returns an INPUT photo unchanged instead of generating; a real try-on shares
-// the face but has different clothes, so its hash sits far from every input —
-// an echo's is nearly identical to one input's.
-async function aHash(buf) {
-  const { data } = await sharp(buf).greyscale().resize(8, 8, { fit: 'fill' })
-    .raw().toBuffer({ resolveWithObject: true });
-  let sum = 0;
-  for (let i = 0; i < 64; i++) sum += data[i];
-  const mean = sum / 64;
-  let bits = 0n;
-  for (let i = 0; i < 64; i++) bits = (bits << 1n) | (data[i] > mean ? 1n : 0n);
-  return bits;
-}
-function hamming(a, b) {
-  let x = a ^ b, c = 0;
-  while (x) { c += Number(x & 1n); x >>= 1n; }
-  return c;
-}
-
 // Place a segmented figure centered on a white 3:4 card. Computes the bbox
 // from the ALPHA channel (solid pixels, alpha>128) instead of color-trim, so
 // a faint segmentation artifact on one side can't widen the box and shove the
@@ -490,35 +470,10 @@ exports.virtualTryOn = onCall(
     ];
     const model = genai.getGenerativeModel({ model: modelId, safetySettings });
 
-    // Hash the references once so a variant can spot an echo (the model
-    // returning an input photo) and regenerate ONCE. Hard cap = 2 attempts per
-    // variant — never an unbounded retry loop. Safety + the prompt already make
-    // echoes rare; this just sweeps up the occasional one.
-    const refHashes = [];
-    for (const rp of referenceParts) {
-      try { refHashes.push(await aHash(Buffer.from(rp.inlineData.data, 'base64'))); } catch { /* skip */ }
-    }
-    const MAX_ATTEMPTS = 2;
-    const ECHO_DISTANCE = 6; // ≤ this many differing bits (of 64) ≈ the same photo
-
     const runs = Array.from({ length: n }, async (_, idx) => {
       try {
-        let img = null;
-        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-          const res = await model.generateContent(parts);
-          const candidate = extractImage(res.response);
-          if (!candidate) continue;
-          let echoed = false;
-          if (refHashes.length) {
-            try {
-              const h = await aHash(Buffer.from(candidate.data, 'base64'));
-              echoed = refHashes.some(r => hamming(r, h) <= ECHO_DISTANCE);
-            } catch { /* hash failed — accept it */ }
-          }
-          img = candidate;
-          if (!echoed) break; // good generation — stop
-          console.warn(`try-on variant ${idx}: echo (attempt ${attempt + 1}/${MAX_ATTEMPTS})`);
-        }
+        const res = await model.generateContent(parts);
+        const img = extractImage(res.response);
         if (!img) return { idx, ok: false, error: 'no image returned' };
         const path = `generations/${uid}/${genRef.id}/${idx}.png`;
         // Normalize EVERY variant (except custom-photo) to a fixed 3:4
