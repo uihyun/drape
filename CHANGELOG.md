@@ -22,6 +22,10 @@ versionCode/build: TBD (bump from 3 when building native)
   write `likeCount`/`likedBy` on their own doc, so no rules change.
   `src/pages/OutfitDetail.jsx`, `src/pages/BoardDetail.jsx`.
 
+**Commits:**
+- `7e68946` feat: owners can like their own outfit/board and always see the count
+- `f4d151e` docs: add internal CHANGELOG + maintenance note in CLAUDE.md
+
 ---
 
 ## [1.1.0] — 2026-06-10 (iOS + Android submitted)
@@ -80,6 +84,16 @@ versionCode/build: 3 · versionName 1.1.0
   Images search per detected piece (`PieceRow.jsx`), distinct from the
   community-search "Find me this look" still on the roadmap.
 
+**Commits** (`f6d4d16` → `4351eed`):
+- `4351eed` chore: bump to 1.1.0 (versionCode/build 3)
+- `37ed742` fix(welcome): fit phone mockups to the screen, drop the clipped-shadow divider
+- `c7ab71f` fix: feed no longer re-sorts on load (warm-up freshness + no-op refetch)
+- `6e33ef3` fix: don't show a sign-in error banner for user cancellation
+- `5dfb0dd` feat: link App Store + Google Play badges on drape.nyc landing
+- `5d2729c` feat: swipe-between-details on board & item + animated swipe-hint coachmark
+- `cfa38cd` feat: swipe between outfit details (feed/profile/calendar) + one-time hint
+- `f6d4d16` fix: hide handle-less ghost rows in follow lists (deleted-account shells)
+
 ---
 
 ## [1.0.0] — 2026-06 (initial public release · iOS + Android)
@@ -105,3 +119,14 @@ marketplace with DMs and push notifications.
 - **Calendar cell** press feedback uses `:active` (no sticky touch hover).
 - Brand assets (ivory Didot wordmark on ink), drape.nyc landing + legal pages,
   data-safety / content-rating / store listings in en/ko/ja.
+
+**Commits** (launch + final-prep window; full app history predates this changelog,
+ends at `bb3b0ba` = last commit before the 1.1.0 cycle):
+- Launch prep / store: `bb3b0ba` roadmap(native analytics) · `22c84b5` privacy→delete-account link · `4ddc2c6` public account-deletion page (Play Data safety) · `59d14ff` iOS build number 2 + cap sync · `0162293` Android Play app-signing SHA + versionCode 2 · `ae5e802` store-metadata(push wired)
+- Infinite scroll: `7796304` profile lists cursor pagination · `d4095f3` closet/try-on live window + marketplace pagination · `309a6ce` feed infinite scroll + 5-min scroll TTL
+- Grid/cards: `83cde7a` deterministic 2-col masonry · `0792957` board thumbnails render full board · `5157c12` / `10fc614` / `a9d1ab2` / `eabbabe` / `ba1d15a` card + avatar + note polish · `f1d3e52` clean cards / hide iOS keyboard bar / notch fix · `e92d78a` suppress iOS long-press callout
+- Calendar: `d9df3a3` cell press feedback uses `:active`
+- Push notifications: `a6d23a9` / `e6dabf1` timestamp presence · `bdae85a` / `94cf122` router deep-link + back behavior · `034eb43` clear tray + early tap handler · `c8e3cb5` iOS aps-environment · `f2c5fff` 30-day thread cleanup + image push · `c96fd8f` FCM tokens + chat-image/inbox/profile fixes · `a6fc744` push outcome logging
+- DM: `b8288a0` create room on first message · `fbd3a96` Contact seller ↔ Open chat
+- Upload/analyze: `e951cc8` photo-library-direct picker · `b6430c7` 8-photo session cap · `205ac71` simplify crop/detect prompts · `486b74c` owned bulk-add straight to closet
+- Welcome: `175ab13` tagline copy under phones
