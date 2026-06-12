@@ -129,15 +129,11 @@ accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
-body proportions, height. Give them a natural full-body standing pose. Show
-exactly ONE person, full body head to feet; do not add a second person from
-the reference photos. Do NOT copy the other person's face, body, or identity
-from the outfit photo — only their clothing and styling.
-
-CRITICAL — you MUST synthesize a NEW image. Do NOT return, crop, or lightly
-edit any of the input photos. The identity person must be shown WEARING THE
-NEW OUTFIT from the outfit photo — never their own original clothes from the
-identity photos. If the output looks like one of the input photos, it is wrong.
+body proportions, height. Match the FIRST identity photo's pose and framing
+— keep their natural stance. Show exactly ONE person, full body head to
+feet; do not add a second person from the reference photos. Do NOT copy the
+other person's face, body, or identity from the outfit photo — only their
+clothing and styling.
 
 Render fabric texture, drape, fold, and shadow naturally on the body.
 

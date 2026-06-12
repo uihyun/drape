@@ -889,29 +889,26 @@ exports.detectItems = onCall(
   }
 );
 
-// ── cleanupStuckItems ──────────────────────────────────────────────────
-// Items are created at status='processing' and flipped to 'ready'/'failed'
-// by processItem, which the client invokes fire-and-forget. If that call
-// never lands (app killed mid-upload, network drop, a bulk batch that
-// overwhelmed the client), nothing ever flips the status and the closet is
-// left with a broken 'processing' card forever. processItem itself has a
-// 120s timeout, so anything still 'processing' after a generous grace window
-// is definitely dead. We do NOT delete it silently — we mark it 'failed' so
-// the closet card surfaces a Retry button (the original photo is kept, so
-// reprocessItem can re-run the crop/tag). The user stays in control.
-const STUCK_ITEM_TTL_MS = 20 * 60 * 1000;
+// ── cleanupStuckItems (backstop only) ──────────────────────────────────
+// The PRIMARY recovery is client-side: item-service marks an item 'failed' if
+// its processItem dispatch rejects (see markFailedIfStuck). This server sweep
+// is only a backstop for the one case the client can't handle — the app being
+// killed mid-call, so no client is left to flip the status. It runs once a day
+// and queries ONLY items already past the grace window via an indexed
+// status+createdAt range (composite index in firestore.indexes.json), so it
+// reads a handful of genuinely-stuck docs, not the whole 'processing' set —
+// it stays cheap no matter how many users are mid-upload at any moment.
+const STUCK_ITEM_TTL_MS = 30 * 60 * 1000;
 
-exports.cleanupStuckItems = onSchedule('every 1 hours', async () => {
+exports.cleanupStuckItems = onSchedule('every 24 hours', async () => {
   const db = admin.firestore();
-  const cutoffMs = Date.now() - STUCK_ITEM_TTL_MS;
+  const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - STUCK_ITEM_TTL_MS);
   const snap = await db.collection('items')
-    .where('status', 'in', ['uploading', 'processing'])
+    .where('status', '==', 'processing')
+    .where('createdAt', '<=', cutoff)
     .get();
   let flagged = 0;
   for (const docSnap of snap.docs) {
-    const d = docSnap.data();
-    const created = d.createdAt?.toMillis ? d.createdAt.toMillis() : 0;
-    if (!created || created > cutoffMs) continue; // still inside the grace window
     await docSnap.ref.update({
       status: 'failed',
       errors: ['processing timed out — tap to retry'],

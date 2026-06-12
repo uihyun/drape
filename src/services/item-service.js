@@ -86,10 +86,13 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
   //    We don't await — registration UX is "drop it and keep shooting".
   try {
     const processItem = httpsCallable(functions, 'processItem');
-    processItem({ itemId }).catch(err => console.warn('processItem dispatch:', err?.message));
+    processItem({ itemId }).catch((err) => {
+      console.warn('processItem dispatch:', err?.message);
+      markFailedIfStuck(itemId);
+    });
   } catch (err) {
-    // Non-fatal — the user sees a 'processing' card; admin can re-run.
     console.warn('processItem callable missing:', err?.message);
+    markFailedIfStuck(itemId);
   }
 
   return { id: itemId };
@@ -203,6 +206,23 @@ async function deleteItem(itemId) {
  * auto-crop or tags). Resets status back to 'processing' so the listener
  * reverts to a skeleton card until the function writes results.
  */
+// If a processItem dispatch rejects (function error, 120s timeout, network
+// drop), the item would sit at 'processing' forever. Flip it to 'failed' so
+// the closet card surfaces a Retry button — but only if it's STILL processing,
+// so we never clobber a 'ready' the function actually wrote (a slow success's
+// response can be lost even though the server finished). Handles every case
+// except the app being killed mid-call; a lightweight server backstop
+// (cleanupStuckItems) covers that.
+async function markFailedIfStuck(itemId) {
+  try {
+    const s = await getDoc(doc(db, ITEMS, itemId));
+    const st = s.exists() && s.data().status;
+    if (st === 'processing' || st === 'uploading') {
+      await updateDoc(doc(db, ITEMS, itemId), { status: 'failed', updatedAt: serverTimestamp() });
+    }
+  } catch { /* best-effort */ }
+}
+
 async function reprocessItem(itemId) {
   // For items from the multi-item detect-add flow, the original photo holds
   // several garments. Pass the stored category/description as `focus` so
@@ -304,7 +324,10 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
       category: detected.category || null,
       description: detected.description || '',
     },
-  }).catch(err => console.warn('processItem (detected) failed:', err?.message));
+  }).catch((err) => {
+    console.warn('processItem (detected) failed:', err?.message);
+    markFailedIfStuck(id);
+  });
   return { id };
 }
 
@@ -348,7 +371,10 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
   processFn({
     itemId: id,
     focus: { category: detected.category || null, description: detected.description || '' },
-  }).catch(err => console.warn('processItem (existing photo) failed:', err?.message));
+  }).catch((err) => {
+    console.warn('processItem (existing photo) failed:', err?.message);
+    markFailedIfStuck(id);
+  });
   return { id };
 }
 
