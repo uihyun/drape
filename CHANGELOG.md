@@ -21,6 +21,36 @@ versionCode/build: TBD (bump from 3 when building native)
   `!isOwner`, so you saw neither). Firestore rules already allowed an owner to
   write `likeCount`/`likedBy` on their own doc, so no rules change.
   `src/pages/OutfitDetail.jsx`, `src/pages/BoardDetail.jsx`.
+- **Try-on from a post shows its source** ('Based on this look') and
+  **Regenerate carries the outfit reference forward** (was failing
+  'itemIds required' for outfit-ref try-ons). `src/pages/GenerationDetail.jsx`.
+
+### Fixed — virtual try-on (the big one)
+- **Feed-post try-on quality.** Recreating someone's look ("outfit-ref" mode)
+  was broken end-to-end; root causes, in order found:
+  1. Garment input used the person-cutout, which looks like an identity ref →
+     model confusion. Now loads the FULL worn photo, by storage path OR
+     download URL (seed OOTDs carry only a URL), cutout last.
+  2. The real echo cause was **safety**: at the default MEDIUM threshold the
+     image model over-refused ordinary fashion photos (esp. young women in
+     skirts/at a pool) and silently returned an INPUT photo. Relaxed to
+     `BLOCK_ONLY_HIGH` → it generates. (Echo detection via perceptual hash was
+     tried and removed — retry == the user's Regenerate button, no gain.)
+  3. Result followed the OUTFIT photo's framing/pose/build → thigh-crops from
+     seated sources + the source person's body/face bleeding in. Locked pose,
+     framing, crop, BODY, and FACE to the FIRST identity photo (seated ref →
+     seated result; full-body ref → full-body). Outfit photo is treated as a
+     clothing catalog only.
+  4. Off-center figure → center by the segmented ALPHA bbox, not color-trim.
+  `functions/tryon.js`.
+- **Stuck 'Processing' closet items.** processItem is fire-and-forget; a
+  killed app / failed call left permanent 'Processing' cards. Recovery is now
+  client-side (item-service flips to 'failed' if the dispatch rejects, only if
+  still processing), with a once-a-day indexed server backstop for the
+  app-killed case. Failed cards show a **Retry** button (focus-aware, so one
+  piece from a multi-item photo re-extracts the right garment). Processing
+  shows a calm spinner, not the word "Processing". `functions/items.js`,
+  `src/services/item-service.js`, `src/pages/Closet.jsx`.
 
 **Commits:**
 - `7e68946` feat: owners can like their own outfit/board and always see the count
