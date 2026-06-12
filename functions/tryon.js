@@ -167,7 +167,10 @@ accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
-body proportions, height. Give them a natural full-body standing pose. Show
+body proportions, height. FOLLOW THE FIRST identity photo for the pose,
+framing, and crop — reproduce that same full-body, head-to-feet standing view.
+Do NOT adopt the outfit photo's framing or crop (it may be a seated or
+waist-up shot); the identity photo decides how much of the body is shown. Show
 exactly ONE person, full body head to feet; do not add a second person from
 the reference photos. Do NOT copy the other person's face, body, or identity
 from the outfit photo — only their clothing and styling.
@@ -190,9 +193,8 @@ ${bgClause}
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
-OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person,
-centered in the frame, full body head to feet with even margins on the left
-and right. Do NOT produce a grid, collage, contact sheet, side-by-side
+OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person in
+ONE outfit. Do NOT produce a grid, collage, contact sheet, side-by-side
 comparison, before/after split, or multiple poses. One image, one frame,
 one person, no panels.`;
   }
