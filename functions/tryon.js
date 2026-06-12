@@ -75,6 +75,44 @@ function extractImage(response) {
 // Plain-English region per item category, used in custom-photo mode so
 // the model knows exactly what to clear out. Subcategory word overrides
 // catch common mis-tags (e.g. boots auto-tagged as 'outerwear').
+// Place a segmented figure centered on a white 3:4 card. Computes the bbox
+// from the ALPHA channel (solid pixels, alpha>128) instead of color-trim, so
+// a faint segmentation artifact on one side can't widen the box and shove the
+// figure off-center (which read as "the result is shifted right").
+async function figureOnWhiteCard(cutoutBuf, W = 900, H = 1200) {
+  try {
+    const { data, info } = await sharp(cutoutBuf).ensureAlpha().raw()
+      .toBuffer({ resolveWithObject: true });
+    const { width, height, channels } = info;
+    let minX = width, minY = height, maxX = -1, maxY = -1;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (data[(y * width + x) * channels + 3] > 128) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < minX || maxY < minY) throw new Error('empty mask');
+    const cropped = await sharp(cutoutBuf)
+      .extract({ left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
+      .resize({ width: Math.round(W * 0.9), height: Math.round(H * 0.92), fit: 'inside' })
+      .toBuffer();
+    return await sharp({ create: { width: W, height: H, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } } })
+      .composite([{ input: cropped, gravity: 'centre' }])
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .png().toBuffer();
+  } catch {
+    // Fallback: simple contain onto white.
+    return await sharp(cutoutBuf)
+      .resize({ width: W, height: H, fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .png().toBuffer();
+  }
+}
+
 function categoryRegion(category, subcategory) {
   const sub = (subcategory || '').toLowerCase();
   if (/\b(boot|sneaker|loafer|sandal|heel|mule|oxford)\b/.test(sub)) {
@@ -135,14 +173,22 @@ feet; do not add a second person from the reference photos. Do NOT copy the
 other person's face, body, or identity from the outfit photo — only their
 clothing and styling.
 
+BODY — critical: the height, weight, build, and body proportions come
+ENTIRELY from the identity photos. The person in the outfit photo may have a
+completely different body type; IGNORE their build. Do NOT make the identity
+person heavier, thinner, taller, or shorter to match the outfit photo — keep
+the identity person's exact slim/natural build from their own photos. Only
+the clothing transfers, never the body.
+
 Render fabric texture, drape, fold, and shadow naturally on the body.
 
 ${bgClause}
 
 ${customPrompt ? `Additional direction: ${customPrompt}` : ''}
 
-OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person in
-ONE outfit. Do NOT produce a grid, collage, contact sheet, side-by-side
+OUTPUT FORMAT — strict: a SINGLE photorealistic image of ONE person,
+centered in the frame, full body head to feet with even margins on the left
+and right. Do NOT produce a grid, collage, contact sheet, side-by-side
 comparison, before/after split, or multiple poses. One image, one frame,
 one person, no panels.`;
   }
@@ -467,22 +513,9 @@ exports.virtualTryOn = onCall(
                 output: { format: 'image/png' },
               });
               const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
-              // Save the figure at full canvas resolution. Visual
-              // breathing margin around the figure is added at CSS
-              // level on .variant (padding), so the same image
-              // looks calm no matter what size the card renders at.
-              const figure = await sharp(cutout)
-                .trim({ threshold: 1 })
-                .resize({
-                  width: 900,
-                  height: 1200,
-                  fit: 'contain',
-                  background: { r: 255, g: 255, b: 255, alpha: 0 },
-                })
-                .png().toBuffer();
-              buf = await sharp({
-                create: { width: 900, height: 1200, channels: 3, background: { r: 255, g: 255, b: 255 } },
-              }).composite([{ input: figure }]).png().toBuffer();
+              // Center the figure on a white 3:4 card via its alpha bbox
+              // (robust to faint artifacts that color-trim would mis-include).
+              buf = await figureOnWhiteCard(cutout);
             }
           } catch (e) {
             console.warn('try-on normalize skipped:', e?.message);
