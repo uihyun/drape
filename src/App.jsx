@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -13,41 +13,47 @@ import { SignInModal } from './components/SignInModal.jsx';
 import { JsSplash } from './components/JsSplash.jsx';
 import { warmUp } from './services/warmup.js';
 
-import { Closet } from './pages/Closet.jsx';
-import { AddItem } from './pages/AddItem.jsx';
-import { ItemDetail } from './pages/ItemDetail.jsx';
-import { OutfitList } from './pages/OutfitList.jsx';
-import { OutfitBuilder } from './pages/OutfitBuilder.jsx';
-import { OutfitDetail } from './pages/OutfitDetail.jsx';
-import { OutfitLink } from './pages/OutfitLink.jsx';
-import { OutfitShare } from './pages/OutfitShare.jsx';
-import { Calendar } from './pages/Calendar.jsx';
-import { Profile } from './pages/Profile.jsx';
-import { PublicProfile } from './pages/PublicProfile.jsx';
-import { Welcome } from './pages/Welcome.jsx';
-import { Landing } from './pages/Landing.jsx';
-import { BoardList } from './pages/BoardList.jsx';
-import { BoardEditor } from './pages/BoardEditor.jsx';
-import { BoardDetail } from './pages/BoardDetail.jsx';
+// Route pages are lazy-loaded so the cold-start bundle is just the shell +
+// Firebase + the first screen's chunk, not all ~25 pages parsed up front (that
+// parse cost on a cold WKWebView was the main-thread jank after the splash
+// lifted). Vite statically analyzes the literal import() in each thunk and
+// emits a per-page chunk; the named export is unwrapped to { default }.
+// (Closet/Calendar/OutfitList/BoardList/TryOnHistory aren't routed here — they
+// render embedded inside Profile, which imports them itself, so they ride in
+// Profile's chunk.)
+const page = (loader, name) => lazy(() => loader().then(m => ({ default: m[name] })));
+
+const AddItem = page(() => import('./pages/AddItem.jsx'), 'AddItem');
+const ItemDetail = page(() => import('./pages/ItemDetail.jsx'), 'ItemDetail');
+const OutfitBuilder = page(() => import('./pages/OutfitBuilder.jsx'), 'OutfitBuilder');
+const OutfitDetail = page(() => import('./pages/OutfitDetail.jsx'), 'OutfitDetail');
+const OutfitLink = page(() => import('./pages/OutfitLink.jsx'), 'OutfitLink');
+const OutfitShare = page(() => import('./pages/OutfitShare.jsx'), 'OutfitShare');
+const Profile = page(() => import('./pages/Profile.jsx'), 'Profile');
+const PublicProfile = page(() => import('./pages/PublicProfile.jsx'), 'PublicProfile');
+const Welcome = page(() => import('./pages/Welcome.jsx'), 'Welcome');
+const Landing = page(() => import('./pages/Landing.jsx'), 'Landing');
+const BoardEditor = page(() => import('./pages/BoardEditor.jsx'), 'BoardEditor');
+const BoardDetail = page(() => import('./pages/BoardDetail.jsx'), 'BoardDetail');
 // /b/:boardId removed — canonical board URL is /boards/:boardId (detail);
 // editor is /boards/:boardId/edit (matches /boards/new).
-import { AnalyzePhoto } from './pages/AnalyzePhoto.jsx';
-import { TryOnHistory } from './pages/TryOnHistory.jsx';
+const AnalyzePhoto = page(() => import('./pages/AnalyzePhoto.jsx'), 'AnalyzePhoto');
+const TryOn = page(() => import('./pages/TryOn.jsx'), 'TryOn');
+const GenerationDetail = page(() => import('./pages/GenerationDetail.jsx'), 'GenerationDetail');
+const Feed = page(() => import('./pages/Feed.jsx'), 'Feed');
+const Marketplace = page(() => import('./pages/Marketplace.jsx'), 'Marketplace');
+const Inbox = page(() => import('./pages/Inbox.jsx'), 'Inbox');
+const Thread = page(() => import('./pages/Thread.jsx'), 'Thread');
+const Settings = page(() => import('./pages/Settings.jsx'), 'Settings');
+const Privacy = page(() => import('./pages/Privacy.jsx'), 'Privacy');
+const Terms = page(() => import('./pages/Terms.jsx'), 'Terms');
+const Support = page(() => import('./pages/Support.jsx'), 'Support');
+
 // OotdDetail removed — /ootd/:id now redirects to the unified /o/:id.
 function OotdRedirect() {
   const { outfitId } = useParams();
   return <Navigate to={`/o/${outfitId}`} replace />;
 }
-import { TryOn } from './pages/TryOn.jsx';
-import { GenerationDetail } from './pages/GenerationDetail.jsx';
-import { Feed } from './pages/Feed.jsx';
-import { Marketplace } from './pages/Marketplace.jsx';
-import { Inbox } from './pages/Inbox.jsx';
-import { Thread } from './pages/Thread.jsx';
-import { Settings } from './pages/Settings.jsx';
-import { Privacy } from './pages/Privacy.jsx';
-import { Terms } from './pages/Terms.jsx';
-import { Support } from './pages/Support.jsx';
 
 import './styles/main.css';
 import './styles/drape.css';
@@ -218,6 +224,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
       {!noChrome && <MobileHeader />}
 
       <main className="main">
+        <Suspense fallback={<div className="loading"><div className="spinner" /></div>}>
         <Routes>
           <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />
           <Route path="/welcome" element={isLoggedIn ? <Navigate to="/profile" replace /> : <Welcome />} />
@@ -275,6 +282,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </main>
 
       {!hideNav && <MobileTabBar user={user} />}
