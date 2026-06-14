@@ -5584,6 +5584,16 @@ input[type="search"]::-webkit-search-decoration {
   opacity: 0.5;
 }
 
+/* "From the original look" — same muted uppercase section-header treatment as
+   the STYLE / palette labels, so it reads as one consistent system. */
+.gen-analysis-source {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
 .outfit-style-bars {
   margin-bottom: 1.5rem;
 }
