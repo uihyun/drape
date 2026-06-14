@@ -170,7 +170,7 @@ export function GenerationDetail({ user }) {
         <>
           <div className={`variants-grid${(gen.variantUrls || []).length === 1 ? ' single' : ''}`}>
             {(gen.variantUrls || []).map((url, i) => (
-              <div key={i} className="variant">
+              <div key={i} className={`variant${gen.scene ? ' variant--scene' : ''}`}>
                 <img src={url} alt={`variant ${i + 1}`} loading="lazy" />
               </div>
             ))}

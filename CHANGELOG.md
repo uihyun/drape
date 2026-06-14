@@ -63,6 +63,14 @@ versionCode/build: 4 · versionName 1.1.1
      outfit-ref background clause now forces a fresh re-render ("build the scene
      ANEW; the only thing from the outfit photo is the clothing").
   `functions/tryon.js`.
+  7. **Scene results showed white margins.** The result card pads every variant
+     7% onto a white card — right for a figure-on-white cutout, wrong for a real
+     backdrop (Venice/beach renders sat letterboxed inside the card). The
+     generation doc now carries a `scene` flag (true for a requested background
+     or a preserved custom photo); the card drops the padding and fills
+     edge-to-edge (`object-fit:cover`) for scene results, keeps the breathing
+     room for cutouts. `functions/tryon.js`, `src/pages/GenerationDetail.jsx`,
+     `src/styles/drape.css`.
 - **Stuck 'Processing' closet items.** processItem is fire-and-forget; a
   killed app / failed call left permanent 'Processing' cards. Recovery is now
   client-side (item-service flips to 'failed' if the dispatch rejects, only if

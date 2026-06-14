@@ -397,6 +397,12 @@ exports.virtualTryOn = onCall(
     // user's TryOnHistory live subscription sees a 'pending' card within
     // ~500ms of pressing Generate. They can then navigate away (callable
     // resolves the URL list, but the UI doesn't have to wait for it).
+    // `scene` = the result fills the frame edge-to-edge (a real backdrop, or a
+    // preserved custom photo) vs. a figure centered on a white card. The detail
+    // card uses it to drop the white-card padding for scene results, which were
+    // showing letterbox margins around the Venice/beach renders.
+    const scene = (!customPhotoPath && !!(backgroundDesc && backgroundDesc.trim()))
+      || (!!customPhotoPath && !removeCustomBg);
     const genRef = db.collection('generations').doc();
     await genRef.set({
       userId: uid,
@@ -405,6 +411,7 @@ exports.virtualTryOn = onCall(
       title: (title || '').slice(0, 80),
       identityRefCount: referenceCount,
       customPhotoPath: customPhotoPath || null,
+      scene,
       modelTier: 'pro',
       modelId,
       prompt: prompt || null,
