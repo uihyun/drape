@@ -26,10 +26,14 @@ of 1.1.1 build 5.
   the full OOTD photo with its background. Cutout quality depends on
   segmentation, which struggles on busy OOTD scenes, so this lets you opt into
   the original photo (which always looks right and reads like a photo diary).
-  Device-local pref (`localStorage`); both URLs are already stored, so it's a
-  pure display switch with no reprocessing, and existing OOTDs flip instantly.
-  `src/services/prefs.js`, `src/pages/Settings.jsx`, `src/pages/Calendar.jsx`,
-  `src/styles/drape.css`.
+  **Account-level**: the choice lives on the public profile, so it follows the
+  account across devices AND applies to visitors viewing your calendar
+  (`PublicCalendar` reads the same field) — your calendar looks the same to
+  everyone, no you-vs-visitor asymmetry. Written through the `updateProfile`
+  function (profiles are server-write-only); both URLs are already stored so
+  it's a pure display switch with no reprocessing. `functions/profile.js`,
+  `src/services/profile-service.js`, `src/pages/Settings.jsx`,
+  `src/pages/Calendar.jsx`, `src/pages/Profile.jsx`, `src/pages/PublicProfile.jsx`.
 
 ### Fixed (build 5)
 - **Feed cells sometimes stuck blank.** The card image (`CardImage`) had no

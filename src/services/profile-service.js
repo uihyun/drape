@@ -145,6 +145,13 @@ export const ProfileService = {
     return authedFetch(UPDATE_FN_URL, { location });
   },
 
+  // Calendar day-cell style (cutout vs full photo). Stored on the public
+  // profile so the owner's choice applies to their own calendar AND to
+  // visitors viewing it (PublicCalendar reads the same field).
+  async updateCalendarBackground(showBackground) {
+    return authedFetch(UPDATE_FN_URL, { calendarShowBackground: !!showBackground });
+  },
+
   // Upload a profile photo. Stored under /users/{uid}/profile/avatar.jpg
   // (public read, owner write via storage.rules), then the URL is pushed
   // to profiles/{uid}.photoURL through the updateProfile cloud function.

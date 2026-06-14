@@ -212,6 +212,12 @@ exports.updateProfile = onRequest(async (req, res) => {
             update.photoURL = photoURL || null;
             result.photoURL = update.photoURL;
         }
+        // Calendar day-cell look (cutout vs full photo) — public-readable so a
+        // visitor's PublicCalendar renders the owner's chosen style too.
+        if (typeof data.calendarShowBackground === 'boolean') {
+            update.calendarShowBackground = data.calendarShowBackground;
+            result.calendarShowBackground = data.calendarShowBackground;
+        }
 
         if (Object.keys(update).length === 0) {
             res.status(400).json({ error: 'NO_FIELDS' });

@@ -199,7 +199,7 @@ export function PublicProfile({ user, onSignIn }) {
 
       <div className="profile-tabcontent" role="tabpanel">
         {tab === 'outfits' && <PublicOutfitsGrid ootds={ootds} t={t} />}
-        {tab === 'calendar' && <PublicCalendar ootds={ootds} t={t} />}
+        {tab === 'calendar' && <PublicCalendar ootds={ootds} showBackground={!!profile?.calendarShowBackground} t={t} />}
         {tab === 'boards' && <PublicBoardsGrid boards={boards} t={t} />}
       </div>
 
@@ -267,7 +267,7 @@ function PublicBoardsGrid({ boards, t }) {
 // the already-fetched ootds list (bucketed by date) so we don't re-hit
 // Firestore on month navigation. Cells link to /ootd/:id; days with no
 // public entry render as blanks.
-function PublicCalendar({ ootds, t }) {
+function PublicCalendar({ ootds, showBackground = false, t }) {
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
 
@@ -333,14 +333,20 @@ function PublicCalendar({ ootds, t }) {
           const inner = (
             <>
               <span className="calendar-day-num">{d}</span>
-              {(entry?.photoCutUrl || entry?.photoUrl) && (
-                <img
-                  src={entry.photoCutUrl || entry.photoUrl}
-                  alt=""
-                  className={`calendar-thumb${entry.photoCutUrl ? ' is-cut' : ''}`}
-                  loading="lazy"
-                />
-              )}
+              {(() => {
+                const usingCut = !showBackground && !!entry?.photoCutUrl;
+                const src = showBackground
+                  ? (entry?.photoUrl || entry?.photoCutUrl)
+                  : (entry?.photoCutUrl || entry?.photoUrl);
+                return src ? (
+                  <img
+                    src={src}
+                    alt=""
+                    className={`calendar-thumb${usingCut ? ' is-cut' : ''}`}
+                    loading="lazy"
+                  />
+                ) : null;
+              })()}
             </>
           );
           return entry ? (

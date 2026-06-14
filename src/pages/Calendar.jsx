@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { calendarWarm } from '../services/uiCache.js';
-import { getPref, onPrefChange, PREF_CALENDAR_BG } from '../services/prefs.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
@@ -20,7 +19,7 @@ function ymd(d) {
   return `${y}-${m}-${da}`;
 }
 
-export function Calendar({ user, onSignIn, embedded = false }) {
+export function Calendar({ user, onSignIn, embedded = false, showBackground = false }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const today = new Date();
@@ -49,9 +48,8 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const [pickerDate, setPickerDate] = useState(null); // day with N>1 entries
   const [search, setSearch] = useSearchParams();
   // Day-cell look: cutout (default) vs the full OOTD photo with its background.
-  // Device-local pref; react live so toggling in Settings updates here too.
-  const [showBg, setShowBg] = useState(() => getPref(PREF_CALENDAR_BG, false));
-  useEffect(() => onPrefChange(PREF_CALENDAR_BG, setShowBg), []);
+  // Comes from the account profile (Settings → Display) so it follows the user.
+  const showBg = showBackground;
 
   // Deep-link entry: /profile/calendar?ootd=today (or ?ootd=YYYY-MM-DD)
   // opens the OOTD sheet for that date. Used by the create sheet's

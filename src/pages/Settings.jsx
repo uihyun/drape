@@ -10,7 +10,6 @@ import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
-import { getPref, setPref, PREF_CALENDAR_BG } from '../services/prefs.js';
 
 // One Settings page (Lekondo tone). Sections, ordered by frequency of use:
 // 1. Profile — handle (one-time claim), displayName, bio, instagram, location
@@ -44,7 +43,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
-      <DisplaySection t={t} />
+      <DisplaySection profile={profile} t={t} />
       <AccountSection
         user={user}
         profile={profile}
@@ -60,14 +59,23 @@ export function Settings({ user, onSignIn, onSignOut }) {
 }
 
 // Calendar day-cell look: segmented cutout (figure on the card) vs the full
-// OOTD photo with its background. Device-local pref — cutouts depend on
-// segmentation quality, so some people prefer the original photo.
-function DisplaySection({ t }) {
-  const [showBg, setShowBg] = useState(() => getPref(PREF_CALENDAR_BG, false));
-  const toggle = () => {
+// OOTD photo with its background. Stored on the profile so it follows the
+// account and applies to visitors' view of the calendar too. Optimistic —
+// flips immediately, reverts if the server write fails.
+function DisplaySection({ profile, t }) {
+  const serverVal = !!profile?.calendarShowBackground;
+  const [pending, setPending] = useState(null);
+  const showBg = pending == null ? serverVal : pending;
+  useEffect(() => { if (pending != null && serverVal === pending) setPending(null); }, [serverVal, pending]);
+  const toggle = async () => {
     const next = !showBg;
-    setShowBg(next);
-    setPref(PREF_CALENDAR_BG, next);
+    setPending(next);
+    try {
+      await ProfileService.updateCalendarBackground(next);
+    } catch (e) {
+      console.warn('calendar background save failed:', e?.message);
+      setPending(null); // revert to the server value
+    }
   };
   return (
     <section className="settings-card">
