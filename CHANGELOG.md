@@ -27,6 +27,12 @@ versionCode/build: TBD (bump from 4 when building native)
   `src/styles/drape.css`.
 
 ### Fixed
+- **Feed cells sometimes stuck blank.** The card image (`CardImage`) had no
+  `onError` path, so a single transient miss — most often the brief public-read
+  propagation window right after an OOTD goes public — left that cell
+  permanently blank until the feed remounted. It now retries a failed load up to
+  3× with backoff and a cache-bust (so a cached 403 isn't reused).
+  `src/components/CardImage.jsx`.
 - **Calendar cutout dragged in background furniture.** The OOTD cutout
   (`processOotdPhoto`) kept whatever the segmentation model marked foreground,
   so café chairs behind the subject ended up floating in the calendar thumbnail.

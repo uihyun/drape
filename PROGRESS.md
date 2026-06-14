@@ -2,6 +2,27 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Deferred — under consideration (revisit when the symptom recurs)
+
+- **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an
+  external prompt test: in the try-on prompts (`functions/tryon.js`, both the
+  `identity-refs` and `outfit-ref` modes), make the multi-reference relationship
+  EXPLICIT — "the first N images are the SAME person; image 1 is the
+  PRIMARY/most-accurate reference, the rest are extra angles of that same
+  individual; use them ONLY to lock identity (exact face, hair, body build, skin
+  tone); do NOT copy their pose, framing, or crop." Our current prompt only says
+  "the person from the reference photos" and actually tells it to *Match the
+  FIRST reference photo's pose and framing* — so adopting this means replacing
+  that pose-copy line with "render a natural full-body stance" (keep full-body
+  without cloning a single ref's pose). **Decision: NOT applied — current results
+  are good (identity stays the user's, not the borrowed look's).** Caveats if we
+  ever do it: (a) body shape is only as good as the clearest ref — if the PRIMARY
+  hides the body (e.g. an oversized tee), reorder a clean full-body shot to
+  primary rather than leaning on the prompt; (b) prompts are sensitive, so only
+  touch this if face/body drift becomes a *recurring* complaint, and re-verify
+  the working cases don't regress.
+
+
 ## Current state — 2026-06-04 (web pages + landing + submission prep)
 
 ### Shipped (web only — NO native rebuild required, except the one cosmetic note)
