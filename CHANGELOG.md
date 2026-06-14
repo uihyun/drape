@@ -31,6 +31,10 @@ versionCode/build: 4 · versionName 1.1.1
   (falls back to the always-present 'Based on this look' link). One fewer Gemini
   call per outfit-ref try-on; the two screens stay consistent. Item/custom
   try-ons keep their own analysis. `src/pages/GenerationDetail.jsx`.
+- **Try-on date moved to the detail.** The try-on tab's card grid now shows just
+  the render (no date line — cleaner), and the date appears when you tap in, in
+  the same uppercase treatment a dated outfit uses. `src/pages/TryOnHistory.jsx`,
+  `src/pages/GenerationDetail.jsx`.
 
 ### Fixed — virtual try-on (the big one)
 - **Feed-post try-on quality.** Recreating someone's look ("outfit-ref" mode)

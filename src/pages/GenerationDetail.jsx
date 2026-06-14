@@ -87,6 +87,13 @@ export function GenerationDetail({ user }) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
   }
 
+  // Tapped-in detail shows when the try-on was made (the card grid stays clean
+  // — no date there). Same format/treatment as a dated outfit.
+  const genDate = gen.createdAt?.toDate?.() || (gen.createdAt ? new Date(gen.createdAt) : null);
+  const dateLabel = genDate
+    ? genDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
+    : '';
+
   // Where the palette/style/notes come from: the try-on's own analysis for
   // item/custom modes, or the borrowed look's analysis for outfit-ref.
   const isOutfitRef = !!gen.outfitRefId;
@@ -142,6 +149,7 @@ export function GenerationDetail({ user }) {
 
   return (
     <div className="page generation-detail">
+      {dateLabel && <div className="outfit-date">{dateLabel}</div>}
       <h1 className="page-h1">{t('tryOnResult')}</h1>
 
       {gen.status === 'pending' && (

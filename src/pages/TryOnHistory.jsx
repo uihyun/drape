@@ -138,11 +138,6 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                     </button>
                   )}
                 </div>
-                <div className="tryon-history-meta">
-                  <span className="tryon-history-date">
-                    {g.createdAt?.toDate?.()?.toLocaleDateString?.() || ''}
-                  </span>
-                </div>
               </Link>
             );
           })}
