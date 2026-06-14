@@ -1,6 +1,6 @@
 {
   "name": "drape",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Digital closet + virtual try-on + OOTD calendar + lookbook SNS",
   "type": "module",
   "scripts": {
