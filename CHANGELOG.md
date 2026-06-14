@@ -78,8 +78,14 @@ versionCode/build: 4 · versionName 1.1.1
   overlay already calls `SplashScreen.hide()` on mount, so the splash now stays
   up until the app is actually painted (with a 5s belt-and-braces fallback in
   `main.jsx` so a render failure can't trap the splash). `capacitor.config.json`,
-  `src/main.jsx`. (The deeper main-thread jank from the un-split ~1.2MB bundle is
-  a separate follow-up — route-level `React.lazy`.)
+  `src/main.jsx`.
+- **Laggy first taps after the splash (native).** App.jsx statically imported
+  all ~25 route pages, so the main chunk was 414K parsed up front on a cold
+  WKWebView — the main-thread block behind the janky first interactions. Route
+  pages are now `React.lazy` behind a single `Suspense`; Vite emits a per-page
+  chunk and the app chunk drops to ~150K (Firebase/React vendor unchanged — both
+  needed early). Also removed 5 dead App.jsx imports (Closet/Calendar/OutfitList/
+  BoardList/TryOnHistory, only used embedded in Profile). `src/App.jsx`.
 
 **Commits** (`7e68946` → `cfedeee`):
 - `cfedeee` chore: bump to 1.1.1 (versionCode/build 4) ← release commit
