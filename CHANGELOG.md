@@ -11,9 +11,9 @@ Conventions:
 
 ---
 
-## [1.1.1] — Unreleased (web live; queued for next native build)
+## [1.1.1] — 2026-06-13 (iOS + Android building)
 
-versionCode/build: TBD (bump from 3 when building native)
+versionCode/build: 4 · versionName 1.1.1
 
 ### Added
 - **Like your own posts.** Owners can now like their own outfit and board, and
@@ -24,6 +24,13 @@ versionCode/build: TBD (bump from 3 when building native)
 - **Try-on from a post shows its source** ('Based on this look') and
   **Regenerate carries the outfit reference forward** (was failing
   'itemIds required' for outfit-ref try-ons). `src/pages/GenerationDetail.jsx`.
+- **Outfit-ref try-ons reuse the borrowed look's analysis.** An outfit-ref
+  try-on recreates an already-styled post, so re-running the palette/style/notes
+  read just duplicated the source look's. It now skips `analyzeGeneration` and
+  pulls the source outfit's existing analysis, shown as 'From the original look'
+  (falls back to the always-present 'Based on this look' link). One fewer Gemini
+  call per outfit-ref try-on; the two screens stay consistent. Item/custom
+  try-ons keep their own analysis. `src/pages/GenerationDetail.jsx`.
 
 ### Fixed — virtual try-on (the big one)
 - **Feed-post try-on quality.** Recreating someone's look ("outfit-ref" mode)
@@ -65,11 +72,28 @@ versionCode/build: TBD (bump from 3 when building native)
   shows a calm spinner, not the word "Processing". `functions/items.js`,
   `src/services/item-service.js`, `src/pages/Closet.jsx`.
 
-**Commits:**
-- `7e68946` feat: owners can like their own outfit/board and always see the count
+**Commits** (`7e68946` → `cfedeee`):
+- `cfedeee` chore: bump to 1.1.1 (versionCode/build 4) ← release commit
+- `32de400` fix(tryon): force a fresh scene render for outfit-ref + custom background
+- `34164c7` feat(tryon): outfit-ref try-ons reuse the borrowed look's analysis
+- `2aeb402` fix(tryon): blur the outfit photo's face so it can't override identity refs
+- `c677aac` docs(changelog): log the try-on fix cycle + stuck-item recovery under 1.1.1
+- `a1a5cb2` fix(tryon): hard-lock the FACE to the identity photos
+- `6012136` fix(tryon): drop auto echo-retry — manual Regenerate is equivalent
+- `35c13c6` fix(tryon): result follows the identity photo's pose/framing
+- `187a0fc` fix(tryon): follow the identity photo's framing (full-body) not the outfit photo's
+- `43f0ba6` fix(tryon): restore the working prompt (natural pose + anti-echo) + body-lock + centering
+- `66a4790` fix(tryon): lock body to identity (not the outfit person); center the figure
+- `6830d62` fix(tryon/items): revert speculative prompt change; client-side stuck-item recovery
+- `4d65002` fix(tryon): stop the model echoing the reference photo; focus-aware item retry
+- `f50906b` fix(tryon): load full worn photo by path OR url; retry stuck items; loading spinner
+- `4706879` fix(tryon): feed-post try-on quality, regenerate, source link, stuck items
+- `f7ba616` docs(changelog): list all commits per version, mark the release commit
+- `1ce9cce` docs(changelog): annotate each version with its git commit hashes
 - `f4d151e` docs: add internal CHANGELOG + maintenance note in CLAUDE.md
+- `7e68946` feat: owners can like their own outfit/board and always see the count
 
-**Release commit:** _pending_ — set at the next native build (bump from versionCode 3).
+**Release commit:** `cfedeee`.
 
 ---
 
