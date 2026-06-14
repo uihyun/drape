@@ -95,16 +95,16 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
-### 1.1.1 (versionCode/build 4)
+### 1.1.1 (versionCode/build 5 — resubmit; build 4 was the first submission)
 
 **KO**
-> 가상 피팅이 한층 좋아졌어요. 피드 속 어떤 룩이든 내 모습 그대로 입어보세요. 얼굴과 체형은 진짜 나로 유지되고, 베니스 운하부터 해변까지 원하는 배경에 세울 수 있어요. 더 매끄러워진 UI와 함께, 마무리되지 않은 옷장 아이템은 한 번의 탭으로 다시 시도할 수 있습니다.
+> 가상 피팅이 한층 좋아졌어요. 피드 속 어떤 룩이든 내 모습 그대로 입어보세요. 얼굴과 체형은 진짜 나로 유지되고, 베니스 운하부터 해변까지 원하는 배경에 세울 수 있어요. 더 매끄러워진 UI와 함께, 마무리되지 않은 옷장 아이템은 한 번의 탭으로 다시 시도할 수 있습니다. 달력은 컷아웃과 배경 사진 중 원하는 표시를 고를 수 있고, 피드 이미지도 더 안정적으로 불러옵니다.
 
 **EN**
-> Virtual try-on, leveled up. Recreate any look from the feed on yourself. Your face and body stay true to you, and you can set the scene anywhere, from a Venice canal to the beach. Enjoy a smoother UI throughout, plus one-tap retry for any closet item that didn't finish.
+> Virtual try-on, leveled up. Recreate any look from the feed on yourself. Your face and body stay true to you, and you can set the scene anywhere, from a Venice canal to the beach. Enjoy a smoother UI throughout, plus one-tap retry for any closet item that didn't finish. On the calendar you can now choose between a clean cutout or the full photo, and feed images load more reliably.
 
 **JA**
-> バーチャル試着がさらに進化しました。フィードのどんなルックも自分の姿で試せます。顔も体型も本当の自分のままで、ベネチアの運河からビーチまで好きな背景に立てます。よりなめらかなUIに加えて、未完了のクローゼットアイテムはワンタップで再試行できます。
+> バーチャル試着がさらに進化しました。フィードのどんなルックも自分の姿で試せます。顔も体型も本当の自分のままで、ベネチアの運河からビーチまで好きな背景に立てます。よりなめらかなUIに加えて、未完了のクローゼットアイテムはワンタップで再試行できます。カレンダーは切り抜きと背景付き写真を選べるようになり、フィードの画像もより確実に読み込まれます。
 
 (1.0.0 / 1.1.0 notes: as already entered in ASC / Play.)
 

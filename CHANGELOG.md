@@ -11,14 +11,16 @@ Conventions:
 
 ---
 
-## [1.1.2] — Unreleased (web + functions live; native version bump pending)
+## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android)
 
-versionCode/build: TBD (bump from 4 when building native)
+versionCode/build: 5 · versionName 1.1.1
 
-Everything here is already live on web/functions for all users; the native
-build only carries the version-number bump (no native-only change in 1.1.2 yet).
+Build 4 was the first submission. **Build 5 keeps version 1.1.1 and folds in the
+fixes below** (all already live on web/functions — the resubmit just carries
+them into the native binaries). What was briefly tracked as "1.1.2" is now part
+of 1.1.1 build 5.
 
-### Added
+### Added (build 5)
 - **Calendar photo-background toggle** (Settings → Display). The day cell can
   show either the segmented cutout (default — figure floating on the card) or
   the full OOTD photo with its background. Cutout quality depends on
@@ -29,7 +31,7 @@ build only carries the version-number bump (no native-only change in 1.1.2 yet).
   `src/services/prefs.js`, `src/pages/Settings.jsx`, `src/pages/Calendar.jsx`,
   `src/styles/drape.css`.
 
-### Fixed
+### Fixed (build 5)
 - **Feed cells sometimes stuck blank.** The card image (`CardImage`) had no
   `onError` path, so a single transient miss — most often the brief public-read
   propagation window right after an OOTD goes public — left that cell
@@ -46,19 +48,11 @@ build only carries the version-number bump (no native-only change in 1.1.2 yet).
   hand/strap). Server-side, so it applies the moment you re-save an OOTD — no app
   update needed. `keepLargestComponent` in `functions/items.js`.
 
-**Commits** (`9279d88` → `4222fbd`):
-- `4222fbd` fix(feed): retry failed card images so cells don't stay blank (+ PROGRESS deferred-idea note)
-- `6212926` feat(calendar): Settings toggle for photo background vs cutout on day cells
-- `cbe8151` docs(changelog): record 9279d88 under 1.1.2
-- `9279d88` fix(ootd): drop detached background furniture from the calendar cutout
-
-**Release commit:** _pending_ — set at the next native build (bump from versionCode 4).
+**Build 5 commits:** `9279d88` (cutout furniture) · `cbe8151` (docs) · `6212926` (calendar toggle) · `4222fbd` (feed retry + PROGRESS note) · `5be4e14` (changelog).
 
 ---
 
-## [1.1.1] — 2026-06-13 (iOS + Android building)
-
-versionCode/build: 4 · versionName 1.1.1
+_Below: the original **build 4** (first submission) notes._
 
 ### Added
 - **Like your own posts.** Owners can now like their own outfit and board, and
