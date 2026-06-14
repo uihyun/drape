@@ -31,6 +31,13 @@ versionCode/build: 4 · versionName 1.1.1
   (falls back to the always-present 'Based on this look' link). One fewer Gemini
   call per outfit-ref try-on; the two screens stay consistent. Item/custom
   try-ons keep their own analysis. `src/pages/GenerationDetail.jsx`.
+- **Outfit-ref try-ons are tag-searchable again.** An outfit-ref try-on has no
+  itemIds and skips its own analysis, so the look/tag filter (which matches on a
+  try-on's item tags + style + pieces) had nothing to match — borrowed-look
+  results fell out of tag search. The generation now denormalizes the source
+  outfit's already-analyzed `style` + `pieces` onto its own doc (no extra Gemini
+  call), so it's searchable by both. Forward-only — existing results gain it on
+  Regenerate. `functions/tryon.js`.
 - **Try-on date moved to the detail.** The try-on tab's card grid now shows just
   the render (no date line — cleaner), and the date appears when you tap in, in
   the same uppercase treatment a dated outfit uses. `src/pages/TryOnHistory.jsx`,

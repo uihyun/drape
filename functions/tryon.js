@@ -438,6 +438,12 @@ exports.virtualTryOn = onCall(
     // whole look. Only ONE mode is active per call.
     const items = [];
     let outfitRefPart = null;
+    // Outfit-ref try-ons carry no itemIds (they copy a photo, not closet
+    // pieces) and skip their own analysis — so without help they'd have nothing
+    // for the look/tag filter to match. Denormalize the borrowed outfit's
+    // already-analyzed style + pieces onto the generation so it stays
+    // searchable (no extra Gemini call).
+    let refStyle = null, refPieces = null;
     if (isOutfitRef) {
       const oSnap = await db.collection('outfits').doc(outfitRefId).get();
       if (!oSnap.exists) {
@@ -445,6 +451,8 @@ exports.virtualTryOn = onCall(
         throw new HttpsError('not-found', 'outfit missing');
       }
       const o = oSnap.data();
+      if (Array.isArray(o.style) && o.style.length) refStyle = o.style;
+      if (Array.isArray(o.pieces) && o.pieces.length) refPieces = o.pieces;
       // Only public outfits can be borrowed (your own private ones too).
       if (!o.isPublic && o.userId !== uid) {
         await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
@@ -619,6 +627,9 @@ exports.virtualTryOn = onCall(
       variantsRequested: n,
       variantsReturned: variantUrls.length,
       errors: results.filter(r => !r.ok).map(r => r.error),
+      // Borrowed look's tags → keeps outfit-ref try-ons in the look/tag filter.
+      ...(refStyle ? { style: refStyle } : {}),
+      ...(refPieces ? { pieces: refPieces } : {}),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
