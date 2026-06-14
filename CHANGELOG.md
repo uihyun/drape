@@ -11,9 +11,12 @@ Conventions:
 
 ---
 
-## [1.1.2] — Unreleased (functions live; queued for next native build)
+## [1.1.2] — Unreleased (web + functions live; native version bump pending)
 
 versionCode/build: TBD (bump from 4 when building native)
+
+Everything here is already live on web/functions for all users; the native
+build only carries the version-number bump (no native-only change in 1.1.2 yet).
 
 ### Added
 - **Calendar photo-background toggle** (Settings → Display). The day cell can
@@ -43,8 +46,13 @@ versionCode/build: TBD (bump from 4 when building native)
   hand/strap). Server-side, so it applies the moment you re-save an OOTD — no app
   update needed. `keepLargestComponent` in `functions/items.js`.
 
-**Commits:**
+**Commits** (`9279d88` → `4222fbd`):
+- `4222fbd` fix(feed): retry failed card images so cells don't stay blank (+ PROGRESS deferred-idea note)
+- `6212926` feat(calendar): Settings toggle for photo background vs cutout on day cells
+- `cbe8151` docs(changelog): record 9279d88 under 1.1.2
 - `9279d88` fix(ootd): drop detached background furniture from the calendar cutout
+
+**Release commit:** _pending_ — set at the next native build (bump from versionCode 4).
 
 ---
 
