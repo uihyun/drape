@@ -33,6 +33,17 @@ if (isNativeApp()) {
     StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
     StatusBar.setStyle({ style: Style.Light }).catch(() => {});
   }).catch(() => {/* plugin missing — ignore */});
+
+  // The native splash now stays up until JS hides it (launchAutoHide:false),
+  // which removes the blank-screen gap when the bundle is still parsing. The
+  // JsSplash overlay owns the normal hide on mount; this is a belt-and-braces
+  // fallback so a catastrophic render failure (React never mounts) can't trap
+  // the user on the splash forever.
+  setTimeout(() => {
+    import('@capacitor/splash-screen')
+      .then(({ SplashScreen }) => SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => {}))
+      .catch(() => {});
+  }, 5000);
 }
 
 // Wait for Material Icons font before unhiding icons to avoid the FOIT.

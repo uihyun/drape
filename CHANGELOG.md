@@ -71,6 +71,15 @@ versionCode/build: 4 · versionName 1.1.1
   piece from a multi-item photo re-extracts the right garment). Processing
   shows a calm spinner, not the word "Processing". `functions/items.js`,
   `src/services/item-service.js`, `src/pages/Closet.jsx`.
+- **Cold-start freeze / unresponsive first tap (native).** The native splash
+  auto-hid on a fixed 2s timer (`launchAutoHide:true`) regardless of whether
+  the JS app had mounted — so on a slow cold start it revealed a blank, tap-dead
+  webview that read as a crash. Switched to `launchAutoHide:false`; the JsSplash
+  overlay already calls `SplashScreen.hide()` on mount, so the splash now stays
+  up until the app is actually painted (with a 5s belt-and-braces fallback in
+  `main.jsx` so a render failure can't trap the splash). `capacitor.config.json`,
+  `src/main.jsx`. (The deeper main-thread jank from the un-split ~1.2MB bundle is
+  a separate follow-up — route-level `React.lazy`.)
 
 **Commits** (`7e68946` → `cfedeee`):
 - `cfedeee` chore: bump to 1.1.1 (versionCode/build 4) ← release commit
