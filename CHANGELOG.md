@@ -26,7 +26,8 @@ versionCode/build: TBD (bump from 4 when building native)
   hand/strap). Server-side, so it applies the moment you re-save an OOTD — no app
   update needed. `keepLargestComponent` in `functions/items.js`.
 
-**Commits:** _pending_
+**Commits:**
+- `9279d88` fix(ootd): drop detached background furniture from the calendar cutout
 
 ---
 
