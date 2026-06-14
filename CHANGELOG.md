@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android)
+## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android — submitted)
 
 versionCode/build: 5 · versionName 1.1.1
 
@@ -52,7 +52,7 @@ of 1.1.1 build 5.
   hand/strap). Server-side, so it applies the moment you re-save an OOTD — no app
   update needed. `keepLargestComponent` in `functions/items.js`.
 
-**Build 5 commits:** `9279d88` (cutout furniture) · `cbe8151` (docs) · `6212926` (calendar toggle) · `4222fbd` (feed retry + PROGRESS note) · `5be4e14` (changelog).
+**Build 5 commits:** `9279d88` (cutout furniture) · `cbe8151` (docs) · `6212926` (calendar toggle) · `4222fbd` (feed retry + PROGRESS note) · `5be4e14` (changelog) · `4685b9e` (build-5 bump + notes) · `65a1778` (calendar bg → account-level). Native build archived from `65a1778` (versionCode 5).
 
 ---
 
