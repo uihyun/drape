@@ -11,6 +11,25 @@ Conventions:
 
 ---
 
+## [1.1.2] — Unreleased (functions live; queued for next native build)
+
+versionCode/build: TBD (bump from 4 when building native)
+
+### Fixed
+- **Calendar cutout dragged in background furniture.** The OOTD cutout
+  (`processOotdPhoto`) kept whatever the segmentation model marked foreground,
+  so café chairs behind the subject ended up floating in the calendar thumbnail.
+  After segmentation it now keeps only the largest 8-connected component (the
+  person) and drops detached blobs (chairs/furniture). No-op on an already-clean
+  cutout; bails if the largest piece isn't a clear majority (so a fragmented
+  mask can't lose half the subject); held bags stay (they connect through the
+  hand/strap). Server-side, so it applies the moment you re-save an OOTD — no app
+  update needed. `keepLargestComponent` in `functions/items.js`.
+
+**Commits:** _pending_
+
+---
+
 ## [1.1.1] — 2026-06-13 (iOS + Android building)
 
 versionCode/build: 4 · versionName 1.1.1

@@ -140,6 +140,60 @@ async function maskOpacityRatio(pngBuf) {
   return opaque / (info.width * info.height);
 }
 
+// Drop detached background blobs the segmentation model wrongly kept (e.g. the
+// wooden chairs behind a café OOTD). The subject is one big connected mass;
+// stray furniture is a separate, smaller component. Keep only the largest
+// 8-connected component of the alpha mask, zero the rest. No-op when the cutout
+// is already a single blob; bails (returns input) if the largest piece isn't a
+// clear majority of the foreground, so a fragmented mask can't lose half the
+// person. Held items (bags) connect through the hand/strap → they stay.
+async function keepLargestComponent(pngBuf) {
+  try {
+    const { data, info } = await sharp(pngBuf).ensureAlpha().raw()
+      .toBuffer({ resolveWithObject: true });
+    const { width: W, height: H, channels } = info;
+    if (channels !== 4) return pngBuf;
+    const n = W * H;
+    const fg = new Uint8Array(n);
+    let total = 0;
+    for (let i = 0; i < n; i++) { if (data[i * 4 + 3] > 16) { fg[i] = 1; total++; } }
+    if (total === 0) return pngBuf;
+    const label = new Int32Array(n);
+    const stack = new Int32Array(n); // each pixel pushed at most once → fits
+    let cur = 0, bestLabel = 0, bestSize = 0;
+    for (let s = 0; s < n; s++) {
+      if (!fg[s] || label[s]) continue;
+      cur++;
+      let sp = 0, size = 0;
+      stack[sp++] = s; label[s] = cur;
+      while (sp > 0) {
+        const p = stack[--sp]; size++;
+        const x = p % W, y = (p / W) | 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const ny = y + dy;
+          if (ny < 0 || ny >= H) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const nx = x + dx;
+            if (nx < 0 || nx >= W) continue;
+            const q = ny * W + nx;
+            if (fg[q] && !label[q]) { label[q] = cur; stack[sp++] = q; }
+          }
+        }
+      }
+      if (size > bestSize) { bestSize = size; bestLabel = cur; }
+    }
+    // Largest piece must dominate — otherwise the mask is fragmented and we'd
+    // risk dropping real parts of the subject; leave it untouched.
+    if (!bestLabel || bestSize / total < 0.5) return pngBuf;
+    for (let i = 0; i < n; i++) { if (label[i] !== bestLabel) data[i * 4 + 3] = 0; }
+    return await sharp(data, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+  } catch (e) {
+    console.warn('keepLargestComponent skipped:', e?.message);
+    return pngBuf;
+  }
+}
+
 /**
  * Chroma-key a flat near-white background to alpha. Used downstream of
  * Gemini's catalog-crop step in processItem, since the segmentation
@@ -806,7 +860,9 @@ exports.processOotdPhoto = onCall(
     let croppedUrl = null;
     let croppedPath = null;
     try {
-      const cutout = await segmentForeground(buf, mime);
+      const segmented = await segmentForeground(buf, mime);
+      // Strip detached background objects (chairs/furniture behind the subject).
+      const cutout = await keepLargestComponent(segmented);
       const ratio = await maskOpacityRatio(cutout);
       if (ratio < 0.02 || ratio > 0.95) {
         console.warn('processOotdPhoto mask out of range:', ratio.toFixed(3));
