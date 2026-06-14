@@ -15,6 +15,17 @@ Conventions:
 
 versionCode/build: TBD (bump from 4 when building native)
 
+### Added
+- **Calendar photo-background toggle** (Settings → Display). The day cell can
+  show either the segmented cutout (default — figure floating on the card) or
+  the full OOTD photo with its background. Cutout quality depends on
+  segmentation, which struggles on busy OOTD scenes, so this lets you opt into
+  the original photo (which always looks right and reads like a photo diary).
+  Device-local pref (`localStorage`); both URLs are already stored, so it's a
+  pure display switch with no reprocessing, and existing OOTDs flip instantly.
+  `src/services/prefs.js`, `src/pages/Settings.jsx`, `src/pages/Calendar.jsx`,
+  `src/styles/drape.css`.
+
 ### Fixed
 - **Calendar cutout dragged in background furniture.** The OOTD cutout
   (`processOotdPhoto`) kept whatever the segmentation model marked foreground,

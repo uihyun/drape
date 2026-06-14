@@ -2990,6 +2990,33 @@ input[type="search"]::-webkit-search-decoration {
   font-size: 0.9rem;
   color: var(--text-primary);
 }
+/* iOS-style toggle for boolean settings rows. */
+.settings-switch {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: var(--border-hover);
+  cursor: pointer;
+  transition: background 0.18s ease;
+  flex: none;
+  padding: 0;
+}
+.settings-switch.on { background: var(--accent); }
+.settings-switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: transform 0.18s ease;
+}
+.settings-switch.on .settings-switch-knob { transform: translateX(18px); }
+
 .identity-refs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

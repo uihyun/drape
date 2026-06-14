@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X, Plus, Check } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { calendarWarm } from '../services/uiCache.js';
+import { getPref, onPrefChange, PREF_CALENDAR_BG } from '../services/prefs.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
@@ -47,6 +48,10 @@ export function Calendar({ user, onSignIn, embedded = false }) {
   const [sheetExisting, setSheetExisting] = useState(null); // ootd doc or null = create new
   const [pickerDate, setPickerDate] = useState(null); // day with N>1 entries
   const [search, setSearch] = useSearchParams();
+  // Day-cell look: cutout (default) vs the full OOTD photo with its background.
+  // Device-local pref; react live so toggling in Settings updates here too.
+  const [showBg, setShowBg] = useState(() => getPref(PREF_CALENDAR_BG, false));
+  useEffect(() => onPrefChange(PREF_CALENDAR_BG, setShowBg), []);
 
   // Deep-link entry: /profile/calendar?ootd=today (or ?ootd=YYYY-MM-DD)
   // opens the OOTD sheet for that date. Used by the create sheet's
@@ -139,6 +144,15 @@ export function Calendar({ user, onSignIn, embedded = false }) {
           const entries = byDate[dateStr] || [];
           const rep = entries[0]; // most-recent = the calendar representative
           const isToday = ymd(today) === dateStr;
+          // showBg → prefer the full photo (cover-fill, no cutout look);
+          // else cutout first, photo as fallback. is-cut drives the
+          // float-on-card styling, so only set it when actually showing one.
+          const usingCut = !showBg && !!rep?.photoCutUrl;
+          const thumbSrc = showBg
+            ? (rep?.photoUrl || rep?.photoCutUrl)
+            : (rep?.photoCutUrl || rep?.photoUrl);
+          // Only wait on the cutout when we actually want it.
+          const waitingCut = !showBg && rep && !rep.photoCutUrl && rep.photoCutStatus === 'processing';
           const openCell = () => {
             // No entries yet → straight to the log sheet. Any existing
             // entries (even just one) → the day picker, so the user can
@@ -163,13 +177,13 @@ export function Calendar({ user, onSignIn, embedded = false }) {
               {/* While the cutout is still being made, show a spinner instead
                   of the with-background photo, so the cell lands on its final
                   look (cutout OR original) in one step, not bg→cutout. */}
-              {rep && !rep.photoCutUrl && rep.photoCutStatus === 'processing' ? (
+              {waitingCut ? (
                 <span className="calendar-thumb-loading"><span className="spinner spinner-sm" /></span>
-              ) : (rep?.photoCutUrl || rep?.photoUrl) ? (
+              ) : thumbSrc ? (
                 <img
-                  src={rep.photoCutUrl || rep.photoUrl}
+                  src={thumbSrc}
                   alt=""
-                  className={`calendar-thumb${rep.photoCutUrl ? ' is-cut' : ''}`}
+                  className={`calendar-thumb${usingCut ? ' is-cut' : ''}`}
                   loading="lazy"
                 />
               ) : null}
@@ -228,6 +242,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
               console.warn('setCalendarRepresentative failed:', err.message);
             }
           }}
+          showBg={showBg}
           t={t}
         />
       )}
@@ -239,7 +254,7 @@ export function Calendar({ user, onSignIn, embedded = false }) {
 // add a brand-new one. Star button on each card sets that OOTD as the
 // calendar cell's representative (cover). Tapping the card body opens
 // the OotdSheet in edit mode for that specific OOTD.
-function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
+function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, showBg = false, t }) {
   // First entry from listMonth's sort is the current rep — either the
   // explicit isCalendarRep flag or fallback to most-recent.
   const repId = entries.find(e => e.isCalendarRep)?.id || entries[0]?.id;
@@ -269,9 +284,12 @@ function DayPicker({ date, entries, onClose, onPick, onAddNew, onSetRep, t }) {
                   onClick={() => onPick(e)}
                 >
                   <div className="day-picker-thumb">
-                    {(e.photoCutUrl || e.photoUrl)
-                      ? <img src={e.photoCutUrl || e.photoUrl} alt="" />
-                      : <div className="item-card-skeleton" />}
+                    {(() => {
+                      const src = showBg
+                        ? (e.photoUrl || e.photoCutUrl)
+                        : (e.photoCutUrl || e.photoUrl);
+                      return src ? <img src={src} alt="" /> : <div className="item-card-skeleton" />;
+                    })()}
                   </div>
                 </button>
                 {multi && (

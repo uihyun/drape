@@ -10,6 +10,7 @@ import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
+import { getPref, setPref, PREF_CALENDAR_BG } from '../services/prefs.js';
 
 // One Settings page (Lekondo tone). Sections, ordered by frequency of use:
 // 1. Profile — handle (one-time claim), displayName, bio, instagram, location
@@ -43,6 +44,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
+      <DisplaySection t={t} />
       <AccountSection
         user={user}
         profile={profile}
@@ -54,6 +56,37 @@ export function Settings({ user, onSignIn, onSignOut }) {
       <LegalSection t={t} />
       <DangerSection t={t} />
     </div>
+  );
+}
+
+// Calendar day-cell look: segmented cutout (figure on the card) vs the full
+// OOTD photo with its background. Device-local pref — cutouts depend on
+// segmentation quality, so some people prefer the original photo.
+function DisplaySection({ t }) {
+  const [showBg, setShowBg] = useState(() => getPref(PREF_CALENDAR_BG, false));
+  const toggle = () => {
+    const next = !showBg;
+    setShowBg(next);
+    setPref(PREF_CALENDAR_BG, next);
+  };
+  return (
+    <section className="settings-card">
+      <h2 className="settings-h2">{t('display')}</h2>
+      <div className="settings-row">
+        <span className="settings-row-label">{t('calendarShowBg')}</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showBg}
+          aria-label={t('calendarShowBg')}
+          className={`settings-switch${showBg ? ' on' : ''}`}
+          onClick={toggle}
+        >
+          <span className="settings-switch-knob" />
+        </button>
+      </div>
+      <p className="settings-hint">{t('calendarShowBgHint')}</p>
+    </section>
   );
 }
 
