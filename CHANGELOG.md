@@ -42,6 +42,9 @@ versionCode/build: 4 · versionName 1.1.1
   the render (no date line — cleaner), and the date appears when you tap in, in
   the same uppercase treatment a dated outfit uses. `src/pages/TryOnHistory.jsx`,
   `src/pages/GenerationDetail.jsx`.
+- **Try-on detail reads as one system.** 'From the original look' had no styling
+  and rendered as plain dark body text; it now matches the muted uppercase
+  STYLE/palette header treatment. `src/styles/drape.css`.
 
 ### Fixed — virtual try-on (the big one)
 - **Feed-post try-on quality.** Recreating someone's look ("outfit-ref" mode)
@@ -90,6 +93,8 @@ versionCode/build: 4 · versionName 1.1.1
   piece from a multi-item photo re-extracts the right garment). Processing
   shows a calm spinner, not the word "Processing". `functions/items.js`,
   `src/services/item-service.js`, `src/pages/Closet.jsx`.
+
+### Fixed — native cold-start (the app looked like it crashed on launch)
 - **Cold-start freeze / unresponsive first tap (native).** The native splash
   auto-hid on a fixed 2s timer (`launchAutoHide:true`) regardless of whether
   the JS app had mounted — so on a slow cold start it revealed a blank, tap-dead
@@ -106,8 +111,16 @@ versionCode/build: 4 · versionName 1.1.1
   needed early). Also removed 5 dead App.jsx imports (Closet/Calendar/OutfitList/
   BoardList/TryOnHistory, only used embedded in Profile). `src/App.jsx`.
 
-**Commits** (`7e68946` → `cfedeee`):
-- `cfedeee` chore: bump to 1.1.1 (versionCode/build 4) ← release commit
+**Commits** (`7e68946` → `27e8982`):
+- `27e8982` style(tryon): match 'From the original look' to the section-header treatment
+- `bb35d4d` fix(tryon): outfit-ref try-ons denormalize source style+pieces for tag search
+- `a5453f3` feat(tryon): show the date on the detail, keep the card grid clean
+- `93150c6` fix(tryon): scene results fill the card edge-to-edge (no white margins)
+- `19c46b2` docs(changelog): note route lazy-loading under cold-start fixes
+- `9864392` perf(native): lazy-load route pages to shrink the cold-start bundle
+- `cad4b7d` fix(native): keep the splash up until JS mounts (no cold-start blank/freeze)
+- `dc836a5` docs(changelog): finalize 1.1.1 release notes
+- `cfedeee` chore: bump to 1.1.1 (versionCode/build 4) ← version bump
 - `32de400` fix(tryon): force a fresh scene render for outfit-ref + custom background
 - `34164c7` feat(tryon): outfit-ref try-ons reuse the borrowed look's analysis
 - `2aeb402` fix(tryon): blur the outfit photo's face so it can't override identity refs
@@ -127,7 +140,10 @@ versionCode/build: 4 · versionName 1.1.1
 - `f4d151e` docs: add internal CHANGELOG + maintenance note in CLAUDE.md
 - `7e68946` feat: owners can like their own outfit/board and always see the count
 
-**Release commit:** `cfedeee`.
+**Release:** version bumped at `cfedeee` (versionCode 4); the cold-start +
+try-on-polish commits landed after the bump, so the 1.1.1 native build is
+archived from `27e8982` (or later) at the same versionCode 4 — nothing was
+submitted between, so no second bump is needed.
 
 ---
 
