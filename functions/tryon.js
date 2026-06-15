@@ -1,6 +1,6 @@
 // === virtualTryOn ======================================================
 // Compose the user's identity reference photos + 1..N clothing items into
-// a single try-on render (Nano Banana Pro, gemini-3-pro-image-preview).
+// a single try-on render (Nano Banana Pro, gemini-3-pro-image).
 //
 // Quality strategy (brief §7):
 //   - Always feed ALL identity refs (2~3 full-body shots) so the model
@@ -22,8 +22,7 @@ const { removeBackground } = require('@imgly/background-removal-node');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
-const IMAGE_PRO   = 'gemini-3-pro-image-preview';
-const IMAGE_FLASH = 'gemini-3.1-flash-image-preview';
+const IMAGE_PRO   = 'gemini-3-pro-image';
 
 function bucketUrl(bucket, path) {
   return `https://storage.googleapis.com/${bucket}/${path}`;
@@ -65,7 +64,7 @@ async function fetchAsInlineData(url) {
 async function blurOutfitFace(buf, genai) {
   try {
     const vision = genai.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
     const res = await vision.generateContent([

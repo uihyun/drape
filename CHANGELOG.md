@@ -11,6 +11,35 @@ Conventions:
 
 ---
 
+## Server / web — continuous (live for everyone; NO app version / build needed)
+
+Changes here ship to Cloud Functions or the marketing/web host and reach every
+user immediately, independent of the installed app version. They are **not** a
+new app release — the submitted app (1.1.1) keeps working and picks these up
+automatically. Listed newest first, by date.
+
+- **2026-06-15 · Gemini models migrated off `-preview` to GA.** The preview
+  model IDs were retiring (`gemini-3-flash-preview` is already marked *Shut down*
+  in the docs), so swapped to the stable GA endpoints — same family, same cost,
+  better stability:
+  - try-on / garment crop: `gemini-3-pro-image-preview` → **`gemini-3-pro-image`** (Nano Banana Pro, GA)
+  - vision (auto-tag, OOTD/try-on analysis, moderation, outfit-ref face box):
+    `gemini-3-flash-preview` → **`gemini-3.5-flash`** (GA)
+  Every call site + shared constants + `ai-service` metadata: `functions/items.js`,
+  `functions/tryon.js`, `functions/moderation.js`, `functions/test-item-pipeline.js`,
+  `src/services/ai-service.js`. Deleted the dead `IMAGE_FLASH` / `imageFlash` /
+  `visionPro` constants → **zero `-preview` references** anywhere. Model IDs are
+  server-only, so a `firebase deploy --only functions` reaches every user — no app
+  rebuild/resubmit. (The Imagen 4 discontinuation email was for the old
+  `voda-7647c` project; drape uses no Imagen endpoints.)
+- **2026-06-15 · Landing: Google Play shown as "coming soon."** The Play badge
+  linked to a not-yet-live listing; now a dimmed, non-clickable "coming soon"
+  badge (출시 예정 / COMING SOON / 近日公開) until the Android release goes out.
+  App Store badge stays a live link. Web/marketing host only — never in the
+  native app. `src/pages/Landing.jsx`, `src/styles/landing.css`.
+
+---
+
 ## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android — submitted)
 
 versionCode/build: 5 · versionName 1.1.1

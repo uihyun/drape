@@ -65,7 +65,7 @@ async function runSfwCheck(imagePart) {
     return null;
   }
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
   const prompt =
     'You are a moderator for a public fashion/outfit-sharing community feed. ' +
     'Look at the attached image and reply with exactly one line: ' +

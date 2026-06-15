@@ -6,7 +6,7 @@
 // flips it to 'ready' with the cropped image + tag set.
 //
 // Two Gemini calls in parallel:
-//   1. Nano Banana Pro (gemini-3-pro-image-preview) — "crop the garment,
+//   1. Nano Banana Pro (gemini-3-pro-image) — "crop the garment,
 //      transparent background" (or fall back to plain white if alpha lost)
 //   2. Gemini vision (Flash by default — tagging is cheap & uniform) —
 //      structured JSON output filling the taxonomy fields.
@@ -23,11 +23,8 @@ const TAXONOMY = require('./taxonomy.js');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
 // Gemini model IDs as exposed by v1beta listModels (verified via curl).
-// The earlier `gemini-3-flash-image-preview` was renamed to `3.1` — the
-// old id 404s. Pro and the text-vision flash kept their names.
-const IMAGE_PRO   = 'gemini-3-pro-image-preview';
-const IMAGE_FLASH = 'gemini-3.1-flash-image-preview';
-const VISION      = 'gemini-3-flash-preview';
+const IMAGE_PRO   = 'gemini-3-pro-image'; // try-on + garment crop (Nano Banana Pro, GA)
+const VISION      = 'gemini-3.5-flash';   // tagging / analysis / moderation (GA)
 
 // Reusable schema prompt for the auto-tag call. The model is told to pick
 // from the closed vocab — anything off-list gets dropped at parse time.

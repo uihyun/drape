@@ -18,7 +18,7 @@ const sharp = require('sharp');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { removeBackground } = require('@imgly/background-removal-node');
 
-const IMAGE_PRO = 'gemini-3-pro-image-preview';
+const IMAGE_PRO = 'gemini-3-pro-image';
 
 const CROP_PROMPT = `Extract ONLY the item from this photo and present it
 in the standard catalog product view for its category:

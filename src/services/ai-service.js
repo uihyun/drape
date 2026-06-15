@@ -15,13 +15,10 @@ import { db, auth } from '../firebase.js';
 // refs, complex layered outfit composites).
 export const MODELS = {
   // Identity-preserving image generation (try-on, hair/lip/makeup, scene
-  // background). "Nano Banana Pro" — gemini-3-pro-image-preview.
-  imagePro:   'gemini-3-pro-image-preview',
-  // Fast/cheap variant for previews + minor variations. "Nano Banana 2".
-  imageFlash: 'gemini-3-flash-image-preview',
-  // Vision tagging — extracts category/color/style from a clothing photo.
-  visionPro:  'gemini-3-pro-preview',
-  visionFlash:'gemini-3-flash-preview',
+  // background). "Nano Banana Pro" — gemini-3-pro-image.
+  imagePro:   'gemini-3-pro-image',
+  // Vision — category/color/style extraction, OOTD/try-on analysis, moderation.
+  visionFlash:'gemini-3.5-flash',
 };
 
 async function logError(error, context = {}) {
