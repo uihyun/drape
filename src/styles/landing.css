@@ -163,6 +163,12 @@
   transition: transform 0.12s ease;
 }
 .lp-store:hover { transform: translateY(-1px); }
+/* Not-yet-live store: dimmed, not clickable, no hover lift. */
+.lp-store-soon {
+  opacity: 0.45;
+  cursor: default;
+}
+.lp-store-soon:hover { transform: none; }
 .lp-store-text { display: flex; flex-direction: column; line-height: 1.1; }
 .lp-store-text small { font-size: 0.6rem; opacity: 0.8; }
 .lp-store-text strong { font-size: 1rem; font-weight: 600; }

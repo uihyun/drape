@@ -442,6 +442,7 @@ export const ko = {
   landingTagline: '착장을 기록하고, 나만의 디지털 옷장을 만들고, 무엇이든 내 몸에 입어보세요.',
   landingStoreOn: '다운로드',
   landingStoreGet: '다운로드',
+  landingStoreSoon: '출시 예정',
   landingWebNote: '앱은 곧 출시됩니다.',
   landingWebNoteLink: '웹에서 시작하기 →',
 

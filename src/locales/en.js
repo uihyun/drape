@@ -442,6 +442,7 @@ export const en = {
   landingTagline: 'Log your outfits, build your digital closet, and try anything on — on you.',
   landingStoreOn: 'Download on the',
   landingStoreGet: 'GET IT ON',
+  landingStoreSoon: 'COMING SOON',
   landingWebNote: 'Coming soon to the app stores.',
   landingWebNoteLink: 'Start on the web →',
 

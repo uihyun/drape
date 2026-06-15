@@ -444,6 +444,7 @@ export const ja = {
   landingTagline: '着こなしを記録し、デジタルクローゼットを作り、何でも自分の体に試着しましょう。',
   landingStoreOn: 'ダウンロード',
   landingStoreGet: 'ダウンロード',
+  landingStoreSoon: '近日公開',
   landingWebNote: 'アプリは近日公開。',
   landingWebNoteLink: 'ウェブで始める →',
 
