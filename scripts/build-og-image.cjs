@@ -20,7 +20,10 @@ const svg = `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http:/
 </svg>`;
 
 const svgPath = path.join(__dirname, '..', 'resources', 'og-image.svg');
-const pngPath = path.join(__dirname, '..', 'public', 'og-image.png');
+// Versioned filename: link-preview services (iMessage / KakaoTalk / Slack)
+// cache the image by URL independently of the page, so a same-name overwrite
+// keeps serving the old cached graphic. Bump the suffix to force a fresh fetch.
+const pngPath = path.join(__dirname, '..', 'public', 'og-image-v2.png');
 
 fs.writeFileSync(svgPath, svg);
 sharp(Buffer.from(svg))

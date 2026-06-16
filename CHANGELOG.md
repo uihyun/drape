@@ -27,8 +27,11 @@ automatically. Listed newest first, by date.
   all-lowercase brand: `<title>` / `og:title` / `twitter:title` / `og:image:alt`
   → "drape — digital closet & virtual try-on". `index.html`,
   `public/og-image.png`, `resources/og-image.svg`. (Note: iMessage/Slack/etc.
-  cache previews hard — the card may keep showing the old image for a while;
-  re-scrape isn't always possible from the client.)
+  cache previews hard. A same-name overwrite (`og-image.png`) kept serving the
+  cached archelier graphic even after the page re-scraped, because the image URL
+  is cached independently of the page — so the file was renamed to
+  **`og-image-v2.png`** (a new URL no cache has seen) to force a fresh fetch.
+  Test by re-sharing a fresh page URL, e.g. `drape.nyc/?v=3`.)
 - **2026-06-15 · Gemini models migrated off `-preview` to GA.** The preview
   model IDs were retiring (`gemini-3-flash-preview` is already marked *Shut down*
   in the docs), so swapped to the stable GA endpoints — same family, same cost,
