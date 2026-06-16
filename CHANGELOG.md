@@ -18,6 +18,17 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-16 · Fixed the link-preview (OG) image + lowercased the title.** The
+  social/iMessage share card for drape.nyc still showed the old **archelier**
+  (voda) graphic — `public/og-image.png` (and its `resources/og-image.svg`
+  source) were never regenerated for drape. Replaced with a brand OG image
+  (ivory Didot-italic `drape` + lowercase tagline on ink #141312) via a new
+  `scripts/build-og-image.cjs`, and lowercased the preview titles to match the
+  all-lowercase brand: `<title>` / `og:title` / `twitter:title` / `og:image:alt`
+  → "drape — digital closet & virtual try-on". `index.html`,
+  `public/og-image.png`, `resources/og-image.svg`. (Note: iMessage/Slack/etc.
+  cache previews hard — the card may keep showing the old image for a while;
+  re-scrape isn't always possible from the client.)
 - **2026-06-15 · Gemini models migrated off `-preview` to GA.** The preview
   model IDs were retiring (`gemini-3-flash-preview` is already marked *Shut down*
   in the docs), so swapped to the stable GA endpoints — same family, same cost,
