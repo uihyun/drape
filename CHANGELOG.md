@@ -54,10 +54,10 @@ automatically. Listed newest first, by date.
 
 ---
 
-## [1.1.2] — Unreleased (web live; queued for next native build)
+## [1.1.2] — 2026-06-17 (iOS building · Android held until 1.1.1 clears Play)
 
-versionCode/build: TBD (bump from 5). App code, so web has it now; native users
-get it in the next build. The rules change (config read) is already live for all.
+versionCode/build: 6 · versionName 1.1.2. App code, so web's had it; this build
+carries it to native. (The config-read rules change is already live for all.)
 
 ### Added
 - **Pull-to-refresh on the feed.** Drag down at the top of any feed tab to force
