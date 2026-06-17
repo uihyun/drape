@@ -4,6 +4,7 @@ import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Edit3, Eye, EyeOff, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
+import { dropFromFeedCaches } from '../services/uiCache.js';
 import { ProfileService } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
@@ -38,8 +39,11 @@ export function BoardDetail({ user, onSignIn }) {
     if (!boardId) return;
     return onSnapshot(
       doc(db, 'boards', boardId),
-      (snap) => setBoard(snap.exists() ? { id: snap.id, ...snap.data() } : null),
-      () => setBoard(null),
+      (snap) => {
+        if (snap.exists()) { setBoard({ id: snap.id, ...snap.data() }); }
+        else { setBoard(null); dropFromFeedCaches(boardId); }
+      },
+      () => { setBoard(null); dropFromFeedCaches(boardId); },
     );
   }, [boardId]);
 
@@ -77,8 +81,8 @@ export function BoardDetail({ user, onSignIn }) {
     return (
       <div className="page">
         <div className="empty-state empty-state-card">
-          <p>{t('boardNotFound')}</p>
-          <Link to="/feed" className="btn btn-secondary">{t('feedTitle')}</Link>
+          <p>{t('deletedOrUnavailable')}</p>
+          <button type="button" className="btn btn-primary" onClick={() => navigate(-1)}>{t('back')}</button>
         </div>
       </div>
     );

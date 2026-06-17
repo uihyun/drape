@@ -79,8 +79,10 @@ get it in the next build. The rules change (config read) is already live for all
   (still in someone's cached feed) showed a spinner forever. They now distinguish
   `undefined`=loading from `null`=gone and render a **"no longer available" +
   Back** state; on detecting the tombstone they also `dropFromFeedCaches(id)` so
-  going back shows the list without the ghost. `src/pages/OutfitDetail.jsx`,
-  `src/pages/ItemDetail.jsx`, `src/services/uiCache.js`.
+  going back shows the list without the ghost. Applies to outfit, item, and
+  board details (BoardDetail already had a not-found state; aligned its copy +
+  added the cache cleanup). `src/pages/OutfitDetail.jsx`, `src/pages/ItemDetail.jsx`,
+  `src/pages/BoardDetail.jsx`, `src/services/uiCache.js`.
 
 **Commits:** `99c2ff3`
 
