@@ -95,6 +95,24 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.1.2 (versionCode/build 6)
+
+**Rollout:** App Store FIRST (1.1.1 already live, so 1.1.2 can submit now).
+**Play Store LATER** — Android 1.1.1 (versionCode 5) is still in review; uploading
+6 now would replace that in-review build. Wait until Play 1.1.1 is live, then
+upload the versionCode 6 `.aab`. (Same notes/copy for both stores.)
+
+**KO**
+> 피드가 한결 매끄러워졌어요. 위로 당겨 새로고침하면 새 게시물이 바로 보이고, 전체적으로 더 빠르고 안정적으로 동작합니다. 자잘한 버그도 다듬었어요.
+
+**EN**
+> A smoother feed. Pull down to refresh and new posts show right away, with a faster, more reliable experience throughout. Plus a round of polish and bug fixes.
+
+**JA**
+> フィードがより快適に。下に引いて更新すると新着がすぐ表示され、全体的に速く安定して動作します。細かな改善とバグ修正も。
+
+---
+
 ### 1.1.1 (versionCode/build 5 — resubmit; build 4 was the first submission)
 
 **KO**
