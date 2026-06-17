@@ -31,6 +31,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, functions, auth } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
+import { invalidateMarketFeed } from './uiCache.js';
 
 const ITEMS = 'items';
 
@@ -149,6 +150,9 @@ async function updateItem(itemId, patch) {
   }
   safe.updatedAt = serverTimestamp();
   await updateDoc(doc(db, ITEMS, itemId), safe);
+  // A listing change (list / unlist / edit) must invalidate the cached market
+  // feed so it doesn't restore a stale page on the next Feed visit.
+  if ('forSale' in safe) invalidateMarketFeed();
 }
 
 /**
@@ -191,6 +195,9 @@ async function deleteItem(itemId) {
   // Firestore doc removal is the source of truth — do it FIRST and await
   // only this. The UI can navigate away immediately afterward.
   await deleteDoc(doc(db, ITEMS, itemId));
+  // A deleted item may have been listed — drop the cached market feed so it
+  // doesn't linger in the grid until the TTL.
+  invalidateMarketFeed();
   // Storage cleanup is best-effort and NOT awaited: deleteObject on an
   // already-missing file 404s and Firebase retries it with backoff
   // (~1s of dead time that would otherwise stall the delete). Fire it off

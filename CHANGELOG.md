@@ -54,6 +54,26 @@ automatically. Listed newest first, by date.
 
 ---
 
+## [1.1.2] — Unreleased (web live; queued for next native build)
+
+versionCode/build: TBD (bump from 5 when building native). App code, so web
+users have it now; native users get it in the next build (not urgent).
+
+### Fixed
+- **"Remove from sale" lingered until app restart.** The Feed's market tab is
+  cached for 5 min (the no-reshuffle cache), so after unlisting an item and
+  going back, the stale cached page was restored and the item stayed until the
+  TTL expired / the app was relaunched. Listing changes now invalidate the
+  cached market feed: `ItemService.updateItem` (when `forSale` changes) and
+  `deleteItem` call a new `invalidateMarketFeed()` that drops the `market|…`
+  cache keys, so the next Feed visit refetches and reflects the change. Scoped
+  to market — the ootds/boards tabs still restore (no needless reshuffle).
+  `src/services/uiCache.js`, `src/services/item-service.js`.
+
+**Commits:** _pending_
+
+---
+
 ## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android — submitted)
 
 versionCode/build: 5 · versionName 1.1.1
