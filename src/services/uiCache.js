@@ -6,11 +6,25 @@
 export const feedCache = new Map();
 export const feedKey = (kind, sort, scope) => `${kind}|${sort}|${scope}`;
 
-// Drop cached market-feed pages so a listing change (list / unlist / delete)
-// shows on the next Feed visit instead of restoring a stale page within the TTL
-// (the bug: an item removed from sale lingered until the cache expired / app
-// restart). Scoped to the `market|…` keys so the ootds/boards tabs aren't
-// needlessly refetched.
+// Surgically drop one item from the cached market pages — used on unlist /
+// delete so the card disappears WITHOUT a full refetch (no loading flash, no
+// cascade). The page is restored from cache minus that item; only its slot
+// reflows. Handles both the {items,…} page shape and the bare-array warm shape.
+export function removeFromMarketFeed(itemId) {
+  for (const [k, entry] of feedCache.entries()) {
+    if (!k.startsWith('market|')) continue;
+    if (Array.isArray(entry)) {
+      feedCache.set(k, entry.filter(it => it.id !== itemId));
+    } else if (entry && Array.isArray(entry.items)) {
+      feedCache.set(k, { ...entry, items: entry.items.filter(it => it.id !== itemId) });
+    }
+  }
+}
+
+// Drop the whole cached market feed — used when an item is newly LISTED, where
+// we can't surgically insert it at the right sorted position, so a one-time
+// refetch on the next Feed visit is the simplest correct path. Listing-on is
+// rare, so the refetch is acceptable; unlist/delete use removeFromMarketFeed.
 export function invalidateMarketFeed() {
   for (const k of feedCache.keys()) {
     if (k.startsWith('market|')) feedCache.delete(k);

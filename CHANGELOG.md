@@ -63,11 +63,13 @@ users have it now; native users get it in the next build (not urgent).
 - **"Remove from sale" lingered until app restart.** The Feed's market tab is
   cached for 5 min (the no-reshuffle cache), so after unlisting an item and
   going back, the stale cached page was restored and the item stayed until the
-  TTL expired / the app was relaunched. Listing changes now invalidate the
-  cached market feed: `ItemService.updateItem` (when `forSale` changes) and
-  `deleteItem` call a new `invalidateMarketFeed()` that drops the `market|…`
-  cache keys, so the next Feed visit refetches and reflects the change. Scoped
-  to market — the ootds/boards tabs still restore (no needless reshuffle).
+  TTL expired / the app was relaunched. Now an **unlist/delete surgically drops
+  just that card** from the cached market pages (`removeFromMarketFeed`) — the
+  page restores from cache minus the item, with no full refetch / loading flash
+  / cascade. A newly-listed item still triggers a one-time refetch
+  (`invalidateMarketFeed`) since it can't be slotted at the right sort position.
+  Only fires when `forSale` changes (or on delete); normal browsing of any tab
+  still restores its cache untouched (the original reshuffle fix stands).
   `src/services/uiCache.js`, `src/services/item-service.js`.
 
 **Commits:** _pending_
