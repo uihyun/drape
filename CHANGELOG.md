@@ -82,7 +82,7 @@ get it in the next build. The rules change (config read) is already live for all
   going back shows the list without the ghost. `src/pages/OutfitDetail.jsx`,
   `src/pages/ItemDetail.jsx`, `src/services/uiCache.js`.
 
-**Commits:** _pending_
+**Commits:** `99c2ff3`
 
 ---
 
