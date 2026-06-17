@@ -2,6 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── config/{doc} ───────────────────────────────────────────────────
+    // Server-tunable runtime knobs (e.g. feed TTL). Public-readable so any
+    // client can apply them; writable only from the Firebase console / Admin
+    // SDK (never from a client). Clients clamp + default every value, so a bad
+    // entry can't break a deployed app.
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // ── users/{uid} ────────────────────────────────────────────────────
     // Self-readable. Profile-shaped fields self-writable; counter fields
     // (followerCount, followingCount) are server-only. identityRefs is

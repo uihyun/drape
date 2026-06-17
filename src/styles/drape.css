@@ -1938,6 +1938,15 @@ body.is-native {
   margin: 0 auto;
   padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
 }
+/* Pull-to-refresh indicator — height is driven inline by the pull distance. */
+.feed-ptr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--text-muted);
+}
+.feed-ptr .spinner.is-pulling { animation: none; opacity: 0.7; }
 /* Stack title above the controls so adding/removing the sort row
    doesn't shift the kind pill around. Controls row is full-width with
    kind-tabs left, sort-tabs right when present. */

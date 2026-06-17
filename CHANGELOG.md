@@ -54,6 +54,38 @@ automatically. Listed newest first, by date.
 
 ---
 
+## [1.1.2] — Unreleased (web live; queued for next native build)
+
+versionCode/build: TBD (bump from 5). App code, so web has it now; native users
+get it in the next build. The rules change (config read) is already live for all.
+
+### Added
+- **Pull-to-refresh on the feed.** Drag down at the top of any feed tab to force
+  a fresh first page (bypasses the cache), updated in place so there's no loading
+  flash. `src/hooks/usePullToRefresh.js`, `src/pages/Feed.jsx`. (Touch gesture —
+  verify on a device.)
+- **Server-tunable feed freshness.** The feed cache TTL dropped from 5 min to
+  **1 min** (others' new/removed posts surface faster), and it's now read from a
+  Firestore `config/app` doc at runtime (`getFeedTtlMs`), so it can be retuned
+  from the console with **no app build**. Defensive: a missing/denied/malformed
+  value falls back to the 1-min default and is clamped to 5s–60min, so a bad
+  console entry can't break a deployed client. `config/{doc}` is public-read,
+  console-write-only (firestore.rules). `src/services/appConfig.js`,
+  `src/App.jsx`, `src/pages/Feed.jsx`, `firestore.rules`.
+
+### Fixed
+- **Deleted post = infinite spinner.** OutfitDetail/ItemDetail couldn't tell
+  "loading" from "deleted" (both were `null`), so tapping an already-deleted post
+  (still in someone's cached feed) showed a spinner forever. They now distinguish
+  `undefined`=loading from `null`=gone and render a **"no longer available" +
+  Back** state; on detecting the tombstone they also `dropFromFeedCaches(id)` so
+  going back shows the list without the ghost. `src/pages/OutfitDetail.jsx`,
+  `src/pages/ItemDetail.jsx`, `src/services/uiCache.js`.
+
+**Commits:** _pending_
+
+---
+
 ## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS + Android — submitted)
 
 versionCode/build: 5 · versionName 1.1.1

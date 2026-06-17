@@ -523,6 +523,7 @@ export const en = {
   deleteAccountError: 'Couldn’t delete the account. Please try again.',
 
   // ── Errors / 404 ───────────────────────────────────────────────────
+  deletedOrUnavailable: 'This post is no longer available.',
   notFoundTitle: 'Page not found',
   notFoundBody: 'That link is broken or the page moved.',
   backToCloset: 'Back to closet',

@@ -6,6 +6,7 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
+import { dropFromFeedCaches } from '../services/uiCache.js';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
@@ -28,7 +29,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const { outfitId } = useParams();
   const navigate = useNavigate();
   const swipe = useSwipeNavigate();
-  const [outfit, setOutfit] = useState(null);
+  const [outfit, setOutfit] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [items, setItems] = useState([]);
   const [owner, setOwner] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -43,10 +44,15 @@ export function OutfitDetail({ user, onSignIn }) {
     if (!outfitId) return;
     return onSnapshot(
       doc(db, 'outfits', outfitId),
-      snap => setOutfit(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+      snap => {
+        if (snap.exists()) { setOutfit({ id: snap.id, ...snap.data() }); }
+        // Deleted/unpublished → mark unavailable AND drop it from any cached
+        // feed page so going back doesn't show the ghost card again.
+        else { setOutfit(null); dropFromFeedCaches(outfitId); }
+      },
       // A private outfit you don't own denies the read — treat it as
       // "unavailable" instead of letting the listener throw uncaught.
-      err => { console.warn('outfit read denied:', err?.code); setOutfit(null); },
+      err => { console.warn('outfit read denied:', err?.code); setOutfit(null); dropFromFeedCaches(outfitId); },
     );
   }, [outfitId]);
 
@@ -87,7 +93,13 @@ export function OutfitDetail({ user, onSignIn }) {
     );
   }, [user?.uid, outfitId]);
 
-  if (!outfit) return <div className="loading"><div className="spinner" /></div>;
+  if (outfit === undefined) return <div className="loading"><div className="spinner" /></div>;
+  if (outfit === null) return (
+    <div className="empty-state empty-state-card">
+      <p>{t('deletedOrUnavailable')}</p>
+      <button type="button" className="btn btn-primary" onClick={() => navigate(-1)}>{t('back')}</button>
+    </div>
+  );
   const isOwner = user && outfit.userId === user.uid;
   // An analyzed look is a saved read of SOMEONE ELSE'S photo — it isn't your
   // OOTD, so it can't be published to the feed and there are no "items you

@@ -523,6 +523,7 @@ export const ko = {
   deleteAccountError: '계정을 삭제하지 못했어요. 다시 시도해 주세요.',
 
   // ── Errors / 404 ───────────────────────────────────────────────────
+  deletedOrUnavailable: '삭제되었거나 더 이상 볼 수 없는 게시물이에요.',
   notFoundTitle: '페이지를 찾을 수 없어요',
   notFoundBody: '주소가 잘못됐거나 페이지가 옮겨졌어요.',
   backToCloset: '옷장으로 돌아가기',

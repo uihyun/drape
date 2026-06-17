@@ -13,12 +13,15 @@ import { ListingCard } from './Marketplace.jsx';
 import { feedCache, feedKey as cacheKey } from '../services/uiCache.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
+import { usePullToRefresh } from '../hooks/usePullToRefresh.js';
+import { getFeedTtlMs } from '../services/appConfig.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Returning to the feed within this window restores your scrolled-down list
-// (items + cursor) so you don't lose your place; after it, the feed resets to
-// a fresh first page (so memory doesn't grow unbounded across the session).
-const FEED_TTL_MS = 5 * 60 * 1000;
+// (items + cursor) so you don't lose your place; after it, the feed resets to a
+// fresh first page. The window comes from `getFeedTtlMs()` (server-tunable,
+// defaults to 1 min) so others' new/removed posts surface fairly quickly; pull
+// to refresh forces it immediately.
 
 // Feed pages are cached in services/uiCache (shared with the splash warm-up),
 // keyed by kind|sort|scope. The Feed component unmounts when you open a detail
@@ -99,7 +102,7 @@ export function Feed({ user, onSignIn }) {
     const cached = feedCache.get(key);
     // Within the TTL, restore the whole scrolled-down list + cursor — don't
     // refetch, so the user keeps their place.
-    if (cached && !Array.isArray(cached) && cached.ts && Date.now() - cached.ts < FEED_TTL_MS) {
+    if (cached && !Array.isArray(cached) && cached.ts && Date.now() - cached.ts < getFeedTtlMs()) {
       setActive(cached.items); setCursor(cached.cursor); setHasMore(!!cached.hasMore);
       return;
     }
@@ -142,6 +145,16 @@ export function Feed({ user, onSignIn }) {
 
   const sentinelRef = useInfiniteScroll({ hasMore, loading: loadingMore, onLoadMore: loadMore });
 
+  // Pull-to-refresh: force a fresh first page for the active view (bypasses the
+  // TTL cache), updated in place so there's no loading flash.
+  const onRefresh = async () => {
+    const key = cacheKey(kind, sort, scope);
+    const res = await fetchPage(null);
+    setActive(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
+    feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
+  };
+  const { pull, refreshing } = usePullToRefresh(onRefresh);
+
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
 
@@ -158,6 +171,11 @@ export function Feed({ user, onSignIn }) {
 
   return (
     <div className="community-feed">
+      {(pull > 0 || refreshing) && (
+        <div className="feed-ptr" style={{ height: refreshing ? 44 : pull }} aria-hidden="true">
+          <span className={`spinner spinner-sm${refreshing ? '' : ' is-pulling'}`} />
+        </div>
+      )}
       <header className="feed-top">
         <div className="feed-top-controls">
           <nav className="feed-kind-tabs" role="tablist">

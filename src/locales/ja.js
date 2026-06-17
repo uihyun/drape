@@ -525,6 +525,7 @@ export const ja = {
   deleteAccountError: 'アカウントを削除できませんでした。もう一度お試しください。',
 
   // ── Errors / 404 ───────────────────────────────────────────────────
+  deletedOrUnavailable: 'この投稿は削除されたか、表示できません。',
   notFoundTitle: 'ページが見つかりません',
   notFoundBody: 'リンクが切れているか、ページが移動しました。',
   backToCloset: 'クローゼットへ戻る',

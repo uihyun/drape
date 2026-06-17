@@ -12,6 +12,7 @@ import { Onboarding } from './components/Onboarding.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
 import { JsSplash } from './components/JsSplash.jsx';
 import { warmUp } from './services/warmup.js';
+import { initAppConfig } from './services/appConfig.js';
 
 // Route pages are lazy-loaded so the cold-start bundle is just the shell +
 // Firebase + the first screen's chunk, not all ~25 pages parsed up front (that
@@ -70,6 +71,8 @@ export default function App() {
     // Register the push-tap handler early so a cold-start tap deep-links to the
     // right thread (before auth/ensureRegistered runs).
     PushService.initTapHandler();
+    // Best-effort: pull server-tunable knobs (e.g. feed TTL). Never blocks.
+    initAppConfig();
     (async () => {
       try {
         const { Capacitor } = await import('@capacitor/core');

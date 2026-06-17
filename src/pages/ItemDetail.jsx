@@ -4,6 +4,7 @@ import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } fr
 import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
+import { dropFromFeedCaches } from '../services/uiCache.js';
 import { CameraService } from '../services/camera.js';
 import { CATEGORIES, SUBCATEGORIES, COLORS, SEASONS, STYLES, FITS, categoryLabel } from '../services/taxonomy.js';
 import { BrandInput } from '../components/BrandInput.jsx';
@@ -31,7 +32,7 @@ export function ItemDetail({ user, onSignIn }) {
   const { itemId } = useParams();
   const navigate = useNavigate();
   const swipe = useSwipeNavigate();
-  const [item, setItem] = useState(null);
+  const [item, setItem] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
@@ -77,6 +78,7 @@ export function ItemDetail({ user, onSignIn }) {
     return onSnapshot(doc(db, 'items', itemId), snap => {
       const data = snap.exists() ? { id: snap.id, ...snap.data() } : null;
       setItem(data);
+      if (!data) dropFromFeedCaches(itemId); // deleted → clear from market feed cache
       if (data && !editing) setDraft({
         name: data.name || '',
         tags: data.tags || {},
@@ -159,7 +161,13 @@ export function ItemDetail({ user, onSignIn }) {
     return () => { cancelled = true; };
   }, [user?.uid, item?.id, item?.userId, item?.forSale, item?.priceAsking]);
 
-  if (!item) return <div className="loading"><div className="spinner" /></div>;
+  if (item === undefined) return <div className="loading"><div className="spinner" /></div>;
+  if (item === null) return (
+    <div className="empty-state empty-state-card">
+      <p>{t('deletedOrUnavailable')}</p>
+      <button type="button" className="btn btn-primary" onClick={() => navigate(-1)}>{t('back')}</button>
+    </div>
+  );
   const isOwner = user && item.userId === user.uid;
 
   // Visitors get the processed cutout + tags only. Before-photo
