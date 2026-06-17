@@ -96,7 +96,7 @@ get it in the next build. The rules change (config read) is already live for all
 
 ---
 
-## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS released ~2026-06-15 · Android in review)
+## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS released 2026-06-15 · Android in review)
 
 versionCode/build: 5 · versionName 1.1.1
 
