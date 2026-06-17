@@ -54,7 +54,7 @@ automatically. Listed newest first, by date.
 
 ---
 
-## [1.1.2] — 2026-06-17 (iOS building · Android held until 1.1.1 clears Play)
+## [1.1.2] — 2026-06-17 (iOS submitted · Android .aab ready, held until 1.1.1 clears Play)
 
 versionCode/build: 6 · versionName 1.1.2. App code, so web's had it; this build
 carries it to native. (The config-read rules change is already live for all.)
