@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Pull-to-refresh for a top-anchored scroll surface (the feed). Smoothness
-// notes: the indicator is driven DIRECTLY through a ref (transform + opacity,
-// both GPU-composited) during the drag — NO React state per frame, so the feed
-// never re-renders mid-gesture. We touch transform/opacity only (never height/
-// layout), so there's no reflow. On release a CSS transition springs it back.
-// Listens at the document level and only engages when the view is scrolled to
-// the very top. Touch-only; a no-op on desktop.
+// Pull-to-refresh with a real "pull" feel: the whole feed content slides down
+// as you drag, then springs back on release. Smoothness comes from HOW it's
+// driven — the content is moved via `transform: translateY` written DIRECTLY to
+// the node through a ref (GPU-composited, no layout/reflow) and NO React state
+// changes during the drag, so the feed never re-renders mid-gesture. The
+// earlier jank was from animating height (reflow) + setState every frame, not
+// from the movement itself. On release a CSS-eased transition springs it back.
+// Engages only when the view is scrolled to the very top. Touch-only.
 export function usePullToRefresh(onRefresh, { threshold = 64 } = {}) {
-  const indicatorRef = useRef(null);
+  const contentRef = useRef(null);     // the sliding feed content
+  const indicatorRef = useRef(null);   // the spinner revealed above it
   const [refreshing, setRefreshing] = useState(false);
   const cb = useRef(onRefresh);
   cb.current = onRefresh;
@@ -21,14 +23,14 @@ export function usePullToRefresh(onRefresh, { threshold = 64 } = {}) {
       const m = document.querySelector('.main');
       return (window.scrollY || 0) <= 0 && (!m || m.scrollTop <= 0);
     };
-    // Map pull distance → a small slide + fade. Capped so it never wanders far.
+    const SPRING = 'transform 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.32s ease';
+    // `dist` = damped pull distance; the content follows it (capped), and the
+    // spinner fades in over the same range.
     const paint = (dist, animate) => {
-      const el = indicatorRef.current;
-      if (!el) return;
-      const d = Math.max(0, Math.min(dist, threshold * 1.3));
-      el.style.transition = animate ? 'transform 0.28s ease, opacity 0.28s ease' : 'none';
-      el.style.transform = `translateY(${Math.min(d, threshold) * 0.6}px)`;
-      el.style.opacity = String(Math.min(1, d / threshold));
+      const offset = Math.max(0, Math.min(dist, threshold * 1.5));
+      const c = contentRef.current, ind = indicatorRef.current;
+      if (c) { c.style.transition = animate ? SPRING : 'none'; c.style.transform = `translateY(${offset}px)`; }
+      if (ind) { ind.style.transition = animate ? SPRING : 'none'; ind.style.opacity = String(Math.min(1, offset / threshold)); }
     };
     const reset = () => paint(0, true);
 
@@ -51,13 +53,7 @@ export function usePullToRefresh(onRefresh, { threshold = 64 } = {}) {
       const reached = st.current.dist >= threshold;
       st.current.startY = null; st.current.dist = 0;
       if (!reached) { reset(); return; }
-      // Hold visible while the refresh runs (spinner spins via .is-refreshing).
-      const el = indicatorRef.current;
-      if (el) {
-        el.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        el.style.transform = `translateY(${threshold * 0.6}px)`;
-        el.style.opacity = '1';
-      }
+      paint(threshold, true); // settle to the threshold while loading
       setRefreshing(true);
       try { await cb.current?.(); }
       catch (err) { console.warn('pull-to-refresh failed:', err?.message); }
@@ -76,5 +72,5 @@ export function usePullToRefresh(onRefresh, { threshold = 64 } = {}) {
     };
   }, [threshold]);
 
-  return { indicatorRef, refreshing };
+  return { contentRef, indicatorRef, refreshing };
 }

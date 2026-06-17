@@ -153,7 +153,7 @@ export function Feed({ user, onSignIn }) {
     setActive(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
     feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
   };
-  const { indicatorRef } = usePullToRefresh(onRefresh);
+  const { contentRef, indicatorRef } = usePullToRefresh(onRefresh);
 
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
@@ -174,6 +174,7 @@ export function Feed({ user, onSignIn }) {
       <div className="feed-ptr" ref={indicatorRef} aria-hidden="true">
         <span className="spinner spinner-sm" />
       </div>
+      <div className="feed-scroll" ref={contentRef}>
       <header className="feed-top">
         <div className="feed-top-controls">
           <nav className="feed-kind-tabs" role="tablist">
@@ -278,6 +279,7 @@ export function Feed({ user, onSignIn }) {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

@@ -1954,8 +1954,12 @@ body.is-native {
   transform: translateY(0);
   pointer-events: none;
   color: var(--text-muted);
-  z-index: 3;
-  will-change: transform, opacity;
+  z-index: 1;
+  will-change: opacity;
+}
+/* The sliding content layer — moved via transform (GPU, no reflow) on pull. */
+.feed-scroll {
+  will-change: transform;
 }
 /* Stack title above the controls so adding/removing the sort row
    doesn't shift the kind pill around. Controls row is full-width with
