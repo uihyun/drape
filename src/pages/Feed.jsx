@@ -153,7 +153,7 @@ export function Feed({ user, onSignIn }) {
     setActive(res.items); setCursor(res.cursor); setHasMore(res.hasMore);
     feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
   };
-  const { pull, refreshing } = usePullToRefresh(onRefresh);
+  const { indicatorRef } = usePullToRefresh(onRefresh);
 
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
@@ -171,11 +171,9 @@ export function Feed({ user, onSignIn }) {
 
   return (
     <div className="community-feed">
-      {(pull > 0 || refreshing) && (
-        <div className="feed-ptr" style={{ height: refreshing ? 44 : pull }} aria-hidden="true">
-          <span className={`spinner spinner-sm${refreshing ? '' : ' is-pulling'}`} />
-        </div>
-      )}
+      <div className="feed-ptr" ref={indicatorRef} aria-hidden="true">
+        <span className="spinner spinner-sm" />
+      </div>
       <header className="feed-top">
         <div className="feed-top-controls">
           <nav className="feed-kind-tabs" role="tablist">
