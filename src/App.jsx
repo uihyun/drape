@@ -22,7 +22,28 @@ import { initAppConfig } from './services/appConfig.js';
 // (Closet/Calendar/OutfitList/BoardList/TryOnHistory aren't routed here — they
 // render embedded inside Profile, which imports them itself, so they ride in
 // Profile's chunk.)
-const page = (loader, name) => lazy(() => loader().then(m => ({ default: m[name] })));
+// A lazy chunk can 404 when the tab was opened on an OLDER build and we've since
+// deployed (Vite's hashed filenames change). The dynamic import then fails with
+// "Failed to fetch dynamically imported module" and the route renders nothing.
+// Recover by reloading ONCE (the fresh index.html points at the new chunks);
+// a sessionStorage guard prevents a reload loop on a genuinely broken chunk.
+// The flag is cleared on a successful app mount (App effect), so a later deploy
+// in the same session can recover again.
+const RELOAD_KEY = 'drape_chunk_reload';
+const page = (loader, name) => lazy(() =>
+  loader()
+    .then(m => ({ default: m[name] }))
+    .catch((err) => {
+      try {
+        if (!sessionStorage.getItem(RELOAD_KEY)) {
+          sessionStorage.setItem(RELOAD_KEY, '1');
+          window.location.reload();
+          return new Promise(() => {}); // hang until the reload takes over
+        }
+      } catch { /* storage blocked — fall through to the real error */ }
+      throw err;
+    })
+);
 
 const AddItem = page(() => import('./pages/AddItem.jsx'), 'AddItem');
 const ItemDetail = page(() => import('./pages/ItemDetail.jsx'), 'ItemDetail');
@@ -71,6 +92,9 @@ export default function App() {
     // Register the push-tap handler early so a cold-start tap deep-links to the
     // right thread (before auth/ensureRegistered runs).
     PushService.initTapHandler();
+    // App mounted OK → reset the chunk-reload guard so a future deploy can
+    // recover a stale lazy chunk again later in this session.
+    try { sessionStorage.removeItem(RELOAD_KEY); } catch { /* ignore */ }
     // Best-effort: pull server-tunable knobs (e.g. feed TTL). Never blocks.
     initAppConfig();
     (async () => {

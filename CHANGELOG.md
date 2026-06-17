@@ -74,6 +74,14 @@ get it in the next build. The rules change (config read) is already live for all
   `src/App.jsx`, `src/pages/Feed.jsx`, `firestore.rules`.
 
 ### Fixed
+- **Stale lazy chunk after a deploy ("Failed to fetch dynamically imported
+  module").** Found in `errorLogs`: a tab opened on an older build, then we
+  deploy (Vite re-hashes chunk filenames), then the user navigates to a lazy
+  route → the dynamic import 404s and the route renders nothing. The `page()`
+  lazy helper now reloads once on import failure (fresh index.html → new chunks),
+  guarded by a sessionStorage flag (cleared on successful mount) so it can't
+  loop. `src/App.jsx`. (A side effect of the route-level `React.lazy` added for
+  cold-start; harmless on native where chunks ship inside the app.)
 - **Deleted post = infinite spinner.** OutfitDetail/ItemDetail couldn't tell
   "loading" from "deleted" (both were `null`), so tapping an already-deleted post
   (still in someone's cached feed) showed a spinner forever. They now distinguish
@@ -88,7 +96,7 @@ get it in the next build. The rules change (config read) is already live for all
 
 ---
 
-## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS released 2026-06-17 · Android in review)
+## [1.1.1] — 2026-06-13 · resubmitted 2026-06-14 (iOS released ~2026-06-15 · Android in review)
 
 versionCode/build: 5 · versionName 1.1.1
 
