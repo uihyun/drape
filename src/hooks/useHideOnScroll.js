@@ -17,7 +17,7 @@ function scrollY() {
 // `downDelta` = how much down-scroll hides it (responsive). `upThreshold` = how
 // far you must scroll UP (cumulative) before it slides back — kept larger so a
 // tiny upward nudge doesn't immediately pop it down.
-export function useHideOnScroll({ topThreshold = 72, downDelta = 6, upThreshold = 56 } = {}) {
+export function useHideOnScroll({ topThreshold = 72, downDelta = 6, upThreshold = 130 } = {}) {
   const ref = useRef(null);
   useEffect(() => {
     let lastY = scrollY();

@@ -54,10 +54,14 @@ automatically. Listed newest first, by date.
 
 ---
 
-## [1.1.3] — Unreleased (web live; queued for next native build)
+## [1.1.3] — 2026-06-18 (native build 7 · iOS resubmit · Android after Play 1.1.1)
 
-versionCode/build: TBD (bump from 6). App code — web has it now; native users
-get it in the next build. (Landed after 1.1.2 build 6 was already submitted.)
+versionCode/build: 7 · versionName 1.1.3. **This native build carries BOTH the
+1.1.2 and 1.1.3 changes** — 1.1.2 was never released natively (iOS build 6 was
+only in review; Android build 6 .aab was never uploaded), so both platforms go
+1.1.1 → 1.1.3, skipping 1.1.2. iOS: resubmit build 7 (replaces the in-review
+1.1.2). Android: upload the build 7 .aab once Play 1.1.1 clears. All changes have
+been live on web/functions throughout.
 
 ### Fixed
 - **Lists jumped to the top on Back; tabs shared one scroll.** AppShell reset
@@ -77,7 +81,7 @@ get it in the next build. (Landed after 1.1.2 build 6 was already submitted.)
 
 ---
 
-## [1.1.2] — 2026-06-17 (iOS submitted · Android .aab ready, held until 1.1.1 clears Play)
+## [1.1.2] — 2026-06-17 (superseded — folded into 1.1.3 build 7; never released natively on its own)
 
 versionCode/build: 6 · versionName 1.1.2. App code, so web's had it; this build
 carries it to native. (The config-read rules change is already live for all.)

@@ -95,7 +95,23 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
-### 1.1.2 (versionCode/build 6)
+### 1.1.3 (versionCode/build 7) — the native release (carries 1.1.2 + 1.1.3; 1.1.2 skipped)
+
+**Rollout:** iOS resubmit build 7 (replaces the in-review 1.1.2). Android: upload
+the build 7 .aab once Play 1.1.1 clears. Both go 1.1.1 → 1.1.3.
+
+**KO**
+> 피드가 한층 매끄럽고 빨라졌어요. 위로 당겨 새로고침하고, 스크롤하던 자리에서 그대로 이어볼 수 있어요. 탭 바는 내릴 때 살짝 숨고 올릴 때 다시 나타나 화면을 더 넓게 쓰고요. 그 밖에 속도·안정성을 다듬고 자잘한 버그를 고쳤습니다.
+
+**EN**
+> A smoother, faster feed. Pull to refresh, and pick up right where you left off — your scroll position is remembered. The tab bar tucks away as you scroll down and slides back when you scroll up, for more room. Plus speed, stability, and bug fixes.
+
+**JA**
+> フィードがより快適で高速に。下に引いて更新でき、スクロール位置も記憶されるので続きからすぐ見られます。タブバーは下スクロールで隠れ、上スクロールで再表示され画面を広く使えます。さらに高速化・安定化とバグ修正も。
+
+---
+
+### 1.1.2 (versionCode/build 6) — superseded by 1.1.3 (never released natively)
 
 **Rollout:** App Store FIRST (1.1.1 already live, so 1.1.2 can submit now).
 **Play Store LATER** — Android 1.1.1 (versionCode 5) is still in review; uploading
