@@ -63,7 +63,34 @@ only in review; Android build 6 .aab was never uploaded), so both platforms go
 1.1.2). Android: upload the build 7 .aab once Play 1.1.1 clears. All changes have
 been live on web/functions throughout.
 
+### Added
+- **Auto-hiding tab bars on Feed and Profile.** The feed kind/sort row and the
+  profile section tabs (Outfits/Calendar/Closet/Boards/Try-on) now slide up out
+  of view on scroll-down and slide back on a deliberate scroll-up
+  (`useHideOnScroll`, upThreshold 130px so a tiny flick doesn't pop them down) —
+  more room for content while browsing, the controls a flick away. On profile
+  only the **section tabs** float; the full identity header (handle/avatar/stats/
+  bio) scrolls away and returns at the very top. `src/hooks/useHideOnScroll.js`,
+  `src/pages/Feed.jsx`, `src/pages/Profile.jsx`.
+
 ### Fixed
+- **Notch/status-bar showed through behind the auto-hiding tab bars (native).**
+  The native StatusBar overlays the webview, so when the sticky tab bar slid up
+  into the safe-area, feed/profile content was visible behind the Dynamic Island.
+  Added a fixed background filler over the safe-area-top region on both surfaces
+  (`.community-feed::before`, `.profile:not(.profile--sub)::before`); the tab row
+  now tucks cleanly behind the status bar. `src/styles/drape.css`.
+- **Profile section tabs flew off before reaching the notch.** The auto-hide hook
+  hid the bar on any down-scroll past `topThreshold`, but the profile tabs sit
+  under a tall identity header, so they'd vanish while still in natural flow. Now
+  a down-scroll only hides the bar once it has actually stuck at the notch
+  (`getBoundingClientRect().top <= computed top`); before that it scrolls away
+  with the header. No-op for the feed bar (stuck from the top). `src/hooks/useHideOnScroll.js`.
+- **Sub-tab labels read larger than the section tabs above them.** On phones the
+  `mine/saved/analyzed` (and Closet/Boards filter) row was 0.95rem while the
+  parent section tabs shrink to 0.82rem — a child bigger than its parent. Aligned
+  the sub-tab font to the section tabs (0.9rem / 0.82rem on phones).
+  `src/styles/drape.css`.
 - **Lists jumped to the top on Back; tabs shared one scroll.** AppShell reset
   window scroll to 0 on every navigation, so leaving a scrolled list to open a
   detail and returning lost your place. Now scroll is remembered **per view**

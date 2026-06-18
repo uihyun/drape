@@ -17,6 +17,7 @@ import { FollowListSheet } from '../components/FollowListSheet.jsx';
 import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
 // Calendar / Closet as segmented tabs over the user's identity header.
@@ -48,6 +49,11 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
   const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
+  // Auto-hiding sticky tab row: once the identity header scrolls past, the
+  // section tabs stick under the notch and slide up on scroll-down / back on
+  // scroll-up (same behavior as the feed). The full header only reappears at
+  // the very top. Higher upThreshold so a tiny up-flick doesn't pop it down.
+  const tabsRef = useHideOnScroll({ upThreshold: 130 });
   useEffect(() => {
     if (!user || user.isAnonymous) { setProfile(null); setProfileLoaded(false); return; }
     return ProfileService.subscribeByUid(user.uid, p => {
@@ -166,7 +172,7 @@ export function Profile({ user, authReady, onSignIn }) {
 
       <ExpandableBio text={bio} />
 
-      <nav className="profile-tabs" role="tablist" aria-label="Profile sections">
+      <nav className="profile-tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
         {TABS.map(name => (
           <button
             key={name}

@@ -35,7 +35,17 @@ export function useHideOnScroll({ topThreshold = 72, downDelta = 6, upThreshold 
       if (y <= topThreshold) { setHidden(false); upAccum = 0; return; } // near top
       if (dy > 0) {                                  // scrolling down
         upAccum = 0;
-        if (dy > downDelta) setHidden(true);
+        // Only hide once the bar has actually reached its sticky (notch)
+        // position. On profile the tabs flow UNDER a tall identity header, so
+        // before they stick they must scroll away naturally — never fly off
+        // early. The bar is stuck when its top edge has caught the sticky line
+        // (computed `top`, i.e. the safe-area inset). Bars that start at the
+        // very top (the feed) stick immediately, so this is a no-op for them.
+        if (dy > downDelta && !hidden) {
+          const el = ref.current;
+          const stickyTop = el ? (parseFloat(getComputedStyle(el).top) || 0) : 0;
+          if (!el || el.getBoundingClientRect().top <= stickyTop + 1) setHidden(true);
+        }
       } else if (dy < 0) {                            // scrolling up
         upAccum += -dy;
         if (upAccum > upThreshold) setHidden(false);

@@ -1895,7 +1895,9 @@ body.is-native {
   padding: 0.2rem 0;
   border-radius: 0;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  /* Match the section tabs above (.profile-tab) — these sub-tabs sit one level
+     down, so they must never read larger than their parent row. */
+  font-size: 0.9rem;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -1926,6 +1928,11 @@ body.is-native {
   opacity: 0.4;
   cursor: not-allowed;
 }
+/* Phone: match the section tabs' shrunk size (.profile-tab is 0.82rem here)
+   so the sub-tab row never reads larger than the parent tabs above it. */
+@media (max-width: 480px) {
+  .filter-chips--text .chip { font-size: 0.82rem; }
+}
 
 /* Try-on filter chip overrides — defined here (after .filter-chips) so
    specificity order is correct and margin-bottom isn't clobbered. */
@@ -1938,6 +1945,23 @@ body.is-native {
   margin: 0 auto;
   padding: calc(var(--safe-top) + 0.5rem) 1rem 1.5rem;
   position: relative; /* anchor the pull-to-refresh overlay */
+}
+/* Notch/status-bar filler. The auto-hiding tab bar slides up out of the
+   safe-area, which would otherwise leave the notch region transparent (the
+   native StatusBar overlays the webview), letting feed images show through
+   behind the Dynamic Island. This fixed strip keeps that region filled with
+   the page background at all times; the bar slides up behind it (z-index 6 <
+   7) for a clean "tucks under the status bar" exit. */
+.community-feed::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top, 0px);
+  background: var(--background);
+  z-index: 7;
+  pointer-events: none;
 }
 /* Pull-to-refresh: an overlay (no layout/reflow). The hook drives transform +
    opacity inline via a ref, so the feed never re-renders mid-drag. */
@@ -5234,6 +5258,22 @@ input[type="search"]::-webkit-search-decoration {
      it — so the notch inset lives here. */
   padding: calc(var(--safe-top) + 0.25rem) 1rem 1.25rem;
 }
+/* Notch/status-bar filler — same as the feed. The section tabs auto-hide
+   into the safe-area, and the identity header scrolls under it, so without
+   this the notch region would let content show through behind the Dynamic
+   Island. Kept on the root profile only (not .profile--sub, which sits under
+   the sticky back-bar that already owns the notch). */
+.profile:not(.profile--sub)::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top, 0px);
+  background: var(--background);
+  z-index: 7;
+  pointer-events: none;
+}
 /* PublicProfile (/u/:handle) sits UNDER the sticky .page-back-bar, which
    already consumes the notch inset — so don't add it again (that doubled the
    top gap on native; desktop has safe-top:0 so it never showed there). */
@@ -5430,7 +5470,22 @@ input[type="search"]::-webkit-search-decoration {
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   border-bottom: 1px solid var(--border);
-  margin: 0.5rem 0 1rem;
+  /* No top margin — when stuck, the row sits flush under the notch filler so
+     no sliver of scrolling content shows through (mirrors .feed-top). */
+  margin: 0 0 1rem;
+  /* Auto-hiding sticky tab row: once the identity header scrolls past, the
+     tabs stick under the notch; useHideOnScroll slides them up on scroll-down
+     and back on scroll-up (the full header only returns at the very top). The
+     background + negative top margin let the row's fill cover the tiny gap to
+     the notch filler so nothing peeks through behind it. */
+  position: sticky;
+  top: var(--safe-top, 0px);
+  z-index: 5;
+  background: var(--background);
+  transition: transform 0.28s ease;
+}
+.profile-tabs.is-hidden {
+  transform: translateY(calc(-100% - var(--safe-top, 0px) - 0.5rem));
 }
 /* Phone viewports: shrink the tab font + tighten padding so 5 nowrap
    labels (Outfits / Calendar / Closet / Boards / Try-on) actually fit
