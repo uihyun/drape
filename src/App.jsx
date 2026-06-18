@@ -199,13 +199,32 @@ const HIDE_NAV = [
   /^\/messages\/[^/]+$/,
 ];
 
+// Take full control of scroll on navigation — otherwise the browser's own
+// "auto" scroll restoration fights us (it scrolls on its own, and that scroll
+// gets recorded under the wrong history entry, clobbering our saved offset).
+if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 // Per-history-entry scroll positions for Back/Forward restoration. The window
 // is the real scroller here (`.main` has no overflow). Keyed by location.key.
 const scrollPositions = new Map();
 function getScrollY() {
-  return window.scrollY || document.scrollingElement?.scrollTop || 0;
+  // The scroller varies (window vs document.scrollingElement vs .main on some
+  // platforms); read all candidates and take whichever actually moved.
+  return Math.max(
+    window.scrollY || 0,
+    document.scrollingElement?.scrollTop || 0,
+    document.querySelector('.main')?.scrollTop || 0,
+  );
 }
+// Scroll events fire async, so a programmatic scroll (our reset/restore) lands
+// a moment later and — during a route change — can be recorded under the WRONG
+// (outgoing) history entry, clobbering its saved offset with ~0. Suppress saves
+// briefly around any scroll WE cause.
+let suppressSaveUntil = 0;
 function setScrollY(y) {
+  suppressSaveUntil = Date.now() + 250;
   window.scrollTo(0, y);
   if (document.scrollingElement) document.scrollingElement.scrollTop = y;
   document.querySelector('.main')?.scrollTo?.(0, y);
@@ -215,10 +234,12 @@ function setScrollY(y) {
 // to actually reach `y`, then stop.
 function restoreScrollTo(y) {
   if (!y) { setScrollY(0); return; }
+  // Restore can race layout (the cached list settles its height over a few
+  // frames); re-apply until the page is tall enough to actually reach y.
   let n = 0;
   const tick = () => {
     setScrollY(y);
-    if (getScrollY() < y - 2 && n++ < 20) requestAnimationFrame(tick);
+    if (getScrollY() < y - 2 && n++ < 30) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
@@ -228,6 +249,11 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const navigate = useNavigate();
   const navType = useNavigationType();
   const prevPath = useRef(location.pathname);
+  // The CURRENT history key, kept fresh in a ref so the (mount-once) scroll
+  // listener always writes to the entry we're actually on — not a stale closure
+  // of the one we just left (which caused Back to restore 0).
+  const locationKeyRef = useRef(location.key);
+  locationKeyRef.current = location.key;
 
   // Notification-tap deep link → open the thread via the router (no reload).
   // Warm taps arrive as the event; a cold-start tap is drained once authed.
@@ -250,19 +276,29 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   //  - Navigating to a NEW page (pathname change) → reset to the top.
   //  - Same-pathname changes (tab/sheet query params) → leave scroll alone.
   // The window offset is saved continuously while on a page (and on the way out).
+  // Save the scroll offset continuously, keyed by the CURRENT entry (via ref).
+  // Bound once so a navigation-time scroll (reset/clamp) lands on the new entry,
+  // never clobbering the one we're leaving. Capture phase catches scroll from
+  // whichever element is the scroller (scroll doesn't bubble).
   useEffect(() => {
     const save = () => {
-      scrollPositions.set(location.key, getScrollY());
-      if (scrollPositions.size > 100) scrollPositions.delete(scrollPositions.keys().next().value);
+      if (Date.now() < suppressSaveUntil) return; // ignore scrolls we triggered
+      scrollPositions.set(locationKeyRef.current, getScrollY());
+      if (scrollPositions.size > 120) scrollPositions.delete(scrollPositions.keys().next().value);
     };
+    document.addEventListener('scroll', save, { passive: true, capture: true });
+    return () => document.removeEventListener('scroll', save, { capture: true });
+  }, []);
+
+  // On each navigation: Back/Forward (POP) restores the saved offset; a new page
+  // (pathname change) resets to top; same-pathname tab/sheet changes are left.
+  useEffect(() => {
     if (navType === 'POP') {
       restoreScrollTo(scrollPositions.get(location.key) || 0);
     } else if (prevPath.current !== location.pathname) {
       setScrollY(0);
     }
     prevPath.current = location.pathname;
-    window.addEventListener('scroll', save, { passive: true });
-    return () => { save(); window.removeEventListener('scroll', save); };
   }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
