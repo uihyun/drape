@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate, useNavigationType } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
@@ -199,9 +199,35 @@ const HIDE_NAV = [
   /^\/messages\/[^/]+$/,
 ];
 
+// Per-history-entry scroll positions for Back/Forward restoration. The window
+// is the real scroller here (`.main` has no overflow). Keyed by location.key.
+const scrollPositions = new Map();
+function getScrollY() {
+  return window.scrollY || document.scrollingElement?.scrollTop || 0;
+}
+function setScrollY(y) {
+  window.scrollTo(0, y);
+  if (document.scrollingElement) document.scrollingElement.scrollTop = y;
+  document.querySelector('.main')?.scrollTo?.(0, y);
+}
+// Restoring can race layout: a cached list paints fast but its height settles
+// over a few frames (images, masonry). Re-apply until the page is tall enough
+// to actually reach `y`, then stop.
+function restoreScrollTo(y) {
+  if (!y) { setScrollY(0); return; }
+  let n = 0;
+  const tick = () => {
+    setScrollY(y);
+    if (getScrollY() < y - 2 && n++ < 20) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const navType = useNavigationType();
+  const prevPath = useRef(location.pathname);
 
   // Notification-tap deep link → open the thread via the router (no reload).
   // Warm taps arrive as the event; a cold-start tap is drained once authed.
@@ -218,17 +244,26 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
     if (pending) navigate(`/messages/${pending}`, { replace: true });
   }, [authReady, navigate]);
 
-  // Reset scroll to the top on every route change. React Router keeps the
-  // window scroll offset across navigations, so jumping from a scrolled
-  // Calendar to Try-on (or any page → any page) used to land mid-screen.
-  // Keyed on pathname only — query-param changes (sheets, tabs that use
-  // ?param) shouldn't yank the scroll. Covers window + the main scroll
-  // container in case either is the scroller on a given platform.
+  // Scroll restoration. Remember each history entry's scroll offset and:
+  //  - Back/Forward (POP) → restore where the user was (so leaving a list to
+  //    open a detail and coming back resumes their place, not the top).
+  //  - Navigating to a NEW page (pathname change) → reset to the top.
+  //  - Same-pathname changes (tab/sheet query params) → leave scroll alone.
+  // The window offset is saved continuously while on a page (and on the way out).
   useEffect(() => {
-    window.scrollTo(0, 0);
-    document.scrollingElement?.scrollTo?.(0, 0);
-    document.querySelector('.main')?.scrollTo?.(0, 0);
-  }, [location.pathname]);
+    const save = () => {
+      scrollPositions.set(location.key, getScrollY());
+      if (scrollPositions.size > 100) scrollPositions.delete(scrollPositions.keys().next().value);
+    };
+    if (navType === 'POP') {
+      restoreScrollTo(scrollPositions.get(location.key) || 0);
+    } else if (prevPath.current !== location.pathname) {
+      setScrollY(0);
+    }
+    prevPath.current = location.pathname;
+    window.addEventListener('scroll', save, { passive: true });
+    return () => { save(); window.removeEventListener('scroll', save); };
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
   const isBare = BARE_SCROLL.some(re => re.test(location.pathname));

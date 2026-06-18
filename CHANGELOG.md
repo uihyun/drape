@@ -54,6 +54,22 @@ automatically. Listed newest first, by date.
 
 ---
 
+## [1.1.3] — Unreleased (web live; queued for next native build)
+
+versionCode/build: TBD (bump from 6). App code — web has it now; native users
+get it in the next build. (Landed after 1.1.2 build 6 was already submitted.)
+
+### Fixed
+- **Lists jumped to the top on Back.** AppShell reset window scroll to 0 on every
+  pathname change — including Back — so leaving a scrolled feed/list to open a
+  detail and returning lost your place. Replaced with proper scroll restoration:
+  each history entry's offset is saved continuously; Back/Forward (POP) restores
+  it (with a few-frame retry while the cached list lays out), a new page resets
+  to the top, and same-pathname tab/sheet changes leave scroll alone. Global, so
+  it covers every list (feed, profile, marketplace, etc.). `src/App.jsx`.
+
+---
+
 ## [1.1.2] — 2026-06-17 (iOS submitted · Android .aab ready, held until 1.1.1 clears Play)
 
 versionCode/build: 6 · versionName 1.1.2. App code, so web's had it; this build
