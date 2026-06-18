@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate, useNavigationType } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
@@ -247,13 +247,14 @@ function restoreScrollTo(y) {
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const navType = useNavigationType();
-  const prevPath = useRef(location.pathname);
-  // The CURRENT history key, kept fresh in a ref so the (mount-once) scroll
-  // listener always writes to the entry we're actually on — not a stale closure
-  // of the one we just left (which caused Back to restore 0).
-  const locationKeyRef = useRef(location.key);
-  locationKeyRef.current = location.key;
+  // Scroll position is remembered per VIEW = pathname + search, so every feed
+  // tab (?kind=…) and profile sub-tab (?ot=, ?cv=) is its own independent bucket
+  // (switching tabs never bleeds one list's scroll into another). Kept fresh in
+  // a ref so the mount-once scroll listener always writes the view we're on —
+  // not a stale closure of the one we just left.
+  const viewKey = location.pathname + location.search;
+  const viewKeyRef = useRef(viewKey);
+  viewKeyRef.current = viewKey;
 
   // Notification-tap deep link → open the thread via the router (no reload).
   // Warm taps arrive as the event; a cold-start tap is drained once authed.
@@ -270,36 +271,26 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
     if (pending) navigate(`/messages/${pending}`, { replace: true });
   }, [authReady, navigate]);
 
-  // Scroll restoration. Remember each history entry's scroll offset and:
-  //  - Back/Forward (POP) → restore where the user was (so leaving a list to
-  //    open a detail and coming back resumes their place, not the top).
-  //  - Navigating to a NEW page (pathname change) → reset to the top.
-  //  - Same-pathname changes (tab/sheet query params) → leave scroll alone.
-  // The window offset is saved continuously while on a page (and on the way out).
-  // Save the scroll offset continuously, keyed by the CURRENT entry (via ref).
-  // Bound once so a navigation-time scroll (reset/clamp) lands on the new entry,
-  // never clobbering the one we're leaving. Capture phase catches scroll from
-  // whichever element is the scroller (scroll doesn't bubble).
+  // Save the scroll offset continuously under the CURRENT view (via ref). Bound
+  // once, so a navigation-time scroll (our reset, or the browser clamping when
+  // the list shrinks) lands on the new view — never clobbering the one we left.
+  // Capture phase catches scroll from whichever element is the scroller.
   useEffect(() => {
     const save = () => {
       if (Date.now() < suppressSaveUntil) return; // ignore scrolls we triggered
-      scrollPositions.set(locationKeyRef.current, getScrollY());
-      if (scrollPositions.size > 120) scrollPositions.delete(scrollPositions.keys().next().value);
+      scrollPositions.set(viewKeyRef.current, getScrollY());
+      if (scrollPositions.size > 200) scrollPositions.delete(scrollPositions.keys().next().value);
     };
     document.addEventListener('scroll', save, { passive: true, capture: true });
     return () => document.removeEventListener('scroll', save, { capture: true });
   }, []);
 
-  // On each navigation: Back/Forward (POP) restores the saved offset; a new page
-  // (pathname change) resets to top; same-pathname tab/sheet changes are left.
+  // On every view change, restore that view's remembered offset (a never-seen
+  // view → 0 → top). This unifies Back/Forward, tab switches, and new pages: a
+  // list you return to (by Back OR by re-tapping its tab) resumes its place.
   useEffect(() => {
-    if (navType === 'POP') {
-      restoreScrollTo(scrollPositions.get(location.key) || 0);
-    } else if (prevPath.current !== location.pathname) {
-      setScrollY(0);
-    }
-    prevPath.current = location.pathname;
-  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
+    restoreScrollTo(scrollPositions.get(viewKey) || 0);
+  }, [viewKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isFullBleed = FULL_BLEED.some(re => re.test(location.pathname));
   const isBare = BARE_SCROLL.some(re => re.test(location.pathname));

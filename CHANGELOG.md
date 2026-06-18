@@ -60,13 +60,20 @@ versionCode/build: TBD (bump from 6). App code — web has it now; native users
 get it in the next build. (Landed after 1.1.2 build 6 was already submitted.)
 
 ### Fixed
-- **Lists jumped to the top on Back.** AppShell reset window scroll to 0 on every
-  pathname change — including Back — so leaving a scrolled feed/list to open a
-  detail and returning lost your place. Replaced with proper scroll restoration:
-  each history entry's offset is saved continuously; Back/Forward (POP) restores
-  it (with a few-frame retry while the cached list lays out), a new page resets
-  to the top, and same-pathname tab/sheet changes leave scroll alone. Global, so
-  it covers every list (feed, profile, marketplace, etc.). `src/App.jsx`.
+- **Lists jumped to the top on Back; tabs shared one scroll.** AppShell reset
+  window scroll to 0 on every navigation, so leaving a scrolled list to open a
+  detail and returning lost your place. Now scroll is remembered **per view**
+  (`pathname + search`), so every feed tab (`?kind=`) and profile sub-tab
+  (`?ot=`, `?cv=`) is its own independent bucket — returning to a list resumes
+  its place and one tab's scroll never bleeds into another. Implementation
+  details that mattered (found by driving the real app headless): set
+  `history.scrollRestoration='manual'` (stop the browser fighting us); save under
+  the CURRENT view via a ref from a mount-once listener (a stale closure was
+  writing ~0 onto the view being left); suppress saves briefly around our own
+  programmatic scrolls; and retry the restore for a few frames while the cached
+  list lays out. Global — covers feed, profile (outfits/closet/boards/tryon),
+  marketplace, etc. Verified with Playwright: scroll → open in-view post → Back
+  resumes; repeated; tabs independent. `src/App.jsx`.
 
 ---
 
