@@ -83,6 +83,14 @@ versionCode/build: 6 · versionName 1.1.2. App code, so web's had it; this build
 carries it to native. (The config-read rules change is already live for all.)
 
 ### Added
+- **Auto-hiding feed tab bar.** The kind tabs (OOTDs/Boards/Market + Following +
+  sort) start in place, slide up out of view as you scroll down (more content),
+  and slide back as a floating sticky bar the moment you scroll up — so you can
+  switch tabs from anywhere, which pairs with the per-tab scroll memory.
+  `useHideOnScroll` toggles a class via a ref (no list re-render; pure CSS
+  transition). Needed `overflow-x: clip` (not `hidden`) on html/body — `hidden`
+  silently breaks `position: sticky`. `src/hooks/useHideOnScroll.js`,
+  `src/pages/Feed.jsx`, `src/styles/drape.css`, `src/styles/main.css`.
 - **Pull-to-refresh on the feed.** Drag down at the top of any feed tab to force
   a fresh first page (bypasses the cache), updated in place so there's no loading
   flash. `src/hooks/usePullToRefresh.js`, `src/pages/Feed.jsx`. (Touch gesture —

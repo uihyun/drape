@@ -14,6 +14,7 @@ import { feedCache, feedKey as cacheKey } from '../services/uiCache.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { usePullToRefresh } from '../hooks/usePullToRefresh.js';
+import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
 import { getFeedTtlMs } from '../services/appConfig.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -154,6 +155,7 @@ export function Feed({ user, onSignIn }) {
     feedCache.set(key, { items: res.items, cursor: res.cursor, hasMore: res.hasMore, ts: Date.now() });
   };
   const { contentRef, indicatorRef } = usePullToRefresh(onRefresh);
+  const tabBarRef = useHideOnScroll();
 
   // (Feed cards no longer show an author chip, so there's no author
   // hydration here — it was dead work that re-rendered the whole list.)
@@ -174,8 +176,7 @@ export function Feed({ user, onSignIn }) {
       <div className="feed-ptr" ref={indicatorRef} aria-hidden="true">
         <span className="spinner spinner-sm" />
       </div>
-      <div className="feed-scroll" ref={contentRef}>
-      <header className="feed-top">
+      <header className="feed-top" ref={tabBarRef}>
         <div className="feed-top-controls">
           <nav className="feed-kind-tabs" role="tablist">
             <button
@@ -245,6 +246,7 @@ export function Feed({ user, onSignIn }) {
         )}
       </header>
 
+      <div className="feed-scroll" ref={contentRef}>
       {list === null ? (
         <div className="loading"><div className="spinner" /></div>
       ) : list.length === 0 ? (

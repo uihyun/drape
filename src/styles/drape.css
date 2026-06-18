@@ -1954,7 +1954,7 @@ body.is-native {
   transform: translateY(0);
   pointer-events: none;
   color: var(--text-muted);
-  z-index: 1;
+  z-index: 6;
   will-change: opacity;
 }
 /* The sliding content layer — moved via transform (GPU, no reflow) on pull. */
@@ -1971,6 +1971,16 @@ body.is-native {
   gap: 0.75rem;
   padding: 0.5rem 0 0.75rem;
   margin-bottom: 0.5rem;
+  /* Auto-hiding sticky tab bar: starts in place, slides up out of view on
+     scroll-down, slides back on scroll-up (useHideOnScroll toggles is-hidden). */
+  position: sticky;
+  top: var(--safe-top, 0px);
+  z-index: 5;
+  background: var(--background);
+  transition: transform 0.28s ease;
+}
+.feed-top.is-hidden {
+  transform: translateY(calc(-100% - var(--safe-top, 0px) - 0.5rem));
 }
 .feed-top-controls {
   display: flex;
