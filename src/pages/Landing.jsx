@@ -79,14 +79,18 @@ export function Landing() {
                 <strong>App Store</strong>
               </span>
             </a>
-            {/* Play Store not live yet — show as coming soon, not a dead link. */}
-            <span className="lp-store lp-store-soon" aria-disabled="true">
+            <a
+              className="lp-store"
+              href="https://play.google.com/store/apps/details?id=com.uihyun.drape"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <PlayGlyph />
               <span className="lp-store-text">
-                <small>{t('landingStoreSoon')}</small>
+                <small>{t('landingStoreGet')}</small>
                 <strong>Google Play</strong>
               </span>
-            </span>
+            </a>
           </div>
         </div>
       </main>
