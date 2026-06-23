@@ -478,7 +478,7 @@ export function ItemDetail({ user, onSignIn }) {
                 <span className="item-viewer-cat">{categoryLabel(item.tags, t)}</span>
               )}
               <h1 className="item-viewer-name">
-                {tr.fields?.name ?? (item.name || t('untitledItem'))}
+                {tr.fields?.name || item.name || t('untitledItem')}
                 {(item.shopUrl || item.tags?.shopUrl) && (
                   <a
                     href={item.shopUrl || item.tags?.shopUrl}

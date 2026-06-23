@@ -160,10 +160,12 @@ export function OutfitDetail({ user, onSignIn }) {
   // When the translate toggle is on, overlay the translated free-text by key /
   // array index over the originals (enums + hex + percent stay as-is).
   const tf = tr.fields;
-  const displayName = tf?.name ?? (outfit.name || outfit.note || '');
-  const displayNotes = tf?.notes ?? notes;
+  // Use a translated value only when it's non-empty; otherwise keep the
+  // original so a blank translation never wipes the user's caption/notes.
+  const displayName = (tf?.name || outfit.name || outfit.note || '');
+  const displayNotes = (tf?.notes || notes);
   const displayPalette = tf?.palette
-    ? palette.map((c, i) => ({ ...c, name: tf.palette[i] ?? c.name }))
+    ? palette.map((c, i) => ({ ...c, name: tf.palette[i] || c.name }))
     : palette;
 
   // Hero collage: lay every item out as a sticker (offset / rotation
@@ -185,7 +187,7 @@ export function OutfitDetail({ user, onSignIn }) {
   // Display copy with translated piece names overlaid (PieceRow shows
   // `piece.name`); the matching logic above keeps using the originals.
   const pieceListDisplay = tf?.pieces
-    ? pieceList.map((p, i) => ({ ...p, name: tf.pieces[i] || p.name }))
+    ? pieceList.map((p, i) => ({ ...p, name: (tf.pieces[i] || p.name) }))
     : pieceList;
 
   // #3 — linked items slotted under their detected piece. pieceLinks maps a
@@ -278,7 +280,12 @@ export function OutfitDetail({ user, onSignIn }) {
         )}
       </header>
 
-      {dateLabel && <div className="outfit-date">{dateLabel}</div>}
+      {(dateLabel || tr.canTranslate) && (
+        <div className="outfit-date-row">
+          <span className="outfit-date">{dateLabel}</span>
+          <TranslateToggle tr={tr} />
+        </div>
+      )}
 
       {editing ? (
         <div className="outfit-edit-form">
@@ -308,11 +315,8 @@ export function OutfitDetail({ user, onSignIn }) {
           </div>
         </div>
       ) : (
-        (outfit.name || outfit.note || tr.canTranslate) ? (
-          <div className="outfit-title-row">
-            {displayName ? <h1 className="outfit-title">{displayName}</h1> : <span />}
-            <TranslateToggle tr={tr} />
-          </div>
+        displayName ? (
+          <h1 className="outfit-title">{displayName}</h1>
         ) : null
       )}
 

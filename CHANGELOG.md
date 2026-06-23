@@ -34,6 +34,18 @@ automatically. Listed newest first, by date.
   locale `translateView`/`showOriginal`/`translating`. Verified Flash preserves the
   JSON shape (keys, array order) and keeps brand names. (Web + functions live now;
   native picks it up next build.)
+  - **Refinements (same day):** translate the **whole post** incl. the user's
+    caption (not just the analysis) — "translate this post", Instagram-style.
+    Moved the toggle onto the **date line** (always-present row, right-aligned) so
+    it never collides with the caption/notes/palette as they grow, and is in a
+    fixed spot whether or not a caption exists. Fixed a blank-out: a translated
+    field that comes back empty now falls back to the original (the caption no
+    longer vanishes when toggled). Added **server-side cache invalidation** — each
+    cached translation stores a `i18nSrc` hash of the source text; an edited
+    caption/notes (or re-analysis) changes the hash so the next request
+    regenerates, while unchanged content keeps serving the stored copy with no AI
+    call. Cross-device: the cache lives on the doc, so any viewer/device gets the
+    stored translation.
 
 - **2026-06-23 · Generated text now comes out in the creator's language (Phase 1).**
   Auto-generated free-text was English-only regardless of app language. Now the
@@ -103,9 +115,8 @@ stay English (search/filter SSOT). Going-forward only — existing docs are
 untouched.
 
 **Rollout:** iOS 1.1.3 (build 7) is still in review — submit 1.1.4 (build 8)
-once it clears (you can't have two in review at once). Android goes 1.1.1 →
-1.1.4 (skips 1.1.2 + 1.1.3 natively; the build-8 .aab folds them all in), upload
-after Play 1.1.1 clears.
+once it clears (you can't have two in review at once). Android 1.1.3 is already
+released, so Android goes 1.1.3 → 1.1.4: upload the build-8 .aab.
 
 ### Added
 - **Generated text in the creator's language + on-demand translate.** Full

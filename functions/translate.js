@@ -44,6 +44,18 @@ function hasText(ft) {
   return Object.values(ft).some(v => (Array.isArray(v) ? v.some(Boolean) : Boolean(v)));
 }
 
+// Stable hash of the source free-text. Stored alongside each cached
+// translation so an edited caption/notes (or a re-analysis) auto-invalidates
+// the cache — the next request sees a different hash and regenerates. Keeps
+// invalidation entirely server-side (no firestore.rules change, no client
+// write of the i18n field).
+function srcHash(ft) {
+  const s = JSON.stringify(ft);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
 exports.translateContent = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 30, memory: '256MiB' },
   async (request) => {
@@ -58,13 +70,17 @@ exports.translateContent = onCall(
     if (!snap.exists) throw new HttpsError('not-found', 'doc missing');
     const data = snap.data();
 
-    // Already in the requested language → nothing to translate.
-    if ((data.lang || 'en') === target) return { fields: extractFreeText(coll, data) };
-    // Cache hit — a previous viewer already paid for this language.
-    const cached = data.i18n && data.i18n[target];
-    if (cached) return { fields: cached, cached: true };
-
     const fields = extractFreeText(coll, data);
+    // Already in the requested language → nothing to translate.
+    if ((data.lang || 'en') === target) return { fields };
+
+    const curHash = srcHash(fields);
+    // Cache hit — a previous viewer already paid for this language AND the
+    // source text hasn't changed since (edited captions invalidate it).
+    const cached = data.i18n && data.i18n[target];
+    if (cached && data.i18nSrc && data.i18nSrc[target] === curHash) {
+      return { fields: cached, cached: true };
+    }
     if (!hasText(fields)) return { fields };
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
@@ -94,7 +110,10 @@ ${JSON.stringify(fields)}`;
     // Cache under i18n.<target> (merge so other languages survive). No
     // updatedAt bump — translation must not reorder feeds; and `notes` is
     // untouched so onCaptionChanged stays a no-op.
-    await ref.set({ i18n: { [target]: translated } }, { merge: true });
+    await ref.set(
+      { i18n: { [target]: translated }, i18nSrc: { [target]: curHash } },
+      { merge: true },
+    );
     return { fields: translated };
   }
 );

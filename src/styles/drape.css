@@ -5635,10 +5635,20 @@ input[type="search"]::-webkit-search-decoration {
 .btn-edit:hover { color: var(--text-primary); border-color: var(--border-hover); }
 
 .outfit-date {
-  margin-bottom: 0.4rem;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   color: var(--text-muted);
+}
+/* Date + translate toggle share one row: the date line is always present and
+   its right side is empty, so the toggle sits in a fixed spot that never
+   collides with the caption, notes, or palette no matter how long they get. */
+.outfit-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 30px;
+  margin-bottom: 0.4rem;
 }
 .outfit-title {
   /* Same size as the style-note body, but a different colour (secondary vs the
@@ -5650,14 +5660,6 @@ input[type="search"]::-webkit-search-decoration {
   margin-bottom: 1.1rem;
   overflow-wrap: anywhere;
 }
-/* Title + translate toggle on one row; toggle hugs the right. */
-.outfit-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.outfit-title-row .outfit-title { margin-bottom: 1.1rem; flex: 1; }
 /* "Translate ↔ show original" pill — quiet by default so it never competes
    with the content it acts on. */
 .translate-toggle {
