@@ -91,6 +91,31 @@ automatically. Listed newest first, by date.
 
 ---
 
+## [1.1.4] — 2026-06-23 (native build 8 · localized generation + translate)
+
+versionCode/build: 8 · versionName 1.1.4. Native build that carries the
+**client half of the i18n work** already live on web/functions (see "Server /
+web — continuous · 2026-06-23"): generated free-text (item names, OOTD analysis
+title/notes/palette/piece names) now comes out in the creator's app language,
+and a **"translate" toggle** on OutfitDetail/ItemDetail gives cross-language
+viewers a one-tap rendering in theirs. Enums + the English shopping `description`
+stay English (search/filter SSOT). Going-forward only — existing docs are
+untouched.
+
+**Rollout:** iOS 1.1.3 (build 7) is still in review — submit 1.1.4 (build 8)
+once it clears (you can't have two in review at once). Android goes 1.1.1 →
+1.1.4 (skips 1.1.2 + 1.1.3 natively; the build-8 .aab folds them all in), upload
+after Play 1.1.1 clears.
+
+### Added
+- **Generated text in the creator's language + on-demand translate.** Full
+  detail in the two "Server / web — continuous · 2026-06-23" entries (Phase 1 +
+  Phase 2). `functions/items.js`, `functions/translate.js`, `src/hooks/{useLocale,
+  useContentTranslation}.js`, `src/services/{item,outfit,generation,translation}-service.js`,
+  `src/components/TranslateToggle.jsx`, `src/pages/{OutfitDetail,ItemDetail}.jsx`.
+
+---
+
 ## [1.1.3] — 2026-06-18 (native build 7 · iOS resubmit · Android after Play 1.1.1)
 
 versionCode/build: 7 · versionName 1.1.3. **This native build carries BOTH the

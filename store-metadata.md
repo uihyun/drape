@@ -95,6 +95,20 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.1.4 (versionCode/build 8) — localized analysis + translate
+
+**Rollout:** iOS — submit build 8 once 1.1.3 (build 7) clears review. Android —
+upload the build 8 .aab after Play 1.1.1 clears (1.1.1 → 1.1.4, folds in 1.1.3).
+
+**KO**
+> 분석과 옷장이 이제 내 언어로 나와요. 코디 분석의 제목·설명과 아이템 이름이 한국어로 표시되고, 다른 언어로 올라온 글은 '번역 보기'로 바로 볼 수 있어요. 자잘한 다듬기도 함께.
+
+**EN**
+> Your analysis and closet now speak your language. Outfit analysis titles, notes, and item names appear in your language, and you can tap "Translate" on posts shared in another. Plus a round of polish.
+
+**JA**
+> 分析とクローゼットがあなたの言語に。コーデ分析のタイトル・説明やアイテム名が日本語で表示され、別の言語の投稿は「翻訳を見る」ですぐ確認できます。細かな改善も。
+
 ### 1.1.3 (versionCode/build 7) — the native release (carries 1.1.2 + 1.1.3; 1.1.2 skipped)
 
 **Rollout:** iOS resubmit build 7 (replaces the in-review 1.1.2). Android: upload
