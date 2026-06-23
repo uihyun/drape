@@ -27,6 +27,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'fi
 import { httpsCallable } from 'firebase/functions';
 import { db, auth, storage, functions } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
+import { currentLang } from '../hooks/useLocale.jsx';
 
 const OUTFITS = 'outfits';
 
@@ -280,7 +281,7 @@ async function upsertOotd({
   }
 
   if (photoBlob) {
-    httpsCallable(functions, 'analyzeOotd')({ ootdId: savedId })
+    httpsCallable(functions, 'analyzeOotd')({ ootdId: savedId, lang: currentLang() })
       .catch(e => console.warn('analyzeOotd skipped:', e?.message));
     httpsCallable(functions, 'processOotdPhoto')({ ootdId: savedId })
       .catch(e => console.warn('processOotdPhoto skipped:', e?.message));

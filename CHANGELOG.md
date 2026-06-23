@@ -18,6 +18,26 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-23 · Generated text now comes out in the creator's language (Phase 1).**
+  Auto-generated free-text was English-only regardless of app language. Now the
+  generation callables (`processItem`, `analyzeOotd`, `analyzeGeneration`,
+  `detectItems`) take the caller's `lang` (read non-reactively via
+  `currentLang()` from `localStorage`) and emit free-text — item `name`, analysis
+  `title`/`notes`, palette `name`s, per-piece `name`s, detect `style`/`mood`/
+  `stylingTips` — in Korean/Japanese/English (`localeClause` in `functions/items.js`,
+  appended to each prompt). **Enums stay English** (the search/filter SSOT — and
+  `sanitizeTags` would drop a translated enum anyway) and so does `description`
+  (it feeds the Google Shopping query). The doc stores `lang` for the upcoming
+  "translate" affordance. Defensive: `lang` defaults to `'en'`, so the in-store
+  native build (which doesn't pass it yet) behaves exactly as before — this is
+  going-forward only, existing docs are untouched. Also localized the one raw
+  enum label still rendered verbatim — OutfitDetail's style-bars label now uses
+  `t('taxonomy.styles.…')` like AnalyzePhoto/GenerationDetail already did (the
+  taxonomy label maps already existed in all three locales). `functions/items.js`,
+  `src/hooks/useLocale.jsx`, `src/services/{item,outfit,generation}-service.js`,
+  `src/pages/OutfitDetail.jsx`. (Native picks up the client half — passing `lang`
+  — on the next build; web + functions are live now.)
+
 - **2026-06-16 · Fixed the link-preview (OG) image + lowercased the title.** The
   social/iMessage share card for drape.nyc still showed the old **archelier**
   (voda) graphic — `public/og-image.png` (and its `resources/og-image.svg`

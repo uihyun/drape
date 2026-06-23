@@ -31,6 +31,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { httpsCallable } from 'firebase/functions';
 import { db, storage, functions, auth } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
+import { currentLang } from '../hooks/useLocale.jsx';
 
 const ITEMS = 'items';
 
@@ -86,7 +87,7 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
   //    We don't await — registration UX is "drop it and keep shooting".
   try {
     const processItem = httpsCallable(functions, 'processItem');
-    processItem({ itemId }).catch((err) => {
+    processItem({ itemId, lang: currentLang() }).catch((err) => {
       console.warn('processItem dispatch:', err?.message);
       markFailedIfStuck(itemId);
     });
@@ -239,7 +240,7 @@ async function reprocessItem(itemId) {
   const focus = tags.category
     ? { category: tags.category, description: tags.description || '' }
     : null;
-  await processItem(focus ? { itemId, focus } : { itemId });
+  await processItem(focus ? { itemId, focus, lang: currentLang() } : { itemId, lang: currentLang() });
 }
 
 /**
@@ -263,7 +264,7 @@ async function analyzePhoto({ blob, mime = 'image/jpeg' }) {
     fr.readAsDataURL(compressed);
   });
   const detectItemsFn = httpsCallable(functions, 'detectItems');
-  const { data } = await detectItemsFn({ photoBase64: base64, mime });
+  const { data } = await detectItemsFn({ photoBase64: base64, mime, lang: currentLang() });
   return data; // { style, notes, items: [...] }
 }
 
@@ -320,6 +321,7 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
   const processFn = httpsCallable(functions, 'processItem');
   processFn({
     itemId: id,
+    lang: currentLang(),
     focus: {
       category: detected.category || null,
       description: detected.description || '',
@@ -370,6 +372,7 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
   const processFn = httpsCallable(functions, 'processItem');
   processFn({
     itemId: id,
+    lang: currentLang(),
     focus: { category: detected.category || null, description: detected.description || '' },
   }).catch((err) => {
     console.warn('processItem (existing photo) failed:', err?.message);

@@ -26,9 +26,31 @@ const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const IMAGE_PRO   = 'gemini-3-pro-image'; // try-on + garment crop (Nano Banana Pro, GA)
 const VISION      = 'gemini-3.5-flash';   // tagging / analysis / moderation (GA)
 
+// Generated free-text (item names, analysis title/notes/palette names) is
+// emitted in the creator's app language so the closet/analysis feel native in
+// the KR/JP markets. ENUM fields stay English always — they're the single
+// source of truth for search/filter (see CLAUDE.md), and so does `description`
+// (it feeds a Google Shopping query where English garment terms search better).
+const LANG_NAMES = { en: 'English', ko: 'Korean', ja: 'Japanese' };
+function safeLang(lang) {
+  return LANG_NAMES[lang] ? lang : 'en';
+}
+// Directive appended to a JSON-schema prompt. `freeTextDesc` names the fields to
+// translate (the rest — enums + `description` — stay English). Returns '' for
+// English so the existing prompts are byte-identical when no locale is set.
+function localeClause(lang, freeTextDesc) {
+  const code = safeLang(lang);
+  if (code === 'en') return '';
+  return `\n\nLANGUAGE — write ${freeTextDesc} in ${LANG_NAMES[code]}. \
+Keep EVERY OTHER field in English exactly as specified: all enum values \
+(category, subcategory, colors, seasons, styles, fit, composition labels) and \
+the "description"/"searchQuery" fields. Only the named free-text fields are \
+translated; the JSON keys and enum values stay in English.`;
+}
+
 // Reusable schema prompt for the auto-tag call. The model is told to pick
 // from the closed vocab — anything off-list gets dropped at parse time.
-function tagPrompt() {
+function tagPrompt(lang = 'en') {
   return `You are a fashion stylist tagging a single clothing item photo.
 Return ONLY valid JSON matching this exact schema. Pick values strictly from
 the provided enums; if uncertain, use null (not a guess).
@@ -43,7 +65,7 @@ the provided enums; if uncertain, use null (not a guess).
   "fit":         one of [${TAXONOMY.FITS.join(', ')}, null],
   "description": short 1-sentence English description for search,
   "brand":       a brand name if clearly visible on the garment, else null
-}`;
+}${localeClause(lang, 'the "name" field')}`;
 }
 
 function safeParseJson(text) {
@@ -288,7 +310,7 @@ exports.processItem = onCall(
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
-    const { itemId, focus = null } = request.data || {};
+    const { itemId, focus = null, lang = 'en' } = request.data || {};
     if (!itemId) throw new HttpsError('invalid-argument', 'itemId required');
 
     const db = admin.firestore();
@@ -374,7 +396,7 @@ a redesign.`;
       });
       tagPromise = visionModel.generateContent([
         { inlineData: { data: originalB64, mimeType: mime } },
-        { text: tagPrompt() },
+        { text: tagPrompt(lang) },
       ]).catch(err => ({ __error: err }));
     }
 
@@ -429,6 +451,9 @@ a redesign.`;
       // best-effort crop fails. Single-item add still needs at least
       // one of crop or tag to succeed.
       status: (croppedUrl || tags || focus) ? 'ready' : 'failed',
+      // Language the generated free-text (name) is in — drives the Phase-2
+      // "translate" affordance for cross-language viewers.
+      lang: safeLang(lang),
       processedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
@@ -463,7 +488,7 @@ a redesign.`;
 // good enough for clean cutouts yet, and we don't want to ship visibly
 // bad crops. The source photo is reused as a thumbnail when a detected
 // piece is added to the closet.
-function detectPrompt() {
+function detectPrompt(lang = 'en') {
   return `You are a fashion editor reading one photograph that may contain
 one or more clothing pieces (on a person, hanger, or laid out). Return
 ONLY valid JSON with this exact schema:
@@ -515,7 +540,7 @@ The backdrop, floor, and lighting are NOT part of the clothing:
 Max 8 items. Palette percents should sum close to 100. Composition must use
 exactly 4 entries from the enum. Use null/[] for any field you can't
 determine. Avoid generic phrasing like 'effortlessly cool' or 'timeless
-classic'.`;
+classic'.${localeClause(lang, 'the "style", "mood", "notes", every "stylingTips" entry, each palette entry\'s "name", and each item\'s "name"')}`;
 }
 
 function sanitizeDetectItem(raw) {
@@ -544,7 +569,7 @@ function sanitizeDetectItem(raw) {
 // and a poetic 3-7 word title. Called from OotdService.upsertOotd
 // right after the photo is saved so the OotdDetail page has rich
 // content to render without a second user step.
-function ootdAnalysisPrompt() {
+function ootdAnalysisPrompt(lang = 'en') {
   return `You are a fashion editor reading one full-body outfit photo
 ("OOTD" — what someone wore today). Return ONLY valid JSON with this
 exact schema:
@@ -591,7 +616,7 @@ floor, lighting, and the person's skin are NOT part of the outfit:
 Percentages of palette entries should sum close to 100. Composition
 must use exactly 4 entries from the enum. For items, list each distinct
 worn piece (top, bottom, outerwear, shoes, bag, etc.) — these power a
-"shop your closet" match, so the category + colors must be accurate.`;
+"shop your closet" match, so the category + colors must be accurate.${localeClause(lang, 'the "title", "notes", each palette entry\'s "name", and each item\'s "name"')}`;
 }
 
 function sanitizePalette(raw) {
@@ -630,7 +655,7 @@ exports.analyzeOotd = onCall(
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
-    const { ootdId } = request.data || {};
+    const { ootdId, lang = 'en' } = request.data || {};
     if (!ootdId || typeof ootdId !== 'string') {
       throw new HttpsError('invalid-argument', 'ootdId required');
     }
@@ -655,7 +680,7 @@ exports.analyzeOotd = onCall(
     try {
       const res = await model.generateContent([
         { inlineData: { data: base64, mimeType: 'image/jpeg' } },
-        { text: ootdAnalysisPrompt() },
+        { text: ootdAnalysisPrompt(lang) },
       ]);
       const parsed = safeParseJson(res?.response?.text() || '');
       if (!parsed) throw new HttpsError('internal', 'parse_failed');
@@ -682,6 +707,9 @@ exports.analyzeOotd = onCall(
         style: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
         pieces,
+        // Language of the generated free-text (notes, palette names, piece
+        // names) — for the Phase-2 translate affordance.
+        lang: safeLang(lang),
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
@@ -707,7 +735,7 @@ exports.analyzeGeneration = onCall(
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
-    const { generationId } = request.data || {};
+    const { generationId, lang = 'en' } = request.data || {};
     if (!generationId || typeof generationId !== 'string') {
       throw new HttpsError('invalid-argument', 'generationId required');
     }
@@ -735,7 +763,7 @@ exports.analyzeGeneration = onCall(
     try {
       const res = await model.generateContent([
         { inlineData: { data: base64, mimeType: 'image/png' } },
-        { text: ootdAnalysisPrompt() },
+        { text: ootdAnalysisPrompt(lang) },
       ]);
       const parsed = safeParseJson(res?.response?.text() || '');
       if (!parsed) throw new HttpsError('internal', 'parse_failed');
@@ -743,6 +771,7 @@ exports.analyzeGeneration = onCall(
         palette: sanitizePalette(parsed.palette),
         style: sanitizeComposition(parsed.composition),
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 600) : '',
+        lang: safeLang(lang),
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
@@ -899,7 +928,7 @@ exports.detectItems = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
   async (request) => {
     if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
-    const { photoBase64, mime = 'image/jpeg' } = request.data || {};
+    const { photoBase64, mime = 'image/jpeg', lang = 'en' } = request.data || {};
     if (!photoBase64 || typeof photoBase64 !== 'string') {
       throw new HttpsError('invalid-argument', 'photoBase64 required');
     }
@@ -910,7 +939,7 @@ exports.detectItems = onCall(
     try {
       const res = await model.generateContent([
         { inlineData: { data: photoBase64, mimeType: mime } },
-        { text: detectPrompt() },
+        { text: detectPrompt(lang) },
       ]);
       const text = res?.response?.text() || '';
       const parsed = safeParseJson(text);

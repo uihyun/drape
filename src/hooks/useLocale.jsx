@@ -14,6 +14,13 @@ function detectLang() {
   return SUPPORTED.includes(browser) ? browser : 'en';
 }
 
+// Non-React accessor for the data layer. Services (which aren't components and
+// can't call useLocale) read the current language here to tell the generation
+// callables which language to emit free-text in. Same source the provider uses.
+export function currentLang() {
+  try { return detectLang(); } catch { return 'en'; }
+}
+
 const LocaleContext = createContext(null);
 
 export function LocaleProvider({ children }) {

@@ -327,7 +327,7 @@ export function OutfitDetail({ user, onSignIn }) {
               const pct = Math.max(0, Math.min(100, ((c.level || 0) / 5) * 100));
               return (
                 <li key={i} className="style-bars-row">
-                  <span className="style-bars-label">{c.label}</span>
+                  <span className="style-bars-label">{t(`taxonomy.styles.${c.label}`) || c.label}</span>
                   <div
                     className="style-bars-bar"
                     role="meter"

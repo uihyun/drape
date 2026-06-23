@@ -31,6 +31,7 @@ import { httpsCallable } from 'firebase/functions';
 import { ref as storageRef, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, functions, auth, storage } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
+import { currentLang } from '../hooks/useLocale.jsx';
 
 const GENERATIONS = 'generations';
 
@@ -154,7 +155,7 @@ async function deleteGeneration(generationId) {
  *  Mirrors how dated outfits are analyzed; safe to call repeatedly (the
  *  caller guards on !palette). */
 async function analyzeGeneration(generationId) {
-  return httpsCallable(functions, 'analyzeGeneration')({ generationId });
+  return httpsCallable(functions, 'analyzeGeneration')({ generationId, lang: currentLang() });
 }
 
 export const GenerationService = {
