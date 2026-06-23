@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt } from 'lucide-react';
+import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -16,6 +16,8 @@ import { Avatar } from '../components/Avatar.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useContentTranslation } from '../hooks/useContentTranslation.js';
+import { TranslateToggle } from '../components/TranslateToggle.jsx';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -39,6 +41,9 @@ export function OutfitDetail({ user, onSignIn }) {
   const [bookmarked, setBookmarked] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [closet, setCloset] = useState([]);
+  // Phase-2 translate toggle — only offered when the analysis was generated in
+  // a language other than the viewer's (outfit.lang vs the app locale).
+  const tr = useContentTranslation('outfits', outfitId, outfit?.lang);
 
   useEffect(() => {
     if (!outfitId) return;
@@ -152,6 +157,14 @@ export function OutfitDetail({ user, onSignIn }) {
   const palette = Array.isArray(outfit.palette) ? outfit.palette.slice(0, 3) : [];
   const styleBars = Array.isArray(outfit.style) ? outfit.style : [];
   const notes = outfit.notes || '';
+  // When the translate toggle is on, overlay the translated free-text by key /
+  // array index over the originals (enums + hex + percent stay as-is).
+  const tf = tr.fields;
+  const displayName = tf?.name ?? (outfit.name || outfit.note || '');
+  const displayNotes = tf?.notes ?? notes;
+  const displayPalette = tf?.palette
+    ? palette.map((c, i) => ({ ...c, name: tf.palette[i] ?? c.name }))
+    : palette;
 
   // Hero collage: lay every item out as a sticker (offset / rotation
    // varies per index). Reads as a moodboard of the look instead of one
@@ -169,6 +182,11 @@ export function OutfitDetail({ user, onSignIn }) {
   const pieceList = (Array.isArray(outfit.pieces) && outfit.pieces.length)
     ? outfit.pieces
     : (Array.isArray(outfit.detectedItems) ? outfit.detectedItems : []);
+  // Display copy with translated piece names overlaid (PieceRow shows
+  // `piece.name`); the matching logic above keeps using the originals.
+  const pieceListDisplay = tf?.pieces
+    ? pieceList.map((p, i) => ({ ...p, name: tf.pieces[i] || p.name }))
+    : pieceList;
 
   // #3 — linked items slotted under their detected piece. pieceLinks maps a
   // piece index → [itemId]. Items not under any piece are shown flat under
@@ -290,14 +308,17 @@ export function OutfitDetail({ user, onSignIn }) {
           </div>
         </div>
       ) : (
-        (outfit.name || outfit.note) ? (
-          <h1 className="outfit-title">{outfit.name || outfit.note}</h1>
+        (outfit.name || outfit.note || tr.canTranslate) ? (
+          <div className="outfit-title-row">
+            {displayName ? <h1 className="outfit-title">{displayName}</h1> : <span />}
+            <TranslateToggle tr={tr} />
+          </div>
         ) : null
       )}
 
       {palette.length > 0 && (
         <section className="outfit-palette">
-          {palette.map((c, i) => (
+          {displayPalette.map((c, i) => (
             <div
               key={i}
               className="palette-card"
@@ -349,7 +370,7 @@ export function OutfitDetail({ user, onSignIn }) {
       {notes && !editing && (
         <section className="outfit-notes">
           <header><h2>{t('notesOnComposition')}</h2></header>
-          <p>{notes}</p>
+          <p>{displayNotes}</p>
         </section>
       )}
 
@@ -376,7 +397,7 @@ export function OutfitDetail({ user, onSignIn }) {
       {piecesShown && (
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
-          {pieceList.map((piece, i) => (
+          {pieceListDisplay.map((piece, i) => (
             <PieceRow
               key={i}
               piece={piece}

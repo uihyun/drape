@@ -18,6 +18,23 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-23 · "Translate" button for cross-language viewers (Phase 2).** Now
+  that generated free-text is stored in the creator's language (Phase 1), a viewer
+  in a different language gets a quiet **translate ↔ show original** toggle on the
+  public surfaces — OutfitDetail (title, notes, palette names, piece names) and
+  ItemDetail (item name; description stays the English shopping query). New
+  `translateContent` callable (`functions/translate.js`): on first tap it Flash-
+  translates the doc's free-text and caches the result under `i18n.<target>` (via
+  admin SDK — no firestore.rules change; no `updatedAt` bump, so feeds don't
+  reorder and `onCaptionChanged` stays a no-op), so every later viewer is free.
+  The toggle only appears when the doc's `lang` ≠ the viewer's locale, so
+  same-language posts (the common case) never see it and nothing is translated
+  upfront. `src/services/translation-service.js`, `src/hooks/useContentTranslation.js`,
+  `src/components/TranslateToggle.jsx`, `src/pages/{OutfitDetail,ItemDetail}.jsx`,
+  locale `translateView`/`showOriginal`/`translating`. Verified Flash preserves the
+  JSON shape (keys, array order) and keeps brand names. (Web + functions live now;
+  native picks it up next build.)
+
 - **2026-06-23 · Generated text now comes out in the creator's language (Phase 1).**
   Auto-generated free-text was English-only regardless of app language. Now the
   generation callables (`processItem`, `analyzeOotd`, `analyzeGeneration`,

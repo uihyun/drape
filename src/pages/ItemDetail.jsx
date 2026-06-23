@@ -19,6 +19,8 @@ import { cityCountry } from '../data/cities.js';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useContentTranslation } from '../hooks/useContentTranslation.js';
+import { TranslateToggle } from '../components/TranslateToggle.jsx';
 
 // Full-screen single-item viewer modeled on Image 24:
 // - photo dominates (white bg, contain) — tap to toggle Before/After
@@ -42,6 +44,9 @@ export function ItemDetail({ user, onSignIn }) {
   const [ownerCurrency, setOwnerCurrency] = useState(null);
   const [listingOpen, setListingOpen] = useState(false);
   const [listingSaving, setListingSaving] = useState(false);
+  // Phase-2 translate toggle for the auto-generated item name (description
+  // stays English — it's the shopping query). Offered only cross-language.
+  const tr = useContentTranslation('items', itemId, item?.lang);
   const [saleDraft, setSaleDraft] = useState(null);
   // If a thread for (me, seller, this item) already exists, "Contact seller"
   // becomes "Open chat" → reuse it instead of looking like a fresh start.
@@ -473,7 +478,7 @@ export function ItemDetail({ user, onSignIn }) {
                 <span className="item-viewer-cat">{categoryLabel(item.tags, t)}</span>
               )}
               <h1 className="item-viewer-name">
-                {item.name || t('untitledItem')}
+                {tr.fields?.name ?? (item.name || t('untitledItem'))}
                 {(item.shopUrl || item.tags?.shopUrl) && (
                   <a
                     href={item.shopUrl || item.tags?.shopUrl}
@@ -497,6 +502,7 @@ export function ItemDetail({ user, onSignIn }) {
                   </span>
                 )}
               </h1>
+              <TranslateToggle tr={tr} className="item-name-translate" />
               {/* Shopping: owner-set product link (recommend / remember) +
                   a Google Shopping search from brand + description. */}
               <div className="item-shop-row">

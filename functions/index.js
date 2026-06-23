@@ -95,6 +95,10 @@ exports.analyzeGeneration = itemFns.analyzeGeneration;
 exports.processOotdPhoto = itemFns.processOotdPhoto;
 exports.cleanupStuckItems = itemFns.cleanupStuckItems;
 
+// ── On-demand translation (Phase 2) ────────────────────────────────────
+const translateFns = require('./translate.js');
+exports.translateContent = translateFns.translateContent;
+
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');
 exports.virtualTryOn = tryonFns.virtualTryOn;
