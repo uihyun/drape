@@ -129,9 +129,8 @@ viewers a one-tap rendering in theirs. Enums + the English shopping `description
 stay English (search/filter SSOT). Going-forward only — existing docs are
 untouched.
 
-**Rollout:** iOS 1.1.3 (build 7) is still in review — submit 1.1.4 (build 8)
-once it clears (you can't have two in review at once). Android 1.1.3 is already
-released, so Android goes 1.1.3 → 1.1.4: upload the build-8 .aab.
+**Rollout:** Submitted to both stores 2026-06-24 (iOS build 8 + Android build 8
+.aab), in review. Android went 1.1.3 → 1.1.4; iOS 1.1.3 → 1.1.4.
 
 ### Added / changed (all detailed under "Server / web — continuous · 2026-06-23")
 - **Generated text in the creator's language** (Phase 1) + **on-demand "translate"

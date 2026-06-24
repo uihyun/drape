@@ -97,8 +97,8 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 
 ### 1.1.4 (versionCode/build 8) — localized analysis + translate
 
-**Rollout:** iOS — submit build 8 once 1.1.3 (build 7) clears review. Android —
-1.1.3 already released, so upload the build 8 .aab (1.1.3 → 1.1.4).
+**Rollout:** Submitted to both stores 2026-06-24 (iOS build 8 + Android build 8),
+in review. (iOS 1.1.3 → 1.1.4; Android 1.1.3 → 1.1.4.)
 
 **KO**
 > 분석과 옷장이 이제 내 언어로 나와요. 코디 분석의 제목·설명과 아이템 이름이 한국어로 표시되고, 다른 언어로 올라온 글은 '번역 보기'로 바로 볼 수 있어요. 자잘한 다듬기도 함께.
