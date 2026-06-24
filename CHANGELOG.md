@@ -133,12 +133,19 @@ untouched.
 once it clears (you can't have two in review at once). Android 1.1.3 is already
 released, so Android goes 1.1.3 → 1.1.4: upload the build-8 .aab.
 
-### Added
-- **Generated text in the creator's language + on-demand translate.** Full
-  detail in the two "Server / web — continuous · 2026-06-23" entries (Phase 1 +
-  Phase 2). `functions/items.js`, `functions/translate.js`, `src/hooks/{useLocale,
-  useContentTranslation}.js`, `src/services/{item,outfit,generation,translation}-service.js`,
-  `src/components/TranslateToggle.jsx`, `src/pages/{OutfitDetail,ItemDetail}.jsx`.
+### Added / changed (all detailed under "Server / web — continuous · 2026-06-23")
+- **Generated text in the creator's language** (Phase 1) + **on-demand "translate"
+  toggle** for cross-language viewers (Phase 2), on the date line of OutfitDetail
+  and on ItemDetail. Translates the whole post (caption + analysis); server-cached
+  with source-hash invalidation. Enums + the English shopping `description` stay
+  English.
+- **Caption unified onto a single `caption` field** (dropped the legacy `name`/
+  `note` split; all 265 outfit docs migrated). Fixes captions that never
+  translated and the `note`/`notes` naming clash.
+- Files: `functions/{items,translate}.js`, `src/hooks/{useLocale,useContentTranslation}.js`,
+  `src/services/{item,outfit,generation,translation}-service.js`,
+  `src/components/TranslateToggle.jsx`, `src/pages/{OutfitDetail,OutfitShare,OutfitBuilder,ItemDetail}.jsx`,
+  `src/components/OotdSheet.jsx`, `firestore.rules`.
 
 ---
 
