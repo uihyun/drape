@@ -24,7 +24,7 @@ const COLLS = new Set(['outfits', 'generations', 'items']);
 function extractFreeText(coll, d) {
   if (coll === 'outfits') {
     return {
-      name: typeof d.name === 'string' ? d.name : '',
+      caption: typeof d.caption === 'string' ? d.caption : '',
       notes: typeof d.notes === 'string' ? d.notes : '',
       palette: Array.isArray(d.palette) ? d.palette.map(p => (p && p.name) || '') : [],
       pieces: Array.isArray(d.pieces) ? d.pieces.map(p => (p && p.name) || '') : [],

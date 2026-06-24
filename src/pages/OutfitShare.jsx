@@ -41,7 +41,7 @@ export function OutfitShare({ user, onSignIn }) {
 
   return (
     <div className="outfit-detail">
-      <h2>{outfit.name || t('untitledOutfit')}</h2>
+      <h2>{outfit.caption || t('untitledOutfit')}</h2>
       {author && (
         <p className="muted">
           @{author.handle} · {author.displayName}

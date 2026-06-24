@@ -108,7 +108,7 @@ service cloud.firestore {
         request.auth != null
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['name', 'notes', 'note', 'itemIds', 'tags', 'coverUrl', 'coverPath',
+            .hasOnly(['caption', 'notes', 'itemIds', 'tags', 'coverUrl', 'coverPath',
                       'isPublic', 'isListed', 'listedAt', 'updatedAt',
                       'selfLiked', 'selfLikedAt',
                       'likeCount', 'likedBy',

@@ -18,6 +18,21 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-23 · Unified the outfit caption onto a single `caption` field.** The
+  user's one-line post text lived in `name` (app) **and** `note` (seed) — a split
+  that also clashed with `notes` (the AI style read), and meant captions in the
+  legacy `note` field never translated. Renamed the caption field to **`caption`**
+  everywhere (write/read/edit, `translateContent` extraction, firestore.rules
+  outfit-update keys, `updateOutfit` allowlist) and migrated all 265 outfit docs
+  `name`/`note` → `caption` (134 real captions preserved; backup taken), dropping
+  both legacy fields. `notes` (style read) is unchanged. **Caption-only** going
+  forward — the deployed 1.1.3 (which read `name`/`note`) shows blank captions on
+  these until it updates, accepted because all data is the dev's own test/seed
+  accounts (no third-party users yet). The seed generator must now write `caption`
+  (+ `lang`), not `name`/`note`. `src/services/outfit-service.js`,
+  `src/pages/{OutfitDetail,OutfitShare,OutfitBuilder}.jsx`,
+  `src/components/OotdSheet.jsx`, `functions/translate.js`, `firestore.rules`.
+
 - **2026-06-23 · "Translate" button for cross-language viewers (Phase 2).** Now
   that generated free-text is stored in the creator's language (Phase 1), a viewer
   in a different language gets a quiet **translate ↔ show original** toggle on the

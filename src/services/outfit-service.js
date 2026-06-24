@@ -41,9 +41,9 @@ function isValidDate(s) {
 
 /**
  * Create a new outfit. itemIds is required (must reference items owned by
- * the caller). Optional fields: name, notes, coverUrl, tags.
+ * the caller). Optional fields: caption, notes, coverUrl, tags.
  */
-async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, tags = [] }) {
+async function createOutfit({ itemIds, caption = '', notes = '', coverUrl = null, tags = [] }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
   if (!Array.isArray(itemIds) || itemIds.length === 0) throw new Error('no_items');
@@ -52,7 +52,7 @@ async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, t
     userId: user.uid,
     kind: 'mine',
     itemIds,
-    name,
+    caption,
     notes,
     coverUrl,
     tags,
@@ -76,7 +76,7 @@ async function createOutfit({ itemIds, name = '', notes = '', coverUrl = null, t
  */
 async function createAnalyzedOutfit({
   photoBlob,
-  name = '',
+  caption = '',
   mood = '',
   notes = '',
   stylingTips = [],
@@ -102,7 +102,7 @@ async function createAnalyzedOutfit({
     kind: 'analyzed',
     itemIds, // any pieces user already pulled into their closet
     detectedItems, // raw detect output for the rest
-    name: name || '',
+    caption: caption || '',
     mood,
     notes,
     stylingTips,
@@ -130,7 +130,7 @@ async function getOutfit(outfitId) {
 
 async function updateOutfit(outfitId, patch) {
   // Keep aligned with firestore.rules' allowed keys on /outfits/{id}.
-  const allowed = ['name', 'notes', 'note', 'tags', 'itemIds', 'pieceLinks', 'coverUrl', 'isPublic', 'isListed', 'heroVariant'];
+  const allowed = ['caption', 'notes', 'tags', 'itemIds', 'pieceLinks', 'coverUrl', 'isPublic', 'isListed', 'heroVariant'];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))
   );
@@ -233,7 +233,7 @@ async function toggleSelfLike(outfitId, selfLiked) {
  *  omit to create a new entry for the date (multiple OOTDs per day OK). */
 async function upsertOotd({
   id = null, date, outfitId = null, linkedType = null,
-  photoBlob = null, name = '', isPublic = undefined,
+  photoBlob = null, caption = '', isPublic = undefined,
 }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -260,8 +260,9 @@ async function upsertOotd({
     // flips to 'ready' (cutout) or 'none' (keep original) — so the cell lands
     // on its final look in one step instead of swapping bg→cutout on refresh.
     ...(photoUrl ? { photoUrl, photoPath, photoCutUrl: null, photoCutStatus: 'processing' } : {}),
-    // Unified title/memo field across OOTDs + outfits (was `note` for OOTDs).
-    name,
+    // The user's one-line caption (shown under the date). Single unified field
+    // for OOTDs + outfits — replaced the legacy `name`/`note` split.
+    caption,
     ...(isPublic !== undefined ? { isPublic } : {}),
     updatedAt: serverTimestamp(),
   };

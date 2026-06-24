@@ -128,9 +128,9 @@ export function OutfitDetail({ user, onSignIn }) {
   };
 
   const openEdit = () => {
-    // Unified title/memo field is `name` (legacy OOTDs used `note`); the
-    // longer editorial body stays `notes`.
-    setEditName(outfit.name || outfit.note || '');
+    // `caption` = the user's one-line post text; the longer editorial body
+    // (AI style read) stays `notes`.
+    setEditName(outfit.caption || '');
     setEditNotes(outfit.notes || '');
     setEditing(true);
   };
@@ -139,8 +139,8 @@ export function OutfitDetail({ user, onSignIn }) {
     setBusy(true);
     try {
       const patch = outfit.date
-        ? { name: editName.trim() }
-        : { name: editName.trim(), notes: editNotes.trim() };
+        ? { caption: editName.trim() }
+        : { caption: editName.trim(), notes: editNotes.trim() };
       await OutfitService.updateOutfit(outfit.id, patch);
       setEditing(false);
     } finally { setBusy(false); }
@@ -162,7 +162,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const tf = tr.fields;
   // Use a translated value only when it's non-empty; otherwise keep the
   // original so a blank translation never wipes the user's caption/notes.
-  const displayName = (tf?.name || outfit.name || outfit.note || '');
+  const displayName = (tf?.caption || outfit.caption || '');
   const displayNotes = (tf?.notes || notes);
   const displayPalette = tf?.palette
     ? palette.map((c, i) => ({ ...c, name: tf.palette[i] || c.name }))
@@ -219,7 +219,7 @@ export function OutfitDetail({ user, onSignIn }) {
       );
     }
     return (
-      <div className="outfit-hero outfit-hero-collage" aria-label={outfit.name || ''}>
+      <div className="outfit-hero outfit-hero-collage" aria-label={outfit.caption || ''}>
         {heroItems.map((it, idx) => {
           const cover = it.croppedUrl || it.originalUrl;
           const total = heroItems.length;
@@ -510,7 +510,7 @@ export function OutfitDetail({ user, onSignIn }) {
           )}
           <ShareButton
             className="outfit-action-icon"
-            title={outfit.name || t('untitledOutfit')}
+            title={outfit.caption || t('untitledOutfit')}
             text={outfit.notes || ''}
             url={`${window.location.origin}/s/${outfit.id}`}
             label=""

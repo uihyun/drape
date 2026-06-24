@@ -50,7 +50,7 @@ export function OutfitBuilder({ user, onSignIn }) {
       const cover = items.find(i => i.id === ids[0])?.croppedUrl || items.find(i => i.id === ids[0])?.originalUrl || null;
       const { id } = await OutfitService.createOutfit({
         itemIds: ids,
-        name: name.trim(),
+        caption: name.trim(),
         coverUrl: cover,
       });
       navigate(`/o/${id}`);
