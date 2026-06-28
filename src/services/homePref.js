@@ -37,6 +37,6 @@ export function markHintSeen(key) {
   try { localStorage.setItem(key, '1'); } catch { /* ignore */ }
 }
 
-// Keys for the two nudges in the onboarding flow.
+// First-run feed nudge flag (the profile-home hint was dropped — the onboarding
+// choice slide covers that now).
 export const HINT_FEED_INTRO = 'drape_seen_feed_intro_v1';
-export const HINT_PROFILE_HOME = 'drape_seen_home_hint_v1';

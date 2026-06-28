@@ -18,8 +18,6 @@ import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
-import { OnboardHint } from '../components/OnboardHint.jsx';
-import { getHomePref, HINT_PROFILE_HOME } from '../services/homePref.js';
 
 // Lekondo-style profile shell — the app's main screen. Wraps Outfits /
 // Calendar / Closet as segmented tabs over the user's identity header.
@@ -122,10 +120,6 @@ export function Profile({ user, authReady, onSignIn }) {
           </Link>
         </div>
       </header>
-
-      {getHomePref() === 'profile' && (
-        <OnboardHint storageKey={HINT_PROFILE_HOME} text={t('homeProfileHint')} />
-      )}
 
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
