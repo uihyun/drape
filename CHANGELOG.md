@@ -25,21 +25,23 @@ automatically. Listed newest first, by date.
   pinch `columns` + `break-inside:avoid`) so boards flow masonry-style with no
   gap. `src/styles/drape.css`, `src/pages/BoardList.jsx`.
 
-- **2026-06-28 · Periodic friendly reminder push (timezone- + locale-aware).**
-  Gentle nudges every ~2–3 days at the user's local evening (7pm), rotating
-  localized copy (add to closet / new feed looks → try on / log OOTD / try
-  before you buy). On login the client stores the user's IANA `timezone` + `lang`
-  on their profile (`App.jsx` → `updateProfile`); an hourly `sendReminders`
-  (`functions/reminders.js`) checks each profile's local hour + a ≥2.5-day cap,
-  then sends via a shared `sendToUser` helper (`functions/push-send.js`, extracted
-  from `messages.js`) to the user's fcmTokens. Native-only (web has no tokens) and
-  opt-outable (Settings → Notifications → `remindersOptOut`). Server is live now
-  but only reaches users who have BOTH a captured timezone (new client) AND a
-  registered push token (native) — so it effectively switches on with the next
-  native build. `functions/{reminders,reminders-copy,push-send}.js`,
-  `functions/{profile,messages,index}.js`, `src/App.jsx`, `src/services/profile-service.js`,
-  `src/pages/Settings.jsx`, locale `remindersToggle`/`remindersHint`. (Deferred:
-  deep-link from a reminder, contextual targeting like empty-closet.)
+- **2026-06-28 · Periodic friendly reminder push (timezone- + locale-aware,
+  activity-gated).** Gentle nudges at the user's local evening (7pm), rotating a
+  set of **14 varied, emoji-free** localized messages (closet / feed→try-on /
+  log OOTD / try-before-buy / build outfit / plan tomorrow / rediscover / season /
+  share / moodboard). On login the client stores IANA `timezone` + `lang` (and a
+  `lastActiveAt` heartbeat) on the profile (`App.jsx` → `updateProfile`); an
+  hourly `sendReminders` (`functions/reminders.js`) sends via a shared `sendToUser`
+  helper (`functions/push-send.js`, extracted from `messages.js`) when ALL hold:
+  local hour = 19, ≥2.5 days since the last reminder, **opened >~20h ago (skip
+  currently-active users) but within 45 days (back off from the long-dormant)**,
+  not opted out, and has a native fcmToken. Toggle lives simply under **Settings →
+  Account** (like the language row), stored as `remindersOptOut`. Server is live
+  now but only reaches users with BOTH a captured timezone (new client) AND a push
+  token (native) — effectively switches on with the next native build.
+  `functions/{reminders,reminders-copy,push-send,profile,messages,index}.js`,
+  `src/App.jsx`, `src/services/profile-service.js`, `src/pages/Settings.jsx`, locale
+  `remindersToggle`. (Deferred: deep-link from a reminder, contextual targeting.)
 
 - **2026-06-28 · Selectable home screen (feed ↔ profile) + onboarding nudges.**
   The app always opened logged-in users on the feed, framing drape as an OOTD-SNS
@@ -161,6 +163,29 @@ automatically. Listed newest first, by date.
   badge (출시 예정 / COMING SOON / 近日公開) until the Android release goes out.
   App Store badge stays a live link. Web/marketing host only — never in the
   native app. `src/pages/Landing.jsx`, `src/styles/landing.css`.
+
+---
+
+## [1.2.0] — 2026-06-28 (native build 9 · home screen + reminders)
+
+versionCode/build: 9 · versionName 1.2.0. A **feature** release (not a patch) on
+top of 1.1.4 — new user-facing surfaces, so the minor bump. All changes have been
+live on web/functions; this carries them to native.
+
+**Rollout:** 1.2.0 (build 9) is the next native submission. If 1.1.4 (build 8) is
+still in review when this goes up, 1.2.0 **supersedes** it (build 9 folds in all of
+1.1.4's i18n/caption work). Android: upload the build-9 .aab.
+
+### Added / changed (full detail in "Server / web — continuous · 2026-06-23/28")
+- **Selectable home screen** (feed ↔ profile) + a 4-slide onboarding ending in a
+  "how will you use drape?" choice; first-run feed nudge.
+- **Periodic friendly reminder push** — timezone- + locale-aware (local 7pm, every
+  ~2–3 days), opt-out in Settings. Switches on for users on this build (captured
+  timezone + push token).
+- **Outfit caption unified** onto a single `caption` field (dropped `name`/`note`).
+- **i18n** generated text in the creator's language + on-demand "translate" toggle
+  (carried from 1.1.4).
+- **Boards grid** packs tightly (masonry); profile section tabs / feed bar polish.
 
 ---
 

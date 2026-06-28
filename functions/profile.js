@@ -223,6 +223,9 @@ exports.updateProfile = onRequest(async (req, res) => {
         // language. Plus an opt-out. (Stored server-side; admin set bypasses rules.)
         if (typeof data.timezone === 'string') {
             update.timezone = data.timezone.slice(0, 64);
+            // The tz sync fires once per app session (login) — use it as a
+            // last-active heartbeat so reminders skip currently-active users.
+            update.lastActiveAt = admin.firestore.FieldValue.serverTimestamp();
         }
         if (data.lang === 'en' || data.lang === 'ko' || data.lang === 'ja') {
             update.lang = data.lang;

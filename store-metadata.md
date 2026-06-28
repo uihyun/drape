@@ -95,6 +95,20 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.2.0 (versionCode/build 9) — home screen + reminders
+
+**Rollout:** next native submission (build 9). Supersedes 1.1.4 if it's still in
+review. Android: upload the build-9 .aab.
+
+**KO**
+> 이제 첫 화면을 고를 수 있어요 — 내 옷장으로 시작할지, 피드를 둘러볼지. 며칠에 한 번 부드러운 리마인드도 보내드려요(설정에서 끌 수 있어요). 분석·아이템 이름은 내 언어로, 다른 언어 글은 '번역 보기'로. 보드 정리와 자잘한 개선도 함께.
+
+**EN**
+> Choose your home screen — start in your closet or browse the feed. Gentle reminders every few days (turn them off in Settings). Analysis and item names in your language, with "Translate" on posts in another. Plus boards polish and fixes.
+
+**JA**
+> 最初の画面を選べます — クローゼットから始めるか、フィードを見るか。数日に一度やさしいリマインドも（設定でオフにできます）。分析やアイテム名はあなたの言語で、別言語の投稿は「翻訳を見る」で。ボードの調整や改善も。
+
 ### 1.1.4 (versionCode/build 8) — localized analysis + translate
 
 **Rollout:** Submitted to both stores 2026-06-24 (iOS build 8 + Android build 8),
