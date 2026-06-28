@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { Masonry } from '../components/Masonry.jsx';
 import { OutfitService } from '../services/outfit-service.js';
@@ -17,6 +17,8 @@ import { usePullToRefresh } from '../hooks/usePullToRefresh.js';
 import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
 import { getFeedTtlMs } from '../services/appConfig.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { OnboardHint } from '../components/OnboardHint.jsx';
+import { getHomePref, setHomePref, HINT_FEED_INTRO } from '../services/homePref.js';
 
 // Returning to the feed within this window restores your scrolled-down list
 // (items + cursor) so you don't lose your place; after it, the feed resets to a
@@ -34,6 +36,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // view (Popular, Following, Boards…) instead of snapping to defaults.
 export function Feed({ user, onSignIn }) {
   const { t } = useLocale();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const setParam = (key, val) => setSearchParams((prev) => {
     const p = new URLSearchParams(prev); p.set(key, val); return p;
@@ -245,6 +248,16 @@ export function Feed({ user, onSignIn }) {
           </nav>
         )}
       </header>
+
+      {isLoggedIn && getHomePref() === null && (
+        <OnboardHint
+          storageKey={HINT_FEED_INTRO}
+          text={t('homeFeedIntro')}
+          ctaLabel={t('homeFeedIntroCta')}
+          onCta={() => navigate('/profile')}
+          onClose={() => setHomePref('profile')}
+        />
+      )}
 
       <div className="feed-scroll" ref={contentRef}>
       {list === null ? (

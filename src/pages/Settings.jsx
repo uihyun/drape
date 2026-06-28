@@ -10,6 +10,7 @@ import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
+import { getHomePref, setHomePref } from '../services/homePref.js';
 
 // One Settings page (Lekondo tone). Sections, ordered by frequency of use:
 // 1. Profile — handle (one-time claim), displayName, bio, instagram, location
@@ -43,6 +44,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
+      <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
       <AccountSection
         user={user}
@@ -62,6 +64,42 @@ export function Settings({ user, onSignIn, onSignOut }) {
 // OOTD photo with its background. Stored on the profile so it follows the
 // account and applies to visitors' view of the calendar too. Optimistic —
 // flips immediately, reverts if the server write fails.
+// Home screen — which surface drape opens on. localStorage-backed (per device)
+// so the cold-start router can read it synchronously; see services/homePref.
+// Default (unset) reads as 'feed', matching first-run behavior.
+function HomeScreenSection({ t }) {
+  const [choice, setChoice] = useState(() => getHomePref() || 'feed');
+  const pick = (v) => { setChoice(v); setHomePref(v); };
+  return (
+    <section className="settings-card">
+      <h2 className="settings-h2">{t('homeScreen')}</h2>
+      <div className="settings-segment" role="radiogroup" aria-label={t('homeScreen')}>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={choice === 'profile'}
+          className={`settings-segment-btn${choice === 'profile' ? ' on' : ''}`}
+          onClick={() => pick('profile')}
+        >
+          {t('homeScreenProfile')}
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={choice === 'feed'}
+          className={`settings-segment-btn${choice === 'feed' ? ' on' : ''}`}
+          onClick={() => pick('feed')}
+        >
+          {t('homeScreenFeed')}
+        </button>
+      </div>
+      <p className="settings-hint">
+        {choice === 'profile' ? t('homeScreenProfileHint') : t('homeScreenFeedHint')}
+      </p>
+    </section>
+  );
+}
+
 function DisplaySection({ profile, t }) {
   const serverVal = !!profile?.calendarShowBackground;
   const [pending, setPending] = useState(null);

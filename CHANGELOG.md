@@ -18,6 +18,22 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-28 · Selectable home screen (feed ↔ profile) + onboarding nudges.**
+  The app always opened logged-in users on the feed, framing drape as an OOTD-SNS
+  and burying the closet/OOTD/try-on hub. Now the cold-start landing follows a
+  per-device preference (`src/services/homePref.js`, localStorage `drape_home` —
+  read synchronously at routing time like the locale, so no first-paint flash;
+  account sync deferred). Flow: first launch → feed with a one-time "drape is your
+  closet too → go to your profile" nudge (dismiss/CTA sets the default to
+  profile); next launch → profile; first profile-as-home visit → a one-time
+  "switch home in Settings" hint. New **Settings → Home screen** selector
+  (Profile | Feed). Routing change is the single `rootTarget` in `src/App.jsx`;
+  the tab bar is unchanged (both surfaces stay one tap away). New
+  `src/components/OnboardHint.jsx` (one-time dismissible banner, generalizes
+  `SwipeHint`). `src/pages/{Feed,Profile,Settings}.jsx`, locale keys
+  `homeScreen*`/`homeFeedIntro*`/`homeProfileHint` (en/ko/ja). (Web live now;
+  native picks it up on the next build.)
+
 - **2026-06-23 · Unified the outfit caption onto a single `caption` field.** The
   user's one-line post text lived in `name` (app) **and** `note` (seed) — a split
   that also clashed with `notes` (the AI style read), and meant captions in the

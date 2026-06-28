@@ -4,6 +4,7 @@ import { auth } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
+import { getHomeRoute } from './services/homePref.js';
 import { useLocale } from './hooks/useLocale.jsx';
 
 import { MobileHeader } from './components/MobileHeader.jsx';
@@ -306,7 +307,9 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // "add drape.nyc as a Firebase custom domain" — no separate site needed.
   const isMarketingHost = typeof window !== 'undefined'
     && /(^|\.)drape\.nyc$/i.test(window.location.hostname);
-  const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? '/feed' : '/welcome');
+  // Logged-in landing follows the user's home-screen preference (feed vs
+  // profile); first run (no choice yet) defaults to feed. See services/homePref.
+  const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? getHomeRoute() : '/welcome');
 
   return (
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}${isBare ? ' app-bare' : ''}`}>
