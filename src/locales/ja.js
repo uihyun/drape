@@ -212,6 +212,8 @@ export const ja = {
   display: '表示',
   calendarShowBg: 'カレンダーに写真の背景を表示',
   calendarShowBgHint: 'オフは人物だけを切り抜いた表示、オンは背景込みのOOTD写真をそのまま表示します。',
+  remindersToggle: 'リマインド通知',
+  remindersHint: 'OOTDの記録・試着・クローゼット整理を数日に一度やさしくお知らせ — 適切な時間にスマホへ。',
   homeScreen: '最初の画面',
   homeScreenProfile: 'マイプロフィール',
   homeScreenFeed: 'フィード',

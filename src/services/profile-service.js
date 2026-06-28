@@ -152,6 +152,17 @@ export const ProfileService = {
     return authedFetch(UPDATE_FN_URL, { calendarShowBackground: !!showBackground });
   },
 
+  // Reminder targeting captured on login: IANA timezone + UI language, so the
+  // scheduled reminder fires at the user's local evening in their language.
+  async syncReminderContext(timezone, lang) {
+    return authedFetch(UPDATE_FN_URL, { timezone, lang });
+  },
+
+  // Opt out of (or back into) the periodic reminder push.
+  async updateRemindersOptOut(optOut) {
+    return authedFetch(UPDATE_FN_URL, { remindersOptOut: !!optOut });
+  },
+
   // Upload a profile photo. Stored under /users/{uid}/profile/avatar.jpg
   // (public read, owner write via storage.rules), then the URL is pushed
   // to profiles/{uid}.photoURL through the updateProfile cloud function.

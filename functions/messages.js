@@ -20,6 +20,7 @@
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
+const { sendToUser } = require('./push-send.js');
 
 const db = admin.firestore();
 
@@ -53,23 +54,6 @@ exports.cleanupOldThreads = onSchedule('every 24 hours', async () => {
     }
     console.log(`cleanupOldThreads: removed ${deleted} stale threads`);
 });
-
-async function pruneInvalidTokens(uid, tokens, responses) {
-    const dead = [];
-    responses.forEach((res, i) => {
-        if (res.success) return;
-        const code = res.error?.code;
-        if (code === 'messaging/registration-token-not-registered'
-         || code === 'messaging/invalid-registration-token') {
-            dead.push(tokens[i]);
-        }
-    });
-    if (!dead.length) return;
-    const batch = db.batch();
-    dead.forEach(t => batch.delete(db.collection('users').doc(uid).collection('fcmTokens').doc(t)));
-    try { await batch.commit(); }
-    catch (err) { console.warn('prune dead tokens failed:', err.message); }
-}
 
 exports.onMessageCreated = onDocumentCreated(
     'threads/{threadId}/messages/{messageId}',
@@ -123,50 +107,14 @@ exports.onMessageCreated = onDocumentCreated(
                 continue;
             }
 
-            let tokens;
-            try {
-                const snap = await db.collection('users').doc(uid)
-                    .collection('fcmTokens').get();
-                tokens = snap.docs.map(d => d.id).filter(Boolean);
-            } catch (err) {
-                console.warn('fcmTokens read failed for', uid, err.message);
-                continue;
-            }
-            if (!tokens.length) {
-                console.log(`onMessageCreated: no fcmTokens for ${uid} — device hasn't registered for push`);
-                continue;
-            }
-            console.log(`onMessageCreated: sending to ${uid} (${tokens.length} token(s))`);
-
-            try {
-                const res = await admin.messaging().sendEachForMulticast({
-                    tokens,
-                    notification: { title, body },
-                    data: {
-                        threadId,
-                        itemId: thread.itemId || '',
-                        type: 'dm',
-                    },
-                    // iOS-specific: badge + collapse so a chatty thread
-                    // doesn't spam the lock screen with N rows.
-                    apns: {
-                        payload: {
-                            aps: {
-                                'thread-id': threadId,
-                                sound: 'default',
-                            },
-                        },
-                    },
-                    android: {
-                        collapseKey: threadId,
-                        notification: { tag: threadId },
-                    },
-                });
-                console.log(`onMessageCreated: ${uid} delivered ${res.successCount}/${tokens.length}`);
-                await pruneInvalidTokens(uid, tokens, res.responses);
-            } catch (err) {
-                console.warn('sendEachForMulticast failed for', uid, err.message);
-            }
+            // collapseKey=threadId keeps a chatty thread to one lock-screen row.
+            const r = await sendToUser(uid, {
+                title,
+                body,
+                data: { threadId, itemId: thread.itemId || '', type: 'dm' },
+                collapseKey: threadId,
+            });
+            console.log(`onMessageCreated: ${uid} ->`, r.ok ? `delivered ${r.sent}/${r.total}` : r.reason);
         }
     },
 );

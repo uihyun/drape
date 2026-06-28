@@ -218,6 +218,19 @@ exports.updateProfile = onRequest(async (req, res) => {
             update.calendarShowBackground = data.calendarShowBackground;
             result.calendarShowBackground = data.calendarShowBackground;
         }
+        // Reminder targeting: the user's IANA timezone + language, captured on
+        // login, so the scheduled reminder sends at their local evening in their
+        // language. Plus an opt-out. (Stored server-side; admin set bypasses rules.)
+        if (typeof data.timezone === 'string') {
+            update.timezone = data.timezone.slice(0, 64);
+        }
+        if (data.lang === 'en' || data.lang === 'ko' || data.lang === 'ja') {
+            update.lang = data.lang;
+        }
+        if (typeof data.remindersOptOut === 'boolean') {
+            update.remindersOptOut = data.remindersOptOut;
+            result.remindersOptOut = data.remindersOptOut;
+        }
 
         if (Object.keys(update).length === 0) {
             res.status(400).json({ error: 'NO_FIELDS' });

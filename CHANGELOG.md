@@ -18,6 +18,29 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-28 · Boards grid packs tightly (masonry).** The profile Boards tab
+  was a 2-col CSS grid with `align-items:start`, so variable-ratio boards
+  (portrait/square/landscape) left a tall empty gap in the shorter column.
+  Switched `.board-list-grid` to CSS columns (`column-count` from the existing
+  pinch `columns` + `break-inside:avoid`) so boards flow masonry-style with no
+  gap. `src/styles/drape.css`, `src/pages/BoardList.jsx`.
+
+- **2026-06-28 · Periodic friendly reminder push (timezone- + locale-aware).**
+  Gentle nudges every ~2–3 days at the user's local evening (7pm), rotating
+  localized copy (add to closet / new feed looks → try on / log OOTD / try
+  before you buy). On login the client stores the user's IANA `timezone` + `lang`
+  on their profile (`App.jsx` → `updateProfile`); an hourly `sendReminders`
+  (`functions/reminders.js`) checks each profile's local hour + a ≥2.5-day cap,
+  then sends via a shared `sendToUser` helper (`functions/push-send.js`, extracted
+  from `messages.js`) to the user's fcmTokens. Native-only (web has no tokens) and
+  opt-outable (Settings → Notifications → `remindersOptOut`). Server is live now
+  but only reaches users who have BOTH a captured timezone (new client) AND a
+  registered push token (native) — so it effectively switches on with the next
+  native build. `functions/{reminders,reminders-copy,push-send}.js`,
+  `functions/{profile,messages,index}.js`, `src/App.jsx`, `src/services/profile-service.js`,
+  `src/pages/Settings.jsx`, locale `remindersToggle`/`remindersHint`. (Deferred:
+  deep-link from a reminder, contextual targeting like empty-closet.)
+
 - **2026-06-28 · Selectable home screen (feed ↔ profile) + onboarding nudges.**
   The app always opened logged-in users on the feed, framing drape as an OOTD-SNS
   and burying the closet/OOTD/try-on hub. Now the cold-start landing follows a

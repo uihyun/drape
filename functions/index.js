@@ -99,6 +99,10 @@ exports.cleanupStuckItems = itemFns.cleanupStuckItems;
 const translateFns = require('./translate.js');
 exports.translateContent = translateFns.translateContent;
 
+// ── Periodic reminder push ─────────────────────────────────────────────
+const reminderFns = require('./reminders.js');
+exports.sendReminders = reminderFns.sendReminders;
+
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');
 exports.virtualTryOn = tryonFns.virtualTryOn;

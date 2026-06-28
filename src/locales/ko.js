@@ -210,6 +210,8 @@ export const ko = {
   display: '화면',
   calendarShowBg: '달력에 사진 배경 표시',
   calendarShowBgHint: '끄면 인물만 깔끔하게 오려낸 컷아웃, 켜면 배경까지 있는 OOTD 원본 사진이 표시됩니다.',
+  remindersToggle: '리마인드 알림',
+  remindersHint: 'OOTD 기록·트라이온·옷장 정리를 며칠에 한 번씩 부드럽게 알려드려요 — 적당한 시간에 폰으로.',
   homeScreen: '첫 화면',
   homeScreenProfile: '내 프로필',
   homeScreenFeed: '피드',

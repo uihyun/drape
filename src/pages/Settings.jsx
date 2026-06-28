@@ -46,6 +46,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
       <IdentitySection user={user} t={t} />
       <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
+      <NotificationSection profile={profile} t={t} />
       <AccountSection
         user={user}
         profile={profile}
@@ -96,6 +97,45 @@ function HomeScreenSection({ t }) {
       <p className="settings-hint">
         {choice === 'profile' ? t('homeScreenProfileHint') : t('homeScreenFeedHint')}
       </p>
+    </section>
+  );
+}
+
+// Friendly reminder push (every 2–3 days, local evening). Switch ON = reminders
+// enabled; stored as `remindersOptOut` (so default-absent = ON). Optimistic,
+// same pattern as the calendar toggle. Native push only.
+function NotificationSection({ profile, t }) {
+  const serverOptOut = !!profile?.remindersOptOut;
+  const [pending, setPending] = useState(null);
+  const on = pending == null ? !serverOptOut : pending;
+  useEffect(() => { if (pending != null && (!serverOptOut) === pending) setPending(null); }, [serverOptOut, pending]);
+  const toggle = async () => {
+    const next = !on;
+    setPending(next);
+    try {
+      await ProfileService.updateRemindersOptOut(!next); // optOut = !on
+    } catch (e) {
+      console.warn('reminder opt-out save failed:', e?.message);
+      setPending(null);
+    }
+  };
+  return (
+    <section className="settings-card">
+      <h2 className="settings-h2">{t('notifications')}</h2>
+      <div className="settings-row">
+        <span className="settings-row-label">{t('remindersToggle')}</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={t('remindersToggle')}
+          className={`settings-switch${on ? ' on' : ''}`}
+          onClick={toggle}
+        >
+          <span className="settings-switch-knob" />
+        </button>
+      </div>
+      <p className="settings-hint">{t('remindersHint')}</p>
     </section>
   );
 }

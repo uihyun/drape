@@ -5,7 +5,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
 import { getHomeRoute } from './services/homePref.js';
-import { useLocale } from './hooks/useLocale.jsx';
+import { ProfileService } from './services/profile-service.js';
+import { useLocale, currentLang } from './hooks/useLocale.jsx';
 
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
@@ -133,6 +134,20 @@ export default function App() {
     let alive = true;
     warmUp(user).finally(() => { if (alive) setWarmReady(true); });
     return () => { alive = false; };
+  }, [authReady, user?.uid]);
+
+  // Capture the user's timezone + language (once per session) so the scheduled
+  // reminder push fires at their local evening, in their language. Cheap merge;
+  // guarded so it doesn't write on every render/launch.
+  useEffect(() => {
+    if (!authReady || !user || user.isAnonymous) return;
+    const key = `drape:reminderCtx:${user.uid}`;
+    try { if (sessionStorage.getItem(key)) return; } catch { /* ignore */ }
+    let tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { /* ignore */ }
+    ProfileService.syncReminderContext(tz, currentLang())
+      .then(() => { try { sessionStorage.setItem(key, '1'); } catch { /* ignore */ } })
+      .catch(err => console.warn('reminder ctx sync failed:', err?.message));
   }, [authReady, user?.uid]);
 
   // Animated cold-start splash — skip on the marketing host (drape.nyc) so the

@@ -210,6 +210,8 @@ export const en = {
   display: 'Display',
   calendarShowBg: 'Show photo backgrounds on the calendar',
   calendarShowBgHint: 'Off shows a clean cutout of you on each day; on shows the full OOTD photo with its background.',
+  remindersToggle: 'Friendly reminders',
+  remindersHint: 'Occasional nudges — log an OOTD, try something on, tidy your closet — sent to your phone at a reasonable hour, every few days.',
   homeScreen: 'Home screen',
   homeScreenProfile: 'My profile',
   homeScreenFeed: 'Feed',
