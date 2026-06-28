@@ -33,6 +33,13 @@ automatically. Listed newest first, by date.
   `SwipeHint`). `src/pages/{Feed,Profile,Settings}.jsx`, locale keys
   `homeScreen*`/`homeFeedIntro*`/`homeProfileHint` (en/ko/ja). (Web live now;
   native picks it up on the next build.)
+  - **Onboarding slimmed 5→4 + home choice:** the first-launch `Onboarding`
+    modal merged its 5 slides into 3 (closet+looks, try-on, discover+shop) and
+    added a final **"how will you use drape?"** slide — *My closet* (→profile
+    home) vs *Browse* (→feed home), or "decide later". Picking sets `drape_home`
+    and lands the user there, so the home-screen choice is taught up front. The
+    nudge banners remain the fallback for skippers / already-onboarded users.
+    `src/components/Onboarding.jsx`, `onboardSlide1..3` + `onboardChoose*` locale.
 
 - **2026-06-23 · Unified the outfit caption onto a single `caption` field.** The
   user's one-line post text lived in `name` (app) **and** `note` (seed) — a split

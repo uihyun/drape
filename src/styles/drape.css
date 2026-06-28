@@ -5296,6 +5296,44 @@ input[type="search"]::-webkit-search-decoration {
 }
 .onboarding-dots .dot.active { background: var(--accent); }
 
+/* Final onboarding slide — "how will you use drape?" two-card choice. */
+.onboard-choose-sub {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+.onboard-choose {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+.onboard-choose-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.1rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.onboard-choose-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.onboard-choose-card i { font-size: 1.6rem; color: var(--accent); }
+.onboard-choose-label { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+.onboard-choose-desc { font-size: 0.76rem; line-height: 1.35; color: var(--text-muted); }
+.onboard-choose-later {
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 /* ── Misc helpers ──────────────────────────────────────────────────── */
 .muted { color: var(--text-muted); font-size: 0.85rem; }
 .feed-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }

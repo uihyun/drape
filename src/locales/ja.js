@@ -433,15 +433,18 @@ export const ja = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'クローゼットを、手の中に',
-  onboardSlide1Body: '服を 1 枚ずつ、または 1 枚の写真から複数まとめて追加。drape が服だけ切り抜いて自動でタグ付けします。',
+  onboardSlide1Body: '服を 1 枚ずつ撮ると drape が服だけ切り抜いて自動でタグ付け。アイテムを組み合わせてコーデを作り、毎日の OOTD をカレンダーに記録しましょう。',
   onboardSlide2Title: 'まず自分で試着',
-  onboardSlide2Body: '全身写真を 2〜3 枚登録すれば、どんな服でも試着でき、他人のコーデ全体を自分の体に再現することもできます。',
-  onboardSlide3Title: 'コーデを作って毎日を記録',
-  onboardSlide3Body: 'アイテムを組み合わせてコーデを作り、毎日の OOTD をカレンダーに記録しましょう。',
-  onboardSlide4Title: '見つけて保存',
-  onboardSlide4Body: 'フィードを探索し、どんな写真からでもアイテムを見つけて似たものを探し、気に入ったものをウィッシュリストに保存しましょう。',
-  onboardSlide5Title: 'クローゼットからクローゼットへ、売買',
-  onboardSlide5Body: 'クローゼットのアイテムを出品し、出品者と直接メッセージで取引 — 人から人へのプレラブドファッション。',
+  onboardSlide2Body: '全身写真を数枚登録すれば、どんな服でも試着でき、他人のコーデ全体を自分の体に再現することもできます。',
+  onboardSlide3Title: '見つけて、売買する',
+  onboardSlide3Body: 'フィードを探索し、どんな写真からでも似たアイテムを探し、気に入ったものを保存、クローゼットからクローゼットへ売買できます。',
+  onboardChooseTitle: 'drape をどう使う？',
+  onboardChooseSubtitle: '最初に開く画面を選んでね — 設定でいつでも変えられます。',
+  onboardChooseProfile: 'マイクローゼット',
+  onboardChooseProfileDesc: 'クローゼット・カレンダー・試着の管理。',
+  onboardChooseFeed: '見てまわる',
+  onboardChooseFeedDesc: '他の人の OOTD・マーケットを見る。',
+  onboardChooseLater: 'あとで決める',
 
   // ランディング / マーケティングページ (/landing)
   landingNavLookbook: 'ルックブック',

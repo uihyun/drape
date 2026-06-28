@@ -431,15 +431,18 @@ export const ko = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: '내 옷장이 손 안에',
-  onboardSlide1Body: '옷을 한 장씩, 또는 한 사진으로 여러 벌을 한 번에 추가하세요. drape 가 옷만 잘라내고 태그를 자동으로 답니다.',
+  onboardSlide1Body: '옷을 한 장씩 찍으면 drape 가 옷만 잘라내고 태그를 자동으로 답니다. 옷들을 조합해 아웃핏을 만들고 매일 OOTD 를 캘린더에 기록하세요.',
   onboardSlide2Title: '입어보고 결정',
-  onboardSlide2Body: '내 전신 사진 2~3장을 등록하면 어떤 옷이든 입어볼 수 있고, 남의 아웃핏 전체를 내 몸에 그대로 재현할 수도 있어요.',
-  onboardSlide3Title: '아웃핏 만들고 하루 기록',
-  onboardSlide3Body: '옷들을 조합해 아웃핏을 만들고, 매일 OOTD 를 캘린더에 기록하세요.',
-  onboardSlide4Title: '발견하고 저장',
-  onboardSlide4Body: '피드를 둘러보고, 아무 사진이나 분석해 어떤 옷인지 보고 비슷한 옷을 찾고, 마음에 드는 건 위시리스트에 저장하세요.',
-  onboardSlide5Title: '옷장에서 옷장으로, 사고팔기',
-  onboardSlide5Body: '내 옷장의 옷을 판매 등록하고 판매자와 바로 메시지로 거래하세요 — 사람 대 사람의 중고 패션.',
+  onboardSlide2Body: '내 전신 사진 몇 장만 등록하면 어떤 옷이든 입어볼 수 있고, 남의 아웃핏 전체를 내 몸에 그대로 재현할 수도 있어요.',
+  onboardSlide3Title: '둘러보고 거래하기',
+  onboardSlide3Body: '피드를 둘러보고, 아무 사진이나 분석해 비슷한 옷을 찾고, 마음에 드는 건 저장하고, 옷장에서 옷장으로 사고파세요.',
+  onboardChooseTitle: 'drape, 어떻게 쓸래요?',
+  onboardChooseSubtitle: '먼저 열릴 화면을 골라요 — 설정에서 언제든 바꿀 수 있어요.',
+  onboardChooseProfile: '내 옷장',
+  onboardChooseProfileDesc: '옷장·캘린더·트라이온 관리.',
+  onboardChooseFeed: '둘러보기',
+  onboardChooseFeedDesc: '다른 사람 OOTD·마켓 보기.',
+  onboardChooseLater: '나중에 정하기',
 
   // 랜딩 / 마케팅 페이지 (/landing)
   landingNavLookbook: '룩북',

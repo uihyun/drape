@@ -431,15 +431,18 @@ export const en = {
 
   // ── Onboarding ─────────────────────────────────────────────────────
   onboardSlide1Title: 'Your closet, on your phone',
-  onboardSlide1Body: 'Snap each piece — or add several at once from one photo. drape cuts out the garment and tags it automatically.',
+  onboardSlide1Body: 'Snap each piece — drape cuts it out and tags it automatically. Combine pieces into outfits and log a daily OOTD on your calendar.',
   onboardSlide2Title: 'See it on you, first',
-  onboardSlide2Body: 'Add 2–3 full-body photos of yourself, then try on any item — or recreate someone else’s whole look on your body.',
-  onboardSlide3Title: 'Build looks, log your days',
-  onboardSlide3Body: 'Combine pieces into outfits and log a daily OOTD on your calendar.',
-  onboardSlide4Title: 'Discover & save',
-  onboardSlide4Body: 'Explore the feed, point drape at any photo to spot the pieces and find similar, and save what you love to your wishlist.',
-  onboardSlide5Title: 'Buy & sell, closet to closet',
-  onboardSlide5Body: 'List pieces from your closet for sale and message sellers directly — pre-loved fashion, person to person.',
+  onboardSlide2Body: 'Add a few full-body photos, then try on any item — or recreate someone else’s whole look on your body.',
+  onboardSlide3Title: 'Discover & shop',
+  onboardSlide3Body: 'Explore the feed, point drape at any photo to spot the pieces and find similar, save favorites, and buy or sell closet to closet.',
+  onboardChooseTitle: 'How will you use drape?',
+  onboardChooseSubtitle: 'Pick what opens first — change it anytime in Settings.',
+  onboardChooseProfile: 'My closet',
+  onboardChooseProfileDesc: 'Manage your closet, calendar and try-ons.',
+  onboardChooseFeed: 'Browse',
+  onboardChooseFeedDesc: 'See others’ OOTDs and the marketplace.',
+  onboardChooseLater: 'Decide later',
 
   // Landing / marketing page (/landing)
   landingNavLookbook: 'Lookbook',

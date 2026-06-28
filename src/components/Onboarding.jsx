@@ -1,13 +1,17 @@
-// First-launch overlay. Three slides that explain drape's loop:
-//   1. Snap each piece → digital closet
-//   2. Add 2~3 full-body shots → virtual try-on
-//   3. Build outfits + OOTD calendar + share to feed
+// First-launch overlay. Three intro slides + a final "how will you use drape?"
+// choice that sets the home screen:
+//   1. Snap pieces → closet + build outfits + OOTD calendar
+//   2. Add full-body shots → virtual try-on
+//   3. Discover & shop — feed, spot pieces, buy/sell
+//   4. Choose home: My closet (→profile) or Browse (→feed)
 //
-// Persisted in localStorage so it doesn't nag on every visit.
+// Persisted in localStorage (+ server onboardedAt) so it doesn't nag again.
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { AuthService } from '../services/auth-service.js';
+import { setHomePref } from '../services/homePref.js';
 
 const KEY = 'drape_onboarding_dismissed_v1';
 
@@ -21,6 +25,7 @@ function dismiss() {
 
 export function Onboarding({ user, forceShow = false, onClose }) {
   const { t } = useLocale();
+  const navigate = useNavigate();
   // Start hidden and only reveal once we've confirmed this user has NOT
   // onboarded — both on this device (localStorage) and server-side (the
   // user doc). Defaulting to hidden means a returning user on a fresh
@@ -44,31 +49,10 @@ export function Onboarding({ user, forceShow = false, onClose }) {
   if (hidden) return null;
 
   const slides = [
-    {
-      icon: 'checkroom',
-      title: t('onboardSlide1Title'),
-      body: t('onboardSlide1Body'),
-    },
-    {
-      icon: 'face_retouching_natural',
-      title: t('onboardSlide2Title'),
-      body: t('onboardSlide2Body'),
-    },
-    {
-      icon: 'calendar_month',
-      title: t('onboardSlide3Title'),
-      body: t('onboardSlide3Body'),
-    },
-    {
-      icon: 'explore',
-      title: t('onboardSlide4Title'),
-      body: t('onboardSlide4Body'),
-    },
-    {
-      icon: 'storefront',
-      title: t('onboardSlide5Title'),
-      body: t('onboardSlide5Body'),
-    },
+    { icon: 'checkroom', title: t('onboardSlide1Title'), body: t('onboardSlide1Body') },
+    { icon: 'face_retouching_natural', title: t('onboardSlide2Title'), body: t('onboardSlide2Body') },
+    { icon: 'explore', title: t('onboardSlide3Title'), body: t('onboardSlide3Body') },
+    { choice: true },
   ];
 
   const close = () => {
@@ -76,6 +60,13 @@ export function Onboarding({ user, forceShow = false, onClose }) {
     if (user?.uid) AuthService.markOnboarded(user.uid); // persist across devices/reinstalls
     setHidden(true);
     onClose?.();
+  };
+
+  // Final slide: lock in the home screen, then drop the user straight onto it.
+  const chooseHome = (pref) => {
+    setHomePref(pref);
+    close();
+    navigate(pref === 'profile' ? '/profile' : '/feed');
   };
 
   const next = () => {
@@ -88,26 +79,55 @@ export function Onboarding({ user, forceShow = false, onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-box onboarding-card">
-        <div className="onboarding-icon">
-          <i className="material-icons">{s.icon}</i>
-        </div>
-        <h2>{s.title}</h2>
-        <p>{s.body}</p>
+        {s.choice ? (
+          <>
+            <h2>{t('onboardChooseTitle')}</h2>
+            <p className="onboard-choose-sub">{t('onboardChooseSubtitle')}</p>
+            <div className="onboard-choose">
+              <button type="button" className="onboard-choose-card" onClick={() => chooseHome('profile')}>
+                <i className="material-icons">checkroom</i>
+                <span className="onboard-choose-label">{t('onboardChooseProfile')}</span>
+                <span className="onboard-choose-desc">{t('onboardChooseProfileDesc')}</span>
+              </button>
+              <button type="button" className="onboard-choose-card" onClick={() => chooseHome('feed')}>
+                <i className="material-icons">explore</i>
+                <span className="onboard-choose-label">{t('onboardChooseFeed')}</span>
+                <span className="onboard-choose-desc">{t('onboardChooseFeedDesc')}</span>
+              </button>
+            </div>
+            <div className="onboarding-dots" aria-hidden="true">
+              {slides.map((_, i) => (
+                <span key={i} className={`dot${i === step ? ' active' : ''}`} />
+              ))}
+            </div>
+            <button type="button" className="onboard-choose-later" onClick={close}>
+              {t('onboardChooseLater')}
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="onboarding-icon">
+              <i className="material-icons">{s.icon}</i>
+            </div>
+            <h2>{s.title}</h2>
+            <p>{s.body}</p>
 
-        <div className="onboarding-dots" aria-hidden="true">
-          {slides.map((_, i) => (
-            <span key={i} className={`dot${i === step ? ' active' : ''}`} />
-          ))}
-        </div>
+            <div className="onboarding-dots" aria-hidden="true">
+              {slides.map((_, i) => (
+                <span key={i} className={`dot${i === step ? ' active' : ''}`} />
+              ))}
+            </div>
 
-        <div className="controls" style={{ marginTop: '1rem' }}>
-          <button className="btn btn-primary" onClick={next}>
-            {step === slides.length - 1 ? t('start') : t('next')}
-          </button>
-          <button className="btn btn-secondary" onClick={close}>
-            {t('skip')}
-          </button>
-        </div>
+            <div className="controls" style={{ marginTop: '1rem' }}>
+              <button className="btn btn-primary" onClick={next}>
+                {t('next')}
+              </button>
+              <button className="btn btn-secondary" onClick={close}>
+                {t('skip')}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
