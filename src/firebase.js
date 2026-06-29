@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAnalytics, logEvent as _firebaseLogEvent, setUserId as _firebaseSetUserId } from 'firebase/analytics';
+import { getAnalytics, logEvent as _firebaseLogEvent, setUserId as _firebaseSetUserId, setUserProperties as _firebaseSetUserProperties } from 'firebase/analytics';
 import { getAuth, initializeAuth, indexedDBLocalPersistence, getRedirectResult } from 'firebase/auth';
 import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
@@ -58,6 +58,18 @@ export function setUserId(_unused, uid) {
   if (!_analytics) return;
   try { _firebaseSetUserId(_analytics, uid); }
   catch (err) { console.warn('setUserId failed:', err?.message); }
+}
+
+// User properties — for segmenting reports/cohorts (e.g. home_pref to compare
+// retention of feed-home vs profile-home users).
+export function setUserProp(key, value) {
+  if (NATIVE) {
+    nativeAnalytics().then(A => A.setUserProperty({ key, value: value == null ? null : String(value) })).catch(() => {});
+    return;
+  }
+  if (!_analytics) return;
+  try { _firebaseSetUserProperties(_analytics, { [key]: value }); }
+  catch (err) { console.warn('setUserProp failed:', err?.message); }
 }
 
 // Screen tracking — drives Firebase's Screens report + time-on-screen

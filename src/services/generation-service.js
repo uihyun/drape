@@ -29,7 +29,7 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { ref as storageRef, uploadBytes, deleteObject } from 'firebase/storage';
-import { db, functions, auth, storage } from '../firebase.js';
+import { db, functions, auth, storage, analytics, logEvent } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
 import { currentLang } from '../hooks/useLocale.jsx';
 
@@ -69,6 +69,11 @@ async function startTryOn({
     const r = storageRef(storage, customPhotoPath);
     await uploadBytes(r, customPhotoBlob, { contentType: 'image/jpeg', cacheControl: IMG_CACHE });
   }
+
+  // Activation event — which try-on mode the user started.
+  logEvent(analytics, 'tryon_start', {
+    mode: outfitRefId ? 'outfit_ref' : customPhotoBlob ? 'custom_photo' : 'items',
+  });
 
   const callable = httpsCallable(functions, 'virtualTryOn');
   const res = await callable({

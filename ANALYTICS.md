@@ -27,8 +27,8 @@ installs.
 
 | # | Question | Metric | Where | Instrumented? |
 |---|----------|--------|-------|----------------|
-| ① | Who *retains* better — profile-home vs feed-home starters? | D1/D7/D30 retention split by `home_pref` | Retention report / Audiences comparison by user property | ❌ needs `home_pref` user property |
-| ② | Who *activates* — reaches a core action in the first session? | conversion to `item_add` / `ootd_log` / `tryon_start` | Events / Funnels | ❌ needs those action events |
+| ① | Who *retains* better — profile-home vs feed-home starters? | D1/D7/D30 retention split by `home_pref` | Retention report / Audiences comparison by user property | ✅ `home_pref` user property (set on login) |
+| ② | Who *activates* — reaches a core action in the first session? | conversion to `item_add` / `ootd_log` / `tryon_start` | Events / Funnels | ✅ action events logged |
 | ③ | Where do people actually spend time? | views + avg engagement time per screen (feed vs profile/closet/calendar) | Engagement → Screens and screen classes | ✅ `screen_view` per route |
 | ④ | Do feed-starters quickly head to their own closet? (your hypothesis) | time/▸rate from feed → profile/closet in first session | BigQuery path/sequence (clunky in console) | ◑ inferable from `screen_view` order |
 | ⑤ | Do reminders/social push actually bring people back? | `notification_open` rate → subsequent actions / retention | Events + cohort | ◑ `notification_open` logged; tie-to-retention needs cohort/BigQuery |
@@ -45,7 +45,11 @@ profile-first.
 
 - `screen_view` on every route change (App.jsx `logScreen`; native via plugin,
   web via SDK) — drives the Screens report + time-on-screen.
-- `setUserId(uid)` on login — events are tied to the account.
+- `setUserId(uid)` + **`home_pref` user property** (`feed`/`profile`) on login —
+  events tied to the account, and retention/activation can be split by landing.
+- **Core action events**: `item_add` (source: manual/detected/existing_photo),
+  `ootd_log` (has_photo/is_new), `tryon_start` (mode: items/outfit_ref/custom_photo),
+  `outfit_create` (item_count).
 - `notification_open` on a push tap (with the target route).
 - Existing custom events: `follow_added` / `follow_removed` /
   `follow_list_opened` / `comment_posted` / `comment_deleted` /
@@ -54,19 +58,18 @@ profile-first.
 - Firebase auto-collected: `first_open`, `session_start`, `user_engagement`
   (engagement time), retention cohorts.
 
-## Gaps / TODO to make decision #1 robust
+## Gaps / TODO
 
-1. **`home_pref` user property** (`'feed' | 'profile'`) — set alongside
-   `setUserId`, so retention/activation can be split by landing. *Smallest, most
-   important — without it ① can't be answered.*
-2. **Core action events**: `item_add`, `ootd_log`, `tryon_start` (and optionally
-   `like`, `save`, `outfit_create`) — for activation (②) + funnels.
-3. **BigQuery export** (free tier) — per-user journeys, feed→profile path (④),
-   push→action attribution (⑤). One-time link in Firebase settings.
+- ✅ `home_pref` user property — DONE (set on login).
+- ✅ Core action events (`item_add`/`ootd_log`/`tryon_start`/`outfit_create`) — DONE.
+- ◻︎ **BigQuery export** (free tier) — still TODO. Needed for per-user journeys,
+  feed→profile path (④), and push→action attribution (⑤). One-time link in
+  Firebase settings (Project settings → Integrations → BigQuery).
+- ◻︎ Optional later: `like` / `save` events.
 
-Until 1+2 are added we can see *where people spend time* (③) and overall
-retention, but not *which starting screen makes people stay/do more* — the actual
-decision. Decide whether to add them before relying on the comparison.
+With `home_pref` + the action events in, ① (retention by landing) and ②
+(activation) become answerable from the console once build 9 data accrues. ④/⑤
+need BigQuery for clean funnels.
 
 ---
 

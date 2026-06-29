@@ -25,7 +25,7 @@ import {
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
-import { db, auth, storage, functions } from '../firebase.js';
+import { db, auth, storage, functions, analytics, logEvent } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
 import { currentLang } from '../hooks/useLocale.jsx';
 
@@ -64,6 +64,7 @@ async function createOutfit({ itemIds, caption = '', notes = '', coverUrl = null
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  logEvent(analytics, 'outfit_create', { item_count: itemIds.length });
   return { id: ref.id };
 }
 
@@ -305,6 +306,7 @@ async function upsertOotd({
       console.warn('wear log recording failed:', e?.message);
     }
   }
+  logEvent(analytics, 'ootd_log', { has_photo: !!photoBlob, is_new: !id });
   return { id: savedId };
 }
 

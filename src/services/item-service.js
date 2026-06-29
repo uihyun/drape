@@ -29,7 +29,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
-import { db, storage, functions, auth } from '../firebase.js';
+import { db, storage, functions, auth, analytics, logEvent } from '../firebase.js';
 import { IMG_CACHE } from './storageCache.js';
 import { currentLang } from '../hooks/useLocale.jsx';
 
@@ -96,6 +96,7 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
     markFailedIfStuck(itemId);
   }
 
+  logEvent(analytics, 'item_add', { source: 'manual' });
   return { id: itemId };
 }
 
@@ -330,6 +331,7 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
     console.warn('processItem (detected) failed:', err?.message);
     markFailedIfStuck(id);
   });
+  logEvent(analytics, 'item_add', { source: 'detected' });
   return { id };
 }
 
@@ -378,6 +380,7 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
     console.warn('processItem (existing photo) failed:', err?.message);
     markFailedIfStuck(id);
   });
+  logEvent(analytics, 'item_add', { source: 'existing_photo' });
   return { id };
 }
 

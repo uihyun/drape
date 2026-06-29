@@ -1,10 +1,10 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { auth, analytics, logEvent, setUserId, logScreen } from './firebase.js';
+import { auth, analytics, logEvent, setUserId, setUserProp, logScreen } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
-import { getHomeRoute } from './services/homePref.js';
+import { getHomeRoute, getHomePref } from './services/homePref.js';
 import { ProfileService } from './services/profile-service.js';
 import { useLocale, currentLang } from './hooks/useLocale.jsx';
 
@@ -284,7 +284,11 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // Analytics: screen-view (drives the Screens report + time-on-screen) on each
   // route change, and bind the signed-in uid once known.
   useEffect(() => { logScreen(screenNameFor(location.pathname)); }, [location.pathname]);
-  useEffect(() => { if (user?.uid) setUserId(analytics, user.uid); }, [user?.uid]);
+  useEffect(() => {
+    if (!user?.uid) return;
+    setUserId(analytics, user.uid);
+    setUserProp('home_pref', getHomePref() || 'feed'); // for retention split by landing
+  }, [user?.uid]);
 
   // Notification-tap deep link → open the target route via the router (no
   // reload). Covers DM, like, try-on, reminder. Warm taps arrive as the event;
