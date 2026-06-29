@@ -26,7 +26,15 @@ let registered = false;
 let tapHandlerReady = false;
 let cachedToken = null;
 // Thread id from a notification tap, awaiting in-app router navigation.
-let pendingThreadNav = null;
+let pendingNav = null;
+
+// Map a tapped notification's data payload to an in-app route.
+function routeForNotification(data = {}) {
+  if (data.threadId) return `/messages/${data.threadId}`;
+  if ((data.type === 'like' || data.type === 'tryon') && data.outfitId) return `/o/${data.outfitId}`;
+  if (data.type === 'reminder') return '/feed';
+  return null;
+}
 
 async function persistToken(uid, token, platform) {
   if (!uid || !token) return;
@@ -55,14 +63,14 @@ export const PushService = {
     try {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
-        const threadId = event?.notification?.data?.threadId;
-        if (!threadId) return;
+        const route = routeForNotification(event?.notification?.data || {});
+        if (!route) return;
         // Hand off to the router (NOT window.location.assign — a hard reload
-        // re-runs the whole splash/auth boot and strands the chat on a spinner).
-        // App.jsx listens for this event (warm) and drains pendingThreadNav
-        // once authed (cold start).
-        pendingThreadNav = threadId;
-        try { window.dispatchEvent(new CustomEvent('drape:open-thread', { detail: threadId })); } catch { /* ignore */ }
+        // re-runs the whole splash/auth boot and strands the screen on a spinner).
+        // App.jsx listens for this event (warm) and drains pendingNav once authed
+        // (cold start). Covers DM, like, try-on, and reminder taps.
+        pendingNav = route;
+        try { window.dispatchEvent(new CustomEvent('drape:open-route', { detail: route })); } catch { /* ignore */ }
       });
     } catch (err) {
       tapHandlerReady = false;
@@ -72,9 +80,9 @@ export const PushService = {
 
   // Drain a queued notification-tap target (cold start: the tap fired before
   // the router/auth was ready). Returns the threadId once, or null.
-  consumePendingThread() {
-    const t = pendingThreadNav;
-    pendingThreadNav = null;
+  consumePendingNav() {
+    const t = pendingNav;
+    pendingNav = null;
     return t;
   },
 

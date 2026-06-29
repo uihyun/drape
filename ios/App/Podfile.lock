@@ -17,6 +17,11 @@ PODS:
   - CapacitorFilesystem (7.1.8):
     - Capacitor
     - IONFilesystemLib (~> 1.1.1)
+  - CapacitorFirebaseAnalytics (7.5.0):
+    - Capacitor
+    - CapacitorFirebaseAnalytics/Lite (= 7.5.0)
+  - CapacitorFirebaseAnalytics/Lite (7.5.0):
+    - Capacitor
   - CapacitorFirebaseAuthentication (7.5.0):
     - Capacitor
     - CapacitorFirebaseAuthentication/Google (= 7.5.0)
@@ -120,6 +125,7 @@ DEPENDENCIES:
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorFirebaseAnalytics (from `../../node_modules/@capacitor-firebase/analytics`)"
   - "CapacitorFirebaseAuthentication (from `../../node_modules/@capacitor-firebase/authentication`)"
   - "CapacitorFirebaseMessaging (from `../../node_modules/@capacitor-firebase/messaging`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
@@ -162,6 +168,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorFilesystem:
     :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorFirebaseAnalytics:
+    :path: "../../node_modules/@capacitor-firebase/analytics"
   CapacitorFirebaseAuthentication:
     :path: "../../node_modules/@capacitor-firebase/authentication"
   CapacitorFirebaseMessaging:
@@ -183,6 +191,7 @@ SPEC CHECKSUMS:
   CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
   CapacitorCordova: 8214697bed435f6e7c5e3ed86d1632a8c42f7d77
   CapacitorFilesystem: c63fc54df41e5a6761785a7f3c49dc696c22e296
+  CapacitorFirebaseAnalytics: 27ad621b8f41c2cd2b2169f2db6f476cdac49011
   CapacitorFirebaseAuthentication: 53725bd30dcca0e455b42565593b77c6c5d93fa3
   CapacitorFirebaseMessaging: 1ac12c0dab16d1e4edcf9cb878620507ac868a4e
   CapacitorKeyboard: a2e0869edd229490ce36aed2549c0d6b95e27ee8
@@ -207,6 +216,6 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
 
-PODFILE CHECKSUM: 457d4dde86f0e77c62820607f4c7447dd1cc9fae
+PODFILE CHECKSUM: 0f0282bab7829b4eab96f6eabaafca2cbf348cdc
 
 COCOAPODS: 1.16.2

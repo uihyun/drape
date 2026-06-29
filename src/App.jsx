@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { auth } from './firebase.js';
+import { auth, analytics, logEvent, setUserId, logScreen } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
@@ -260,6 +260,15 @@ function restoreScrollTo(y) {
   requestAnimationFrame(tick);
 }
 
+// Map a pathname to a stable Analytics screen name (drop dynamic ids).
+const SCREEN_ALIAS = { o: 'outfit', i: 'item', u: 'public_profile', s: 'outfit_share' };
+function screenNameFor(pathname) {
+  const seg = (pathname || '/').split('/').filter(Boolean);
+  if (!seg.length) return 'home';
+  if (seg[0] === 'profile') return seg[1] ? `profile_${seg[1]}` : 'profile';
+  return SCREEN_ALIAS[seg[0]] || seg[0];
+}
+
 function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -272,19 +281,29 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   const viewKeyRef = useRef(viewKey);
   viewKeyRef.current = viewKey;
 
-  // Notification-tap deep link → open the thread via the router (no reload).
-  // Warm taps arrive as the event; a cold-start tap is drained once authed.
+  // Analytics: screen-view (drives the Screens report + time-on-screen) on each
+  // route change, and bind the signed-in uid once known.
+  useEffect(() => { logScreen(screenNameFor(location.pathname)); }, [location.pathname]);
+  useEffect(() => { if (user?.uid) setUserId(analytics, user.uid); }, [user?.uid]);
+
+  // Notification-tap deep link → open the target route via the router (no
+  // reload). Covers DM, like, try-on, reminder. Warm taps arrive as the event;
+  // a cold-start tap is drained once authed. `e.detail` is a full route string.
   useEffect(() => {
-    const onOpen = (e) => { if (e.detail) navigate(`/messages/${e.detail}`); };
-    window.addEventListener('drape:open-thread', onOpen);
-    return () => window.removeEventListener('drape:open-thread', onOpen);
+    const onOpen = (e) => {
+      if (!e.detail) return;
+      logEvent(analytics, 'notification_open', { route: e.detail });
+      navigate(e.detail);
+    };
+    window.addEventListener('drape:open-route', onOpen);
+    return () => window.removeEventListener('drape:open-route', onOpen);
   }, [navigate]);
   useEffect(() => {
     if (!authReady) return;
-    const pending = PushService.consumePendingThread();
+    const pending = PushService.consumePendingNav();
     // Cold start: replace the boot route so there's no stray history entry —
-    // the thread's back button then correctly falls back to the inbox.
-    if (pending) navigate(`/messages/${pending}`, { replace: true });
+    // the target's back button then falls back to its natural parent.
+    if (pending) { logEvent(analytics, 'notification_open', { route: pending }); navigate(pending, { replace: true }); }
   }, [authReady, navigate]);
 
   // Save the scroll offset continuously under the CURRENT view (via ref). Bound

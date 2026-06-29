@@ -18,6 +18,29 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-28 · Native analytics + social push (like / try-on) + try-on count
+  + deep-links.** Three things, all into the 1.2.0 (build 9) native build:
+  - **Native Firebase Analytics** via `@capacitor-firebase/analytics` (the JS SDK
+    is web-only). `firebase.js` now routes `logEvent`/`setUserId`/`logScreen`
+    through the plugin on native, the web SDK on web. `App.jsx` logs a
+    **screen_view on every route change** (drives the Screens report +
+    time-on-screen/engagement), binds `setUserId` on login, and logs
+    `notification_open` on a push tap — so reminder/social push impact on
+    engagement + retention is finally measurable. **Play Data safety + Apple
+    privacy label must be updated to declare analytics/usage-data collection
+    before submitting build 9.**
+  - **Social push** (`functions/social-push.js`): `onOutfitLiked` notifies the
+    owner when someone likes their look; `onLookTriedOn` notifies when someone
+    tries on their look (unique to drape). Both reuse `sendToUser`, skip
+    self-actions, and coalesce per-target via `collapseKey`.
+  - **Try-on count** (no UI yet): `onLookTriedOn` increments `tryOnCount` on the
+    source outfit when an outfit-ref try-on completes (pending→ready, counted
+    once). Display is deferred until volume justifies it (avoid "tried on 1×").
+  - **Deep-links**: the push-tap handler now maps `data.type` (dm/like/tryon/
+    reminder) → a route and the router navigates there (warm + cold start).
+    `src/services/push-service.js`, `src/App.jsx`, `functions/{social-push,index}.js`,
+    `firestore.rules` (tryOnCount), `firebase.js`.
+
 - **2026-06-28 · Boards grid packs tightly (masonry).** The profile Boards tab
   was a 2-col CSS grid with `align-items:start`, so variable-ratio boards
   (portrait/square/landscape) left a tall empty gap in the shorter column.

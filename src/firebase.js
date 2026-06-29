@@ -23,30 +23,53 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+const NATIVE = isNativeApp();
 let _analytics = null;
 try {
-  if (!isNativeApp()) _analytics = getAnalytics(app);
+  if (!NATIVE) _analytics = getAnalytics(app);
 } catch (err) {
   console.warn('Firebase analytics init failed:', err);
 }
 export const analytics = _analytics || { __noop: true };
 
+// Native uses the @capacitor-firebase/analytics plugin (the JS firebase/analytics
+// SDK doesn't run in the WKWebView/native runtime); web uses the JS SDK. Both
+// behind the same logEvent/setUserId/logScreen API so callers don't branch.
+async function nativeAnalytics() {
+  const { FirebaseAnalytics } = await import('@capacitor-firebase/analytics');
+  return FirebaseAnalytics;
+}
+
 export function logEvent(_unused, eventName, params) {
-  if (!_analytics) return;
-  try {
-    _firebaseLogEvent(_analytics, eventName, params);
-  } catch (err) {
-    console.warn('logEvent failed:', eventName, err?.message);
+  if (NATIVE) {
+    nativeAnalytics().then(A => A.logEvent({ name: eventName, params: params || {} })).catch(() => {});
+    return;
   }
+  if (!_analytics) return;
+  try { _firebaseLogEvent(_analytics, eventName, params); }
+  catch (err) { console.warn('logEvent failed:', eventName, err?.message); }
 }
 
 export function setUserId(_unused, uid) {
-  if (!_analytics) return;
-  try {
-    _firebaseSetUserId(_analytics, uid);
-  } catch (err) {
-    console.warn('setUserId failed:', err?.message);
+  if (NATIVE) {
+    nativeAnalytics().then(A => A.setUserId({ userId: uid || null })).catch(() => {});
+    return;
   }
+  if (!_analytics) return;
+  try { _firebaseSetUserId(_analytics, uid); }
+  catch (err) { console.warn('setUserId failed:', err?.message); }
+}
+
+// Screen tracking — drives Firebase's Screens report + time-on-screen
+// (engagement) metrics. Call on each route change.
+export function logScreen(screenName) {
+  if (NATIVE) {
+    nativeAnalytics().then(A => A.setCurrentScreen({ screenName, screenClassOverride: screenName })).catch(() => {});
+    return;
+  }
+  if (!_analytics) return;
+  try { _firebaseLogEvent(_analytics, 'screen_view', { firebase_screen: screenName, firebase_screen_class: screenName }); }
+  catch (err) { console.warn('logScreen failed:', err?.message); }
 }
 
 // Native Capacitor WKWebView can't load the popup OAuth helper, so we skip

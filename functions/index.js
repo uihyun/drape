@@ -103,6 +103,11 @@ exports.translateContent = translateFns.translateContent;
 const reminderFns = require('./reminders.js');
 exports.sendReminders = reminderFns.sendReminders;
 
+// ── Social push (like / try-on) + try-on count ─────────────────────────
+const socialFns = require('./social-push.js');
+exports.onOutfitLiked = socialFns.onOutfitLiked;
+exports.onLookTriedOn = socialFns.onLookTriedOn;
+
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');
 exports.virtualTryOn = tryonFns.virtualTryOn;
