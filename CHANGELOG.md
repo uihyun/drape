@@ -205,6 +205,12 @@ still in review when this goes up, 1.2.0 **supersedes** it (build 9 folds in all
 - **Periodic friendly reminder push** — timezone- + locale-aware (local 7pm, every
   ~2–3 days), opt-out in Settings. Switches on for users on this build (captured
   timezone + push token).
+- **Social push** — notify on someone liking / trying on your look (try-on is
+  drape-specific), aggregated + deep-linked.
+- **Try-on count** accrued on the source look (server-side; no UI yet).
+- **Native Firebase Analytics** — screen_view + time-on-screen, setUserId,
+  notification_open (measures reminder/social push impact). Privacy policy +
+  store data-safety updated to declare usage data.
 - **Outfit caption unified** onto a single `caption` field (dropped `name`/`note`).
 - **i18n** generated text in the creator's language + on-demand "translate" toggle
   (carried from 1.1.4).

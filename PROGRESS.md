@@ -2,6 +2,31 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Snapshot — 2026-06-28 (working toward 1.2.0 / build 9)
+
+Released: 1.1.1 (iOS+Android). 1.1.4 (build 8) submitted. **1.2.0 (build 9)** is
+the next native submission (folds in everything below; supersedes 1.1.4 if still
+in review). Full detail in `CHANGELOG.md`.
+
+Built since 1.1.1 (all web/functions live; native picks up on build 9):
+- i18n: generated text in the creator's language + on-demand "translate" toggle.
+- Outfit caption unified onto a single `caption` field (dropped `name`/`note`;
+  265 docs migrated). Seed generator must now write `caption` + `lang`.
+- Selectable home screen (feed ↔ profile) + 4-slide onboarding ending in a "how
+  will you use drape?" choice; first-run feed nudge.
+- Periodic reminder push — local-evening, every ~2–3 days, activity-gated +
+  45-day backoff, 14 localized messages, Settings opt-out.
+- Social push: like / try-on (drape-specific) + deep-links; try-on count accrued
+  server-side (no UI yet).
+- Native Firebase Analytics (screen_view + time-on-screen, setUserId,
+  notification_open). Privacy policy + store data-safety declare usage data.
+- Boards masonry fix; notch/safe-area + profile auto-hide tabs.
+
+Open decisions: default home screen (feed vs profile) — **deferred to analytics
+data** rather than a guessed hard-flip. Deferred: general user-to-user DM,
+try-on-count display, contextual reminder targeting, BigQuery export for
+per-user analytics.
+
 ## Deferred — under consideration (revisit when the symptom recurs)
 
 - **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an

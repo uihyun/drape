@@ -101,13 +101,13 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 review. Android: upload the build-9 .aab.
 
 **KO**
-> 이제 첫 화면을 고를 수 있어요 — 내 옷장으로 시작할지, 피드를 둘러볼지. 며칠에 한 번 부드러운 리마인드도 보내드려요(설정에서 끌 수 있어요). 분석·아이템 이름은 내 언어로, 다른 언어 글은 '번역 보기'로. 보드 정리와 자잘한 개선도 함께.
+> 이제 첫 화면을 고를 수 있어요 — 내 옷장으로 시작할지, 피드를 둘러볼지. 누군가 내 룩을 좋아하거나 입어보면 알림으로 알려드리고, 며칠에 한 번 부드러운 리마인드도 보내드려요(설정에서 끌 수 있어요). 분석·아이템 이름은 내 언어로, 다른 언어 글은 '번역 보기'로. 보드 정리와 자잘한 개선도 함께.
 
 **EN**
-> Choose your home screen — start in your closet or browse the feed. Gentle reminders every few days (turn them off in Settings). Analysis and item names in your language, with "Translate" on posts in another. Plus boards polish and fixes.
+> Choose your home screen — start in your closet or browse the feed. Get notified when someone likes or tries on your look, plus gentle reminders every few days (turn them off in Settings). Analysis and item names in your language, with "Translate" on posts in another. Plus boards polish and fixes.
 
 **JA**
-> 最初の画面を選べます — クローゼットから始めるか、フィードを見るか。数日に一度やさしいリマインドも（設定でオフにできます）。分析やアイテム名はあなたの言語で、別言語の投稿は「翻訳を見る」で。ボードの調整や改善も。
+> 最初の画面を選べます — クローゼットから始めるか、フィードを見るか。誰かがあなたのルックを「いいね」したり試着したりすると通知でお知らせ。数日に一度やさしいリマインドも（設定でオフにできます）。分析やアイテム名はあなたの言語で、別言語の投稿は「翻訳を見る」で。ボードの調整や改善も。
 
 ### 1.1.4 (versionCode/build 8) — localized analysis + translate
 
