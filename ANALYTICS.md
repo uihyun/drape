@@ -58,18 +58,89 @@ profile-first.
 - Firebase auto-collected: `first_open`, `session_start`, `user_engagement`
   (engagement time), retention cohorts.
 
-## Gaps / TODO
+## Instrumentation status
 
-- ✅ `home_pref` user property — DONE (set on login).
-- ✅ Core action events (`item_add`/`ootd_log`/`tryon_start`/`outfit_create`) — DONE.
-- ◻︎ **BigQuery export** (free tier) — still TODO. Needed for per-user journeys,
-  feed→profile path (④), and push→action attribution (⑤). One-time link in
-  Firebase settings (Project settings → Integrations → BigQuery).
+- ✅ `home_pref` user property (set on login).
+- ✅ Core action events (`item_add`/`ootd_log`/`tryon_start`/`outfit_create`).
 - ◻︎ Optional later: `like` / `save` events.
 
-With `home_pref` + the action events in, ① (retention by landing) and ②
-(activation) become answerable from the console once build 9 data accrues. ④/⑤
-need BigQuery for clean funnels.
+① (retention by landing) and ② (activation) are answerable from the **console**
+once build 9 data accrues. ④/⑤ (per-user funnels) use **BigQuery** below.
+
+---
+
+## Deep analysis — BigQuery (one-time console setup, then SQL)
+
+**Enable (Firebase Console):** Project settings → **Integrations → BigQuery →
+Link**. Pick the dataset region, enable **daily** export (streaming optional),
+include the app + web data streams. Data starts landing the next day in dataset
+`analytics_<GA4_PROPERTY_ID>`, table `events_YYYYMMDD` (+ `events_intraday_*` if
+streaming). Open it at console.cloud.google.com/bigquery (project drape-9e532).
+
+GA4 event rows have: `user_id` (our uid via setUserId), `user_pseudo_id`,
+`event_name`, `event_timestamp`, repeated `event_params`, repeated
+`user_properties` (incl. `home_pref`). Replace `analytics_XXXXXX` with the real
+dataset name below.
+
+**① Activation by landing — % of new users who do a core action, split by home_pref**
+```sql
+WITH u AS (
+  SELECT user_pseudo_id,
+    (SELECT value.string_value FROM UNNEST(user_properties) WHERE key='home_pref') AS home_pref,
+    COUNTIF(event_name IN ('item_add','ootd_log','tryon_start')) AS core_actions
+  FROM `drape-9e532.analytics_XXXXXX.events_*`
+  WHERE _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 28 DAY))
+  GROUP BY 1,2)
+SELECT home_pref,
+  COUNT(*) AS users,
+  ROUND(100*COUNTIF(core_actions>0)/COUNT(*),1) AS activated_pct
+FROM u WHERE home_pref IS NOT NULL GROUP BY 1;
+```
+
+**② D7 retention by landing — returned ~7 days after first seen, split by home_pref**
+```sql
+WITH first_seen AS (
+  SELECT user_pseudo_id,
+    MIN(DATE(TIMESTAMP_MICROS(event_timestamp))) AS d0,
+    ANY_VALUE((SELECT value.string_value FROM UNNEST(user_properties) WHERE key='home_pref')) AS home_pref
+  FROM `drape-9e532.analytics_XXXXXX.events_*` GROUP BY 1),
+days AS (
+  SELECT user_pseudo_id, DATE(TIMESTAMP_MICROS(event_timestamp)) AS d
+  FROM `drape-9e532.analytics_XXXXXX.events_*` GROUP BY 1,2)
+SELECT f.home_pref,
+  COUNT(DISTINCT f.user_pseudo_id) AS cohort,
+  ROUND(100*COUNT(DISTINCT IF(d.d=DATE_ADD(f.d0, INTERVAL 7 DAY), f.user_pseudo_id, NULL))
+        /COUNT(DISTINCT f.user_pseudo_id),1) AS d7_pct
+FROM first_seen f JOIN days d USING (user_pseudo_id)
+WHERE f.home_pref IS NOT NULL GROUP BY 1;
+```
+
+**④ Feed-starters who reach their closet/profile in the first session**
+```sql
+SELECT
+  COUNTIF(EXISTS(SELECT 1 FROM UNNEST(event_params) WHERE key='firebase_screen' AND value.string_value IN ('profile','closet','profile_closet'))) AS reached_profile,
+  COUNT(DISTINCT user_pseudo_id) AS users
+FROM `drape-9e532.analytics_XXXXXX.events_*`
+WHERE event_name='screen_view'
+  AND _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 28 DAY));
+```
+
+**⑤ Push → action: actions within 1h after a notification_open**
+```sql
+WITH opens AS (
+  SELECT user_pseudo_id, event_timestamp AS t
+  FROM `drape-9e532.analytics_XXXXXX.events_*` WHERE event_name='notification_open'),
+acts AS (
+  SELECT user_pseudo_id, event_timestamp AS t
+  FROM `drape-9e532.analytics_XXXXXX.events_*`
+  WHERE event_name IN ('item_add','ootd_log','tryon_start','outfit_create'))
+SELECT COUNT(DISTINCT o.user_pseudo_id) AS users_acted_after_push
+FROM opens o JOIN acts a USING (user_pseudo_id)
+WHERE a.t BETWEEN o.t AND o.t + 3600*1000000;
+```
+
+(These are starting points — refine windows/screen names as needed. Note GA4
+export lags ~a day; needs build 9 live on devices for app data.)
 
 ---
 
