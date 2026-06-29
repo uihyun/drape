@@ -100,16 +100,17 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 **Rollout:** next native submission (build 9). Supersedes 1.1.4 if it's still in
 review. Android: upload the build-9 .aab.
 
-(i18n/translate shipped in 1.1.4 — not repeated here.)
+(i18n/translate shipped in 1.1.4 — not repeated here. Kept generic; the real
+features this cycle: home-screen choice, like/try-on notifications, reminders.)
 
 **KO**
-> 첫 화면을 고를 수 있어요 — 옷장으로 시작할지, 피드를 둘러볼지. 누가 내 룩을 좋아하거나 입어보면 알림으로 알려드리고, 며칠에 한 번 가벼운 리마인드도 보내드려요. 소소한 개선도 함께.
+> 사용 편의를 위해 UI와 기능을 개선했어요.
 
 **EN**
-> Choose your home screen — your closet or the feed. Get notified when someone likes or tries on your look, plus the occasional gentle reminder. Small fixes and polish, too.
+> UI and feature improvements for a smoother experience.
 
 **JA**
-> 最初の画面を選べます — クローゼットか、フィードか。誰かがあなたのルックに「いいね」や試着をすると通知でお知らせ。ときどき軽いリマインドも。細かな改善も。
+> より快適にお使いいただけるよう、UIと機能を改善しました。
 
 ### 1.1.4 (versionCode/build 8) — localized analysis + translate
 
