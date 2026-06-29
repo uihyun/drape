@@ -4,7 +4,7 @@
 // Keep all three languages in sync — same sections, same order.
 //
 // Effective date is shown verbatim; bump it whenever the substance changes.
-export const LEGAL_EFFECTIVE = '2026-06-01';
+export const LEGAL_EFFECTIVE = '2026-06-28';
 export const LEGAL_CONTACT = 'hello@uhzlab.com';
 
 export const PRIVACY = {
@@ -14,8 +14,9 @@ export const PRIVACY = {
     { h: 'How your data is used', p: `Your photos are processed to build your closet (automatic background-removal and tagging) and to generate virtual try-on images. This processing uses third-party AI models from Google (Gemini). Your closet, identity photos, and OOTD entries are private to your account by default. Content becomes visible to others only when you choose to publish it to the feed, post a board, or list an item for sale.` },
     { h: 'Identity (face/body) photos', p: `Reference photos you add for try-on are used solely to preserve your likeness in generated images. They are stored privately, are never shown in the public feed, and are not used to train any model. You can delete them at any time from Settings.` },
     { h: 'Storage and processing', p: `Data is stored with Google Firebase (Authentication, Firestore, Cloud Storage) and processed on Google Cloud. Images are served over encrypted connections. We retain your data for as long as your account exists.` },
+    { h: 'Analytics', p: `We use Google Firebase Analytics to understand how the app is used — for example which screens are viewed and how features perform — so we can improve drape. This is usage and device data tied to an app-generated identifier; it does not include your closet or identity photos. You can limit it through your device's privacy settings.` },
     { h: 'Sharing', p: `We do not sell your personal data. Content you publish (public outfits, boards, marketplace listings, comments, your handle and profile photo) is visible to other users. We share data with infrastructure providers (Google Firebase / Google Cloud, and the Gemini API) strictly to operate the app.` },
-    { h: 'Your choices', p: `You can edit or delete individual items, outfits, boards, and identity photos at any time. You can delete your entire account, which removes your content. Push notifications can be turned off in your device settings.` },
+    { h: 'Your choices', p: `You can edit or delete individual items, outfits, boards, and identity photos at any time. You can delete your entire account, which removes your content. Reminder notifications can be turned off in Settings, and push can be disabled in your device settings.` },
     { h: 'Children', p: `drape is not directed to children under 13 (or the minimum age required in your country). We do not knowingly collect data from them.` },
     { h: 'Changes', p: `We may update this policy; material changes will be reflected by a new effective date. Continued use after an update means you accept the revised policy.` },
     { h: 'Contact', p: `Questions about privacy: ${LEGAL_CONTACT}` },
@@ -26,8 +27,9 @@ export const PRIVACY = {
     { h: '정보 이용 방식', p: `업로드한 사진은 옷장 구성(자동 배경 제거 및 태깅)과 가상 피팅 이미지 생성을 위해 처리됩니다. 이 처리에는 Google의 제3자 AI 모델(Gemini)이 사용됩니다. 옷장, 정체성 사진, OOTD 기록은 기본적으로 비공개입니다. 콘텐츠는 이용자가 피드에 공개하거나, 보드를 게시하거나, 아이템을 판매 등록할 때만 타인에게 보입니다.` },
     { h: '정체성(얼굴/신체) 사진', p: `피팅을 위해 추가한 참조 사진은 오직 생성 이미지에서 본인의 모습을 유지하는 데만 사용됩니다. 비공개로 저장되며, 공개 피드에 절대 노출되지 않고, 어떤 모델 학습에도 사용되지 않습니다. 설정에서 언제든 삭제할 수 있습니다.` },
     { h: '저장 및 처리', p: `데이터는 Google Firebase(인증, Firestore, Cloud Storage)에 저장되고 Google Cloud에서 처리됩니다. 이미지는 암호화된 연결로 전송됩니다. 계정이 존재하는 동안 데이터를 보관합니다.` },
+    { h: '분석', p: `당사는 앱이 어떻게 사용되는지(예: 어떤 화면을 보는지, 기능이 어떻게 작동하는지)를 파악해 drape를 개선하기 위해 Google Firebase Analytics를 사용합니다. 이는 앱이 생성한 식별자에 연결된 사용·기기 데이터이며, 옷장이나 정체성 사진은 포함하지 않습니다. 기기의 개인정보 설정에서 제한할 수 있습니다.` },
     { h: '공유', p: `당사는 이용자의 개인정보를 판매하지 않습니다. 이용자가 공개한 콘텐츠(공개 코디, 보드, 마켓 게시글, 댓글, 핸들과 프로필 사진)는 다른 이용자에게 보입니다. 앱 운영을 위해 인프라 제공자(Google Firebase / Google Cloud, Gemini API)에만 데이터를 전달합니다.` },
-    { h: '이용자의 선택권', p: `개별 아이템, 코디, 보드, 정체성 사진을 언제든 수정·삭제할 수 있습니다. 계정 전체를 삭제하면 콘텐츠도 함께 제거됩니다. 푸시 알림은 기기 설정에서 끌 수 있습니다.` },
+    { h: '이용자의 선택권', p: `개별 아이템, 코디, 보드, 정체성 사진을 언제든 수정·삭제할 수 있습니다. 계정 전체를 삭제하면 콘텐츠도 함께 제거됩니다. 리마인드 알림은 설정에서 끌 수 있고, 푸시는 기기 설정에서도 끌 수 있습니다.` },
     { h: '아동', p: `drape는 만 13세 미만(또는 거주 국가의 최소 연령 미만) 아동을 대상으로 하지 않으며, 해당 정보를 고의로 수집하지 않습니다.` },
     { h: '변경', p: `본 방침은 변경될 수 있으며, 중요한 변경은 새로운 시행일로 표시됩니다. 변경 후 계속 사용하면 개정된 방침에 동의하는 것으로 간주됩니다.` },
     { h: '문의', p: `개인정보 관련 문의: ${LEGAL_CONTACT}` },
@@ -38,8 +40,9 @@ export const PRIVACY = {
     { h: 'データの利用方法', p: `アップロードされた写真は、クローゼットの構築（自動背景除去とタグ付け）およびバーチャル試着画像の生成のために処理されます。この処理には Google の第三者 AI モデル（Gemini）を使用します。クローゼット、アイデンティティ写真、OOTD 記録はデフォルトで非公開です。コンテンツは、フィードへの公開、ボードの投稿、アイテムの出品を選択した場合にのみ他者に表示されます。` },
     { h: 'アイデンティティ（顔・身体）写真', p: `試着のために追加した参照写真は、生成画像でご本人の姿を保持する目的にのみ使用されます。非公開で保存され、公開フィードに表示されることはなく、いかなるモデルの学習にも使用されません。設定からいつでも削除できます。` },
     { h: '保存と処理', p: `データは Google Firebase（認証、Firestore、Cloud Storage）に保存され、Google Cloud で処理されます。画像は暗号化された接続で配信されます。アカウントが存在する限りデータを保持します。` },
+    { h: '分析', p: `当社は、アプリの利用状況（例：どの画面が表示されるか、機能のパフォーマンス）を把握し drape を改善するために Google Firebase Analytics を使用します。これはアプリが生成した識別子に紐づく利用・端末データであり、クローゼットやアイデンティティ写真は含みません。端末のプライバシー設定で制限できます。` },
     { h: '共有', p: `当社はユーザーの個人データを販売しません。公開したコンテンツ（公開コーデ、ボード、出品、コメント、ハンドルとプロフィール写真）は他のユーザーに表示されます。アプリの運営のためにのみ、インフラ提供者（Google Firebase / Google Cloud、Gemini API）とデータを共有します。` },
-    { h: 'ユーザーの選択', p: `個々のアイテム、コーデ、ボード、アイデンティティ写真をいつでも編集・削除できます。アカウント全体を削除すると、コンテンツも削除されます。プッシュ通知は端末の設定でオフにできます。` },
+    { h: 'ユーザーの選択', p: `個々のアイテム、コーデ、ボード、アイデンティティ写真をいつでも編集・削除できます。アカウント全体を削除すると、コンテンツも削除されます。リマインド通知は設定でオフにでき、プッシュは端末の設定でもオフにできます。` },
     { h: '児童', p: `drape は 13 歳未満（または居住国で定められた最低年齢未満）の児童を対象としておらず、その情報を故意に収集することはありません。` },
     { h: '変更', p: `本ポリシーは変更される場合があり、重要な変更は新しい発効日で示されます。変更後も利用を続けた場合、改訂後のポリシーに同意したものとみなされます。` },
     { h: 'お問い合わせ', p: `プライバシーに関するお問い合わせ：${LEGAL_CONTACT}` },
