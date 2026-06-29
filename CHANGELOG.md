@@ -195,9 +195,9 @@ versionCode/build: 9 · versionName 1.2.0. A **feature** release (not a patch) o
 top of 1.1.4 — new user-facing surfaces, so the minor bump. All changes have been
 live on web/functions; this carries them to native.
 
-**Rollout:** 1.2.0 (build 9) is the next native submission. If 1.1.4 (build 8) is
-still in review when this goes up, 1.2.0 **supersedes** it (build 9 folds in all of
-1.1.4's i18n/caption work). Android: upload the build-9 .aab.
+**Rollout:** Submitted to both stores 2026-06-29 (build 9), in review. Supersedes
+1.1.4 (build 9 folds in all of 1.1.4's i18n/caption work). Android: build-9 .aab
+uploaded.
 
 ### Added / changed (full detail in "Server / web — continuous · 2026-06-23/28")
 - **Selectable home screen** (feed ↔ profile) + a 4-slide onboarding ending in a

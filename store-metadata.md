@@ -97,8 +97,8 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 
 ### 1.2.0 (versionCode/build 9) — home screen + reminders
 
-**Rollout:** next native submission (build 9). Supersedes 1.1.4 if it's still in
-review. Android: upload the build-9 .aab.
+**Rollout:** Submitted to both stores 2026-06-29 (build 9), in review.
+Supersedes 1.1.4. Android: build-9 .aab uploaded.
 
 (i18n/translate shipped in 1.1.4 — not repeated here. Kept generic; the real
 features this cycle: home-screen choice, like/try-on notifications, reminders.)
