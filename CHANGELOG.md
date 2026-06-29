@@ -228,6 +228,14 @@ uploaded.
   App Tracking Transparency prompt, matching our data-safety disclosures). Survives
   both `cap sync` and `npm install`. Android was unaffected (Gradle resolves the
   Firebase deps automatically; the build-9 .aab already included analytics).
+- **Android `versionCode 10`: strip the advertising-ID permissions.** Firebase
+  Analytics merges `com.google.android.gms.permission.AD_ID` (and
+  `android.permission.ACCESS_ADSERVICES_AD_ID`) into the manifest, so Play's
+  "advertising ID" declaration couldn't honestly be answered **No** — build 9 was
+  blocked at submission. Removed both via `tools:node="remove"` in
+  `AndroidManifest.xml` so the build carries no ad-id (analytics only, matching
+  iOS `WithoutAdIdSupport`). Android-only re-build (versionCode 10, versionName
+  still 1.2.0); iOS stays at build 9 (no IDFA, never had this issue).
 
 ---
 

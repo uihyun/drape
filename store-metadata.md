@@ -97,8 +97,10 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 
 ### 1.2.0 (versionCode/build 9) — home screen + reminders
 
-**Rollout:** Submitted to both stores 2026-06-29 (build 9), in review.
-Supersedes 1.1.4. Android: build-9 .aab uploaded.
+**Rollout:** iOS submitted 2026-06-29 (build 9), in review. Android re-built as
+**versionCode 10** (build 9 was blocked by the advertising-ID declaration — AD_ID
+permissions now stripped); upload the build-10 .aab and answer Advertising ID = No.
+Supersedes 1.1.4.
 
 (i18n/translate shipped in 1.1.4 — not repeated here. Kept generic; the real
 features this cycle: home-screen choice, like/try-on notifications, reminders.)
