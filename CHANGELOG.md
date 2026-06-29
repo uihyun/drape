@@ -216,6 +216,19 @@ still in review when this goes up, 1.2.0 **supersedes** it (build 9 folds in all
   (carried from 1.1.4).
 - **Boards grid** packs tightly (masonry); profile section tabs / feed bar polish.
 
+### Fixed (build 9 native build)
+- **iOS build broke with `No such module 'FirebaseCore' / 'FirebaseAnalytics'`.**
+  `@capacitor-firebase/analytics`'s default podspec subspec is `Lite`, which ships
+  **no** Firebase dependency — so the analytics SDK was never installed and the
+  plugin couldn't compile. (`FirebaseCore` only appeared transitively via
+  Auth/Messaging, which is why it looked installed.) Editing the Podfile doesn't
+  hold — `cap sync` regenerates the `capacitor_pods` block and drops any subspec.
+  Fixed via **patch-package** (`patches/@capacitor-firebase+analytics+7.5.0.patch`):
+  default subspec → `AnalyticsWithoutAdIdSupport` (full analytics, **no IDFA** → no
+  App Tracking Transparency prompt, matching our data-safety disclosures). Survives
+  both `cap sync` and `npm install`. Android was unaffected (Gradle resolves the
+  Firebase deps automatically; the build-9 .aab already included analytics).
+
 ---
 
 ## [1.1.4] — 2026-06-23 (native build 8 · localized generation + translate)
