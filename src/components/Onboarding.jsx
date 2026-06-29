@@ -5,15 +5,16 @@
 //   3. Discover & shop — feed, spot pieces, buy/sell
 //   4. Choose home: My closet (→profile) or Browse (→feed)
 //
-// Persisted in localStorage (+ server onboardedAt) so it doesn't nag again.
+// Gated by a localStorage flag only (per-device). Reinstall re-shows it — rare,
+// and skippable. Bump the KEY version to re-show after a major onboarding change.
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { AuthService } from '../services/auth-service.js';
 import { setHomePref } from '../services/homePref.js';
 
-const KEY = 'drape_onboarding_dismissed_v1';
+// v2: the 5-slide intro became 3 slides + a "how will you use drape?" home choice.
+const KEY = 'drape_onboarding_dismissed_v2';
 
 function isDismissed() {
   try { return localStorage.getItem(KEY) === '1'; } catch { return true; }
@@ -26,24 +27,12 @@ function dismiss() {
 export function Onboarding({ user, forceShow = false, onClose }) {
   const { t } = useLocale();
   const navigate = useNavigate();
-  // Start hidden and only reveal once we've confirmed this user has NOT
-  // onboarded — both on this device (localStorage) and server-side (the
-  // user doc). Defaulting to hidden means a returning user on a fresh
-  // install never sees a flash of the intro before the server check lands.
+  // Show unless this device has already dismissed it (local flag only).
   const [hidden, setHidden] = useState(true);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (forceShow) { setHidden(false); return; }
-    if (isDismissed()) { setHidden(true); return; }
-    let alive = true;
-    (async () => {
-      const seen = user?.uid ? await AuthService.hasOnboarded(user.uid) : false;
-      if (!alive) return;
-      if (seen) { dismiss(); setHidden(true); }   // sync this device's flag
-      else setHidden(false);
-    })();
-    return () => { alive = false; };
+    setHidden(forceShow ? false : isDismissed());
   }, [user?.uid, forceShow]);
 
   if (hidden) return null;
@@ -57,7 +46,6 @@ export function Onboarding({ user, forceShow = false, onClose }) {
 
   const close = () => {
     dismiss();
-    if (user?.uid) AuthService.markOnboarded(user.uid); // persist across devices/reinstalls
     setHidden(true);
     onClose?.();
   };
