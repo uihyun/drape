@@ -72,6 +72,7 @@ const Settings = page(() => import('./pages/Settings.jsx'), 'Settings');
 const Privacy = page(() => import('./pages/Privacy.jsx'), 'Privacy');
 const Terms = page(() => import('./pages/Terms.jsx'), 'Terms');
 const Support = page(() => import('./pages/Support.jsx'), 'Support');
+const Admin = page(() => import('./pages/Admin.jsx'), 'Admin');
 
 // OotdDetail removed — /ootd/:id now redirects to the unified /o/:id.
 function OotdRedirect() {
@@ -405,6 +406,17 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/boards/:boardId" element={<BoardDetail user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/settings" element={<Settings user={user} onSignIn={handleSignIn} onSignOut={handleSignOut} />} />
+
+          {/* Owner-only analytics. Guard is cosmetic — the real wall is the
+              email check inside the admin callables (functions/admin.js).
+              Wait for authReady so a direct hit on /admin doesn't redirect
+              before onAuthStateChanged has populated `user`. */}
+          <Route path="/admin" element={
+            !authReady ? <div className="loading"><div className="spinner" /></div>
+              : (isLoggedIn && user?.email === 'uihyunkei@gmail.com')
+                ? <Admin user={user} />
+                : <Navigate to="/profile" replace />
+          } />
 
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />

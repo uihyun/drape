@@ -148,3 +148,12 @@ exports.deleteAccount = accountFns.deleteAccount;
 const messageFns = require('./messages.js');
 exports.onMessageCreated = messageFns.onMessageCreated;
 exports.cleanupOldThreads = messageFns.cleanupOldThreads;
+
+// ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
+const adminFns = require('./admin.js');
+exports.adminOverview      = adminFns.adminOverview;
+exports.adminTopTryons     = adminFns.adminTopTryons;
+exports.adminUsers         = adminFns.adminUsers;
+exports.adminUserDetail    = adminFns.adminUserDetail;
+exports.adminErrors        = adminFns.adminErrors;
+exports.dailyAdminSnapshot = adminFns.dailyAdminSnapshot;

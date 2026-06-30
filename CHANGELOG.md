@@ -18,6 +18,41 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Admin dashboard: date-range trends, axis charts, Errors tab.**
+  Follow-ups on the `/admin` analytics page. (1) **Date range** — the Activity
+  section now has a from/to date picker + 7d/30d/90d/all presets; the four trend
+  charts and "in range" count tiles slice to the chosen window client-side.
+  `adminOverview` now returns the full daily series (earliest data day → today,
+  capped 800d) instead of a fixed 120-day tail, on one shared date axis so the
+  charts stay aligned. (2) **Bigger charts with axes** — replaced the tiny
+  sparklines with a larger inline-SVG line/area chart that draws y-axis tick
+  labels + gridlines and x-axis date ticks (still no charting dependency).
+  (3) **Errors tab** — new `adminErrors` callable serves recent `errorLogs`
+  (newest first, message/url filter, expandable stack + context); the client
+  can't run that ordered query under the admin-read rule, so it goes through the
+  callable. Also clarified the try-on **pending** metric (started but never
+  resolved to ready/failed — transient, or stuck/orphaned if old).
+- **2026-06-30 · Admin analytics dashboard at `/admin`.** New owner-only surface
+  to watch how drape is actually used and set product direction. Three tabs:
+  **Overview** (real-user totals, 7d/30d active, item/outfit/OOTD/board/try-on
+  volume, try-on success rate + variant yield, marketplace listings by currency,
+  real/seed/dev bucket split, and trailing daily trend sparklines for
+  signups/items/try-ons/OOTDs reconstructed from `createdAt`); **Top try-ons**
+  (items ranked by how many generations reference them, with thumbnails);
+  **Users** (sortable table per bucket → drill into one user's activity
+  breakdown, category/color mix, and *already-public* content thumbnails).
+  Architecture: all aggregation runs server-side in `functions/admin.js` via
+  admin-SDK callables (`adminOverview` / `adminTopTryons` / `adminUsers` /
+  `adminUserDetail`) — Firestore rules keep cross-account data owner-only, so the
+  client can't read it directly. Email-gated (`uihyunkei@gmail.com`) in the
+  callables (the real wall) plus a cosmetic route guard in `App.jsx`. A daily
+  `dailyAdminSnapshot` scheduled function stamps point-in-time metrics (follower
+  counts, that-day active) into `adminStats/{day}` for true history. Bucket
+  classification mirrors `scripts/db-stats.cjs`. **Privacy:** drill-down exposes
+  activity metrics + public content only — identity reference (face) photos, DMs,
+  and private OOTD/closet photos are excluded at the function layer. Charts are
+  hand-rolled inline SVG (no new dependency); the `Admin` page is its own lazy
+  chunk so it never ships in the main user bundle.
 - **2026-06-30 · No flicker on the profile count stats (own Items + public
   Outfits).** Both live counts started async, so they flashed `0`/stale then
   jumped to the real number on every open (unlike followers/following, which are
