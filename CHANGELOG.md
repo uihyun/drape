@@ -18,6 +18,21 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Fix: profile "outfits" stat read 0 for OOTD users.** The header
+  count came from the denormalized `profiles.outfitCount`, maintained by a trigger
+  that only fires on the **legacy `isListed`** flag. OOTDs (the main content) set
+  the unified `isPublic` and never touch `isListed`, so OOTD-only profiles — incl.
+  every seed persona — showed 0 (and accounts with a stray listed outfit showed 1,
+  e.g. amy). Now counted **live**: `OutfitService.countPublicByUser` (Profile) /
+  the already-loaded public list length (PublicProfile), mirroring the public
+  Outfits grid exactly (`userId + isPublic + date`, existing index, no backfill,
+  no drift). minjiii 0→11, amy 1→17, rina 0→21.
+- **2026-06-30 · Engagement-stats tooling + snapshots.** `scripts/db-stats.cjs`
+  buckets users (real / seed-by-`@extras-seed.example.com` / dev) and tallies core
+  actions; `--save` writes a local JSON snapshot, `--firestore` upserts an
+  aggregate-only snapshot to `adminStats/{date}` (locked in firestore.rules — admin
+  access only) as the data source for a future admin/usability dashboard.
+
 - **2026-06-28 · Native analytics + social push (like / try-on) + try-on count
   + deep-links.** Three things, all into the 1.2.0 (build 9) native build:
   - **Native Firebase Analytics** via `@capacitor-firebase/analytics` (the JS SDK

@@ -4,8 +4,13 @@
 // accounts — broken down by core action (item / OOTD / board / try-on).
 //
 // Run:   node scripts/db-stats.cjs              # print report
-//        node scripts/db-stats.cjs --save       # also write a dated snapshot
+//        node scripts/db-stats.cjs --save       # also write a dated local JSON snapshot
+//        node scripts/db-stats.cjs --firestore  # also upsert the snapshot into Firestore (adminStats/{date})
 //        node scripts/db-stats.cjs --json       # machine-readable to stdout
+//
+// The --firestore snapshot is aggregate-only (bucket counts, no PII) and is the
+// data source for the future admin page. adminStats is locked in firestore.rules
+// (admin SDK / admin-gated callable only — no client access).
 //
 // Auth: uses Application Default Credentials (gcloud auth application-default
 // login) against project drape-9e532. firebase-admin is resolved from
@@ -129,6 +134,7 @@ function printReport({ id, prof, u, buckets }, summary) {
   const data = await collect();
   const summary = summarize(data);
   const stamp = new Date().toISOString();
+  const day = stamp.slice(0, 10);
 
   if (process.argv.includes('--json')) {
     console.log(JSON.stringify({ stamp, summary }, null, 2));
@@ -141,9 +147,19 @@ function printReport({ id, prof, u, buckets }, summary) {
     const fs = require('fs');
     const dir = path.join(__dirname, 'stats-snapshots');
     fs.mkdirSync(dir, { recursive: true });
-    const file = path.join(dir, `${stamp.slice(0, 10)}.json`);
+    const file = path.join(dir, `${day}.json`);
     fs.writeFileSync(file, JSON.stringify({ stamp, summary }, null, 2));
-    console.log(`\nsnapshot saved → ${path.relative(process.cwd(), file)}`);
+    console.log(`\nlocal snapshot → ${path.relative(process.cwd(), file)}`);
+  }
+
+  if (process.argv.includes('--firestore')) {
+    // One doc per day (id = YYYY-MM-DD) so re-runs upsert rather than pile up.
+    // Aggregate-only; the admin page reads this collection over time.
+    await admin.firestore().collection('adminStats').doc(day).set({
+      day, stamp, summary, source: 'db-stats.cjs',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    console.log(`firestore snapshot → adminStats/${day}`);
   }
   process.exit(0);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -106,7 +106,10 @@ export function PublicProfile({ user, onSignIn }) {
   const following = profile.followingCount ?? 0;
   const bio = profile.bio || '';
   const location = cityDisplay(profile.location, lang);
-  const outfitCount = profile.outfitCount ?? 0;
+  // Live count = the public posts we just loaded for the grid (ootds). The
+  // denormalized profiles.outfitCount tracked the legacy isListed flag and read
+  // 0 for OOTD-only users, so prefer the actual list length once it's in.
+  const outfitCount = ootds?.length ?? profile.outfitCount ?? 0;
   const photoURL = profile.photoURL;
   const isSelf = user && profile.uid === user.uid;
 

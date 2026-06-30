@@ -49,6 +49,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Admin stats snapshots ──────────────────────────────────────────
+    // Aggregate engagement snapshots written by scripts/db-stats.cjs (admin
+    // SDK). No client access — the admin page reads these via an admin-gated
+    // callable, never directly.
+    match /adminStats/{day} {
+      allow read, write: if false;
+    }
+
     // ── Items (the closet) ─────────────────────────────────────────────
     match /items/{itemId} {
       // Single-doc reads are public so visitors viewing someone's public
