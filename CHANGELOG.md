@@ -18,6 +18,19 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Fix: native analytics silently broken + flooding errorLogs.**
+  On native iOS every analytics call (`logEvent`/`setUserId`/`setUserProp`/
+  `logScreen`) was a no-op AND logged an unhandled rejection: `nativeAnalytics()`
+  returned the `@capacitor-firebase/analytics` plugin straight from an async
+  function. The plugin is a Capacitor proxy that turns every property access into
+  a native method call, so the promise-resolution machinery probed `.then` on it
+  → the bridge threw `"FirebaseAnalytics.then() is not implemented on ios"`,
+  rejecting before `logEvent` ever ran. So **native analytics recorded nothing**
+  (web was unaffected — separate JS SDK path) and the Errors log filled with the
+  same rejection on every screen change. Fix: cache the import and wrap the plugin
+  in a plain `{ A }` object so it never sits in a thenable-probe slot. Native
+  analytics now actually fires; reaches devices with the next app build (JS is
+  bundled), web immediately.
 - **2026-06-30 · Admin dashboard: date-range trends, axis charts, Errors tab.**
   Follow-ups on the `/admin` analytics page. (1) **Date range** — the Activity
   section now has a from/to date picker + 7d/30d/90d/all presets; the four trend

@@ -35,14 +35,26 @@ export const analytics = _analytics || { __noop: true };
 // Native uses the @capacitor-firebase/analytics plugin (the JS firebase/analytics
 // SDK doesn't run in the WKWebView/native runtime); web uses the JS SDK. Both
 // behind the same logEvent/setUserId/logScreen API so callers don't branch.
-async function nativeAnalytics() {
-  const { FirebaseAnalytics } = await import('@capacitor-firebase/analytics');
-  return FirebaseAnalytics;
+//
+// The plugin is a Capacitor proxy that turns EVERY property access into a native
+// method call. If it ever lands in a promise-resolution slot (returned from an
+// async fn or a .then callback), the runtime probes `.then` on it and the bridge
+// throws "FirebaseAnalytics.then() is not implemented on ios" — a flood of
+// unhandled rejections on every analytics call. Wrapping it in a plain { A }
+// object keeps the thenable-probe off the proxy. Import is cached.
+let _nativeAnalytics;
+function nativeAnalytics() {
+  if (!_nativeAnalytics) {
+    _nativeAnalytics = import('@capacitor-firebase/analytics')
+      .then(m => ({ A: m.FirebaseAnalytics }))
+      .catch(() => ({ A: null }));
+  }
+  return _nativeAnalytics;
 }
 
 export function logEvent(_unused, eventName, params) {
   if (NATIVE) {
-    nativeAnalytics().then(A => A.logEvent({ name: eventName, params: params || {} })).catch(() => {});
+    nativeAnalytics().then(({ A }) => A && A.logEvent({ name: eventName, params: params || {} })).catch(() => {});
     return;
   }
   if (!_analytics) return;
@@ -52,7 +64,7 @@ export function logEvent(_unused, eventName, params) {
 
 export function setUserId(_unused, uid) {
   if (NATIVE) {
-    nativeAnalytics().then(A => A.setUserId({ userId: uid || null })).catch(() => {});
+    nativeAnalytics().then(({ A }) => A && A.setUserId({ userId: uid || null })).catch(() => {});
     return;
   }
   if (!_analytics) return;
@@ -64,7 +76,7 @@ export function setUserId(_unused, uid) {
 // retention of feed-home vs profile-home users).
 export function setUserProp(key, value) {
   if (NATIVE) {
-    nativeAnalytics().then(A => A.setUserProperty({ key, value: value == null ? null : String(value) })).catch(() => {});
+    nativeAnalytics().then(({ A }) => A && A.setUserProperty({ key, value: value == null ? null : String(value) })).catch(() => {});
     return;
   }
   if (!_analytics) return;
@@ -76,7 +88,7 @@ export function setUserProp(key, value) {
 // (engagement) metrics. Call on each route change.
 export function logScreen(screenName) {
   if (NATIVE) {
-    nativeAnalytics().then(A => A.setCurrentScreen({ screenName, screenClassOverride: screenName })).catch(() => {});
+    nativeAnalytics().then(({ A }) => A && A.setCurrentScreen({ screenName, screenClassOverride: screenName })).catch(() => {});
     return;
   }
   if (!_analytics) return;
