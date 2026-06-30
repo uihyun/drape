@@ -100,8 +100,10 @@ Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest
 **Rollout:** patch on top of the now-released 1.2.0. iOS Archive build 10; Android
 upload versionCode-11 .aab (Advertising ID still = No — AD_ID stays stripped).
 
-**Release notes (store-facing, simple):**
-> Profile and display improvements, plus minor bug fixes.
+**Release notes (store-facing, simple — same for iOS + Android):**
+> EN: Minor improvements and bug fixes.
+> KO: 소소한 개선 및 버그 수정.
+> JA: 細かな改善とバグ修正。
 
 ### 1.2.0 (versionCode/build 9) — home screen + reminders
 
