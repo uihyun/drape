@@ -11,12 +11,11 @@
 // login) against project drape-9e532. firebase-admin is resolved from
 // functions/node_modules so no extra install is needed.
 //
-// Why buckets matter: seed personas were bulk-created to populate the feed
-// (custom handles, OOTD-only). Dev accounts are ours. "Real" = organic
-// signups, which get an auto-generated `drape<uidprefix>` handle they never
-// changed. That handle pattern is the cleanest seed/real discriminator we have
-// (no isSeed flag in the data). Revisit if we ever let users pick handles at
-// signup. The future admin page should read these same buckets.
+// Why buckets matter: seed personas were bulk-created to populate the feed.
+// They're identifiable by their auth email — `<handle>.<hash>@extras-seed.example.com`
+// — and/or a `src: 'seed'` field on the profile/user doc. Dev accounts are ours
+// (hard-coded below). "Real" = everyone else: organic third-party signups. The
+// future admin page should read these same buckets.
 
 const path = require('path');
 const admin = require(path.join(__dirname, '../functions/node_modules/firebase-admin'));
@@ -32,21 +31,42 @@ const DEV = new Set([
 
 const ACTIONS = ['items', 'ootd', 'ootdPriv', 'board', 'tryon'];
 
-function classify(uid, handle) {
+const SEED_EMAIL = '@extras-seed.example.com';
+
+function classify(uid, { email = '', src = '' } = {}) {
   if (DEV.has(uid)) return 'dev';
-  if (/^drape[a-z0-9]{6,}$/.test(handle)) return 'real';  // auto signup handle
-  if (!handle) return 'real?';                            // partial/blank profile
-  return 'seed';                                          // curated custom handle
+  if (email.endsWith(SEED_EMAIL) || src === 'seed') return 'seed';
+  return 'real';
 }
 
 async function collect() {
   admin.initializeApp({ projectId: PROJECT });
   const db = admin.firestore();
+  const auth = admin.auth();
+
+  // identity from Firebase Auth (email is the authoritative seed marker)
+  const id = {};
+  let page = await auth.listUsers(1000);
+  while (true) {
+    page.users.forEach(uu => {
+      id[uu.uid] = {
+        email: uu.email || '',
+        name: uu.displayName || '',
+        prov: (uu.providerData[0]?.providerId || 'anon').replace('.com', ''),
+        created: (uu.metadata.creationTime || '').slice(0, 16),
+      };
+    });
+    if (!page.pageToken) break;
+    page = await auth.listUsers(1000, page.pageToken);
+  }
 
   const prof = {};
   (await db.collection('profiles').get()).forEach(d => {
     const x = d.data();
-    prof[d.id] = { handle: x.handle || '', name: x.displayName || '' };
+    prof[d.id] = { handle: x.handle || '', name: x.displayName || id[d.id]?.name || '', src: x.src || '' };
+  });
+  (await db.collection('users').get()).forEach(d => {
+    if (d.data().src && prof[d.id]) prof[d.id].src = d.data().src;
   });
 
   const u = {};
@@ -66,11 +86,11 @@ async function collect() {
     if (x.isPublic === false) bump(x.userId, 'ootdPriv');
   });
 
-  const allUids = new Set([...Object.keys(prof), ...Object.keys(u)]);
-  const buckets = { real: [], 'real?': [], seed: [], dev: [] };
-  allUids.forEach(uid => buckets[classify(uid, prof[uid]?.handle || '')].push(uid));
+  const allUids = new Set([...Object.keys(prof), ...Object.keys(u), ...Object.keys(id)]);
+  const buckets = { real: [], seed: [], dev: [] };
+  allUids.forEach(uid => buckets[classify(uid, { email: id[uid]?.email, src: prof[uid]?.src })].push(uid));
 
-  return { prof, u, buckets };
+  return { id, prof, u, buckets };
 }
 
 function summarize({ u, buckets }) {
@@ -86,22 +106,21 @@ function summarize({ u, buckets }) {
   return out;
 }
 
-function printReport({ prof, u, buckets }, summary) {
+function printReport({ id, prof, u, buckets }, summary) {
   const order = [
-    ['real', 'REAL public signups (auto handle)'],
-    ['real?', 'REAL? blank/partial-profile signups'],
-    ['seed', 'SEED personas + uncategorized (custom handles)'],
+    ['real', 'REAL organic signups'],
+    ['seed', 'SEED personas (@extras-seed.example.com / src=seed)'],
     ['dev', 'DEV accounts (excluded from real metrics)'],
   ];
   for (const [key, label] of order) {
     const s = summary[key];
     console.log(`\n=== ${label} — ${s.accounts} accounts, ${s.active} active ===`);
     for (const k of ACTIONS) console.log(`  ${k.padEnd(9)}: ${String(s[k].users).padStart(3)} users, ${s[k].total} total`);
-    buckets[key].filter(id => u[id])
+    buckets[key].filter(uid => u[uid])
       .sort((a, b) => (u[b].items + u[b].tryon) - (u[a].items + u[a].tryon))
-      .forEach(id => {
-        const c = u[id];
-        console.log(`     ${(prof[id]?.handle || '(blank)').padEnd(16)} ${(prof[id]?.name || '').slice(0, 16).padEnd(16)} item:${c.items} ootd:${c.ootd}(p${c.ootdPriv}) board:${c.board} tryon:${c.tryon}`);
+      .forEach(uid => {
+        const c = u[uid], m = id[uid] || {};
+        console.log(`     ${(m.name || prof[uid]?.handle || '(no name)').slice(0, 18).padEnd(18)} ${(m.email || '').padEnd(34)} ${(m.prov || '').padEnd(7)} ${m.created || ''}  item:${c.items} ootd:${c.ootd}(p${c.ootdPriv}) board:${c.board} tryon:${c.tryon}`);
       });
   }
 }
