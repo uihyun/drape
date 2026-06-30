@@ -95,11 +95,11 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
-### 1.2.1 (iOS build 10 · Android versionCode 12) — profile polish
+### 1.2.1 (iOS build 10 · Android versionCode 13) — profile polish
 
 **Rollout:** patch on top of the now-released 1.2.0. iOS Archive build 10; Android
-upload versionCode-12 .aab (Advertising ID still = No — AD_ID stays stripped).
-(versionCode 11 was uploaded before the no-flicker fix; re-uploaded as 12.)
+upload versionCode-13 .aab (Advertising ID still = No — AD_ID stays stripped).
+(versionCode 11 and 12 were each uploaded before the next no-flicker fix; now 13.)
 
 **Release notes (store-facing, simple — same for iOS + Android):**
 > EN: Minor improvements and bug fixes.

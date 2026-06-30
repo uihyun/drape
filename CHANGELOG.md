@@ -18,13 +18,14 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
-- **2026-06-30 · No flicker on the profile Items count.** The live count starts
-  async, so it flashed `0` then jumped to the real number on every open (unlike
-  followers/following, which are stored on the profile doc and render instantly).
-  Now stale-while-revalidate: seed from a per-user `localStorage` cache → renders
-  at once, recounts in the background, writes back. Same value → no re-render (no
-  flicker); only a real change moves it. First-ever open (no cache) shows blank,
-  not 0. (Folded into 1.2.1.)
+- **2026-06-30 · No flicker on the profile count stats (own Items + public
+  Outfits).** Both live counts started async, so they flashed `0`/stale then
+  jumped to the real number on every open (unlike followers/following, which are
+  stored on the profile doc and render instantly). Now stale-while-revalidate:
+  seed from a per-user `localStorage` cache → renders at once, recounts in the
+  background, writes back. Same value → no re-render (no flicker); only a real
+  change moves it. First-ever open (no cache) shows blank, not 0. Applied to both
+  `Profile.jsx` (Items) and `PublicProfile.jsx` (public Outfits). (Folded into 1.2.1.)
 - **2026-06-30 · Profile header stat: own = Items, public = Outfits.** The first
   header stat is now context-aware. On your **own** profile it shows your **closet
   size** (`ItemService.countOwnedByUser`, live count of `kind:'owned'` items) and
@@ -217,15 +218,16 @@ automatically. Listed newest first, by date.
 
 ---
 
-## [1.2.1] — 2026-06-30 (iOS build 10 · Android versionCode 12 · profile polish)
+## [1.2.1] — 2026-06-30 (iOS build 10 · Android versionCode 13 · profile polish)
 
-versionName 1.2.1 · iOS build 10 · Android versionCode 12. A small **patch** on
+versionName 1.2.1 · iOS build 10 · Android versionCode 13. A small **patch** on
 top of 1.2.0 — already live on web, carried to native. (Android versionCode
-bumped 11→12: an 11 .aab was uploaded before the no-flicker fix landed, so the
-re-build needed a fresh code.)
+climbed 11→12→13: 11 and 12 .aabs were each uploaded before the next no-flicker
+fix landed, so each rebuild needed a fresh code. iOS stayed build 10 — not yet
+uploaded.)
 
 **Rollout:** submitted after 1.2.0 cleared review. iOS Archive build 10 →
-Distribute; Android upload the versionCode-12 .aab.
+Distribute; Android upload the versionCode-13 .aab.
 
 ### Fixed / changed
 - **Profile header stat is now context-aware** — own profile shows **Items**

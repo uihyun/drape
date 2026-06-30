@@ -50,6 +50,10 @@ export function PublicProfile({ user, onSignIn }) {
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
+  // Public-outfit count, cached per user so it renders instantly instead of
+  // flashing the stale profiles.outfitCount / 0 while the grid loads. Set to
+  // the real list length once `ootds` arrives (see the fetch effect).
+  const [outfitCount, setOutfitCount] = useState(null);
 
   // Resolve handle → uid once, then subscribe live so a follow toggle
   // here updates followerCount on the screen immediately.
@@ -70,9 +74,16 @@ export function PublicProfile({ user, onSignIn }) {
   // OOTDs power both the Outfits grid and the Calendar tab, so we fetch
   // them once when the profile resolves rather than per-tab.
   useEffect(() => {
-    if (!profile?.uid) { setOotds(null); return; }
+    if (!profile?.uid) { setOotds(null); setOutfitCount(null); return; }
+    const key = `drape:pubOutfitCount:${profile.uid}`;
+    const cached = localStorage.getItem(key);
+    if (cached != null) setOutfitCount(Number(cached)); // instant, revalidated below
     OutfitService.listPublicByUser({ uid: profile.uid, pageSize: 200 })
-      .then(setOotds)
+      .then((list) => {
+        setOotds(list);
+        setOutfitCount(list.length); // same value → no re-render (no flicker)
+        try { localStorage.setItem(key, String(list.length)); } catch { /* quota / private mode */ }
+      })
       .catch((err) => {
         console.warn('public ootds failed:', err?.code, err?.message);
         setOotds([]);
@@ -106,10 +117,9 @@ export function PublicProfile({ user, onSignIn }) {
   const following = profile.followingCount ?? 0;
   const bio = profile.bio || '';
   const location = cityDisplay(profile.location, lang);
-  // Live count = the public posts we just loaded for the grid (ootds). The
-  // denormalized profiles.outfitCount tracked the legacy isListed flag and read
-  // 0 for OOTD-only users, so prefer the actual list length once it's in.
-  const outfitCount = ootds?.length ?? profile.outfitCount ?? 0;
+  // outfitCount is the cached/live public-post count (state above). null only on
+  // the first-ever visit (no cache) → render blank, not 0, so it doesn't flicker.
+  const displayOutfitCount = outfitCount == null ? '' : formatCount(outfitCount, lang);
   const photoURL = profile.photoURL;
   const isSelf = user && profile.uid === user.uid;
 
@@ -162,7 +172,7 @@ export function PublicProfile({ user, onSignIn }) {
           </div>
           <div className="profile-stats">
             <button type="button" className="profile-stat" onClick={() => setTab('outfits')}>
-              <strong>{formatCount(outfitCount, lang)}</strong>
+              <strong>{displayOutfitCount}</strong>
               <span>{t('navOutfits')}</span>
             </button>
             <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
