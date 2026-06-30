@@ -5,7 +5,7 @@ import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 import { ProfileService } from '../services/profile-service.js';
-import { OutfitService } from '../services/outfit-service.js';
+import { ItemService } from '../services/item-service.js';
 import { Closet } from './Closet.jsx';
 import { Calendar } from './Calendar.jsx';
 import { OutfitList } from './OutfitList.jsx';
@@ -50,7 +50,7 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
   const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
-  const [outfitCount, setOutfitCount] = useState(null); // live public-post count
+  const [itemCount, setItemCount] = useState(null); // live owned-closet count
   // Auto-hiding sticky tab row: once the identity header scrolls past, the
   // section tabs stick under the notch and slide up on scroll-down / back on
   // scroll-up (same behavior as the feed). The full header only reappears at
@@ -64,13 +64,13 @@ export function Profile({ user, authReady, onSignIn }) {
     });
   }, [user]);
 
-  // Live "outfits" stat = the user's public posts. Counted live rather than
-  // read from profiles.outfitCount, which tracked the legacy isListed flag and
-  // so showed 0 for OOTD-only users (OOTDs set isPublic, never isListed).
+  // On your OWN profile the headline stat is your closet size (items) — that's
+  // what you actually build here, vs OOTDs which most users never post. (A
+  // public profile shows the viewer the user's public outfit count instead.)
   useEffect(() => {
-    if (!user?.uid || user.isAnonymous) { setOutfitCount(null); return; }
+    if (!user?.uid || user.isAnonymous) { setItemCount(null); return; }
     let alive = true;
-    OutfitService.countPublicByUser(user.uid).then(n => { if (alive) setOutfitCount(n); });
+    ItemService.countOwnedByUser(user.uid).then(n => { if (alive) setItemCount(n); });
     return () => { alive = false; };
   }, [user?.uid]);
 
@@ -112,8 +112,7 @@ export function Profile({ user, authReady, onSignIn }) {
   // Instagram-style stat: outfit count sits in the posts/followers/
   // following row next to the avatar. Server-side counter trigger
   // maintains profile.outfitCount.
-  // Prefer the live count; fall back to the denormalized field until it lands.
-  const displayOutfitCount = outfitCount ?? profile?.outfitCount ?? 0;
+  const displayItemCount = itemCount ?? 0;
   // Only the user-uploaded photo counts. We deliberately don't fall
   // back to the auth provider's avatar (Google profile pic etc) so a
   // fresh account shows an empty avatar and gets nudged to upload.
@@ -160,9 +159,9 @@ export function Profile({ user, authReady, onSignIn }) {
             )}
           </div>
           <div className="profile-stats">
-            <button type="button" className="profile-stat" onClick={() => navigate('/profile/outfits')}>
-              <strong>{formatCount(displayOutfitCount, lang)}</strong>
-              <span>{t('navOutfits')}</span>
+            <button type="button" className="profile-stat" onClick={() => navigate('/profile/closet')}>
+              <strong>{formatCount(displayItemCount, lang)}</strong>
+              <span>{t('navItems')}</span>
             </button>
             <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
               <strong>{formatCount(followers, lang)}</strong>

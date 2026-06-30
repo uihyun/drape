@@ -26,6 +26,7 @@ import {
   serverTimestamp,
   deleteDoc,
   updateDoc,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
@@ -111,6 +112,26 @@ function subscribeMyCloset(uid, onChange, { pageSize = 60 } = {}) {
   return onSnapshot(q, snap => {
     onChange(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   });
+}
+
+/**
+ * Live count of a user's owned closet — the "Items" stat in the profile header.
+ * Counts kind='owned' to match the Closet's default view (the 'wishlist' segment
+ * is a separate partition, see Closet.jsx). One aggregation read, fails soft to 0.
+ */
+async function countOwnedByUser(uid) {
+  if (!uid) return 0;
+  try {
+    const agg = await getCountFromServer(query(
+      collection(db, ITEMS),
+      where('userId', '==', uid),
+      where('kind', '==', 'owned'),
+    ));
+    return agg.data().count;
+  } catch (e) {
+    console.warn('countOwnedByUser failed:', e?.code || e?.message);
+    return 0;
+  }
 }
 
 /** One-shot paginated read for archives / older items. */
@@ -388,6 +409,7 @@ export const ItemService = {
   createItem,
   subscribeMyCloset,
   loadMyCloset,
+  countOwnedByUser,
   getItem,
   updateItem,
   deleteItem,

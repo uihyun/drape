@@ -2,6 +2,7 @@ export const ko = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: '옷장',
   navOutfits: '아웃핏',
+  navItems: '아이템',
   navCalendar: '캘린더',
   navTryOn: '입어보기',
   navFeed: '피드',

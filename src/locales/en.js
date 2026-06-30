@@ -2,6 +2,7 @@ export const en = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'Closet',
   navOutfits: 'Outfits',
+  navItems: 'Items',
   navCalendar: 'Calendar',
   navTryOn: 'Try-On',
   navFeed: 'Feed',

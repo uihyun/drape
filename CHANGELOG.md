@@ -18,15 +18,21 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
-- **2026-06-30 · Fix: profile "outfits" stat read 0 for OOTD users.** The header
-  count came from the denormalized `profiles.outfitCount`, maintained by a trigger
-  that only fires on the **legacy `isListed`** flag. OOTDs (the main content) set
-  the unified `isPublic` and never touch `isListed`, so OOTD-only profiles — incl.
-  every seed persona — showed 0 (and accounts with a stray listed outfit showed 1,
-  e.g. amy). Now counted **live**: `OutfitService.countPublicByUser` (Profile) /
-  the already-loaded public list length (PublicProfile), mirroring the public
-  Outfits grid exactly (`userId + isPublic + date`, existing index, no backfill,
-  no drift). minjiii 0→11, amy 1→17, rina 0→21.
+- **2026-06-30 · Profile header stat: own = Items, public = Outfits.** The first
+  header stat is now context-aware. On your **own** profile it shows your **closet
+  size** (`ItemService.countOwnedByUser`, live count of `kind:'owned'` items) and
+  taps through to the Closet tab — that's the metric that reflects real usage here
+  (closet + try-on), where "outfits: 0" was meaningless since most users never post
+  OOTDs. On **someone else's** profile it stays the **public-outfit** count → Outfits
+  tab (their shareable content; closet/try-on are private and hidden there anyway).
+  Public default tab stays Outfits (feed-like). New `navItems` locale key (en/ko/ja).
+- **2026-06-30 · Fix: profile outfit stat read 0 for OOTD users (public profiles).**
+  The count came from denormalized `profiles.outfitCount`, maintained by a trigger
+  that only fires on the **legacy `isListed`** flag. OOTDs (the main content) set the
+  unified `isPublic` and never touch `isListed`, so OOTD-only profiles — every seed
+  persona — showed 0. Public profiles now use the already-loaded public list length
+  (mirrors the public Outfits grid exactly). (Own profile then moved to the Items
+  stat above, superseding the live outfit count there.)
 - **2026-06-30 · Engagement-stats tooling + snapshots.** `scripts/db-stats.cjs`
   buckets users (real / seed-by-`@extras-seed.example.com` / dev) and tallies core
   actions; `--save` writes a local JSON snapshot, `--firestore` upserts an

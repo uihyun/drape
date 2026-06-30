@@ -26,6 +26,7 @@ vi.mock('firebase/functions', () => ({
 vi.mock('../src/firebase.js', () => ({
   db: {}, storage: {}, functions: {},
   auth: { currentUser: { uid: 'u1' } },
+  analytics: null, logEvent: () => {},
 }));
 vi.mock('../src/services/storageCache.js', () => ({ IMG_CACHE: 'test' }));
 vi.mock('../src/services/taxonomy.js', () => ({ TAXONOMY: { CATEGORIES: [], COLORS: [], STYLES: [] } }));

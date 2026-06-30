@@ -4,6 +4,7 @@ export const ja = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'クローゼット',
   navOutfits: 'コーデ',
+  navItems: 'アイテム',
   navCalendar: 'カレンダー',
   navTryOn: '試着',
   navFeed: 'フィード',

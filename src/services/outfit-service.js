@@ -22,7 +22,6 @@ import {
   deleteDoc,
   updateDoc,
   onSnapshot,
-  getCountFromServer,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
@@ -436,30 +435,6 @@ async function listPublicByUser({ uid, pageSize = 200 } = {}) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-/**
- * Live count of a user's public posts — the Instagram-style "outfits" stat in
- * the profile header. Counted live (not the denormalized profiles.outfitCount,
- * which tracked the legacy `isListed` flag and so read 0 for OOTD-only users).
- * Mirrors listPublicByUser exactly (userId + isPublic + has-date), so the
- * number equals what the public Outfits grid shows. Uses the existing
- * isPublic+userId+date index — no extra read beyond one aggregation.
- */
-async function countPublicByUser(uid) {
-  if (!uid) return 0;
-  try {
-    const agg = await getCountFromServer(query(
-      collection(db, OUTFITS),
-      where('userId', '==', uid),
-      where('isPublic', '==', true),
-      orderBy('date', 'desc'),
-    ));
-    return agg.data().count;
-  } catch (e) {
-    console.warn('countPublicByUser failed:', e?.code || e?.message);
-    return 0;
-  }
-}
-
 /** Month of dated outfits, bucketed by date with the calendar rep first. */
 function groupOotdsByDate(docs) {
   const byDate = {};
@@ -537,7 +512,6 @@ export const OutfitService = {
   subscribeMonth,
   listMyOotds,
   listPublicByUser,
-  countPublicByUser,
   listPublicFeed,
   listFollowingFeed,
   toggleBookmark,
