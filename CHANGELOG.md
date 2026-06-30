@@ -210,6 +210,25 @@ automatically. Listed newest first, by date.
 
 ---
 
+## [1.2.1] — 2026-06-30 (iOS build 10 · Android versionCode 11 · profile polish)
+
+versionName 1.2.1 · iOS build 10 · Android versionCode 11. A small **patch** on
+top of 1.2.0 — already live on web, carried to native.
+
+**Rollout:** submitted after 1.2.0 cleared review. iOS Archive build 10 →
+Distribute; Android upload the versionCode-11 .aab.
+
+### Fixed / changed
+- **Profile header stat is now context-aware** — own profile shows **Items**
+  (live owned-closet count) → taps to Closet; other people's profiles keep the
+  **public-outfit** count → Outfits tab. Fixes the old stat reading 0 for users
+  who build a closet but don't post OOTDs. (Full detail under "Server / web —
+  continuous · 2026-06-30".)
+- **Public-profile outfit count fix** (was 0 for OOTD-only users — read the legacy
+  `isListed` flag instead of `isPublic`).
+
+---
+
 ## [1.2.0] — 2026-06-28 (native build 9 · home screen + reminders)
 
 versionCode/build: 9 · versionName 1.2.0. A **feature** release (not a patch) on
