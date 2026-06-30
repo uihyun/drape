@@ -50,7 +50,14 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
   const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
-  const [itemCount, setItemCount] = useState(null); // live owned-closet count
+  // Owned-closet count. Seeded from a per-user cache so it renders instantly
+  // (like the stored followerCount) instead of flashing 0 → n on every open.
+  const [itemCount, setItemCount] = useState(() => {
+    const uid = user?.uid;
+    if (!uid || user?.isAnonymous) return null;
+    const c = localStorage.getItem(`drape:itemCount:${uid}`);
+    return c != null ? Number(c) : null;
+  });
   // Auto-hiding sticky tab row: once the identity header scrolls past, the
   // section tabs stick under the notch and slide up on scroll-down / back on
   // scroll-up (same behavior as the feed). The full header only reappears at
@@ -67,10 +74,20 @@ export function Profile({ user, authReady, onSignIn }) {
   // On your OWN profile the headline stat is your closet size (items) — that's
   // what you actually build here, vs OOTDs which most users never post. (A
   // public profile shows the viewer the user's public outfit count instead.)
+  // Stale-while-revalidate: show the cached value at once, recount in the
+  // background, write back. Same number → setState is a no-op (no flicker);
+  // only a real change moves it.
   useEffect(() => {
     if (!user?.uid || user.isAnonymous) { setItemCount(null); return; }
+    const key = `drape:itemCount:${user.uid}`;
+    const cached = localStorage.getItem(key);
+    if (cached != null) setItemCount(Number(cached));
     let alive = true;
-    ItemService.countOwnedByUser(user.uid).then(n => { if (alive) setItemCount(n); });
+    ItemService.countOwnedByUser(user.uid).then(n => {
+      if (!alive) return;
+      setItemCount(n);
+      try { localStorage.setItem(key, String(n)); } catch { /* quota / private mode */ }
+    });
     return () => { alive = false; };
   }, [user?.uid]);
 
@@ -112,7 +129,9 @@ export function Profile({ user, authReady, onSignIn }) {
   // Instagram-style stat: outfit count sits in the posts/followers/
   // following row next to the avatar. Server-side counter trigger
   // maintains profile.outfitCount.
-  const displayItemCount = itemCount ?? 0;
+  // null only on the first-ever load (no cache yet) — render blank, not 0, so
+  // it doesn't look like it reset and counted up.
+  const displayItemCount = itemCount == null ? '' : formatCount(itemCount, lang);
   // Only the user-uploaded photo counts. We deliberately don't fall
   // back to the auth provider's avatar (Google profile pic etc) so a
   // fresh account shows an empty avatar and gets nudged to upload.
@@ -160,7 +179,7 @@ export function Profile({ user, authReady, onSignIn }) {
           </div>
           <div className="profile-stats">
             <button type="button" className="profile-stat" onClick={() => navigate('/profile/closet')}>
-              <strong>{formatCount(displayItemCount, lang)}</strong>
+              <strong>{displayItemCount}</strong>
               <span>{t('navItems')}</span>
             </button>
             <button type="button" className="profile-stat" onClick={() => setFollowSheet('followers')}>
