@@ -1,0 +1,101 @@
+{
+  "stamp": "2026-06-30T03:16:10.928Z",
+  "summary": {
+    "real": {
+      "accounts": 23,
+      "active": 4,
+      "items": {
+        "users": 4,
+        "total": 262
+      },
+      "ootd": {
+        "users": 0,
+        "total": 0
+      },
+      "ootdPriv": {
+        "users": 0,
+        "total": 0
+      },
+      "board": {
+        "users": 0,
+        "total": 0
+      },
+      "tryon": {
+        "users": 3,
+        "total": 63
+      }
+    },
+    "real?": {
+      "accounts": 11,
+      "active": 0,
+      "items": {
+        "users": 0,
+        "total": 0
+      },
+      "ootd": {
+        "users": 0,
+        "total": 0
+      },
+      "ootdPriv": {
+        "users": 0,
+        "total": 0
+      },
+      "board": {
+        "users": 0,
+        "total": 0
+      },
+      "tryon": {
+        "users": 0,
+        "total": 0
+      }
+    },
+    "seed": {
+      "accounts": 28,
+      "active": 28,
+      "items": {
+        "users": 1,
+        "total": 30
+      },
+      "ootd": {
+        "users": 27,
+        "total": 312
+      },
+      "ootdPriv": {
+        "users": 0,
+        "total": 0
+      },
+      "board": {
+        "users": 1,
+        "total": 2
+      },
+      "tryon": {
+        "users": 1,
+        "total": 6
+      }
+    },
+    "dev": {
+      "accounts": 3,
+      "active": 2,
+      "items": {
+        "users": 2,
+        "total": 102
+      },
+      "ootd": {
+        "users": 2,
+        "total": 39
+      },
+      "ootdPriv": {
+        "users": 1,
+        "total": 20
+      },
+      "board": {
+        "users": 1,
+        "total": 3
+      },
+      "tryon": {
+        "users": 1,
+        "total": 35
+      }
+    }
+  }
+}
