@@ -29,19 +29,23 @@ per-user analytics.
 
 ## Deferred — under consideration (revisit when the symptom recurs)
 
-- **Outfit-ref try-on reproduces the source too literally (2026-07-01).** When
-  the borrowed look's pose ≈ the user's identity-ref pose (e.g. both seated), the
-  result comes back nearly identical to the source photo — sometimes even the
-  source person's FACE leaks through, despite `blurOutfitFace` (Flash face-box →
-  blur the region). Not critical (usually fine), but should be fixed. Root cause
-  unknown: `blurOutfitFace` is best-effort and returns the photo UNBLURRED with
-  no log when Flash finds no face box (`box.x == null`), so we can't tell
-  detection-miss from model-ignoring-the-blur. **Next step:** add logging to
-  `blurOutfitFace` (box found? blur applied?) + re-test to split the two cases;
-  then either strengthen detection/blur or push identity harder in the
-  `outfit-ref` prompt. Related to the identity-lock note below. NOT caused by the
-  2026-07-01 4K→2K change (that only touched the image-gen call, not blur — see
-  `docs/COST.md`).
+- **Outfit-ref try-on: source FACE leaks through — ROOT CAUSE CONFIRMED
+  (2026-07-01).** In outfit-ref mode the result keeps the source person's face
+  instead of the user's. Confirmed via logging + retry: `blurOutfitFace` asks
+  `gemini-3.5-flash` for the face bounding box, and Flash **repeatedly returns
+  `{x:null}` on a clearly-visible face** (both attempts, even after loosening the
+  detection prompt) → the source is passed UNBLURRED → the model copies its face.
+  The gen prompt already says "ignore the outfit photo's face," but that alone
+  can't override an un-blurred, prominent source face. **Flash is a
+  vision-language model — its bbox output is inherently unreliable; prompt tuning
+  won't fix it.** In place now: 2-attempt retry + full logging (`neutralizing
+  source face` / `face detect attempt N → BOX FOUND|no box` / `APPLIED|UNBLURRED`).
+  **Proper fix (deferred, non-critical):** replace the Flash-bbox step with **Google
+  Cloud Vision `FACE_DETECTION`** (purpose-built, reliable boxes; `@google-cloud/
+  vision`, ~$1.50/1000 imgs, only on outfit-ref) → then the existing blur works.
+  Also relevant: the pose comes from the identity photo (see identity-lock note),
+  so same-pose refs still make the result resemble the source. NOT caused by the
+  4K→2K change (see `docs/COST.md`).
 
 - **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an
   external prompt test: in the try-on prompts (`functions/tryon.js`, both the
