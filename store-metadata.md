@@ -95,6 +95,21 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.2.2 (iOS build 11 · Android versionCode 14) — try-on browsing + fixes
+
+**Rollout:** patch on top of 1.2.1. iOS Archive build 11; Android upload
+versionCode-14 .aab (Advertising ID still = No). Internal driver this cycle:
+native analytics was silently dropping our custom events on iOS/Android (the
+`FirebaseAnalytics.then` no-op) — fixed, so this build is the first that actually
+records them. User-facing: swipe between try-on results, a stuck try-on now
+offers a retry instead of spinning, and the boards grid lays out consistently
+across devices.
+
+**Release notes (store-facing, same for iOS + Android):**
+> EN: Swipe left and right to browse your try-ons, plus a smoother, more polished experience throughout.
+> KO: 이제 좌우로 넘기며 트라이온을 감상하세요. 전반적으로 더 매끄럽게 다듬었어요.
+> JA: 左右にスワイプして試着を見返せるように。全体的により快適に整えました。
+
 ### 1.2.1 (iOS build 10 · Android versionCode 13) — profile polish
 
 **Rollout:** patch on top of the now-released 1.2.0. iOS Archive build 10; Android
