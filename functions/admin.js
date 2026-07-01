@@ -119,7 +119,9 @@ async function collectAll() {
       name: x.displayName || id[d.id]?.name || '',
       src: x.src || '',
       followerCount: x.followerCount || 0,
+      followingCount: x.followingCount || 0,
       outfitCount: x.outfitCount || 0,
+      location: x.location || '',   // city id — client maps to country/name
       createdAt: dayKey(x.createdAt) || dayKey(id[d.id]?.created),
       lastActiveAt: dayKey(x.lastActiveAt),
     };
@@ -299,6 +301,8 @@ exports.adminUsers = onCall(opts, async (request) => {
       createdAt: prof[uid]?.createdAt || dayKey(id[uid]?.created) || '',
       lastActiveAt: prof[uid]?.lastActiveAt || '',
       followerCount: prof[uid]?.followerCount || 0,
+      followingCount: prof[uid]?.followingCount || 0,
+      location: prof[uid]?.location || '',
       counts: { items: c.items, outfits: c.outfits, ootd: c.ootd, board: c.board, tryon: c.tryon },
     };
   });
@@ -308,6 +312,7 @@ exports.adminUsers = onCall(opts, async (request) => {
     recent: (a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''),
     activity: (a, b) => activity(b) - activity(a),
     followers: (a, b) => b.followerCount - a.followerCount,
+    following: (a, b) => b.followingCount - a.followingCount,
     active: (a, b) => (b.lastActiveAt || '').localeCompare(a.lastActiveAt || ''),
   }[sort] || ((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 

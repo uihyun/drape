@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, ArrowLeft, TrendingUp, Users, Sparkles, AlertTriangle } from 'lucide-react';
 import { AdminService } from '../services/admin-service.js';
+import { cityDisplay, cityCountry } from '../data/cities.js';
 
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString());
 const pct = (x) => `${Math.round((x || 0) * 100)}%`;
@@ -212,18 +213,31 @@ function TopTryons() {
   );
 }
 
-const SORTS = [['recent', 'newest'], ['activity', 'most active'], ['followers', 'followers'], ['active', 'last active']];
+const SORTS = [['recent', 'newest'], ['activity', 'most active'], ['followers', 'followers'], ['following', 'following'], ['active', 'last active']];
 const BUCKETS = ['real', 'seed', 'dev'];
 
 function UsersTab({ onPick }) {
   const [bucket, setBucket] = useState('real');
   const [sort, setSort] = useState('recent');
+  const [country, setCountry] = useState(null); // region filter (ISO country code)
   const [res, setRes] = useState(null);
   const [err, setErr] = useState('');
   useEffect(() => {
-    setRes(null); setErr('');
-    AdminService.users({ bucket, sort, limit: 300 }).then(setRes).catch((e) => setErr(e.message || 'failed'));
+    setRes(null); setErr(''); setCountry(null);
+    AdminService.users({ bucket, sort, limit: 500 }).then(setRes).catch((e) => setErr(e.message || 'failed'));
   }, [bucket, sort]);
+
+  // Region rollup — group users by their location's country (client maps the
+  // city id → country via cities.js; the server only stores the raw id).
+  const regions = useMemo(() => {
+    if (!res) return [];
+    const m = {};
+    res.users.forEach((u) => { const c = cityCountry(u.location) || '—'; m[c] = (m[c] || 0) + 1; });
+    return Object.entries(m).sort((a, b) => b[1] - a[1]);
+  }, [res]);
+
+  const rows = res ? res.users.filter((u) => !country || (cityCountry(u.location) || '—') === country) : [];
+
   return (
     <>
       <div className="adm-filters">
@@ -233,26 +247,39 @@ function UsersTab({ onPick }) {
         <div className="adm-seg">{SORTS.map(([k, l]) => (
           <button key={k} className={k === sort ? 'on' : ''} onClick={() => setSort(k)}>{l}</button>
         ))}</div>
-        {res && <span className="adm-muted">{fmt(res.total)} in {bucket}</span>}
+        {res && <span className="adm-muted">{fmt(country ? rows.length : res.total)}{country ? ` in ${country}` : ` in ${bucket}`}</span>}
       </div>
+
+      {res && regions.length > 0 && (
+        <div className="adm-regions">
+          <button className={!country ? 'on' : ''} onClick={() => setCountry(null)}>all</button>
+          {regions.map(([c, n]) => (
+            <button key={c} className={country === c ? 'on' : ''} onClick={() => setCountry(country === c ? null : c)}>
+              {c} <b>{n}</b>
+            </button>
+          ))}
+        </div>
+      )}
+
       {err && <div className="adm-err">{err}</div>}
       {!res && !err && <div className="adm-loading"><Loader2 className="spin" /> loading…</div>}
       {res && (
         <div className="adm-tablewrap">
           <table className="adm-table adm-users">
-            <thead><tr><th>user</th><th>joined</th><th>prov</th><th>items</th><th>outfits</th><th>OOTD</th><th>boards</th><th>try-ons</th><th>followers</th></tr></thead>
+            <thead><tr><th>user</th><th>location</th><th>joined</th><th>prov</th><th>items</th><th>outfits</th><th>OOTD</th><th>try-ons</th><th>followers</th><th>following</th></tr></thead>
             <tbody>
-              {res.users.map((u) => (
+              {rows.map((u) => (
                 <tr key={u.uid} className="adm-clickable" onClick={() => onPick(u.uid)}>
                   <td><strong>{u.handle ? `@${u.handle}` : u.displayName || '(no handle)'}</strong></td>
+                  <td className="adm-muted">{u.location ? cityDisplay(u.location, 'en') : '—'}</td>
                   <td className="adm-muted">{u.createdAt || '—'}</td>
                   <td className="adm-muted">{u.provider}</td>
                   <td>{fmt(u.counts.items)}</td>
                   <td>{fmt(u.counts.outfits)}</td>
                   <td>{fmt(u.counts.ootd)}</td>
-                  <td>{fmt(u.counts.board)}</td>
                   <td>{fmt(u.counts.tryon)}</td>
                   <td>{fmt(u.followerCount)}</td>
+                  <td>{fmt(u.followingCount)}</td>
                 </tr>
               ))}
             </tbody>
@@ -282,7 +309,7 @@ function UserDetail({ uid, onBack }) {
             {d.profile.photoURL ? <img src={d.profile.photoURL} alt="" className="adm-avatar" /> : <span className="adm-avatar adm-thumb-empty" />}
             <div>
               <h2>{d.profile.handle ? `@${d.profile.handle}` : d.profile.displayName || uid}</h2>
-              <div className="adm-muted">{d.profile.displayName} · {d.auth.provider} · joined {d.profile.createdAt || '—'}{d.profile.location ? ` · ${d.profile.location}` : ''}</div>
+              <div className="adm-muted">{d.profile.displayName} · {d.auth.provider} · joined {d.profile.createdAt || '—'}{d.profile.location ? ` · ${cityDisplay(d.profile.location, 'en')}` : ''}</div>
               {d.profile.bio && <div className="adm-bio">{d.profile.bio}</div>}
               <div className="adm-muted">{fmt(d.profile.followerCount)} followers · {fmt(d.profile.followingCount)} following · last active {d.profile.lastActiveAt || '—'}</div>
             </div>
@@ -459,6 +486,10 @@ const ADMIN_CSS = `
 .adm-kv{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)}
 .adm-kv:last-child{border-bottom:0}
 .adm-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.adm-regions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.adm-regions button{border:1px solid var(--border);background:var(--surface);color:var(--text-secondary);padding:5px 10px;border-radius:20px;font-size:12px;cursor:pointer}
+.adm-regions button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.adm-regions button b{font-weight:700}
 .adm-toplist{display:flex;flex-direction:column;gap:6px}
 .adm-toprow{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit}
 .adm-toprow:hover{background:var(--accent-soft)}

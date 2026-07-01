@@ -18,6 +18,14 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Admin: region breakdown + following count in the Users tab.**
+  `adminUsers` now returns each user's `location` (raw city id) and
+  `followingCount` alongside the existing follower count. The Users tab adds a
+  Location column, a Following column, a "following" sort, and a region-rollup
+  chip row that groups users by country (client maps city id → country via
+  cities.js `cityCountry`) — click a country chip to filter the table to that
+  region. UserDetail now renders location through `cityDisplay` instead of the
+  raw id. Fetch limit raised 300→500.
 - **2026-06-30 · Review-pass fixes on the session's changes.** (1) `dayKey` in
   functions/admin.js mis-parsed Firebase Auth `creationTime` (RFC-1123, not ISO)
   via `slice(0,10)` → garbage keys that dropped those signups from the trend and
