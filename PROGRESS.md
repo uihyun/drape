@@ -29,6 +29,20 @@ per-user analytics.
 
 ## Deferred — under consideration (revisit when the symptom recurs)
 
+- **Outfit-ref try-on reproduces the source too literally (2026-07-01).** When
+  the borrowed look's pose ≈ the user's identity-ref pose (e.g. both seated), the
+  result comes back nearly identical to the source photo — sometimes even the
+  source person's FACE leaks through, despite `blurOutfitFace` (Flash face-box →
+  blur the region). Not critical (usually fine), but should be fixed. Root cause
+  unknown: `blurOutfitFace` is best-effort and returns the photo UNBLURRED with
+  no log when Flash finds no face box (`box.x == null`), so we can't tell
+  detection-miss from model-ignoring-the-blur. **Next step:** add logging to
+  `blurOutfitFace` (box found? blur applied?) + re-test to split the two cases;
+  then either strengthen detection/blur or push identity harder in the
+  `outfit-ref` prompt. Related to the identity-lock note below. NOT caused by the
+  2026-07-01 4K→2K change (that only touched the image-gen call, not blur — see
+  `docs/COST.md`).
+
 - **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an
   external prompt test: in the try-on prompts (`functions/tryon.js`, both the
   `identity-refs` and `outfit-ref` modes), make the multi-reference relationship
