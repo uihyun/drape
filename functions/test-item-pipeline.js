@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 const { removeBackground } = require('@imgly/background-removal-node');
 
 const IMAGE_PRO = 'gemini-3-pro-image';
@@ -83,16 +83,19 @@ async function main() {
 
   // ── Step 1: Gemini catalog crop ─────────────────────────────────────
   console.log('▸ step 1: calling Gemini Pro image crop…');
-  const genai = new GoogleGenerativeAI(apiKey);
-  const cropModel = genai.getGenerativeModel({ model: IMAGE_PRO });
+  const genai = new GoogleGenAI({ apiKey });
   const t0 = Date.now();
-  const res = await cropModel.generateContent([
-    { inlineData: { data: inputBuf.toString('base64'), mimeType: inputMime } },
-    { text: CROP_PROMPT },
-  ]);
+  const response = await genai.models.generateContent({
+    model: IMAGE_PRO,
+    contents: [
+      { inlineData: { data: inputBuf.toString('base64'), mimeType: inputMime } },
+      { text: CROP_PROMPT },
+    ],
+    config: { imageConfig: { imageSize: '2K' } },
+  });
   console.log(`  Gemini took ${Date.now() - t0}ms`);
 
-  const img = extractImage(res?.response);
+  const img = extractImage(response);
   if (!img) {
     console.error('  Gemini returned no inline image — bailing');
     process.exit(1);
