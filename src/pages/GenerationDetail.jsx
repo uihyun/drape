@@ -5,15 +5,10 @@ import { RefreshCw, Trash2 } from 'lucide-react';
 import { db } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OutfitService } from '../services/outfit-service.js';
+import { STUCK_TRYON_MS, tryonCreatedMs, effectiveTryonStatus } from '../utils/tryonStatus.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-
-// A try-on still 'pending' this long past creation is stuck (the function's
-// hard ceiling is 180s). Show the retry UI immediately instead of spinning
-// forever; the server sweep (cleanupStuckTryons) flips the doc to 'failed'
-// authoritatively, but this covers the user staring at it right now.
-const STUCK_TRYON_MS = 5 * 60 * 1000;
 
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
@@ -91,8 +86,7 @@ export function GenerationDetail({ user }) {
 
   // If we're watching a pending try-on, schedule a re-render at the stuck
   // threshold so it flips to the retry UI without needing a doc update.
-  const createdMs = gen?.createdAt?.toDate?.()?.getTime?.()
-    || (gen?.createdAt ? new Date(gen.createdAt).getTime() : 0);
+  const createdMs = tryonCreatedMs(gen);
   useEffect(() => {
     if (gen?.status !== 'pending' || !createdMs) return;
     const remaining = STUCK_TRYON_MS - (Date.now() - createdMs);
@@ -107,10 +101,10 @@ export function GenerationDetail({ user }) {
   }
 
   // Treat a long-stuck 'pending' as failed so the user gets a retry button
-  // instead of an eternal spinner.
-  const stuckPending = gen.status === 'pending' && createdMs && (Date.now() - createdMs > STUCK_TRYON_MS);
-  const showPending = gen.status === 'pending' && !stuckPending;
-  const showFailed = gen.status === 'failed' || stuckPending;
+  // instead of an eternal spinner (shared heuristic with TryOnHistory).
+  const effStatus = effectiveTryonStatus(gen);
+  const showPending = effStatus === 'pending';
+  const showFailed = effStatus === 'failed';
 
   // Tapped-in detail shows when the try-on was made (the card grid stays clean
   // — no date there). Same format/treatment as a dated outfit.

@@ -47,7 +47,14 @@ function nativeAnalytics() {
   if (!_nativeAnalytics) {
     _nativeAnalytics = import('@capacitor-firebase/analytics')
       .then(m => ({ A: m.FirebaseAnalytics }))
-      .catch(() => ({ A: null }));
+      .catch((err) => {
+        // Don't memoize a transient chunk-load failure — otherwise every later
+        // call sees the cached {A:null} and analytics is dead until app restart.
+        // Clear the cache so the next call retries the import.
+        _nativeAnalytics = null;
+        console.warn('analytics plugin import failed:', err?.message);
+        return { A: null };
+      });
   }
   return _nativeAnalytics;
 }

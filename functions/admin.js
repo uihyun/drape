@@ -41,11 +41,16 @@ function assertAdmin(request) {
   if (!ADMIN_EMAILS.includes(email)) throw new HttpsError('permission-denied', 'ADMIN_ONLY');
 }
 
-// YYYY-MM-DD from a Firestore Timestamp (or an ISO-ish string from Auth).
+// YYYY-MM-DD from a Firestore Timestamp OR a date string. Auth's creationTime
+// is RFC-1123 ("Wed, 05 Jul 2026 12:34:56 GMT"), not ISO — parse it through
+// Date rather than slicing, so the fallback doesn't yield garbage like "Wed, 05 Ju".
 function dayKey(v) {
   if (!v) return null;
   if (typeof v.toDate === 'function') return v.toDate().toISOString().slice(0, 10);
-  if (typeof v === 'string' && v.length >= 10) return v.slice(0, 10);
+  if (typeof v === 'string') {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+  }
   return null;
 }
 
@@ -260,25 +265,10 @@ const opts = { cors: true, timeoutSeconds: 120, memory: '512MiB' };
 
 exports.adminOverview = onCall(opts, async (request) => {
   assertAdmin(request);
-  const overview = await computeOverview();
-  // Cache point-in-time metrics so repeat loads (and trend history) can read
-  // the snapshot instead of rescanning. Aggregate-only, no PII.
-  try {
-    const day = overview.generatedAt.slice(0, 10);
-    await admin.firestore().collection('adminStats').doc(day).set({
-      day,
-      stamp: overview.generatedAt,
-      summary: overview.summary,
-      totals: overview.totals,
-      tryon: overview.tryon,
-      marketplace: overview.marketplace,
-      source: 'adminOverview',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-  } catch (err) {
-    console.warn('adminStats cache write failed (non-fatal):', err.message);
-  }
-  return overview;
+  // Trends are recomputed live from createdAt on each load; point-in-time
+  // history (follower counts, that-day active) accumulates via
+  // dailyAdminSnapshot into adminStats/{day} for a future history view.
+  return computeOverview();
 });
 
 exports.adminTopTryons = onCall(opts, async (request) => {

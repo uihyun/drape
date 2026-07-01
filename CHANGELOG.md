@@ -18,6 +18,20 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Review-pass fixes on the session's changes.** (1) `dayKey` in
+  functions/admin.js mis-parsed Firebase Auth `creationTime` (RFC-1123, not ISO)
+  via `slice(0,10)` → garbage keys that dropped those signups from the trend and
+  mis-sorted the Users table; now parsed through `Date`. (2) `nativeAnalytics()`
+  cached the plugin import promise including its failure branch, so a transient
+  chunk-load failure would memoize `{A:null}` and kill analytics until app
+  restart; now clears the cache + warns on failure so the next call retries.
+  (3) Consolidated the client "stuck try-on" heuristic into `utils/tryonStatus.js`
+  (was a magic number split across GenerationDetail + the server sweep);
+  TryOnHistory now shows a long-`pending` card as failed + deletable, so a
+  regenerated/orphaned try-on isn't an unclearable ghost. (4) Dropped the unused
+  per-load `adminStats` write in `adminOverview` (nothing reads it; the daily
+  snapshot still accumulates history), guarded the empty-corpus infinite spinner,
+  and shortened the sweep's error marker to `'timeout'`.
 - **2026-06-30 · Fix: stuck 'pending' try-ons now recover into a retry.**
   `virtualTryOn` creates the Generation doc at `status:'pending'` and flips it to
   `ready`/`failed` when done — but if the process is killed mid-run (180s timeout

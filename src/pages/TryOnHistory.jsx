@@ -8,6 +8,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { effectiveTryonStatus } from '../utils/tryonStatus.js';
 
 export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
@@ -119,7 +120,10 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
         <div className="tryon-history-grid">
           {visible.map(g => {
             const cover = (g.variantUrls || [])[0];
-            const status = g.status || 'unknown';
+            // A long-'pending' doc reads as failed (shared with GenerationDetail)
+            // so a stuck/orphaned card shows the same state and stays deletable
+            // instead of spinning until the server sweep clears it.
+            const status = effectiveTryonStatus(g);
             return (
               <Link key={g.id} to={`/tryon/${g.id}`} className="tryon-history-card">
                 <div className="tryon-history-cover">

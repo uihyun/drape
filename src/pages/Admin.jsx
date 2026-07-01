@@ -97,7 +97,10 @@ function Overview() {
     AdminService.overview().then((d) => {
       setData(d);
       const axis = d.trends.signups.map((p) => p.day);
-      if (axis.length) setRange({ from: axis[0], to: axis[axis.length - 1] });
+      // Empty corpus → no dated docs → empty axis; still set a range so the
+      // tab renders (empty charts) instead of spinning forever.
+      const today = new Date().toISOString().slice(0, 10);
+      setRange(axis.length ? { from: axis[0], to: axis[axis.length - 1] } : { from: today, to: today });
     }).catch((e) => setErr(e.message || 'failed')).finally(() => setBusy(false));
   };
   useEffect(load, []);
@@ -107,7 +110,7 @@ function Overview() {
 
   const t = data.totals;
   const axis = data.trends.signups.map((p) => p.day);
-  const firstDay = axis[0]; const lastDay = axis[axis.length - 1];
+  const firstDay = axis[0] || range.from; const lastDay = axis[axis.length - 1] || range.to;
   const applyPreset = (days) => {
     if (!days) return setRange({ from: firstDay, to: lastDay });
     const d = new Date(lastDay + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - days + 1);

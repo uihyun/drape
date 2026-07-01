@@ -660,9 +660,11 @@ exports.cleanupStuckTryons = onSchedule('every 30 minutes', async () => {
     .get();
   let flagged = 0;
   for (const docSnap of snap.docs) {
+    // Short technical marker (matches sibling errors like 'item missing') — the
+    // user-facing copy is the localized t('tryOnFailed') + regenerate button.
     await docSnap.ref.update({
       status: 'failed',
-      errors: ['try-on timed out — tap to regenerate'],
+      errors: ['timeout'],
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }).catch(() => {});
     flagged++;
