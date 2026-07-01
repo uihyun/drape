@@ -16,6 +16,10 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+// New SDK ONLY for Pro image generation — it supports imageConfig.imageSize so
+// we can force 2K output (was defaulting to 4K = ~2x the output-token cost, the
+// biggest line on the Gemini bill). Text/vision (tagging) stays on the old SDK.
+const { GoogleGenAI } = require('@google/genai');
 const { removeBackground } = require('@imgly/background-removal-node');
 const sharp = require('sharp');
 const TAXONOMY = require('./taxonomy.js');
@@ -327,13 +331,13 @@ exports.processItem = onCall(
     const mime = 'image/jpeg';
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
+    const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
 
     // ── Crop ───────────────────────────────────────────────────────────
     // Pro model preserves the silhouette far better than Flash for this
     // task. Flash kept reinterpreting long pants as shorts, cropping
     // sleeves, etc. The cost trade-off is worth it for first-impression
     // catalog quality.
-    const cropModel = genai.getGenerativeModel({ model: IMAGE_PRO });
     // IMPORTANT: do NOT ask the image model for a transparent background
     // directly — Nano Banana families re-generate the subject when given
     // "transparent PNG" instructions and sometimes change the garment's
@@ -375,10 +379,20 @@ Place the item centered on a fully white background, occupying ~80%
 of a square frame. Remove the wearer, hangers, mannequin, bed sheets,
 floor, and surrounding scene. This is a faithful catalog cutout, not
 a redesign.`;
-    const cropPromise = cropModel.generateContent([
-      { inlineData: { data: originalB64, mimeType: mime } },
-      { text: cropPrompt + focusClause },
-    ]).catch(err => ({ __error: err }));
+    // 2K output (imageConfig) via the new SDK; response wrapped as { response }
+    // so the downstream extractImage(cropRes.response) path is unchanged.
+    const cropPromise = aiImg.models.generateContent({
+      model: IMAGE_PRO,
+      contents: [
+        { inlineData: { data: originalB64, mimeType: mime } },
+        { text: cropPrompt + focusClause },
+      ],
+      config: { imageConfig: { imageSize: '2K' } },
+    }).then(response => {
+      const u = response?.usageMetadata;
+      if (u) console.info('crop image tokens:', u.candidatesTokenCount, 'total:', u.totalTokenCount);
+      return { response };
+    }).catch(err => ({ __error: err }));
 
     // ── Auto-tag (parallel) ────────────────────────────────────────────
     // CRITICAL: when this call came from the detect-add path (i.e. focus

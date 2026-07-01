@@ -43,6 +43,21 @@ error logs so a given error is attributable to a specific binary.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
+- **2026-07-01 · Cut Gemini image cost ~44%: force 2K output (was 4K).** The
+  Gemini bill spiked (June ~$217, image-output SKU ~$180). Root cause: both
+  Pro-image calls — the **item-registration crop** (`processItem`, 595 real
+  images in June) and **try-on** (107) — passed no resolution config, so
+  `gemini-3-pro-image` defaulted to **4K** ($0.24/img). Dropping to **2K**
+  ($0.134, identical to 1K; 4K→2K ≈ 44% off output) is plenty for a phone
+  (closet thumbnails, 900×1200 try-on) with no silhouette-quality loss.
+  Implementation: the old `@google/generative-ai@0.21` SDK can't set output
+  resolution, so the two image-gen calls now use `@google/genai` with
+  `config.imageConfig.imageSize: '2K'`; text/vision (tagging, analysis,
+  face-blur) stays on the old SDK. Server-only — reaches all platforms on
+  deploy, no app build. Item spike was real users (507 real / 88 dev / 0 seed),
+  not test data. (Deferred: try-on daily quota + credits/invite; Flash-image
+  model for the crop pending a quality test.)
+
 Changes here ship to Cloud Functions or the marketing/web host and reach every
 user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up

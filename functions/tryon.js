@@ -19,6 +19,10 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+// New SDK ONLY for the Pro image generation — supports imageConfig.imageSize so
+// the try-on render is forced to 2K (was 4K default = ~2x output-token cost).
+// Face-blur (Flash vision) stays on the old SDK.
+const { GoogleGenAI } = require('@google/genai');
 const { removeBackground } = require('@imgly/background-removal-node');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
@@ -509,6 +513,7 @@ exports.virtualTryOn = onCall(
     }
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
+    const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
 
     // Outfit-ref: blur the (other person's) face in the look photo so it can't
     // override the user's identity refs. Done before the parts are assembled.
@@ -545,12 +550,16 @@ exports.virtualTryOn = onCall(
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
     ];
-    const model = genai.getGenerativeModel({ model: modelId, safetySettings });
-
     const runs = Array.from({ length: n }, async (_, idx) => {
       try {
-        const res = await model.generateContent(parts);
-        const img = extractImage(res.response);
+        // New SDK + imageConfig 2K; safety + parts carried over unchanged.
+        const res = await aiImg.models.generateContent({
+          model: modelId,
+          contents: parts,
+          config: { safetySettings, imageConfig: { imageSize: '2K' } },
+        });
+        if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
+        const img = extractImage(res);
         if (!img) return { idx, ok: false, error: 'no image returned' };
         const path = `generations/${uid}/${genRef.id}/${idx}.png`;
         // Normalize EVERY variant (except custom-photo) to a fixed 3:4
