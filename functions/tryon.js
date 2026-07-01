@@ -74,7 +74,7 @@ async function blurOutfitFace(buf, genai) {
     });
     const res = await vision.generateContent([
       { inlineData: { data: buf.toString('base64'), mimeType: 'image/jpeg' } },
-      { text: `Return the bounding box of the most prominent human FACE in this photo — forehead to chin, cheek to cheek, the face skin only (NOT the hair, hat, or visor). JSON: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. If no human face is visible, return {"x":null}.` },
+      { text: `Locate the human face in this photo. If several people, pick the largest/most central face. Return a bounding box that covers that face — from the brow/eyes down to the chin, and cheek to cheek. A slightly LOOSE box is fine (a bit of hair/hat/cap edge included is OK); returning a box is far better than returning none. JSON ONLY: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. Return {"x":null} ONLY if there is genuinely NO person/face anywhere in the image (e.g. a flat-lay of clothes with no person).` },
     ]);
     const box = JSON.parse(res.response.text());
     // Diagnostic: distinguish "Flash found no face → source passed UNBLURRED"
