@@ -270,7 +270,10 @@ function UsersTab({ onPick }) {
             <tbody>
               {rows.map((u) => (
                 <tr key={u.uid} className="adm-clickable" onClick={() => onPick(u.uid)}>
-                  <td><strong>{u.handle ? `@${u.handle}` : u.displayName || '(no handle)'}</strong></td>
+                  <td>
+                    <strong>{u.handle ? `@${u.handle}` : '(no handle)'}</strong>
+                    {u.displayName && <div className="adm-muted">{u.displayName}</div>}
+                  </td>
                   <td className="adm-muted">{u.location ? cityDisplay(u.location, 'en') : '—'}</td>
                   <td className="adm-muted">{u.createdAt || '—'}</td>
                   <td className="adm-muted">{u.lastActiveAt || '—'}</td>
