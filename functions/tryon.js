@@ -77,7 +77,12 @@ async function blurOutfitFace(buf, genai) {
       { text: `Return the bounding box of the most prominent human FACE in this photo — forehead to chin, cheek to cheek, the face skin only (NOT the hair, hat, or visor). JSON: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. If no human face is visible, return {"x":null}.` },
     ]);
     const box = JSON.parse(res.response.text());
-    if (!box || box.x == null || box.width == null || box.height == null) return buf;
+    // Diagnostic: distinguish "Flash found no face → source passed UNBLURRED"
+    // (leak risk) from "blur applied". Silent-miss here was invisible before.
+    if (!box || box.x == null || box.width == null || box.height == null) {
+      console.info('outfit-ref blur: NO face box detected → source passed UNBLURRED (face may leak)');
+      return buf;
+    }
     const { width: W, height: H } = await sharp(buf).metadata();
     // Pad ~18% so the jaw/cheek edges (the parts the model leans on) are fully
     // covered even if the box is tight.
@@ -86,11 +91,12 @@ async function blurOutfitFace(buf, genai) {
     let top = Math.max(0, Math.round((box.y - padY) * H));
     let bw = Math.min(W - left, Math.round((box.width + padX * 2) * W));
     let bh = Math.min(H - top, Math.round((box.height + padY * 2) * H));
-    if (bw < 8 || bh < 8) return buf;
+    if (bw < 8 || bh < 8) { console.info('outfit-ref blur: face box too small → UNBLURRED', { bw, bh }); return buf; }
     const region = await sharp(buf)
       .extract({ left, top, width: bw, height: bh })
       .blur(Math.max(12, Math.round(Math.min(bw, bh) / 3)))
       .toBuffer();
+    console.info('outfit-ref blur: APPLIED', { left, top, bw, bh, imgW: W, imgH: H });
     return await sharp(buf).composite([{ input: region, left, top }]).toBuffer();
   } catch (e) {
     console.warn('outfit-ref face blur skipped:', e?.message);
