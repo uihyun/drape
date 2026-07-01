@@ -54,3 +54,12 @@ export const DEFAULT_BOARD_RATIO = 'portrait';
 export function boardRatioCss(key) {
   return (RATIO_BY_KEY[key] || RATIO_BY_KEY.portrait).css;
 }
+
+/** Height-as-%-of-width for the padding-top aspect-box trick. WebKit mis-sizes
+ *  `aspect-ratio` inside CSS multi-column (the board grid), rendering cards at a
+ *  different height than Blink → uneven columns on iPhone but not Chrome. A
+ *  padding-top percentage is honored identically by both engines in multicol. */
+export function boardRatioPad(key) {
+  const [w, h] = boardRatioCss(key).split('/').map(s => parseFloat(s));
+  return `${(h / w) * 100}%`;
+}

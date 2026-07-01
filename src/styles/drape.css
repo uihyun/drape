@@ -611,6 +611,12 @@ body.is-native {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .board-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+/* Padding-top aspect box (not `aspect-ratio`): WebKit mis-sizes aspect-ratio
+   inside the multi-column board grid, so cards render at a different height
+   than Blink → uneven columns on iPhone. padding-top % is honored the same by
+   both engines. The cover fills the box absolutely. */
+.board-ratio-box { position: relative; width: 100%; height: 0; }
+.board-ratio-box > .board-card-cover { position: absolute; inset: 0; aspect-ratio: auto; }
 .board-card-cover {
   aspect-ratio: 3 / 4;
   background: linear-gradient(180deg, #FAFBF7 0%, #F1F4ED 100%);
@@ -2303,7 +2309,8 @@ body.is-native {
   width: 100%;
   border-radius: 16px; /* unified hero radius (was 14) */
   display: block;
-  /* aspect-ratio set inline by BoardThumbnail from the board's own ratio. */
+  /* Height comes from BoardThumbnail's .board-ratio-box (padding-top) — a
+     WebKit-consistent replacement for the old inline aspect-ratio. */
 }
 /* Action overlay — shared by board detail and outfit detail hero images.
    z-index: 1000 ensures these appear above all board stickers/clothing. */

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
-import { boardBgStyle, boardRatioCss } from '../data/boardBackgrounds.js';
+import { boardBgStyle, boardRatioPad } from '../data/boardBackgrounds.js';
 
 // Shared across all thumbnail instances + their re-mounts. Back-navigation
 // re-mounts every card, and without this each one re-fetched its sticker
@@ -71,42 +71,40 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
   // Parent-supplied items win (fresh), self-fetched fill every gap — so a
   // partial itemsById never drops stickers.
   const lookup = { ...(fetched || {}), ...(itemsById || {}) };
-  // Background + the board's own aspect ratio (portrait/square/landscape).
-  const style = { ...boardBgStyle(board?.background), aspectRatio: boardRatioCss(board?.ratio) };
+  const bg = boardBgStyle(board?.background);
+  // The board's ratio drives the card height via a padding-top aspect box (not
+  // `aspect-ratio`) so it renders identically in WebKit + Blink inside the
+  // multi-column grid. The cover fills the box; stickers stay in 0..1 space.
+  const sorted = stickers.length ? [...stickers].sort((a, b) => (a.z || 0) - (b.z || 0)) : [];
 
-  if (stickers.length === 0) {
-    return (
-      <div className={`board-card-cover ${className}`} style={style}>
-        <div className="board-card-cover-empty">◇</div>
-      </div>
-    );
-  }
-
-  const sorted = [...stickers].sort((a, b) => (a.z || 0) - (b.z || 0));
   return (
-    <div className={`board-card-cover board-card-canvas ${className}`} style={style}>
-      {sorted.map((s, i) => {
-        const item = lookup[s.itemId];
-        const cover = item?.croppedUrl || item?.originalUrl;
-        if (!cover) return null;
-        return (
-          <div
-            key={`${s.itemId}-${i}`}
-            className="board-card-sticker"
-            style={{
-              left: `${(s.x || 0.5) * 100}%`,
-              top: `${(s.y || 0.5) * 100}%`,
-              transform: `translate(-50%, -50%) scale(${s.scale || 0.35}) rotate(${s.rotation || 0}deg)`,
-              // Stack by sorted array index (bounded 0..N) instead of the
-              // stored s.z (unbounded — grows every bring-to-front), so a
-              // fixed card overlay z reliably sits above every sticker.
-              zIndex: i + 1,
-            }}
-          >
-            <img src={cover} alt="" referrerPolicy="no-referrer" draggable={false} />
-          </div>
-        );
-      })}
+    <div className="board-ratio-box" style={{ paddingTop: boardRatioPad(board?.ratio) }}>
+      <div className={`board-card-cover ${stickers.length ? 'board-card-canvas ' : ''}${className}`} style={bg}>
+        {stickers.length === 0
+          ? <div className="board-card-cover-empty">◇</div>
+          : sorted.map((s, i) => {
+            const item = lookup[s.itemId];
+            const cover = item?.croppedUrl || item?.originalUrl;
+            if (!cover) return null;
+            return (
+              <div
+                key={`${s.itemId}-${i}`}
+                className="board-card-sticker"
+                style={{
+                  left: `${(s.x || 0.5) * 100}%`,
+                  top: `${(s.y || 0.5) * 100}%`,
+                  transform: `translate(-50%, -50%) scale(${s.scale || 0.35}) rotate(${s.rotation || 0}deg)`,
+                  // Stack by sorted array index (bounded 0..N) instead of the
+                  // stored s.z (unbounded — grows every bring-to-front), so a
+                  // fixed card overlay z reliably sits above every sticker.
+                  zIndex: i + 1,
+                }}
+              >
+                <img src={cover} alt="" referrerPolicy="no-referrer" draggable={false} />
+              </div>
+            );
+          })}
+      </div>
     </div>
   );
 }

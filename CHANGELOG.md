@@ -19,6 +19,14 @@ were silently dropped on iOS/Android since the native-analytics feature
 shipped) and the **stuck-try-on retry UI**. Also stamps the app version onto
 error logs so a given error is attributable to a specific binary.
 
+- **2026-06-30 · Fix: board grid rendered unevenly on iPhone (WebKit) vs Chrome.**
+  Board cards set their height with `aspect-ratio` inside the CSS multi-column
+  masonry grid. WebKit (Safari/iOS) mis-sizes `aspect-ratio` inside multicol, so
+  cards came out a different height than Blink (Chrome) → uneven columns with a
+  floating gap on device but not in the desktop preview. Replaced the inline
+  `aspect-ratio` in BoardThumbnail with a padding-top percentage aspect box
+  (`boardRatioPad` + `.board-ratio-box`), which both engines honor identically in
+  multicol. Masonry + per-board ratios kept; just renders the same everywhere.
 - **2026-06-30 · Swipe navigation on the try-on detail.** GenerationDetail now
   wires `useSwipeNavigate` + `SwipeHint` like OutfitDetail/ItemDetail/BoardDetail
   did — swipe the result hero left/right to move to the prev/next try-on in the
