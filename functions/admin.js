@@ -147,9 +147,13 @@ async function collectAll() {
   const topCount = {};          // itemId -> # of try-ons referencing it
   const itemMeta = {};          // itemId -> { name, croppedUrl, category, userId }
 
+  // Skip ownerless docs everywhere below — a doc with no userId (e.g. a stray
+  // resurrection orphan) would otherwise aggregate under an `undefined` key and
+  // surface as a phantom "(no handle)" user + inflate the try-on "pending" count.
   (await db.collection('items').get()).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
+    if (!uid) return;
     touch(uid).items++;
     itemMeta[d.id] = {
       name: x.name || '',
@@ -166,12 +170,15 @@ async function collectAll() {
   });
 
   (await db.collection('boards').get()).forEach((d) => {
-    touch(d.data().userId).board++;
+    const uid = d.data().userId;
+    if (!uid) return;
+    touch(uid).board++;
   });
 
   (await db.collection('generations').get()).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
+    if (!uid) return;
     touch(uid).tryon++;
     tryon.total++;
     if (x.status === 'ready') tryon.ready++;
@@ -190,6 +197,7 @@ async function collectAll() {
   (await db.collection('outfits').get()).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
+    if (!uid) return;
     const rec = touch(uid);
     rec.outfits++;
     if (x.date) {

@@ -18,6 +18,23 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Fix: background analyzers resurrecting deleted docs (ownerless
+  orphans).** `analyzeGeneration`, `analyzeOotd`, and `processOotdPhoto` wrote
+  their results with `set(patch, { merge: true })`. All three already confirm the
+  doc exists + is owned by the caller up front, but the slow Gemini/segmentation
+  call that follows gives the user time to delete the account/doc — and set-merge
+  on a now-deleted doc RECREATES it with only the analysis fields (no userId /
+  status / createdAt). That produced ownerless orphan docs (7 generations + 1
+  outfit found) which the admin dashboard mis-aggregated into a phantom
+  "(no handle)" user with 7 "pending" try-ons (they have no `status`, so
+  cleanupStuckTryons — which targets `status=='pending'` — correctly never
+  touched them). Switched all three writes to `update()` so a doc deleted
+  mid-analysis stays deleted (the surrounding catch swallows the NOT_FOUND).
+  Deleted the 8 existing orphans. Hardened `collectAll` in functions/admin.js to
+  skip any userId-less doc so a stray orphan can't create a phantom row or inflate
+  the pending count again. `deleteAccount` itself was never at fault — it deletes
+  generations/outfits/items/etc. by userId thoroughly. Also added a **last-active
+  column** to the admin Users table.
 - **2026-06-30 · Admin: region breakdown + following count in the Users tab.**
   `adminUsers` now returns each user's `location` (raw city id) and
   `followingCount` alongside the existing follower count. The Users tab adds a

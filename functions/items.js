@@ -713,10 +713,11 @@ exports.analyzeOotd = onCall(
         analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
-      // set(merge:true) tolerates a transient "doc not yet visible" race
-      // — admin update() throws NOT_FOUND in that window even though the
-      // client's setDoc resolved (eventual consistency between regions).
-      await ootdRef.set(patch, { merge: true });
+      // update() (not set-merge): existence was confirmed by the get() above,
+      // so this writes only if the doc still exists. If the user deleted the
+      // OOTD during the slow Gemini call, update throws NOT_FOUND and we skip —
+      // set-merge would resurrect it as an ownerless orphan.
+      await ootdRef.update(patch);
       return { ok: true, ...patch, analyzedAt: undefined, updatedAt: undefined };
     } catch (err) {
       console.warn('analyzeOotd failed:', err?.message);
@@ -778,7 +779,11 @@ exports.analyzeGeneration = onCall(
       // No auto-title — try-ons/outfits aren't titled anymore (date +
       // tag search replace it). The analysis prompt may still return a
       // title; we just ignore it.
-      await genRef.set(patch, { merge: true });
+      // update() (not set-merge): existence was confirmed above, so this only
+      // writes if the doc STILL exists. If the user deleted it during the slow
+      // Gemini call, update throws NOT_FOUND and we skip — set-merge would
+      // resurrect the doc as an ownerless orphan.
+      await genRef.update(patch);
       return { ok: true };
     } catch (err) {
       console.warn('analyzeGeneration failed:', err?.message);
@@ -894,30 +899,31 @@ exports.processOotdPhoto = onCall(
         console.warn('processOotdPhoto mask out of range:', ratio.toFixed(3));
         // No usable cutout — mark done so the calendar stops the spinner and
         // shows the original (with-background) photo as the final look.
-        await ootdRef.set({
+        // update() not set-merge — don't resurrect an OOTD deleted mid-process.
+        await ootdRef.update({
           photoCutStatus: 'none',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+        });
       } else {
         croppedPath = ootd.photoPath
           ? ootd.photoPath.replace(/\.(jpg|jpeg|png)$/i, `-cut-${Date.now()}.png`)
           : `ootds/${uid}/${ootd.date}-cut-${Date.now()}.png`;
         croppedUrl = await uploadAlphaPng(bucket, croppedPath, cutout);
-        await ootdRef.set({
+        await ootdRef.update({
           photoCutUrl: croppedUrl,
           photoCutPath: croppedPath,
           photoCutStatus: 'ready',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+        });
       }
     } catch (err) {
       console.warn('processOotdPhoto failed:', err?.message);
       // Failure also ends the spinner — fall back to the original photo.
       try {
-        await ootdRef.set({
+        await ootdRef.update({
           photoCutStatus: 'none',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+        });
       } catch { /* ignore */ }
     }
     return { ok: !!croppedUrl, url: croppedUrl, path: croppedPath };
