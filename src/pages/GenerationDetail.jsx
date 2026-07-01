@@ -9,6 +9,12 @@ import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { Comments } from '../components/Comments.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
+// A try-on still 'pending' this long past creation is stuck (the function's
+// hard ceiling is 180s). Show the retry UI immediately instead of spinning
+// forever; the server sweep (cleanupStuckTryons) flips the doc to 'failed'
+// authoritatively, but this covers the user staring at it right now.
+const STUCK_TRYON_MS = 5 * 60 * 1000;
+
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
   if (!hex || hex[0] !== '#' || hex.length < 7) return '#111';
@@ -30,6 +36,7 @@ export function GenerationDetail({ user }) {
   const [regenerating, setRegenerating] = useState(false);
   const [items, setItems] = useState([]);
   const [sourceOutfit, setSourceOutfit] = useState(null);
+  const [, setStuckTick] = useState(0); // forces a re-render when a watched pending crosses the stuck threshold
 
   useEffect(() => {
     if (!generationId) return;
@@ -82,10 +89,28 @@ export function GenerationDetail({ user }) {
     return () => { cancelled = true; };
   }, [gen?.outfitRefId]);
 
+  // If we're watching a pending try-on, schedule a re-render at the stuck
+  // threshold so it flips to the retry UI without needing a doc update.
+  const createdMs = gen?.createdAt?.toDate?.()?.getTime?.()
+    || (gen?.createdAt ? new Date(gen.createdAt).getTime() : 0);
+  useEffect(() => {
+    if (gen?.status !== 'pending' || !createdMs) return;
+    const remaining = STUCK_TRYON_MS - (Date.now() - createdMs);
+    if (remaining <= 0) return;
+    const id = setTimeout(() => setStuckTick(n => n + 1), remaining + 500);
+    return () => clearTimeout(id);
+  }, [gen?.status, createdMs]);
+
   if (!gen) return <div className="loading"><div className="spinner" /></div>;
   if (user && gen.userId !== user.uid) {
     return <div className="empty-state"><p>{t('notFound')}</p></div>;
   }
+
+  // Treat a long-stuck 'pending' as failed so the user gets a retry button
+  // instead of an eternal spinner.
+  const stuckPending = gen.status === 'pending' && createdMs && (Date.now() - createdMs > STUCK_TRYON_MS);
+  const showPending = gen.status === 'pending' && !stuckPending;
+  const showFailed = gen.status === 'failed' || stuckPending;
 
   // Tapped-in detail shows when the try-on was made (the card grid stays clean
   // — no date there). Same format/treatment as a dated outfit.
@@ -152,11 +177,11 @@ export function GenerationDetail({ user }) {
       {dateLabel && <div className="outfit-date">{dateLabel}</div>}
       <h1 className="page-h1">{t('tryOnResult')}</h1>
 
-      {gen.status === 'pending' && (
+      {showPending && (
         <div className="loading"><div className="spinner" /></div>
       )}
 
-      {gen.status === 'failed' && (
+      {showFailed && (
         <div className="empty-state empty-state-card">
           <p>{t('tryOnFailed')}</p>
           {gen.errors?.length > 0 && (

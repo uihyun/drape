@@ -16,6 +16,7 @@
 const admin = require('firebase-admin');
 const sharp = require('sharp');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { removeBackground } = require('@imgly/background-removal-node');
@@ -635,3 +636,36 @@ exports.virtualTryOn = onCall(
     return { generationId: genRef.id, variantUrls };
   }
 );
+
+// ── cleanupStuckTryons ─────────────────────────────────────────────────
+// virtualTryOn creates the Generation doc at status:'pending' up front, then
+// flips it to 'ready'/'failed' when done. If the process is killed mid-run
+// (180s timeout / OOM / crash) it can't write the terminal status, so the doc
+// spins 'pending' forever and the user is stuck on a spinner with no retry.
+// Unlike items, the client can't self-heal here — the function owns the doc id
+// and only returns it on success — so this sweep is the primary recovery.
+//
+// Anything still 'pending' well past the 180s function ceiling is dead. Flip it
+// to 'failed' so GenerationDetail shows the regenerate button. Indexed by
+// status+createdAt (firestore.indexes.json) so it reads only genuinely-stuck
+// docs, not every in-flight run.
+const STUCK_TRYON_TTL_MS = 15 * 60 * 1000;
+
+exports.cleanupStuckTryons = onSchedule('every 30 minutes', async () => {
+  const db = admin.firestore();
+  const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - STUCK_TRYON_TTL_MS);
+  const snap = await db.collection('generations')
+    .where('status', '==', 'pending')
+    .where('createdAt', '<=', cutoff)
+    .get();
+  let flagged = 0;
+  for (const docSnap of snap.docs) {
+    await docSnap.ref.update({
+      status: 'failed',
+      errors: ['try-on timed out — tap to regenerate'],
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }).catch(() => {});
+    flagged++;
+  }
+  if (flagged) console.info(`cleanupStuckTryons: flagged ${flagged} stuck try-on(s) as failed`);
+});

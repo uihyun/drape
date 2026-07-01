@@ -18,6 +18,23 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Fix: stuck 'pending' try-ons now recover into a retry.**
+  `virtualTryOn` creates the Generation doc at `status:'pending'` and flips it to
+  `ready`/`failed` when done — but if the process is killed mid-run (180s timeout
+  / OOM / crash) it can't write the terminal status, so the doc span `pending`
+  forever and GenerationDetail showed an eternal spinner with no way out. Unlike
+  items, the client can't self-heal (the function owns the doc id and only returns
+  it on success). Two-part fix: (1) new `cleanupStuckTryons` scheduled sweep
+  (every 30 min) flips any generation still `pending` >15 min past creation to
+  `failed` with "try-on timed out — tap to regenerate" (indexed on
+  status+createdAt, new composite index, so it reads only stuck docs); (2)
+  GenerationDetail treats a `pending` doc older than 5 min as failed client-side
+  (with a timer for one being watched live) so the regenerate/delete UI appears
+  immediately instead of spinning. No new locale keys (reuses tryOnFailed/
+  regenerate). Also triaged the errorLogs "X is not defined" / useLocale-null
+  cluster: all clustered on past deploy dates with zero in the last 24h — they're
+  transient post-deploy stale-chunk errors that self-heal on refresh, not live
+  bugs (the sole recent one, `TrendCard`, came from this session's admin redeploys).
 - **2026-06-30 · Fix: native analytics silently broken + flooding errorLogs.**
   On native iOS every analytics call (`logEvent`/`setUserId`/`setUserProp`/
   `logScreen`) was a no-op AND logged an unhandled rejection: `nativeAnalytics()`

@@ -111,6 +111,7 @@ exports.onLookTriedOn = socialFns.onLookTriedOn;
 // ── Virtual try-on ─────────────────────────────────────────────────────
 const tryonFns = require('./tryon.js');
 exports.virtualTryOn = tryonFns.virtualTryOn;
+exports.cleanupStuckTryons = tryonFns.cleanupStuckTryons;
 
 // ── Moderation triggers ────────────────────────────────────────────────
 const moderationFns = require('./moderation.js');
