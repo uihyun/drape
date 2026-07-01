@@ -63,3 +63,11 @@ export function boardRatioPad(key) {
   const [w, h] = boardRatioCss(key).split('/').map(s => parseFloat(s));
   return `${(h / w) * 100}%`;
 }
+
+/** Relative card height (height ÷ width) for a ratio key — used by the board
+ *  grid's JS masonry to place each card in the currently-shortest column.
+ *  portrait→1.333, square→1, landscape→0.75. */
+export function boardRatioWeight(key) {
+  const [w, h] = boardRatioCss(key).split('/').map(s => parseFloat(s));
+  return h / w;
+}

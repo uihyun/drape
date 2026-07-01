@@ -4,6 +4,7 @@ import { Plus, SlidersHorizontal, Lock } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { boardRatioWeight } from '../data/boardBackgrounds.js';
 import {
   LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
 } from '../components/LookFilterSheet.jsx';
@@ -117,6 +118,23 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     list = list.filter(boardMatchesFilters);
   }
 
+  // JS masonry: place each board into the currently-shortest column. CSS
+  // `columns` balancing is engine-dependent (WebKit ≠ Blink), so it laid boards
+  // out differently on iPhone vs desktop; explicit JS columns are deterministic
+  // everywhere. Height weight = ratio (h/w) + a small constant for the card's
+  // name/border chrome. `i` stays the index into `list` so swipe order is preserved.
+  const boardColumns = useMemo(() => {
+    const columns = Array.from({ length: cols }, () => ({ items: [], h: 0 }));
+    (list || []).forEach((b, i) => {
+      let c = 0;
+      for (let k = 1; k < cols; k++) if (columns[k].h < columns[c].h) c = k;
+      columns[c].items.push({ b, i });
+      columns[c].h += boardRatioWeight(b?.ratio) + 0.18;
+    });
+    return columns;
+  }, [list, cols]);
+  const listIds = useMemo(() => (list || []).map((x) => x.id), [list]);
+
   return (
     <div className={embedded ? '' : 'page'}>
       {!embedded && (
@@ -177,23 +195,27 @@ export function BoardList({ user, onSignIn, embedded = false }) {
       ) : (
         <div
           ref={gridRef}
-          className="board-list-grid pinch-grid"
-          style={{ columns: cols }}
+          className="board-masonry pinch-grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
-          {list.map((b, i) => (
-            <Link key={b.id} to={`/boards/${b.id}`} state={buildSwipeState(list.map(x => x.id), i, 'board')} className="board-card">
-              <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
-              {tab === 'mine' && !b.isPublic && (
-                <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>
-                  <Lock size={12} strokeWidth={2.2} />
-                </span>
-              )}
-              {b.name && (
-                <div className="ootd-card-overlay">
-                  <h3 className="ootd-card-title">{b.name}</h3>
-                </div>
-              )}
-            </Link>
+          {boardColumns.map((col, ci) => (
+            <div className="board-masonry-col" key={ci}>
+              {col.items.map(({ b, i }) => (
+                <Link key={b.id} to={`/boards/${b.id}`} state={buildSwipeState(listIds, i, 'board')} className="board-card">
+                  <BoardThumbnail board={b} itemsById={tab === 'mine' ? itemsById : undefined} />
+                  {tab === 'mine' && !b.isPublic && (
+                    <span className="card-private-badge" title={t('privateBadge')} aria-label={t('privateBadge')}>
+                      <Lock size={12} strokeWidth={2.2} />
+                    </span>
+                  )}
+                  {b.name && (
+                    <div className="ootd-card-overlay">
+                      <h3 className="ootd-card-title">{b.name}</h3>
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
           ))}
         </div>
       )}
