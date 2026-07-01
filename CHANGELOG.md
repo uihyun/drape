@@ -11,6 +11,20 @@ Conventions:
 
 ---
 
+## 1.2.2 (Android versionCode 14 · iOS build 11) — native release in progress
+
+Bundles the native-only fixes that web already has: **native analytics
+actually recording** (the `FirebaseAnalytics.then` no-op fix — custom events
+were silently dropped on iOS/Android since the native-analytics feature
+shipped) and the **stuck-try-on retry UI**. Also stamps the app version onto
+error logs so a given error is attributable to a specific binary.
+
+- **2026-06-30 · errorLogs now record the app version.** `logError` (ai-service)
+  attaches `appVersion` — the native binary's `App.getInfo()` version+build (e.g.
+  "1.2.2(11)") or "web". Surfaced in the admin Errors tab (`v… ·` prefix). Lets us
+  tell which build an error came from — needed to confirm the native analytics fix
+  actually landed (a 1.2.1 binary keeps erroring; a 1.2.2 binary shouldn't).
+
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
 Changes here ship to Cloud Functions or the marketing/web host and reach every

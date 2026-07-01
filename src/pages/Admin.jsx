@@ -376,7 +376,7 @@ function ErrorsTab() {
             <strong>{r.message || '(no message)'}</strong>
             <span className="adm-muted">{r.createdAt ? new Date(r.createdAt).toLocaleString() : '—'}</span>
           </div>
-          <div className="adm-muted adm-errmeta">{r.url || ''} {r.userId ? `· uid ${r.userId.slice(0, 8)}` : ''}</div>
+          <div className="adm-muted adm-errmeta">{r.appVersion ? `v${r.appVersion} · ` : ''}{r.url || ''} {r.userId ? `· uid ${r.userId.slice(0, 8)}` : ''}</div>
           {open === r.id && (
             <pre className="adm-errstack">{r.stack || '(no stack)'}{r.context ? `\n\ncontext: ${JSON.stringify(r.context, null, 2)}` : ''}{r.userAgent ? `\n\nUA: ${r.userAgent}` : ''}</pre>
           )}

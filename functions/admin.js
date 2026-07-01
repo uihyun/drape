@@ -379,6 +379,7 @@ exports.adminErrors = onCall(opts, async (request) => {
       stack: x.stack || '',
       context: x.context || null,
       userId: x.userId || null,
+      appVersion: x.appVersion || '',
       url: x.url || '',
       userAgent: x.userAgent || '',
       createdAt: x.createdAt?.toDate ? x.createdAt.toDate().toISOString() : null,
