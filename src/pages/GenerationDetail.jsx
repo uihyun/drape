@@ -8,6 +8,8 @@ import { OutfitService } from '../services/outfit-service.js';
 import { STUCK_TRYON_MS, tryonCreatedMs, effectiveTryonStatus } from '../utils/tryonStatus.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { Comments } from '../components/Comments.jsx';
+import { SwipeHint } from '../components/SwipeHint.jsx';
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Pick readable ink for a palette swatch background.
@@ -27,6 +29,7 @@ export function GenerationDetail({ user }) {
   const { t } = useLocale();
   const { generationId } = useParams();
   const navigate = useNavigate();
+  const swipe = useSwipeNavigate(); // swipe hero left/right → prev/next try-on in the list you came from
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
   const [items, setItems] = useState([]);
@@ -195,13 +198,18 @@ export function GenerationDetail({ user }) {
 
       {gen.status === 'ready' && (
         <>
-          <div className={`variants-grid${(gen.variantUrls || []).length === 1 ? ' single' : ''}`}>
+          <div
+            className={`variants-grid${(gen.variantUrls || []).length === 1 ? ' single' : ''}`}
+            {...swipe.bind}
+            style={swipe.style}
+          >
             {(gen.variantUrls || []).map((url, i) => (
               <div key={i} className={`variant${gen.scene ? ' variant--scene' : ''}`}>
                 <img src={url} alt={`variant ${i + 1}`} loading="lazy" />
               </div>
             ))}
           </div>
+          {swipe.swipeable && <SwipeHint />}
 
           {/* Analysis source: item/custom try-ons get their own async read
               (calm "analyzing" placeholder while it loads); outfit-ref

@@ -9,6 +9,7 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { effectiveTryonStatus } from '../utils/tryonStatus.js';
+import { buildSwipeState } from '../services/swipeNav.js';
 
 export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const { t } = useLocale();
@@ -118,14 +119,19 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
         </div>
       ) : (
         <div className="tryon-history-grid">
-          {visible.map(g => {
+          {visible.map((g, i) => {
             const cover = (g.variantUrls || [])[0];
             // A long-'pending' doc reads as failed (shared with GenerationDetail)
             // so a stuck/orphaned card shows the same state and stays deletable
             // instead of spinning until the server sweep clears it.
             const status = effectiveTryonStatus(g);
             return (
-              <Link key={g.id} to={`/tryon/${g.id}`} className="tryon-history-card">
+              <Link
+                key={g.id}
+                to={`/tryon/${g.id}`}
+                state={buildSwipeState(visible.map((x) => x.id), i, 'tryon')}
+                className="tryon-history-card"
+              >
                 <div className="tryon-history-cover">
                   {cover
                     ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" />

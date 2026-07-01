@@ -19,6 +19,11 @@ were silently dropped on iOS/Android since the native-analytics feature
 shipped) and the **stuck-try-on retry UI**. Also stamps the app version onto
 error logs so a given error is attributable to a specific binary.
 
+- **2026-06-30 · Swipe navigation on the try-on detail.** GenerationDetail now
+  wires `useSwipeNavigate` + `SwipeHint` like OutfitDetail/ItemDetail/BoardDetail
+  did — swipe the result hero left/right to move to the prev/next try-on in the
+  list you came from. TryOnHistory cards pass the sibling ids via
+  `buildSwipeState(..., 'tryon')` (the `tryon` route was already in SWIPE_ROUTES).
 - **2026-06-30 · errorLogs now record the app version.** `logError` (ai-service)
   attaches `appVersion` — the native binary's `App.getInfo()` version+build (e.g.
   "1.2.2(11)") or "web". Surfaced in the admin Errors tab (`v… ·` prefix). Lets us
