@@ -18,6 +18,15 @@ user immediately, independent of the installed app version. They are **not** a
 new app release — the submitted app (1.1.1) keeps working and picks these up
 automatically. Listed newest first, by date.
 
+- **2026-06-30 · Unit tests for the pure helpers (4 → 38).** Extracted the
+  firebase-free aggregation helpers from `functions/admin.js` into
+  `functions/admin-helpers.js` (classify / dayKey / buildTrends / summarizeBuckets
+  — behavior unchanged) so they're unit-testable, and added `tests/admin-helpers
+  .test.js`, `tests/tryon-status.test.js`, `tests/currency.test.js`. Covers the
+  cases that bit us this session — notably `dayKey` parsing Auth's RFC-1123
+  `creationTime` and the `effectiveTryonStatus` 5-min boundary. `scripts/check.mjs`
+  now runs the whole unit suite (all of `tests/` except the emulator-only
+  firestore-rules suite) instead of just bulk-add.
 - **2026-06-30 · Fix: background analyzers resurrecting deleted docs (ownerless
   orphans).** `analyzeGeneration`, `analyzeOotd`, and `processOotdPhoto` wrote
   their results with `set(patch, { merge: true })`. All three already confirm the

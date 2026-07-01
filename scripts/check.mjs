@@ -167,7 +167,9 @@ function checkBuild() {
 function checkUnitTests() {
   if (FAST) { record('unit tests', 'WARN', 'skipped (--fast)'); return; }
   try {
-    const out = sh('npx vitest run tests/bulk-add.test.js', { stdio: ['ignore', 'pipe', 'pipe'] });
+    // All unit tests EXCEPT the Firestore-rules suite, which needs the
+    // emulator (Java) — that runs separately via `npm run test:rules`.
+    const out = sh("npx vitest run tests/ --exclude '**/firestore-rules.test.js'", { stdio: ['ignore', 'pipe', 'pipe'] });
     const m = out.match(/Tests\s+(\d+) passed/);
     record('unit tests', 'PASS', m ? `${m[1]} passed` : 'ok');
   } catch (e) {
