@@ -72,15 +72,23 @@ async function blurOutfitFace(buf, genai) {
       model: 'gemini-3.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
-    const res = await vision.generateContent([
-      { inlineData: { data: buf.toString('base64'), mimeType: 'image/jpeg' } },
-      { text: `Locate the human face in this photo. If several people, pick the largest/most central face. Return a bounding box that covers that face — from the brow/eyes down to the chin, and cheek to cheek. A slightly LOOSE box is fine (a bit of hair/hat/cap edge included is OK); returning a box is far better than returning none. JSON ONLY: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. Return {"x":null} ONLY if there is genuinely NO person/face anywhere in the image (e.g. a flat-lay of clothes with no person).` },
-    ]);
-    const box = JSON.parse(res.response.text());
-    // Diagnostic: distinguish "Flash found no face → source passed UNBLURRED"
-    // (leak risk) from "blur applied". Silent-miss here was invisible before.
+    const detectPrompt = `Locate the human face in this photo. If several people, pick the largest/most central face. Return a bounding box that covers that face — from the brow/eyes down to the chin, and cheek to cheek. A slightly LOOSE box is fine (a bit of hair/hat/cap edge included is OK); returning a box is far better than returning none. JSON ONLY: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. Return {"x":null} ONLY if there is genuinely NO person/face anywhere in the image (e.g. a flat-lay of clothes with no person).`;
+    const imgPart = { inlineData: { data: buf.toString('base64'), mimeType: 'image/jpeg' } };
+    // Flash intermittently returns {x:null} on a clearly-visible face (esp. a
+    // smaller/cap-covered one) — a silent miss let the source face leak into the
+    // try-on. Retry once before giving up; log every attempt (survives log drops).
+    let box = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await vision.generateContent([imgPart, { text: detectPrompt }]);
+        box = JSON.parse(res.response.text());
+      } catch { box = null; }
+      const ok = box && box.x != null && box.width != null && box.height != null;
+      console.info(`outfit-ref blur: face detect attempt ${attempt} → ${ok ? 'BOX FOUND' : 'no box'}`);
+      if (ok) break;
+    }
     if (!box || box.x == null || box.width == null || box.height == null) {
-      console.info('outfit-ref blur: NO face box detected → source passed UNBLURRED (face may leak)');
+      console.info('outfit-ref blur: NO face box after retries → source UNBLURRED (face may leak)');
       return buf;
     }
     const { width: W, height: H } = await sharp(buf).metadata();
@@ -524,6 +532,7 @@ exports.virtualTryOn = onCall(
     // Outfit-ref: blur the (other person's) face in the look photo so it can't
     // override the user's identity refs. Done before the parts are assembled.
     if (isOutfitRef && outfitRefPart) {
+      console.info('outfit-ref: neutralizing source face before generation');
       const rawBuf = Buffer.from(outfitRefPart.inlineData.data, 'base64');
       const blurred = await blurOutfitFace(rawBuf, genai);
       outfitRefPart = { inlineData: { data: blurred.toString('base64'), mimeType: 'image/jpeg' } };
