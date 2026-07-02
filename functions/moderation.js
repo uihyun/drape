@@ -13,11 +13,17 @@
 // doesn't sit on the feed unattended.
 
 const { onDocumentUpdated, onDocumentCreated } = require('firebase-functions/v2/firestore');
-const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Image SFW moderation uses Cloud Vision SAFE_SEARCH_DETECTION (purpose-built
+// NSFW scoring) instead of a Gemini yes/no — cheaper, more reliable, and
+// service-account/ADC auth (no key, no GEMINI secret). See docs/COST.md.
+const vision = require('@google-cloud/vision');
 
-const geminiApiKey = defineSecret('GEMINI_API_KEY');
+let _visionClient = null;
+function visionClient() {
+  if (!_visionClient) _visionClient = new vision.ImageAnnotatorClient();
+  return _visionClient;
+}
 
 const AUTO_UNLIST_THRESHOLD = 3;
 
@@ -58,35 +64,25 @@ async function fetchImageAsBase64(url) {
   }
 }
 
-async function runSfwCheck(imagePart) {
-  const apiKey = geminiApiKey.value();
-  if (!apiKey) {
-    console.warn('moderation: GEMINI_API_KEY not set, skipping SFW check');
-    return null;
-  }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
-  const prompt =
-    'You are a moderator for a public fashion/outfit-sharing community feed. ' +
-    'Look at the attached image and reply with exactly one line: ' +
-    '`SAFE` if the image is an ordinary clothing / outfit / person-in-clothing ' +
-    'photo appropriate for all ages, or `UNSAFE: <short reason>` if it contains ' +
-    'nudity, sexual content, graphic violence, hateful imagery, or other content ' +
-    'inappropriate for a public feed. Do not explain further.';
+// Cloud Vision SafeSearch returns a likelihood per category (VERY_UNLIKELY …
+// VERY_LIKELY). Flag clearly-inappropriate covers. Keep the `racy` bar high
+// (VERY_LIKELY only) so ordinary fashion — swimwear, fitted looks, which score
+// POSSIBLE/LIKELY racy — isn't false-flagged. (SafeSearch has no "hate" category;
+// the text blocklist + reports cover that.) Returns null on infra error so we
+// fail OPEN (don't auto-unlist legit content on a transient failure).
+const HIGH = new Set(['LIKELY', 'VERY_LIKELY']);
+async function runSfwCheck(img) {
   try {
-    const result = await model.generateContent([prompt, imagePart]);
-    const text = (result.response?.text() || '').trim();
-    if (/^safe\b/i.test(text)) return { safe: true };
-    if (/^unsafe\b/i.test(text)) {
-      return { safe: false, reason: text.replace(/^unsafe:?\s*/i, '').slice(0, 200) || 'flagged' };
-    }
-    console.warn('moderation: ambiguous SFW response:', text.slice(0, 120));
+    const [result] = await visionClient().safeSearchDetection({ image: { content: img.data } });
+    const s = result.safeSearchAnnotation || {};
+    const reasons = [];
+    if (HIGH.has(s.adult)) reasons.push(`adult:${s.adult}`);
+    if (HIGH.has(s.violence)) reasons.push(`violence:${s.violence}`);
+    if (s.racy === 'VERY_LIKELY') reasons.push(`racy:${s.racy}`);
+    if (reasons.length) return { safe: false, reason: reasons.join(',').slice(0, 200) };
     return { safe: true };
   } catch (err) {
-    if (err.message?.toLowerCase().includes('safety') || err.message?.toLowerCase().includes('blocked')) {
-      return { safe: false, reason: 'safety_filter' };
-    }
-    console.warn('moderation: SFW check failed:', err.message);
+    console.warn('moderation: SafeSearch failed:', err.message);
     return null;
   }
 }
@@ -94,7 +90,6 @@ async function runSfwCheck(imagePart) {
 exports.onOutfitListed = onDocumentUpdated(
   {
     document: 'outfits/{outfitId}',
-    secrets: [geminiApiKey],
     timeoutSeconds: 60,
   },
   async (event) => {
@@ -111,7 +106,7 @@ exports.onOutfitListed = onDocumentUpdated(
     const img = await fetchImageAsBase64(coverUrl);
     if (!img) return;
 
-    const verdict = await runSfwCheck({ inlineData: img });
+    const verdict = await runSfwCheck(img);
     if (!verdict || verdict.safe) return;
 
     console.warn(`moderation: auto-unlisting outfit ${outfitId} (${verdict.reason})`);
