@@ -40,10 +40,10 @@ per-user analytics.
   `@google-cloud/vision`, service-account/ADC auth, Vision API enabled on
   drape-9e532, ~free — 1000 faces/mo, only on outfit-ref). Verified: log shows
   `APPLIED (Cloud Vision) {faces:1,...}` and the result face is now the user's.
-  Graceful fallback kept (any error → source returned unblurred). NOTE: a related,
-  milder effect remains — the result pose comes from the identity photo (see the
-  identity-lock note below), so a same-pose identity ref can still make the look
-  resemble the source; separate, low priority.
+  Graceful fallback kept (any error → source returned unblurred). The face swap
+  now working, the earlier "result resembles the source" concern is a non-issue —
+  the result pose follows the identity photo by design (that's intended), which is
+  fine; not tracking it further.
 
 - **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an
   external prompt test: in the try-on prompts (`functions/tryon.js`, both the

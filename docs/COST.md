@@ -60,6 +60,32 @@ Implementation:
 - **Flex/Batch for the item crop.** Crop is already background — Flex 2K ($0.067) would halve item cost again if 1–15 min "pretty crop appears late" is acceptable.
 - **Skip Pro when the source is already clean.** Retailer/wishlist photos are often already front-on catalog shots; a cheap Flash classify → @imgly cutout for those, Pro reshape only for worn/messy photos.
 
+## Purpose-built APIs vs Gemini (cheaper + often more reliable)
+
+Where a task is a narrow, well-defined vision problem, a purpose-built Google API
+beats asking a Gemini LLM — cheaper, more reliable, and it reuses the same GCP
+project (service-account/ADC auth, no key). Rule of thumb: **LLM only when the
+task needs the fashion taxonomy / free-text reasoning; otherwise a dedicated API.**
+
+- **DONE — outfit-ref face detection → Cloud Vision `FACE_DETECTION`** (2026-07-01).
+  Flash returned unreliable bounding boxes (silent `{x:null}` on clear faces → face
+  leak). Cloud Vision is a real detector. ~free (1000/mo), only on outfit-ref.
+- **CANDIDATE — image moderation → Cloud Vision `SAFE_SEARCH_DETECTION`.**
+  `functions/moderation.js` `runSfwCheck` currently asks `gemini-3.5-flash`
+  SAFE/UNSAFE on a listing's cover image. SafeSearch is purpose-built NSFW scoring
+  (adult/violence/racy/…), cheaper + more reliable, same free tier, runs only on
+  listing. Map LIKELY/VERY_LIKELY → unsafe. (Text moderation — captions/prompts —
+  stays: `checkCustomCommand` keyword list + LLM if needed.)
+- **KEEP on Gemini (needs the LLM):** item **tagging** (closed fashion taxonomy:
+  category/subcategory/colors/seasons/styles/fit/brand/description — Vision only
+  gives generic labels) and OOTD/generation **analysis** (style/notes/pieces).
+  Already the cheap Flash tier. Dominant colors *could* come from Vision
+  `IMAGE_PROPERTIES` but not worth splitting.
+- **MARGINAL — translation → Cloud Translation API** (cheaper per char) but it's
+  on-demand + cached, so it rarely runs; low priority.
+- **Image generation** (item crop, try-on) has no cheaper same-quality option; the
+  only lever is the Flash-image-model quality test (see Deferred levers).
+
 ## Monitoring
 
 After a change, watch the GCP billing report → Gemini API → SKU "Generate_content image output token count for Gemini 3 Pro Image" for 2–3 days; per-image output cost should drop to the 2K tier. Function logs (`crop image tokens` / `tryon image tokens`) show per-call output tokens (~1120 = 2K, ~2000 = 4K).

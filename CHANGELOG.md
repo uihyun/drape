@@ -43,6 +43,18 @@ error logs so a given error is attributable to a specific binary.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
+- **2026-07-01 · Fix: outfit-ref try-on leaked the source person's face → Cloud
+  Vision.** In outfit-ref mode the result kept the source face instead of the
+  user's. `blurOutfitFace` asked `gemini-3.5-flash` for the face bounding box, but
+  Flash repeatedly returned `{x:null}` on clearly-visible faces (confirmed in
+  logs) → source passed UNBLURRED → the model copied its face. Flash's bbox output
+  is inherently unreliable and prompt-tuning didn't help. Replaced it with **Google
+  Cloud Vision `FACE_DETECTION`** (`@google-cloud/vision`, service-account/ADC auth
+  — no key; Vision API enabled on drape-9e532). Reliable pixel-coordinate boxes;
+  verified `APPLIED (Cloud Vision) {faces:1}` + the result face is now the user's.
+  Only runs on outfit-ref; ~free (1000 faces/mo). Graceful fallback kept (any error
+  → source unblurred). Removed the now-unused `@google/generative-ai` client from
+  tryon.js. See `docs/COST.md` for the broader "purpose-built API vs Gemini" note.
 - **2026-07-01 · Cut Gemini image cost ~44%: force 2K output (was 4K).** The
   Gemini bill spiked (June ~$217, image-output SKU ~$180). Root cause: both
   Pro-image calls — the **item-registration crop** (`processItem`, 595 real
