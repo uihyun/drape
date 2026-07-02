@@ -435,6 +435,17 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ── In-app notifications (profile bell) ────────────────────────────
+    // Written only by Cloud Functions (admin SDK) from the social triggers.
+    // The owner reads them, may flip `read`, and may delete (dismiss).
+    match /notifications/{uid}/items/{itemId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if false;
+    }
+
     // ── Error logs ─────────────────────────────────────────────────────
     match /errorLogs/{logId} {
       allow create: if true;

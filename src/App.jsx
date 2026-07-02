@@ -67,6 +67,7 @@ const GenerationDetail = page(() => import('./pages/GenerationDetail.jsx'), 'Gen
 const Feed = page(() => import('./pages/Feed.jsx'), 'Feed');
 const Marketplace = page(() => import('./pages/Marketplace.jsx'), 'Marketplace');
 const Inbox = page(() => import('./pages/Inbox.jsx'), 'Inbox');
+const Notifications = page(() => import('./pages/Notifications.jsx'), 'Notifications');
 const Thread = page(() => import('./pages/Thread.jsx'), 'Thread');
 const Settings = page(() => import('./pages/Settings.jsx'), 'Settings');
 const Privacy = page(() => import('./pages/Privacy.jsx'), 'Privacy');
@@ -394,6 +395,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
           <Route path="/market" element={<Marketplace />} />
           <Route path="/messages" element={<Inbox user={user} />} />
+          <Route path="/notifications" element={<Notifications user={user} onSignIn={handleSignIn} />} />
           <Route path="/messages/:threadId" element={<Thread user={user} />} />
           {/* Unified: an OOTD is just a dated outfit. Old /ootd/:id links
               redirect to the canonical outfit detail. */}

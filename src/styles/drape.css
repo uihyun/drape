@@ -3826,6 +3826,34 @@ input[type="search"]::-webkit-search-decoration {
   justify-content: center;
   line-height: 1;
 }
+/* Bell dot — presence-only "new activity" marker (no count, to avoid noise). */
+.icon-btn-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #ef4444;
+  border: 2px solid var(--surface, #fff);
+}
+
+/* ── Notifications (bell) list ── */
+.notif-list { list-style: none; margin: 0; padding: 0; }
+.notif-row { border-bottom: 1px solid var(--border); }
+.notif-row:last-child { border-bottom: 0; }
+.notif-link {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.85rem 0.5rem; text-decoration: none; color: inherit; width: 100%;
+}
+.notif-unread { background: var(--accent-soft, #eef4ee); border-radius: 8px; }
+.notif-body { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
+.notif-text { font-size: 0.9rem; line-height: 1.35; }
+.notif-preview {
+  font-size: 0.82rem; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.notif-time { font-size: 0.75rem; color: var(--text-muted); flex: 0 0 auto; }
 
 .thread {
   /* Cover the whole viewport so the input bar can dock at the bottom

@@ -43,6 +43,21 @@ error logs so a given error is attributable to a specific binary.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
+- **2026-07-02 · In-app notification center (profile bell).** The 🔔 bell was a
+  dead placeholder (no action, no badge). Now it opens `/notifications` — an
+  activity list of **comments** on your outfits/boards, **new followers**, and
+  **try-ons of your look**, each linking to the target. Server: the existing
+  social triggers (`social-push` onLookTriedOn, `comment-counter` onCommentCreated
+  /onBoardCommentCreated, `follow-counters` onFollowCreated) now also write a
+  `notifications/{uid}/items/{id}` doc via a shared `functions/notifications.js`
+  `notify()` helper (self-events skipped, fire-and-forget). Client:
+  `NotificationService` + `useUnreadNotifications` + `Notifications.jsx`; bell shows
+  a **dot** (presence, not a count) when unread, cleared on open. Deliberately
+  **excludes likes** (noisiest — batch later) and **DMs** (already on the chat
+  icon). firestore.rules: `notifications/{uid}/items` is server-write, owner
+  read/mark-read/delete. (Native picks up the bell UI on the next app build; the
+  server writes notifications for everyone now.)
+
 - **2026-07-01 · Fix: outfit-ref try-on leaked the source person's face → Cloud
   Vision.** In outfit-ref mode the result kept the source face instead of the
   user's. `blurOutfitFace` asked `gemini-3.5-flash` for the face bounding box, but

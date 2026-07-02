@@ -6,6 +6,7 @@
 const admin = require('firebase-admin');
 const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
 const { sendToUser } = require('./push-send.js');
+const { notify } = require('./notifications.js');
 
 const db = admin.firestore();
 
@@ -78,4 +79,5 @@ exports.onLookTriedOn = onDocumentUpdated('generations/{generationId}', async (e
     data: { type: 'tryon', outfitId: srcId },
     collapseKey: `tryon_${srcId}`,
   });
+  await notify(owner, { type: 'tryon', actorUid: after.userId, targetType: 'outfit', targetId: srcId });
 });

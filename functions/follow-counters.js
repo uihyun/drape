@@ -11,6 +11,7 @@
 const { onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const { notify } = require('./notifications.js');
 
 const db = admin.firestore();
 
@@ -32,8 +33,11 @@ async function recountBothSides(data) {
 }
 
 exports.onFollowCreated = onDocumentCreated('follows/{followId}', async (event) => {
-    try { await recountBothSides(event.data?.data()); }
+    const data = event.data?.data() || {};
+    try { await recountBothSides(data); }
     catch (err) { console.warn('onFollowCreated recount failed:', err.message); }
+    // In-app bell notification to the followed user.
+    await notify(data.followingId, { type: 'follow', actorUid: data.followerId });
 });
 
 exports.onFollowDeleted = onDocumentDeleted('follows/{followId}', async (event) => {

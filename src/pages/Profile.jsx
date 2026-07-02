@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare } from 'lucide-react';
 import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
+import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -143,9 +144,7 @@ export function Profile({ user, authReady, onSignIn }) {
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
           <InboxIconLink user={user} t={t} />
-          <button type="button" className="icon-btn" aria-label={t('notifications')}>
-            <Bell size={20} strokeWidth={1.6} />
-          </button>
+          <NotifIconLink user={user} t={t} />
           <Link to="/settings" className="icon-btn" aria-label={t('settings')}>
             <SettingsIcon size={20} strokeWidth={1.6} />
           </Link>
@@ -251,6 +250,16 @@ function InboxIconLink({ user, t }) {
           {unread > 9 ? '9+' : unread}
         </span>
       )}
+    </Link>
+  );
+}
+
+function NotifIconLink({ user, t }) {
+  const hasUnread = useUnreadNotifications(user);
+  return (
+    <Link to="/notifications" className="icon-btn icon-btn-badged" aria-label={t('notifications')}>
+      <Bell size={20} strokeWidth={1.6} />
+      {hasUnread && <span className="icon-btn-dot" aria-label="new" />}
     </Link>
   );
 }
