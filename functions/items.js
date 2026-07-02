@@ -27,8 +27,13 @@ const TAXONOMY = require('./taxonomy.js');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
 // Gemini model IDs as exposed by v1beta listModels (verified via curl).
-const IMAGE_PRO   = 'gemini-3-pro-image'; // try-on + garment crop (Nano Banana Pro, GA)
-const VISION      = 'gemini-3.5-flash';   // tagging / analysis / moderation (GA)
+// Garment crop uses the cheap Flash-Lite image tier — an A/B on real photos
+// (7 items incl. bunched pants, single shoe, long sleeves) showed 3.1-flash-lite
+// @1K matches/beats Pro 3 for catalog crops at ~72% lower cost + ~3x faster, with
+// no silhouette mangling (the old pants→shorts failure was an older Flash). See
+// docs/COST.md. Try-on stays Pro (tryon.js) — identity preservation needs it.
+const IMAGE_CROP  = 'gemini-3.1-flash-lite-image';
+const VISION      = 'gemini-3.5-flash';   // tagging / analysis / OOTD (GA); moderation moved to Cloud Vision SafeSearch
 
 // Generated free-text (item names, analysis title/notes/palette names) is
 // emitted in the creator's app language so the closet/analysis feel native in
@@ -334,10 +339,9 @@ exports.processItem = onCall(
     const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
 
     // ── Crop ───────────────────────────────────────────────────────────
-    // Pro model preserves the silhouette far better than Flash for this
-    // task. Flash kept reinterpreting long pants as shorts, cropping
-    // sleeves, etc. The cost trade-off is worth it for first-impression
-    // catalog quality.
+    // gemini-3.1-flash-lite-image @1K. The prompt carries explicit hard
+    // constraints (hem/sleeve length, piece count, shoe pair) so the model
+    // reshapes without shortening or dropping pieces — verified on real photos.
     // IMPORTANT: do NOT ask the image model for a transparent background
     // directly — Nano Banana families re-generate the subject when given
     // "transparent PNG" instructions and sometimes change the garment's
@@ -378,16 +382,31 @@ re-fit the garment.
 Place the item centered on a fully white background, occupying ~80%
 of a square frame. Remove the wearer, hangers, mannequin, bed sheets,
 floor, and surrounding scene. This is a faithful catalog cutout, not
-a redesign.`;
-    // 2K output (imageConfig) via the new SDK; response wrapped as { response }
-    // so the downstream extractImage(cropRes.response) path is unchanged.
+a redesign.
+
+CRITICAL — HARD CONSTRAINTS (do not violate):
+- The output garment MUST have the EXACT same hem length, sleeve length,
+  and number of pieces as the input. If the input pants reach the ankle,
+  the output pants MUST reach the ankle — NEVER shorten them into shorts
+  or crops. If sleeves are long, keep them full-length to the wrist —
+  NEVER shorten or crop sleeves.
+- Footwear: output EXACTLY TWO shoes forming ONE matching left+right pair.
+  Never one, never three or more — even if the input shows a single shoe.
+- Reproduce the exact shape, proportions, color, print, and fabric texture
+  of the input. Fill ~80% of the frame — do not render the item small.
+- Before finalizing, verify the length and silhouette of your output match
+  the input garment. If they differ, correct them.`;
+    // 1K output (imageConfig) via the new SDK; response wrapped as { response }
+    // so the downstream extractImage(cropRes.response) path is unchanged. 1K is
+    // ample for phone thumbnails/detail (2K is invisible on-device) and halves
+    // both cost and stored size.
     const cropPromise = aiImg.models.generateContent({
-      model: IMAGE_PRO,
+      model: IMAGE_CROP,
       contents: [
         { inlineData: { data: originalB64, mimeType: mime } },
         { text: cropPrompt + focusClause },
       ],
-      config: { imageConfig: { imageSize: '2K' } },
+      config: { imageConfig: { imageSize: '1K' } },
     }).then(response => {
       const u = response?.usageMetadata;
       if (u) console.info('crop image tokens:', u.candidatesTokenCount, 'total:', u.totalTokenCount);

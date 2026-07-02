@@ -53,11 +53,24 @@ Implementation:
 
 ---
 
+## Adopted / done
+
+- **Item crop → `gemini-3.1-flash-lite-image` @1K (2026-07-02).** Was Pro 3 @2K
+  ($0.134/img). A/B on 7 real photos (bunched khaki pants, single-shoe pair, long
+  sleeves, white-on-white tee, washed cap) across Pro / Flash-3.1 / Flash-Lite ×
+  1K/2K × prod/boosted prompts. Findings: **Lite @1K matches or beats Pro** for our
+  needs — no pants→shorts, no sleeve crop, shoes render as a pair; Pro even lost on
+  a couple (shifted black→olive, left garment on a sheet, rendered items small).
+  Pro's extra wrinkle detail is more than a phone thumbnail needs. Measured
+  **~$0.041/img (−72%)** and **~3x faster** (3–8s vs 21–27s → shorter "processing"
+  state). 1K is invisible vs 2K on-device and halves stored size. Prompt gained
+  explicit hard constraints (hem/sleeve length, piece count, shoe pair, fill frame).
+  Try-on stays Pro (identity preservation). Test rig: scratchpad `flash-test/compare.js`.
+
 ## Deferred levers (revisit as adoption / cost grows)
 
 - **Try-on daily quota + credits + invite rewards.** Cap free try-ons (~5/day), sell/earn credits (e.g. +20 per invite). NOTE: credits/IAP were deliberately **removed** (commit `7f91e98`); reintroduction is greenfield — server-only `credits` field + per-day quota (current `checkRateLimit` is per-minute only) + invite attribution + IAP (RevenueCat/StoreKit/Play Billing + store re-review; app currently declares "no IAP"). **User deferred this ("나중").**
-- **Flash Image for the item crop.** `gemini-2.5-flash-image` = $0.039 (71% cheaper than Pro 2K), the biggest remaining lever since items are the higher-volume image op. Gate: reshape/silhouette quality must be tested on real photos first (prior Flash attempts failed). If it holds → adopt for crop; else keep Pro 2K.
-- **Flex/Batch for the item crop.** Crop is already background — Flex 2K ($0.067) would halve item cost again if 1–15 min "pretty crop appears late" is acceptable.
+- **Batch tier for the item crop.** Crop is already background — Flash-Lite batch (−50% again, ~$0.017/img) would halve item cost once more if a 1–15 min "pretty crop appears late" processing window is acceptable.
 - **Skip Pro when the source is already clean.** Retailer/wishlist photos are often already front-on catalog shots; a cheap Flash classify → @imgly cutout for those, Pro reshape only for worn/messy photos.
 
 ## Purpose-built APIs vs Gemini (cheaper + often more reliable)

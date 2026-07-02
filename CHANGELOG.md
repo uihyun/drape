@@ -80,6 +80,20 @@ native fixes ride the 1.3.0 build. The web changes are already live.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
+- **2026-07-02 · Item crop → Gemini 3.1 Flash-Lite @1K (−72% cost, ~3× faster).**
+  The garment catalog crop (`processItem`) moved from `gemini-3-pro-image` @2K
+  ($0.134/img) to `gemini-3.1-flash-lite-image` @1K (~$0.041/img). Decided by an
+  A/B on 7 real photos (bunched khaki pants, single-shoe pair, long-sleeve bomber
+  + shirt, white-on-white tee, washed cap) across Pro / Flash-3.1 / Flash-Lite ×
+  1K/2K × prod/boosted prompts. Flash-Lite @1K matched or beat Pro for our needs:
+  no pants→shorts, no sleeve cropping, shoes render as a matched pair; Pro actually
+  lost a few (shifted black→olive, left a garment on a bedsheet, rendered items
+  small). Pro's extra wrinkle detail is more than a phone thumbnail needs. 1K is
+  invisible vs 2K on-device and halves stored size; latency dropped from ~21–27s to
+  ~3–8s (shorter "processing" state). The crop prompt gained explicit hard
+  constraints (hem/sleeve length, piece count, shoe pair, fill-frame). **Try-on
+  stays Pro** (identity preservation). Server-only — reaches all platforms on
+  deploy, no app build. See `docs/COST.md`.
 - **2026-07-02 · In-app notification center — server writes live now.** The
   notification docs, unified push, per-post like batching (outfits + boards),
   moderation notices, and locale-aware push/DM copy all ship server-side and are
