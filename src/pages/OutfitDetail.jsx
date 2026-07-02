@@ -538,6 +538,13 @@ export function OutfitDetail({ user, onSignIn }) {
         </div>
       </div>
 
+      {(outfit.tryOnCount || 0) > 0 && (
+        <p className="outfit-tryon-count">
+          <Sparkles size={13} strokeWidth={1.7} />
+          {t('triedOnCount', { count: outfit.tryOnCount })}
+        </p>
+      )}
+
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
       <Comments parentColl="outfits" parentId={outfit.id} ownerId={outfit.userId} user={user} onSignInRequest={onSignIn} />
     </div>

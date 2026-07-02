@@ -2357,6 +2357,12 @@ body.is-native {
 .outfit-action-count { font-size: 0.82rem; font-weight: 600; line-height: 1; margin-left: 0.1rem; }
 /* Like count widens that one pill a touch. */
 .outfit-action-icon:has(.outfit-action-count) { width: auto; padding: 0 0.85rem; gap: 0.3rem; }
+/* Try-on social proof under the action bar — quiet, editorial. */
+.outfit-tryon-count {
+  display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+  margin: 0.7rem 0 0; font-size: 0.8rem; color: var(--text-muted);
+}
+.outfit-tryon-count svg { color: var(--accent); opacity: 0.8; }
 
 .board-detail-title {
   font-size: 1.4rem;
