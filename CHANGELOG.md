@@ -46,6 +46,9 @@ error logs so a given error is attributable to a specific binary.
     from a server-side table in `notifications.js`; the title is the actor name,
     so the body omits it. Deep-link routing generalized (`routeForNotification`
     now handles board/comment/follow targets).
+  - **DM push localized** too: the image-only placeholder ("Photo") now renders
+    per recipient (en/ko/ja) via the same `recipientLang`; text DMs already
+    carried the sender's own words.
 - **2026-06-30 · Fix: board grid packed differently on iPhone vs desktop → JS masonry.**
   The board grid used CSS `columns` (multi-column) masonry. Multicol's default
   `column-fill: balance` distributes cards to equalize column heights, and that

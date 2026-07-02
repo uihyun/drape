@@ -159,4 +159,4 @@ async function notifySystem(recipientUid, { type, targetType = null, targetId = 
   }
 }
 
-module.exports = { notify, notifyLike, notifySystem };
+module.exports = { notify, notifyLike, notifySystem, recipientLang };

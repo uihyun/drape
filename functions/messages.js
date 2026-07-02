@@ -21,8 +21,13 @@ const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
 const { sendToUser } = require('./push-send.js');
+const { recipientLang } = require('./notifications.js');
 
 const db = admin.firestore();
+
+// Localized placeholder for an image-only DM (text messages carry the sender's
+// own words, so only the photo case needs translation).
+const DM_PHOTO = { en: 'Photo', ko: '사진', ja: '写真' };
 
 // Auto-cleanup: drop marketplace threads (their messages + DM images) that
 // have been inactive for 30+ days. Runs daily so the inbox stays tidy and
@@ -89,9 +94,9 @@ exports.onMessageCreated = onDocumentCreated(
             else if (p?.handle) title = `@${p.handle}`;
         } catch (_) { /* ignore */ }
 
-        const body = isImage
-            ? 'Photo'
-            : (message.text.length > 140 ? `${message.text.slice(0, 137)}...` : message.text);
+        // Text messages carry the sender's own words verbatim; only the image
+        // placeholder is localized (per recipient, inside the loop below).
+        const textBody = message.text.length > 140 ? `${message.text.slice(0, 137)}...` : message.text;
 
         // activeIn[uid] is a presence TIMESTAMP refreshed while the recipient
         // has the room open+foreground. Only a RECENT one suppresses the push —
@@ -107,6 +112,7 @@ exports.onMessageCreated = onDocumentCreated(
                 continue;
             }
 
+            const body = isImage ? (DM_PHOTO[await recipientLang(uid)] || DM_PHOTO.en) : textBody;
             // collapseKey=threadId keeps a chatty thread to one lock-screen row.
             const r = await sendToUser(uid, {
                 title,
