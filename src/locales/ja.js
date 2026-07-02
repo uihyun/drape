@@ -13,7 +13,7 @@ export const ja = {
   navProfile: 'プロフィール',
   invite: '招待',
   inviteShareTitle: 'drape を試してみて',
-  inviteShareText: 'drape で毎日のコーデを記録してます — 一緒にどう?',
+  inviteShareText: 'drape でクローゼットを作って試着もしてるよ — 一緒にどう?',
   commentsTitle: 'コメント',
   commentEmpty: 'まだコメントはありません。',
   commentPlaceholder: 'コメントを追加…',

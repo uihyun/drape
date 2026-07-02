@@ -592,12 +592,11 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
     const origin = publicOrigin();
     const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
     try {
-      // Fold the URL into the text too: some share targets (Messages note,
-      // certain mail clients) render only the `text` field and silently drop
-      // a separately-passed `url`, which is why the invite showed no link.
+      // Pass text + url SEPARATELY (like every other share call site). Folding
+      // the url into text as well made it render twice on targets that show both.
       await shareLink({
         title: t('inviteShareTitle'),
-        text: `${t('inviteShareText')} ${url}`,
+        text: t('inviteShareText'),
         url,
       });
     } catch (err) {

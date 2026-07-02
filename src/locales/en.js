@@ -11,7 +11,7 @@ export const en = {
   navProfile: 'Profile',
   invite: 'Invite',
   inviteShareTitle: 'Try drape',
-  inviteShareText: 'I’m tracking my outfits on drape — join me.',
+  inviteShareText: 'I’m building my closet and trying on looks with drape — come join me.',
   commentsTitle: 'Comments',
   commentEmpty: 'No comments yet.',
   commentPlaceholder: 'Add a comment…',

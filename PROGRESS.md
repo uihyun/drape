@@ -33,7 +33,7 @@ per-user analytics.
   and `functions/test-tryon-ab.js` (try-on, outfit-ref mode). Test photos + results
   live in gitignored `.crop-ab/`. Re-run when a new/cheaper image model appears:
   `cd functions && node test-item-crop-ab.js [IMG]` / `node test-tryon-ab.js <outfitId>...`.
-  Both crop (→Flash-Lite @1K) and try-on (→Flash-3.1 @2K) were decided this way.
+  Both crop (→Flash-Lite @1K) and try-on (→Flash-3.1 @1K) were decided this way.
 
 - **In-app notification center on the profile bell (2026-07-02) — DONE (ships in 1.3.0).**
   The 🔔 bell is now an activity center: comments, new followers, try-ons of your

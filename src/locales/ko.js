@@ -11,7 +11,7 @@ export const ko = {
   navProfile: '프로필',
   invite: '초대',
   inviteShareTitle: 'drape 써봐',
-  inviteShareText: 'drape 에서 매일 아웃핏 기록하고 있어 — 너도 와봐.',
+  inviteShareText: 'drape 에서 옷장 만들고 옷도 입어보고 있어 — 너도 와봐.',
   commentsTitle: '댓글',
   commentEmpty: '아직 댓글이 없어요.',
   commentPlaceholder: '댓글 달기…',
