@@ -28,7 +28,7 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 
 - React 18 + Vite + react-router-dom v7 + Firebase v11 + Capacitor 7.
 - Cloud Functions runtime: Node 22, v2 SDK. `onCall` for new endpoints (gives auth + CORS for free); `onRequest` only when we need raw HTTP.
-- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`); image generation uses the newer `@google/genai` (supports `imageConfig.imageSize`). Model ids: `gemini-3.1-flash-image` @2K (try-on, `IMAGE_TRYON` in tryon.js — moved off Pro after an A/B showed parity at ~-23% cost + ~2x faster), `gemini-3.1-flash-lite-image` @1K (item crop, `IMAGE_CROP` in items.js), `gemini-3.5-flash` (vision tagging + OOTD analysis). Image moderation is Cloud Vision SafeSearch, face-blur is Cloud Vision FACE_DETECTION.
+- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`); image generation uses the newer `@google/genai` (supports `imageConfig.imageSize`). Model ids: `gemini-3.1-flash-image` @1K (try-on, `IMAGE_TRYON` in tryon.js — moved off Pro after an A/B showed parity at much lower cost + ~2x faster; 1K because the result is normalized to 900×1200 anyway), `gemini-3.1-flash-lite-image` @1K (item crop, `IMAGE_CROP` in items.js), `gemini-3.5-flash` (vision tagging + OOTD analysis). Image moderation is Cloud Vision SafeSearch, face-blur is Cloud Vision FACE_DETECTION.
 
 ## Don't
 

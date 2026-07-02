@@ -80,13 +80,26 @@ native fixes ride the 1.3.0 build. The web changes are already live.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
-- **2026-07-02 · Try-on → Gemini 3.1 Flash @2K (−23% cost, ~2× faster).** The
+- **2026-07-02 · Fix: outfit-ref try-on now transfers headwear (caps/hats).** The
+  source-face blur (Cloud Vision) used the loose `boundingPoly` + 18% padding in
+  every direction, which for a hatted source **covered the whole hat** — so the
+  model never saw it and dropped it (regression introduced when the blur became
+  reliable; the old flaky Flash blur left hats visible). Now the blur uses the
+  tight `fdBoundingPoly` (eyes-to-chin) with asymmetric padding — sides + down for
+  the jaw, almost none upward — so a cap/hat stays visible and transfers, while the
+  identity-bearing features (eyes/nose/mouth/jaw) are still neutralized. The
+  outfit-ref prompt also gained an explicit "put the outfit photo's headwear on the
+  identity person" line. Verified: red-cap source → cap now renders on the result
+  across Pro/Flash, identity face intact. Model-agnostic (helps Pro too).
+- **2026-07-02 · Try-on → Gemini 3.1 Flash @1K (−~47% cost, ~2-3× faster).** The
   virtual try-on (`virtualTryOn`) moved from `gemini-3-pro-image` @2K to
-  `gemini-3.1-flash-image` @2K (`IMAGE_TRYON`). An A/B on 4 real men's outfit-ref
-  looks (identity photo + public OOTD) showed Flash-3.1 @2K matching Pro on
-  identity (face/body) and outfit fidelity; Flash-Lite was dropped for occasional
-  face artifacts. Measured ~$0.115 vs $0.150/img and ~13s vs ~25s — the win is
-  mostly **speed/UX** (try-on volume is lower than item crop, so ~$4/mo). Added an
+  `gemini-3.1-flash-image` @1K (`IMAGE_TRYON`). An A/B on 4 real men's outfit-ref
+  looks (identity photo + public OOTD) showed Flash-3.1 matching Pro on identity
+  (face/body) and outfit fidelity; Flash-Lite was dropped for occasional face
+  artifacts. Output is **1K** because the result is normalized to 900×1200 anyway
+  (2K would just be downscaled away) — same model, only the canvas differs.
+  Measured ~$0.08 vs $0.150/img and ~8s vs ~25s — the win is mostly **speed/UX**
+  (try-on volume is lower than item crop, so a few $/mo). Added an
   `ANATOMY_GUARD` to every try-on prompt: the image model sometimes fuses a draped
   garment into the legs (reads as extra limbs) — happens on Pro too, outfit-
   dependent — and the guard fixed it (Flash @2K 4/4 clean with it, 1/4 broken

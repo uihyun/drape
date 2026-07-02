@@ -67,16 +67,19 @@ Implementation:
   explicit hard constraints (hem/sleeve length, piece count, shoe pair, fill frame).
   Try-on stays Pro (identity preservation). Test rig: scratchpad `flash-test/compare.js`.
 
-- **Try-on → `gemini-3.1-flash-image` @2K (2026-07-02).** Was Pro 3 @2K
+- **Try-on → `gemini-3.1-flash-image` @1K (2026-07-02).** Was Pro 3 @2K
   ($0.150/img measured). A/B on 4 real men's outfit-ref looks (identity photo +
-  public OOTD) across Pro / Flash-3.1 / Flash-Lite: **Flash-3.1 @2K matched Pro**
-  on identity (face/body) + outfit fidelity; Lite showed occasional face
-  artifacts (dropped). Measured **~$0.115/img (−23%)** and **~2x faster (25s→13s)**
-  — the win is mostly speed/UX (try-on volume ~107/Jun, so ~$4/mo). Extra-limb
-  artifacts (a draped jacket merging into the legs) appear on BOTH Pro and Flash
-  (outfit-dependent, not model-dependent); fixed with an `ANATOMY_GUARD` appended
-  to every try-on prompt (Flash @2K 4/4 clean with it, was 1/4 broken). Try-on
-  stays a single fixed model, no user selector. Rig: `test-tryon-ab.js`.
+  public OOTD) across Pro / Flash-3.1 / Flash-Lite: **Flash-3.1 matched Pro** on
+  identity (face/body) + outfit fidelity; Lite showed occasional face artifacts
+  (dropped). Output is **1K** (not 2K) because the result is normalized to 900×1200
+  downstream — 2K is just downscaled away; same model, only the canvas differs.
+  Measured **~$0.08/img (−~47%)** and **~2-3x faster (25s→8s)** — win is mostly
+  speed/UX (try-on volume ~107/Jun). Extra-limb artifacts (a draped jacket merging
+  into the legs) appear on BOTH Pro and Flash (outfit-dependent); fixed with an
+  `ANATOMY_GUARD` appended to every try-on prompt. Also fixed headwear transfer:
+  the source-face blur now uses the tight `fdBoundingPoly` with minimal, no-upward
+  padding so caps/hats stay visible (the old loose box erased them). Single fixed
+  model, no user selector. Rig: `test-tryon-ab.js`.
 
 ## Deferred levers (revisit as adoption / cost grows)
 

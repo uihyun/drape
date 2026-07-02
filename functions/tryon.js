@@ -1,6 +1,6 @@
 // === virtualTryOn ======================================================
 // Compose the user's identity reference photos + 1..N clothing items into
-// a single try-on render (gemini-3.1-flash-image @2K — see IMAGE_TRYON).
+// a single try-on render (gemini-3.1-flash-image @1K — see IMAGE_TRYON).
 //
 // Quality strategy (brief §7):
 //   - Always feed ALL identity refs (2~3 full-body shots) so the model
@@ -37,10 +37,12 @@ function visionClient() {
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
 // Try-on image gen. Was Pro; an A/B on 4 men's outfit-ref looks showed
-// gemini-3.1-flash-image @2K matches Pro on identity + outfit fidelity at
-// ~-23% cost and ~2x faster (25s→13s), with extra-limb artifacts handled by
-// the ANATOMY_GUARD prompt. NOT a user-facing tier selector — still a single
-// fixed model (modelTier is ignored). The item CROP uses Flash-Lite in items.js.
+// gemini-3.1-flash-image matches Pro on identity + outfit fidelity at much lower
+// cost + ~2x faster, with extra-limb artifacts handled by the ANATOMY_GUARD
+// prompt. Output is 1K (imageConfig below) — the result is normalized to 900x1200
+// anyway, so 2K would just be downscaled away; 1K is ~$0.08/img and faster. NOT a
+// user-facing tier selector — single fixed model (modelTier ignored). The item
+// CROP uses Flash-Lite in items.js.
 const IMAGE_TRYON = 'gemini-3.1-flash-image';
 
 function bucketUrl(bucket, path) {
@@ -89,9 +91,13 @@ async function blurOutfitFace(buf) {
       console.info('outfit-ref blur: Cloud Vision found NO face → source UNBLURRED');
       return buf;
     }
-    // Vertices are in PIXELS (not fractions). Pick the largest face by box area.
+    // Vertices are in PIXELS (not fractions). Prefer the TIGHT face box
+    // (fdBoundingPoly = eyebrows-to-chin, skin only) over the loose boundingPoly,
+    // which includes forehead/hair and — for a hatted source — the hat itself.
+    // Pick the largest face by box area.
     const bbox = (f) => {
-      const v = f.boundingPoly?.vertices || [];
+      const poly = (f.fdBoundingPoly?.vertices?.length ? f.fdBoundingPoly : f.boundingPoly);
+      const v = poly?.vertices || [];
       if (v.length < 3) return null;
       const xs = v.map((p) => p.x || 0), ys = v.map((p) => p.y || 0);
       const x = Math.min(...xs), y = Math.min(...ys);
@@ -100,12 +106,18 @@ async function blurOutfitFace(buf) {
     const b = faces.map(bbox).filter(Boolean).sort((a, z) => (z.w * z.h) - (a.w * a.h))[0];
     if (!b || b.w < 8 || b.h < 8) { console.info('outfit-ref blur: face box too small → UNBLURRED', b); return buf; }
     const { width: W, height: H } = await sharp(buf).metadata();
-    // Pad ~18% so the jaw/cheek edges (the parts the model leans on) are covered.
-    const padX = b.w * 0.18, padY = b.h * 0.18;
+    // Identity lives in the eyes/nose/mouth/jaw; headwear sits ABOVE that. The
+    // fdBoundingPoly is already tight (eyes→chin), so keep the blur minimal —
+    // a little sides + down for the jaw, and NO upward padding, so a cap's brim
+    // (right at the eyebrow line) stays sharp and transfers. Still covers the
+    // identity-bearing features, so the source face can't leak.
+    const padX = b.w * 0.06;
+    const padUp = 0;
+    const padDown = b.h * 0.10;
     const left = Math.max(0, Math.round(b.x - padX));
-    const top = Math.max(0, Math.round(b.y - padY));
+    const top = Math.max(0, Math.round(b.y - padUp));
     const bw = Math.min(W - left, Math.round(b.w + padX * 2));
-    const bh = Math.min(H - top, Math.round(b.h + padY * 2));
+    const bh = Math.min(H - top, Math.round(b.h + padUp + padDown));
     if (bw < 8 || bh < 8) { console.info('outfit-ref blur: padded box out of range → UNBLURRED', { bw, bh }); return buf; }
     const region = await sharp(buf)
       .extract({ left, top, width: bw, height: bh })
@@ -252,6 +264,11 @@ Take the full styling from the outfit photo — every visible garment and
 how they are combined (top, bottom, outerwear, shoes, and notable
 accessories), including colors, materials, proportions, and the way the
 pieces are layered and worn. Reproduce the look as faithfully as possible.
+
+If the outfit photo includes a hat, cap, beanie, or other headwear, put that
+SAME headwear on the identity person (worn over their own hair, tilted and
+positioned as in the outfit photo). Keep the identity person's face and hair,
+but DO add the headwear. Do not invent headwear that isn't in the outfit photo.
 
 KEEP the person from the identity photos IDENTICAL: face, hair, skin tone,
 body proportions, height. FOLLOW THE FIRST identity photo for the pose,
@@ -590,11 +607,12 @@ exports.virtualTryOn = onCall(
     ];
     const runs = Array.from({ length: n }, async (_, idx) => {
       try {
-        // New SDK + imageConfig 2K; safety + parts carried over unchanged.
+        // 1K output — the result is normalized to 900x1200 downstream, so 2K
+        // would just be downscaled away; 1K covers it, at lower cost + faster.
         const res = await aiImg.models.generateContent({
           model: modelId,
           contents: parts,
-          config: { safetySettings, imageConfig: { imageSize: '2K' } },
+          config: { safetySettings, imageConfig: { imageSize: '1K' } },
         });
         if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
         const img = extractImage(res);
