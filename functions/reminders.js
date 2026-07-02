@@ -11,7 +11,11 @@ const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { sendToUser } = require('./push-send.js');
 const { pickReminder } = require('./reminders-copy.js');
 
-const SEND_HOUR = 19;                          // user's local hour to send (7pm)
+// Evening send window (local hours, inclusive): 6pm–9pm. The cron runs hourly,
+// so a user enters the window at their local 6pm; MIN_GAP_MS then blocks the
+// later hours, so they still get at most ONE reminder per ~2.5 days.
+const SEND_HOUR_START = 18;
+const SEND_HOUR_END = 21;
 const MIN_GAP_MS = 2.5 * 24 * 60 * 60 * 1000;  // ≈ every 2–3 days
 const ACTIVE_SKIP_MS = 20 * 60 * 60 * 1000;    // opened in last ~20h → don't nag
 const BACKOFF_MS = 45 * 24 * 60 * 60 * 1000;   // dormant 45d+ → stop pestering
@@ -43,8 +47,11 @@ exports.sendReminders = onSchedule('0 * * * *', async () => {
   for (const doc of snap.docs) {
     const p = doc.data() || {};
     if (p.remindersOptOut === true) continue;
-    if (!p.timezone) continue;                       // no tz captured yet
-    if (localHour(p.timezone) !== SEND_HOUR) continue;
+    // No timezone captured yet → default to New York local time rather than
+    // skipping, so users who never synced a tz still get an evening reminder.
+    const tz = p.timezone || 'America/New_York';
+    const h = localHour(tz);
+    if (h < SEND_HOUR_START || h > SEND_HOUR_END) continue;
     // Activity gate: skip people currently using the app (no need to nag), and
     // back off from the long-dormant (pestering churned users only annoys).
     const activeMs = p.lastActiveAt && typeof p.lastActiveAt.toMillis === 'function'
