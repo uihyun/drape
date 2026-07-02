@@ -80,6 +80,18 @@ native fixes ride the 1.3.0 build. The web changes are already live.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
+- **2026-07-02 · Try-on → Gemini 3.1 Flash @2K (−23% cost, ~2× faster).** The
+  virtual try-on (`virtualTryOn`) moved from `gemini-3-pro-image` @2K to
+  `gemini-3.1-flash-image` @2K (`IMAGE_TRYON`). An A/B on 4 real men's outfit-ref
+  looks (identity photo + public OOTD) showed Flash-3.1 @2K matching Pro on
+  identity (face/body) and outfit fidelity; Flash-Lite was dropped for occasional
+  face artifacts. Measured ~$0.115 vs $0.150/img and ~13s vs ~25s — the win is
+  mostly **speed/UX** (try-on volume is lower than item crop, so ~$4/mo). Added an
+  `ANATOMY_GUARD` to every try-on prompt: the image model sometimes fuses a draped
+  garment into the legs (reads as extra limbs) — happens on Pro too, outfit-
+  dependent — and the guard fixed it (Flash @2K 4/4 clean with it, 1/4 broken
+  without). Still a single fixed model, no user-facing tier selector. Server-only.
+  See `docs/COST.md`.
 - **2026-07-02 · Item crop → Gemini 3.1 Flash-Lite @1K (−72% cost, ~3× faster).**
   The garment catalog crop (`processItem`) moved from `gemini-3-pro-image` @2K
   ($0.134/img) to `gemini-3.1-flash-lite-image` @1K (~$0.041/img). Decided by an

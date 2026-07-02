@@ -1,6 +1,6 @@
 // === virtualTryOn ======================================================
 // Compose the user's identity reference photos + 1..N clothing items into
-// a single try-on render (Nano Banana Pro, gemini-3-pro-image).
+// a single try-on render (gemini-3.1-flash-image @2K — see IMAGE_TRYON).
 //
 // Quality strategy (brief §7):
 //   - Always feed ALL identity refs (2~3 full-body shots) so the model
@@ -36,7 +36,12 @@ function visionClient() {
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
-const IMAGE_PRO   = 'gemini-3-pro-image';
+// Try-on image gen. Was Pro; an A/B on 4 men's outfit-ref looks showed
+// gemini-3.1-flash-image @2K matches Pro on identity + outfit fidelity at
+// ~-23% cost and ~2x faster (25s→13s), with extra-limb artifacts handled by
+// the ANATOMY_GUARD prompt. NOT a user-facing tier selector — still a single
+// fixed model (modelTier is ignored). The item CROP uses Flash-Lite in items.js.
+const IMAGE_TRYON = 'gemini-3.1-flash-image';
 
 function bucketUrl(bucket, path) {
   return `https://storage.googleapis.com/${bucket}/${path}`;
@@ -199,6 +204,23 @@ function categoryRegion(category, subcategory) {
     default: return 'corresponding clothing region';
   }
 }
+
+// Appended to every try-on prompt. The image model occasionally fuses a draped
+// garment (jacket over the lap) into the legs, reading as extra limbs; this hard
+// constraint suppresses that. Verified on the case that reproduced it (Flash @2K
+// 4/4 clean with the guard, was 1/4 broken without).
+const ANATOMY_GUARD = `
+
+ANATOMY — HARD CONSTRAINTS (do not violate):
+- Render exactly ONE person with correct, natural human anatomy: exactly TWO
+  legs, TWO arms, TWO hands, ONE head. NEVER produce extra, duplicated, mirrored,
+  or merged limbs. No malformed or fused hands/fingers.
+- Any draped or held garment (e.g. a jacket over the lap, a bag) MUST read as a
+  clearly separate object. It must NOT blend into, overlap ambiguously with, or
+  duplicate the legs — do not let draped clothing create the illusion of extra
+  legs. Keep the two real legs visually distinct from any draped fabric.
+- The pose must be anatomically plausible; if anything looks like extra limbs,
+  fix it before finalizing.`;
 
 function tryOnPrompt(items, customPrompt, backgroundDesc, refCount, mode) {
   const itemSummary = items.map((it, i) => {
@@ -407,9 +429,9 @@ exports.virtualTryOn = onCall(
     }
     const referenceCount = customPhotoPath ? 1 : identityRefs.length;
 
-    // Pro-only — the Flash tier was dropped (quality wasn't worth the
-    // split). `modelTier` may still arrive from older clients; ignore it.
-    const modelId = IMAGE_PRO;
+    // Single fixed model — NOT a user-facing tier selector. `modelTier` may
+    // still arrive from older clients; ignore it.
+    const modelId = IMAGE_TRYON;
     const n = variants ?? 1;
 
     // ── Pre-write the generation doc EARLY ─────────────────────────────
@@ -551,7 +573,7 @@ exports.virtualTryOn = onCall(
     const promptMode = isOutfitRef
       ? 'outfit-ref'
       : (customPhotoPath ? 'custom-photo' : 'identity-refs');
-    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) });
+    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) + ANATOMY_GUARD });
 
     // ── Run N variants in parallel ─────────────────────────────────────
     // Relax safety to BLOCK_ONLY_HIGH: at the default MEDIUM threshold the
@@ -696,3 +718,8 @@ exports.cleanupStuckTryons = onSchedule('every 30 minutes', async () => {
   }
   if (flagged) console.info(`cleanupStuckTryons: flagged ${flagged} stuck try-on(s) as failed`);
 });
+
+// Exported for the offline try-on A/B harness (test-tryon-ab.js) only — lets the
+// test reuse the EXACT production prompt + face-blur so identity-preservation is
+// judged on the real pipeline. No runtime behavior change.
+exports._tryonInternals = { tryOnPrompt, blurOutfitFace, extractImage, downloadAsInlineData };

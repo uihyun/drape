@@ -67,11 +67,21 @@ Implementation:
   explicit hard constraints (hem/sleeve length, piece count, shoe pair, fill frame).
   Try-on stays Pro (identity preservation). Test rig: scratchpad `flash-test/compare.js`.
 
+- **Try-on → `gemini-3.1-flash-image` @2K (2026-07-02).** Was Pro 3 @2K
+  ($0.150/img measured). A/B on 4 real men's outfit-ref looks (identity photo +
+  public OOTD) across Pro / Flash-3.1 / Flash-Lite: **Flash-3.1 @2K matched Pro**
+  on identity (face/body) + outfit fidelity; Lite showed occasional face
+  artifacts (dropped). Measured **~$0.115/img (−23%)** and **~2x faster (25s→13s)**
+  — the win is mostly speed/UX (try-on volume ~107/Jun, so ~$4/mo). Extra-limb
+  artifacts (a draped jacket merging into the legs) appear on BOTH Pro and Flash
+  (outfit-dependent, not model-dependent); fixed with an `ANATOMY_GUARD` appended
+  to every try-on prompt (Flash @2K 4/4 clean with it, was 1/4 broken). Try-on
+  stays a single fixed model, no user selector. Rig: `test-tryon-ab.js`.
+
 ## Deferred levers (revisit as adoption / cost grows)
 
 - **Try-on daily quota + credits + invite rewards.** Cap free try-ons (~5/day), sell/earn credits (e.g. +20 per invite). NOTE: credits/IAP were deliberately **removed** (commit `7f91e98`); reintroduction is greenfield — server-only `credits` field + per-day quota (current `checkRateLimit` is per-minute only) + invite attribution + IAP (RevenueCat/StoreKit/Play Billing + store re-review; app currently declares "no IAP"). **User deferred this ("나중").**
 - **Batch tier for the item crop.** Crop is already background — Flash-Lite batch (−50% again, ~$0.017/img) would halve item cost once more if a 1–15 min "pretty crop appears late" processing window is acceptable.
-- **Try-on on a cheaper image model (TEST FIRST).** Try-on is Pro-only today ($0.134/2K); a Flash tier was dropped long ago for quality (CLAUDE.md), but that predates **gemini-3.1-flash-image / -lite** — which just beat Pro on the item crop. Worth an A/B like the crop one, but the gate is **strict**: identity must hold (exact face, hair, body build, skin tone) across the multi-reference set, AND clothing must render faithfully. Reuse the `test-item-crop-ab.js` harness pattern (swap in the try-on prompt + identity refs, grade face/body preservation, not just silhouette). If 3.1-flash preserves identity → potential −50%+ on the other volume image op; if it drifts at all → stay Pro (identity is the product's reason to exist). ~107 try-ons/June, so smaller $ than crop but non-trivial as usage grows.
 - **Skip Pro when the source is already clean.** Retailer/wishlist photos are often already front-on catalog shots; a cheap Flash classify → @imgly cutout for those, Pro reshape only for worn/messy photos.
 
 ## Purpose-built APIs vs Gemini (cheaper + often more reliable)

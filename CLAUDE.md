@@ -28,12 +28,12 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 
 - React 18 + Vite + react-router-dom v7 + Firebase v11 + Capacitor 7.
 - Cloud Functions runtime: Node 22, v2 SDK. `onCall` for new endpoints (gives auth + CORS for free); `onRequest` only when we need raw HTTP.
-- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`). Model ids: `gemini-3-pro-image-preview` (try-on — Pro only, the Flash image tier was removed), `gemini-3-flash-preview` (vision tagging + OOTD analysis). The vision/tagging Flash use is unrelated to the dropped image tier.
+- Gemini SDK is `@google/generative-ai` (already in `functions/package.json`); image generation uses the newer `@google/genai` (supports `imageConfig.imageSize`). Model ids: `gemini-3.1-flash-image` @2K (try-on, `IMAGE_TRYON` in tryon.js — moved off Pro after an A/B showed parity at ~-23% cost + ~2x faster), `gemini-3.1-flash-lite-image` @1K (item crop, `IMAGE_CROP` in items.js), `gemini-3.5-flash` (vision tagging + OOTD analysis). Image moderation is Cloud Vision SafeSearch, face-blur is Cloud Vision FACE_DETECTION.
 
 ## Don't
 
 - Don't reintroduce voda's interior-design helpers (`paint-match`, `shopping-links`, `EditRegionModal`, the 38 interior styles). They were deliberately removed.
-- Don't reintroduce a Flash try-on tier or any model-tier selector. Try-on is Pro-only — the split wasn't worth the quality drop. `virtualTryOn` ignores any `modelTier` param older clients still send.
+- Don't add a user-facing model-tier selector for try-on. Try-on is a SINGLE fixed model (now `gemini-3.1-flash-image` @2K, `IMAGE_TRYON`); `virtualTryOn` ignores any `modelTier` param older clients still send. (Moving the fixed model is fine when an A/B justifies it — that's how it went Pro→3.1-flash; a per-user *selector* is what we don't want.)
 - Don't write planning / spec docs unless asked — keep notes in `PROGRESS.md`.
 - Keep `CHANGELOG.md` current: every shippable change gets a detailed entry under the right version (newest first). The store-facing release notes are a short subset; `CHANGELOG.md` is the full internal record. Bump the version in 3 places together when building native — `package.json`, `android/app/build.gradle` (versionName + versionCode), iOS `project.pbxproj` (MARKETING_VERSION + CURRENT_PROJECT_VERSION).
 - Don't commit secrets. `GEMINI_API_KEY` lives in a Firebase secret; the dev value is in `.env` (gitignored).
