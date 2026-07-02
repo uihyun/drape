@@ -29,23 +29,21 @@ per-user analytics.
 
 ## Deferred — under consideration (revisit when the symptom recurs)
 
-- **Outfit-ref try-on: source FACE leaks through — ROOT CAUSE CONFIRMED
-  (2026-07-01).** In outfit-ref mode the result keeps the source person's face
-  instead of the user's. Confirmed via logging + retry: `blurOutfitFace` asks
-  `gemini-3.5-flash` for the face bounding box, and Flash **repeatedly returns
-  `{x:null}` on a clearly-visible face** (both attempts, even after loosening the
-  detection prompt) → the source is passed UNBLURRED → the model copies its face.
-  The gen prompt already says "ignore the outfit photo's face," but that alone
-  can't override an un-blurred, prominent source face. **Flash is a
-  vision-language model — its bbox output is inherently unreliable; prompt tuning
-  won't fix it.** In place now: 2-attempt retry + full logging (`neutralizing
-  source face` / `face detect attempt N → BOX FOUND|no box` / `APPLIED|UNBLURRED`).
-  **Proper fix (deferred, non-critical):** replace the Flash-bbox step with **Google
-  Cloud Vision `FACE_DETECTION`** (purpose-built, reliable boxes; `@google-cloud/
-  vision`, ~$1.50/1000 imgs, only on outfit-ref) → then the existing blur works.
-  Also relevant: the pose comes from the identity photo (see identity-lock note),
-  so same-pose refs still make the result resemble the source. NOT caused by the
-  4K→2K change (see `docs/COST.md`).
+- **Outfit-ref try-on: source FACE leaked through — RESOLVED (2026-07-01).**
+  In outfit-ref mode the result kept the source person's face instead of the
+  user's. Root cause (confirmed via logging): `blurOutfitFace` asked
+  `gemini-3.5-flash` for the face bounding box, and Flash **repeatedly returned
+  `{x:null}` on a clearly-visible face** → source passed UNBLURRED → the model
+  copied its face. Flash is a vision-language model; its bbox output is
+  inherently unreliable and prompt tuning didn't fix it. **Fix:** replaced the
+  Flash bbox with **Google Cloud Vision `FACE_DETECTION`** (commit `d818b4d`;
+  `@google-cloud/vision`, service-account/ADC auth, Vision API enabled on
+  drape-9e532, ~free — 1000 faces/mo, only on outfit-ref). Verified: log shows
+  `APPLIED (Cloud Vision) {faces:1,...}` and the result face is now the user's.
+  Graceful fallback kept (any error → source returned unblurred). NOTE: a related,
+  milder effect remains — the result pose comes from the identity photo (see the
+  identity-lock note below), so a same-pose identity ref can still make the look
+  resemble the source; separate, low priority.
 
 - **Try-on identity-lock prompt tightening (2026-06-14).** Idea borrowed from an
   external prompt test: in the try-on prompts (`functions/tryon.js`, both the
