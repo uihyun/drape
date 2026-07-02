@@ -77,3 +77,6 @@ public/firebase-config.js
 # capacitor-assets PWA output at repo root — unused (the app serves public/icons)
 /icons/
 /splash/
+
+# item-crop A/B test photos/results (personal images — never commit)
+.crop-ab/

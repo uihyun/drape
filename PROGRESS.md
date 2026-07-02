@@ -29,6 +29,18 @@ per-user analytics.
 
 ## Deferred — under consideration (revisit when the symptom recurs)
 
+- **Try-on on a cheaper image model — TEST later (2026-07-02).** Item crop just
+  moved to `gemini-3.1-flash-lite-image` @1K (−72%, quality ≥ Pro on real photos).
+  Try-on is still Pro-only; a Flash tier was dropped long ago for quality but that
+  predates 3.1-flash/-lite. Worth an A/B, but the gate is strict: **identity
+  preservation** (face/hair/body/skin across the multi-ref set) must hold, not just
+  clothing fidelity — if it drifts at all, stay Pro. Harness: reuse
+  `functions/test-item-crop-ab.js` pattern (swap in try-on prompt + identity refs,
+  grade face/body). See docs/COST.md. **Just record for now — not started.**
+- **Item-crop A/B rig is kept** at `functions/test-item-crop-ab.js`; test photos +
+  results live in gitignored `.crop-ab/{in,out}/`. Re-run anytime a new/cheaper
+  image model appears: `cd functions && node test-item-crop-ab.js [IMG_name]`.
+
 - **In-app notification center on the profile bell (2026-07-02) — DONE (ships in 1.3.0).**
   The 🔔 bell is now an activity center: comments, new followers, try-ons of your
   look, **per-post batched** likes (outfits + boards), and **moderation** notices,
