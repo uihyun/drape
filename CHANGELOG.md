@@ -11,13 +11,13 @@ Conventions:
 
 ---
 
-## 1.2.2 (Android versionCode 14 · iOS build 11) — native release in progress
+## 1.3.0 (Android versionCode 15 · iOS build 12) — native release in progress
 
-Bundles the native-only fixes that web already has: **native analytics
-actually recording** (the `FirebaseAnalytics.then` no-op fix — custom events
-were silently dropped on iOS/Android since the native-analytics feature
-shipped) and the **stuck-try-on retry UI**. Also stamps the app version onto
-error logs so a given error is attributable to a specific binary.
+Headline: the **in-app notification center on the profile bell** + unified,
+localized push (details below). This build also carries the 1.2.2 native-only
+fixes that never shipped natively on their own — **native analytics actually
+recording** (the `FirebaseAnalytics.then` no-op fix) and the **stuck-try-on
+retry UI** — folded in here.
 
 - **2026-07-02 · In-app notification center on the profile bell + unified push.**
   The 🔔 bell was a dead placeholder; it now opens `/notifications` — an activity
@@ -49,6 +49,13 @@ error logs so a given error is attributable to a specific binary.
   - **DM push localized** too: the image-only placeholder ("Photo") now renders
     per recipient (en/ko/ja) via the same `recipientLang`; text DMs already
     carried the sender's own words.
+## 1.2.2 (Android versionCode 14 · iOS build 11) — superseded, folded into 1.3.0 (build 12); web parts live, never released natively on its own
+
+Native-only fixes (native analytics recording via the `FirebaseAnalytics.then`
+fix, stuck-try-on retry UI) plus the web changes below. The native build was cut
+(versionCode 14 / build 11) but superseded by 1.3.0 before store release, so its
+native fixes ride the 1.3.0 build. The web changes are already live.
+
 - **2026-06-30 · Fix: board grid packed differently on iPhone vs desktop → JS masonry.**
   The board grid used CSS `columns` (multi-column) masonry. Multicol's default
   `column-fill: balance` distributes cards to equalize column heights, and that
@@ -73,20 +80,11 @@ error logs so a given error is attributable to a specific binary.
 
 ## Server / web — continuous (live for everyone; NO app version / build needed)
 
-- **2026-07-02 · In-app notification center (profile bell).** The 🔔 bell was a
-  dead placeholder (no action, no badge). Now it opens `/notifications` — an
-  activity list of **comments** on your outfits/boards, **new followers**, and
-  **try-ons of your look**, each linking to the target. Server: the existing
-  social triggers (`social-push` onLookTriedOn, `comment-counter` onCommentCreated
-  /onBoardCommentCreated, `follow-counters` onFollowCreated) now also write a
-  `notifications/{uid}/items/{id}` doc via a shared `functions/notifications.js`
-  `notify()` helper (self-events skipped, fire-and-forget). Client:
-  `NotificationService` + `useUnreadNotifications` + `Notifications.jsx`; bell shows
-  a **dot** (presence, not a count) when unread, cleared on open. Deliberately
-  **excludes likes** (noisiest — batch later) and **DMs** (already on the chat
-  icon). firestore.rules: `notifications/{uid}/items` is server-write, owner
-  read/mark-read/delete. (Native picks up the bell UI on the next app build; the
-  server writes notifications for everyone now.)
+- **2026-07-02 · In-app notification center — server writes live now.** The
+  notification docs, unified push, per-post like batching (outfits + boards),
+  moderation notices, and locale-aware push/DM copy all ship server-side and are
+  live for everyone immediately; the bell UI + deep-link routing land natively in
+  1.3.0. Full detail under the 1.3.0 section above (single source of truth).
 
 - **2026-07-01 · Fix: outfit-ref try-on leaked the source person's face → Cloud
   Vision.** In outfit-ref mode the result kept the source face instead of the

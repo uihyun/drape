@@ -29,19 +29,16 @@ per-user analytics.
 
 ## Deferred — under consideration (revisit when the symptom recurs)
 
-- **In-app notification center on the profile bell (2026-07-02) — deferred.**
-  The 🔔 bell in the profile header (`Profile.jsx:146`) is a dead placeholder —
-  no onClick, no link, no badge, no notifications list/service. Only the 💬 chat
-  icon has a real badge (DM unread, `useUnreadMessages`). Idea: make the bell an
-  activity center — comments on your content, new followers, someone tried on your
-  look, and **batched** likes ("5 people liked your look"). Design to avoid badge
-  noise: a **dot** (not a growing count), cleared on open; **exclude DMs** (already
-  on the chat icon); likes batched/quiet. Cheap to build — reuse the existing
-  social triggers (`social-push.js` onOutfitLiked/onLookTriedOn, comment-counter
-  onCommentCreated, follow-counters onFollowCreated) to ALSO write a
-  `notifications/{uid}/items/{id}` doc alongside the push they already send; bell
-  subscribes for the dot + list. Low priority — social volume is still tiny, so
-  build when it grows (Flash-crop test has bigger near-term impact).
+- **In-app notification center on the profile bell (2026-07-02) — DONE (ships in 1.3.0).**
+  The 🔔 bell is now an activity center: comments, new followers, try-ons of your
+  look, **per-post batched** likes (outfits + boards), and **moderation** notices,
+  with an unread **dot** (not a count), cleared on open; DMs stay on the 💬 icon.
+  Push + bell are **unified** in `functions/notifications.js` (every bell row also
+  pushes; the separate like/try-on push in `social-push.js` was removed to avoid
+  double-fire) and **localized** per recipient via `profiles/{uid}.lang` — social
+  push AND the DM image placeholder. Server writes/push are **live for everyone
+  now**; the bell UI + deep-link routing land natively in **1.3.0**. Full record in
+  CHANGELOG 1.3.0.
 
 - **Outfit-ref try-on: source FACE leaked through — RESOLVED (2026-07-01).**
   In outfit-ref mode the result kept the source person's face instead of the
