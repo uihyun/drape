@@ -18,12 +18,21 @@ const sharp = require('sharp');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-// New SDK ONLY for the Pro image generation — supports imageConfig.imageSize so
-// the try-on render is forced to 2K (was 4K default = ~2x output-token cost).
-// Face-blur (Flash vision) stays on the old SDK.
+// @google/genai for the Pro image generation (supports imageConfig.imageSize →
+// 2K output, was 4K default = ~2x output-token cost).
 const { GoogleGenAI } = require('@google/genai');
+// Cloud Vision for outfit-ref face detection — a purpose-built detector with
+// reliable bounding boxes. Replaces the old Flash bbox, which intermittently
+// returned no box on clear faces and let the source face leak into the result.
+// Auth is the function's service-account (ADC); no API key. Free ≤1000/mo.
+const visionApi = require('@google-cloud/vision');
 const { removeBackground } = require('@imgly/background-removal-node');
+
+let _visionClient = null;
+function visionClient() {
+  if (!_visionClient) _visionClient = new visionApi.ImageAnnotatorClient();
+  return _visionClient;
+}
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
@@ -62,49 +71,42 @@ async function fetchAsInlineData(url) {
 // crisp, front-facing face in that photo leaks into the result — the model
 // copies it over the user's own identity refs (the "rina's face on an amy
 // try-on" bug). Text alone can't stop a salient face, so we remove the signal
-// at the source: ask Flash for the face box and blur just that region. The
-// clothing/styling (and a visor/hat above the brow) stay intact; only the
+// at the source: find the face with Cloud Vision and blur just that region.
+// The clothing/styling (and a hat/cap above the brow) stay intact; only the
 // eyes/nose/mouth/jaw identity is destroyed. Best-effort — any failure returns
-// the photo untouched (same behavior as before this fix).
-async function blurOutfitFace(buf, genai) {
+// the photo untouched. (Cloud Vision replaced a Flash bbox prompt that kept
+// returning "no face" on clear faces; see docs + PROGRESS.md.)
+async function blurOutfitFace(buf) {
   try {
-    const vision = genai.getGenerativeModel({
-      model: 'gemini-3.5-flash',
-      generationConfig: { responseMimeType: 'application/json' },
-    });
-    const detectPrompt = `Locate the human face in this photo. If several people, pick the largest/most central face. Return a bounding box that covers that face — from the brow/eyes down to the chin, and cheek to cheek. A slightly LOOSE box is fine (a bit of hair/hat/cap edge included is OK); returning a box is far better than returning none. JSON ONLY: {"x":num,"y":num,"width":num,"height":num} where every value is a fraction 0..1 of the image and x,y are the top-left corner. Return {"x":null} ONLY if there is genuinely NO person/face anywhere in the image (e.g. a flat-lay of clothes with no person).`;
-    const imgPart = { inlineData: { data: buf.toString('base64'), mimeType: 'image/jpeg' } };
-    // Flash intermittently returns {x:null} on a clearly-visible face (esp. a
-    // smaller/cap-covered one) — a silent miss let the source face leak into the
-    // try-on. Retry once before giving up; log every attempt (survives log drops).
-    let box = null;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const res = await vision.generateContent([imgPart, { text: detectPrompt }]);
-        box = JSON.parse(res.response.text());
-      } catch { box = null; }
-      const ok = box && box.x != null && box.width != null && box.height != null;
-      console.info(`outfit-ref blur: face detect attempt ${attempt} → ${ok ? 'BOX FOUND' : 'no box'}`);
-      if (ok) break;
-    }
-    if (!box || box.x == null || box.width == null || box.height == null) {
-      console.info('outfit-ref blur: NO face box after retries → source UNBLURRED (face may leak)');
+    const [result] = await visionClient().faceDetection({ image: { content: buf } });
+    const faces = result.faceAnnotations || [];
+    if (!faces.length) {
+      console.info('outfit-ref blur: Cloud Vision found NO face → source UNBLURRED');
       return buf;
     }
+    // Vertices are in PIXELS (not fractions). Pick the largest face by box area.
+    const bbox = (f) => {
+      const v = f.boundingPoly?.vertices || [];
+      if (v.length < 3) return null;
+      const xs = v.map((p) => p.x || 0), ys = v.map((p) => p.y || 0);
+      const x = Math.min(...xs), y = Math.min(...ys);
+      return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
+    };
+    const b = faces.map(bbox).filter(Boolean).sort((a, z) => (z.w * z.h) - (a.w * a.h))[0];
+    if (!b || b.w < 8 || b.h < 8) { console.info('outfit-ref blur: face box too small → UNBLURRED', b); return buf; }
     const { width: W, height: H } = await sharp(buf).metadata();
-    // Pad ~18% so the jaw/cheek edges (the parts the model leans on) are fully
-    // covered even if the box is tight.
-    const padX = box.width * 0.18, padY = box.height * 0.18;
-    let left = Math.max(0, Math.round((box.x - padX) * W));
-    let top = Math.max(0, Math.round((box.y - padY) * H));
-    let bw = Math.min(W - left, Math.round((box.width + padX * 2) * W));
-    let bh = Math.min(H - top, Math.round((box.height + padY * 2) * H));
-    if (bw < 8 || bh < 8) { console.info('outfit-ref blur: face box too small → UNBLURRED', { bw, bh }); return buf; }
+    // Pad ~18% so the jaw/cheek edges (the parts the model leans on) are covered.
+    const padX = b.w * 0.18, padY = b.h * 0.18;
+    const left = Math.max(0, Math.round(b.x - padX));
+    const top = Math.max(0, Math.round(b.y - padY));
+    const bw = Math.min(W - left, Math.round(b.w + padX * 2));
+    const bh = Math.min(H - top, Math.round(b.h + padY * 2));
+    if (bw < 8 || bh < 8) { console.info('outfit-ref blur: padded box out of range → UNBLURRED', { bw, bh }); return buf; }
     const region = await sharp(buf)
       .extract({ left, top, width: bw, height: bh })
       .blur(Math.max(12, Math.round(Math.min(bw, bh) / 3)))
       .toBuffer();
-    console.info('outfit-ref blur: APPLIED', { left, top, bw, bh, imgW: W, imgH: H });
+    console.info('outfit-ref blur: APPLIED (Cloud Vision)', { faces: faces.length, left, top, bw, bh });
     return await sharp(buf).composite([{ input: region, left, top }]).toBuffer();
   } catch (e) {
     console.warn('outfit-ref face blur skipped:', e?.message);
@@ -526,7 +528,6 @@ exports.virtualTryOn = onCall(
       }
     }
 
-    const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
 
     // Outfit-ref: blur the (other person's) face in the look photo so it can't
@@ -534,7 +535,7 @@ exports.virtualTryOn = onCall(
     if (isOutfitRef && outfitRefPart) {
       console.info('outfit-ref: neutralizing source face before generation');
       const rawBuf = Buffer.from(outfitRefPart.inlineData.data, 'base64');
-      const blurred = await blurOutfitFace(rawBuf, genai);
+      const blurred = await blurOutfitFace(rawBuf);
       outfitRefPart = { inlineData: { data: blurred.toString('base64'), mimeType: 'image/jpeg' } };
     }
 
