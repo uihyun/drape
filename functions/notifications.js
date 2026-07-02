@@ -16,17 +16,39 @@ const { sendToUser } = require('./push-send.js');
 
 const db = admin.firestore();
 
-// English push copy per event — push isn't localized (no recipient locale
-// server-side), while the in-app bell IS. Keep the wording target-aware so a
-// board notice never says "look" and vice-versa.
-function pushBody(type, targetType) {
-  const board = targetType === 'board';
-  if (type === 'follow') return 'started following you';
-  if (type === 'tryon') return 'tried on your look';
-  if (type === 'comment') return board ? 'commented on your board' : 'commented on your look';
-  if (type === 'like') return board ? 'liked your board' : 'liked your look';
-  if (type === 'moderation') return 'Your look was hidden — its image was flagged as inappropriate.';
-  return '';
+// Localized push copy per event. The recipient's language lives on
+// profiles/{uid}.lang (same field the reminder push uses); we look it up and
+// pick the matching line. Title is the actor name (server-side), so the body
+// omits it — hence "내 룩을 좋아해요" not "…님이…". Target-aware so a board
+// notice never says "look" and vice-versa.
+const PUSH_COPY = {
+  follow:         { en: 'started following you',   ko: '나를 팔로우했어요',       ja: 'あなたをフォローしました' },
+  tryon:          { en: 'tried on your look',      ko: '내 룩을 입어봤어요',       ja: 'あなたのルックを試着しました' },
+  comment_outfit: { en: 'commented on your look',  ko: '내 룩에 댓글을 남겼어요',   ja: 'あなたのルックにコメントしました' },
+  comment_board:  { en: 'commented on your board', ko: '내 보드에 댓글을 남겼어요', ja: 'あなたのボードにコメントしました' },
+  like_outfit:    { en: 'liked your look',         ko: '내 룩을 좋아해요',         ja: 'あなたのルックにいいねしました' },
+  like_board:     { en: 'liked your board',        ko: '내 보드를 좋아해요',       ja: 'あなたのボードにいいねしました' },
+  moderation: {
+    en: 'Your look was hidden — its image was flagged as inappropriate.',
+    ko: '이미지가 부적합으로 판단되어 룩 공개가 해제됐어요.',
+    ja: '画像が不適切と判断され、ルックの公開が取り消されました。',
+  },
+};
+const LANGS = new Set(['en', 'ko', 'ja']);
+
+async function recipientLang(uid) {
+  try {
+    const l = ((await db.collection('profiles').doc(uid).get()).data() || {}).lang;
+    return LANGS.has(l) ? l : 'en';
+  } catch { return 'en'; }
+}
+
+function pushBody(type, targetType, lang = 'en') {
+  const key = (type === 'comment' || type === 'like')
+    ? `${type}_${targetType === 'board' ? 'board' : 'outfit'}`
+    : type;
+  const row = PUSH_COPY[key];
+  return row ? (row[lang] || row.en) : '';
 }
 
 // Deep-link payload the client's routeForNotification() understands.
@@ -67,10 +89,11 @@ async function notify(recipientUid, { type, actorUid, targetType = null, targetI
       read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    // Unified: anything in the bell also pushes (Instagram-style).
+    // Unified: anything in the bell also pushes (Instagram-style), localized.
+    const lang = await recipientLang(recipientUid);
     await sendToUser(recipientUid, {
       title: actor.actorName,
-      body: pushBody(type, targetType),
+      body: pushBody(type, targetType, lang),
       data: deepLinkData(type, targetType, targetId, actor.actorHandle),
       collapseKey: `${type}_${targetType || 'x'}_${targetId || actorUid}`,
     });
@@ -98,9 +121,10 @@ async function notifyLike(recipientUid, { actorUid, targetType, targetId, others
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
     const title = others > 0 ? `${actor.actorName} +${others}` : actor.actorName;
+    const lang = await recipientLang(recipientUid);
     await sendToUser(recipientUid, {
       title,
-      body: pushBody('like', targetType),
+      body: pushBody('like', targetType, lang),
       data: deepLinkData('like', targetType, targetId),
       collapseKey: `like_${targetType}_${targetId}`,
     });
@@ -123,9 +147,10 @@ async function notifySystem(recipientUid, { type, targetType = null, targetId = 
       read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    const lang = await recipientLang(recipientUid);
     await sendToUser(recipientUid, {
       title: 'drape',
-      body: pushBody(type, targetType),
+      body: pushBody(type, targetType, lang),
       data: deepLinkData(type, targetType, targetId),
       collapseKey: `${type}_${targetId || 'x'}`,
     });

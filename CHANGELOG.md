@@ -41,9 +41,11 @@ error logs so a given error is attributable to a specific binary.
     ("Your look was hidden…") + push explaining why.
   - **Copy is target-aware**: notifications distinguish look/outfit vs board
     ("liked your look" vs "liked your board") rather than a generic "post". New
-    locale keys in en/ko/ja; push copy is English (no recipient locale
-    server-side), the in-app bell is localized. Deep-link routing generalized
-    (`routeForNotification` now handles board/comment/follow targets).
+    locale keys in en/ko/ja. **Push is localized too** — the recipient's
+    `profiles/{uid}.lang` (same field the reminder push reads) picks the copy
+    from a server-side table in `notifications.js`; the title is the actor name,
+    so the body omits it. Deep-link routing generalized (`routeForNotification`
+    now handles board/comment/follow targets).
 - **2026-06-30 · Fix: board grid packed differently on iPhone vs desktop → JS masonry.**
   The board grid used CSS `columns` (multi-column) masonry. Multicol's default
   `column-fill: balance` distributes cards to equalize column heights, and that
