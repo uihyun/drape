@@ -4,7 +4,7 @@ import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2,
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
-import { publicOrigin } from '../services/platform-service.js';
+import { brandOrigin } from '../services/platform-service.js';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
@@ -584,13 +584,11 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
     }
   };
 
-  // Invite = share a referral link to the user's public profile (or the
-  // app URL if no handle yet). Same behavior the old Profile button had.
+  // Invite = share the brand landing page (drape.nyc). It's the marketing /
+  // signup funnel (auth is disabled there) — the right place to send someone who
+  // doesn't have the app yet, vs a content link that deep-opens the app.
   const onInvite = async () => {
-    // publicOrigin() returns the hosted address even inside the native
-    // webview (whose own origin is https://localhost and useless to share).
-    const origin = publicOrigin();
-    const url = profile?.handle ? `${origin}/u/${profile.handle}` : origin;
+    const url = brandOrigin();
     try {
       // Pass text + url SEPARATELY (like every other share call site). Folding
       // the url into text as well made it render twice on targets that show both.

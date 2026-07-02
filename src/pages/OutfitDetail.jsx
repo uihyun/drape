@@ -18,6 +18,7 @@ import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
+import { publicOrigin } from '../services/platform-service.js';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -512,7 +513,7 @@ export function OutfitDetail({ user, onSignIn }) {
             className="outfit-action-icon"
             title={outfit.caption || t('untitledOutfit')}
             text={outfit.notes || ''}
-            url={`${window.location.origin}/s/${outfit.id}`}
+            url={`${publicOrigin()}/s/${outfit.id}`}
             label=""
           />
           {!isOwner && (

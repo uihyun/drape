@@ -42,13 +42,30 @@ export const isWeb = () => getPlatform() === 'web';
 // its own localhost is never a shareable address. Only a real browser on
 // localhost / 127.0.0.1 / .local (local dev) falls through to
 // window.location.origin so local share testing works.
-const PUBLIC_BRAND_ORIGIN = 'https://drape-9e532.web.app';
+// The Firebase app host. CONTENT-SHARE links must use this so a tapped link
+// opens the native app — iOS associated-domains + the AASA (/s /o /i /u /boards)
+// are registered for web.app, NOT for drape.nyc. Inside the native webview the
+// real origin is https://localhost (unshareable), so we hardcode the host; only
+// a real browser on localhost/.local (dev) falls through to window.location.
+const APP_ORIGIN = 'https://drape-9e532.web.app';
+// The public brand / landing domain — marketing only, auth disabled. INVITE
+// links point here so new people hit the signup funnel; it is deliberately NOT
+// an associated domain, so it opens the landing page in a browser (not the app).
+const BRAND_ORIGIN = 'https://drape.nyc';
+
+// Shareable deep-link base for CONTENT (outfits/items/boards/profiles) — the app
+// host, so the link opens the app on tap.
 export function publicOrigin() {
-  if (isNativeApp()) return PUBLIC_BRAND_ORIGIN;
-  if (typeof window === 'undefined') return PUBLIC_BRAND_ORIGIN;
+  if (isNativeApp()) return APP_ORIGIN;
+  if (typeof window === 'undefined') return APP_ORIGIN;
   const h = window.location.hostname || '';
   if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')) {
     return window.location.origin;
   }
-  return PUBLIC_BRAND_ORIGIN;
+  return APP_ORIGIN;
+}
+
+// Base for INVITE links — the brand landing page (drape.nyc), not the app host.
+export function brandOrigin() {
+  return BRAND_ORIGIN;
 }

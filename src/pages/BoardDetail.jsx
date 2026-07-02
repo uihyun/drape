@@ -14,6 +14,7 @@ import { Comments } from '../components/Comments.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { publicOrigin } from '../services/platform-service.js';
 
 // Read-only board view at /b/:boardId. Anyone can hit this URL but
 // the underlying read only succeeds if the board is public OR they're
@@ -179,7 +180,7 @@ export function BoardDetail({ user, onSignIn }) {
             className="outfit-action-icon"
             title={board.name || t('untitledBoard')}
             text=""
-            url={`${typeof window !== 'undefined' ? window.location.origin : ''}/boards/${board.id}`}
+            url={`${publicOrigin()}/boards/${board.id}`}
             label=""
           />
           {!isOwner && (

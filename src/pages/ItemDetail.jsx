@@ -21,6 +21,7 @@ import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
+import { publicOrigin } from '../services/platform-service.js';
 
 // Full-screen single-item viewer modeled on Image 24:
 // - photo dominates (white bg, contain) — tap to toggle Before/After
@@ -363,7 +364,7 @@ export function ItemDetail({ user, onSignIn }) {
           className="item-rail-btn item-rail-share"
           title={item.name || t('untitledItem')}
           text={item.tags?.category ? t(`taxonomy.categories.${item.tags.category}`) : ''}
-          url={`${window.location.origin}/i/${item.id}`}
+          url={`${publicOrigin()}/i/${item.id}`}
           label=""
         />
         {isOwner ? (
