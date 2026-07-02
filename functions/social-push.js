@@ -1,33 +1,17 @@
-// Social push: someone liked your outfit, and someone tried on your look.
-// Both are strong re-engagement / validation signals (and try-on is unique to
-// drape). They reuse the shared sendToUser helper, carry a deep-link `data.type`
-// + target, and coalesce per-target via collapseKey so a burst doesn't spam.
+// Social triggers: someone liked your outfit/board, and someone tried on your
+// look. Both are strong re-engagement / validation signals (and try-on is
+// unique to drape). Push + in-app bell are unified in notifications.js — these
+// triggers just detect the event and hand off to notify*/notifyLike, which
+// write the bell row AND send the push (coalesced per-target).
 
 const admin = require('firebase-admin');
 const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
-const { sendToUser } = require('./push-send.js');
-const { notify } = require('./notifications.js');
+const { notify, notifyLike } = require('./notifications.js');
 
 const db = admin.firestore();
 
-// Display name for a uid, falling back gracefully so a missing profile never
-// blocks delivery.
-async function displayNameOf(uid) {
-  try {
-    const snap = await db.collection('profiles').doc(uid).get();
-    const p = snap.exists ? snap.data() : null;
-    if (p?.displayName) return p.displayName;
-    if (p?.handle) return `@${p.handle}`;
-  } catch { /* ignore */ }
-  return 'Someone';
-}
-
-// ── Like push ──────────────────────────────────────────────────────────
-// Fires when likedBy gains a new member. Notifies the outfit owner (never for
-// self-likes). collapseKey per outfit so many likes show as one row.
-exports.onOutfitLiked = onDocumentUpdated('outfits/{outfitId}', async (event) => {
-  const before = event.data?.before?.data() || {};
-  const after = event.data?.after?.data() || {};
+// Shared like handler for outfits + boards (both carry the same likedBy array).
+async function handleLike(before, after, targetType, targetId) {
   const beforeLiked = Array.isArray(before.likedBy) ? before.likedBy : [];
   const afterLiked = Array.isArray(after.likedBy) ? after.likedBy : [];
   const owner = after.userId;
@@ -36,16 +20,21 @@ exports.onOutfitLiked = onDocumentUpdated('outfits/{outfitId}', async (event) =>
   const newLikers = afterLiked.filter(u => !beforeLiked.includes(u) && u !== owner);
   if (!newLikers.length) return;
 
-  const name = await displayNameOf(newLikers[newLikers.length - 1]);
-  const extra = newLikers.length - 1;
-  const title = extra > 0 ? `${name} +${extra}` : name;
-  await sendToUser(owner, {
-    title,
-    body: 'liked your look',
-    data: { type: 'like', outfitId: event.params.outfitId },
-    collapseKey: `like_${event.params.outfitId}`,
+  // One collapsed row/push per post — latest liker + how many others.
+  const totalOthers = afterLiked.filter(u => u !== owner).length;
+  await notifyLike(owner, {
+    actorUid: newLikers[newLikers.length - 1],
+    targetType,
+    targetId,
+    others: Math.max(0, totalOthers - 1),
   });
-});
+}
+
+exports.onOutfitLiked = onDocumentUpdated('outfits/{outfitId}', (event) =>
+  handleLike(event.data?.before?.data() || {}, event.data?.after?.data() || {}, 'outfit', event.params.outfitId));
+
+exports.onBoardLiked = onDocumentUpdated('boards/{boardId}', (event) =>
+  handleLike(event.data?.before?.data() || {}, event.data?.after?.data() || {}, 'board', event.params.boardId));
 
 // ── Try-on push + count ────────────────────────────────────────────────
 // Fires when a generation flips to 'ready'. For an outfit-ref try-on (recreating
@@ -72,12 +61,5 @@ exports.onLookTriedOn = onDocumentUpdated('generations/{generationId}', async (e
   } catch { return; }
   if (!owner || owner === after.userId) return;
 
-  const name = await displayNameOf(after.userId);
-  await sendToUser(owner, {
-    title: name,
-    body: 'tried on your look',
-    data: { type: 'tryon', outfitId: srcId },
-    collapseKey: `tryon_${srcId}`,
-  });
   await notify(owner, { type: 'tryon', actorUid: after.userId, targetType: 'outfit', targetId: srcId });
 });

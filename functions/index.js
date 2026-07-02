@@ -106,6 +106,7 @@ exports.sendReminders = reminderFns.sendReminders;
 // ── Social push (like / try-on) + try-on count ─────────────────────────
 const socialFns = require('./social-push.js');
 exports.onOutfitLiked = socialFns.onOutfitLiked;
+exports.onBoardLiked = socialFns.onBoardLiked;
 exports.onLookTriedOn = socialFns.onLookTriedOn;
 
 // ── Virtual try-on ─────────────────────────────────────────────────────

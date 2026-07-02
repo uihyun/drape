@@ -19,6 +19,31 @@ were silently dropped on iOS/Android since the native-analytics feature
 shipped) and the **stuck-try-on retry UI**. Also stamps the app version onto
 error logs so a given error is attributable to a specific binary.
 
+- **2026-07-02 · In-app notification center on the profile bell + unified push.**
+  The 🔔 bell was a dead placeholder; it now opens `/notifications` — an activity
+  list (comments, follows, try-ons, likes, and moderation notices) with an unread
+  dot on the bell (`useUnreadNotifications`). Notifications live at
+  `notifications/{uid}/items/{id}` (server-write only; owner read / mark-read /
+  delete via firestore.rules). Server writes work for all users immediately; the
+  bell UI + deep-link routing reach native on the next app build.
+  - **Push + bell are unified** (Instagram-style): every event that drops a bell
+    row also sends a push, centralized in `functions/notifications.js`
+    (`notify`/`notifyLike`/`notifySystem` each write the doc AND call
+    `sendToUser`). The separate like/try-on push code was removed from
+    `social-push.js` to avoid double-firing. Comments and follows — previously
+    bell-only — now push too.
+  - **Likes collapse to one row/push per post** (`notifyLike`, deterministic doc
+    id `like_${targetType}_${targetId}`): latest liker + "and N others", re-marked
+    unread and bumped on each new like, so a burst doesn't flood. Works for both
+    **outfits and boards** (`onOutfitLiked` + new `onBoardLiked`).
+  - **Moderation notice** (`notifySystem`): when `onOutfitListed` auto-unlists a
+    cover flagged by SafeSearch, the owner gets a no-actor system notification
+    ("Your look was hidden…") + push explaining why.
+  - **Copy is target-aware**: notifications distinguish look/outfit vs board
+    ("liked your look" vs "liked your board") rather than a generic "post". New
+    locale keys in en/ko/ja; push copy is English (no recipient locale
+    server-side), the in-app bell is localized. Deep-link routing generalized
+    (`routeForNotification` now handles board/comment/follow targets).
 - **2026-06-30 · Fix: board grid packed differently on iPhone vs desktop → JS masonry.**
   The board grid used CSS `columns` (multi-column) masonry. Multicol's default
   `column-fill: balance` distributes cards to equalize column heights, and that

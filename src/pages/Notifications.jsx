@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
 import { Avatar } from '../components/Avatar.jsx';
 import { NotificationService } from '../services/notification-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -48,10 +49,16 @@ export function Notifications({ user, onSignIn }) {
     );
   }
 
-  const action = (n) => (
-    n.type === 'follow' ? t('notifFollowed')
-      : n.type === 'tryon' ? t('notifTriedOn')
-        : t('notifCommented')
+  const action = (n) => {
+    const board = n.targetType === 'board';
+    if (n.type === 'follow') return t('notifFollowed');
+    if (n.type === 'tryon') return t('notifTriedOn');
+    if (n.type === 'like') return t(board ? 'notifLikedBoard' : 'notifLikedLook');
+    if (n.type === 'moderation') return t('notifModeration');
+    return t(board ? 'notifCommentedBoard' : 'notifCommentedLook');
+  };
+  const nameLabel = (n) => (
+    `${n.actorName || 'Someone'}${n.type === 'like' && n.othersCount > 0 ? ` +${n.othersCount}` : ''}`
   );
 
   return (
@@ -65,12 +72,15 @@ export function Notifications({ user, onSignIn }) {
         <ul className="notif-list">
           {items.map((n) => {
             const to = linkFor(n);
+            const isSystem = n.type === 'moderation';
             const inner = (
               <>
-                <Avatar src={n.actorPhoto} name={n.actorName} size={40} />
+                {isSystem
+                  ? <span className="notif-sysicon"><ShieldAlert size={20} strokeWidth={1.8} /></span>
+                  : <Avatar src={n.actorPhoto} name={n.actorName} size={40} />}
                 <span className="notif-body">
                   <span className="notif-text">
-                    <strong>{n.actorName || 'Someone'}</strong> {action(n)}
+                    {isSystem ? action(n) : <><strong>{nameLabel(n)}</strong> {action(n)}</>}
                   </span>
                   {n.preview && <span className="notif-preview">“{n.preview}”</span>}
                 </span>

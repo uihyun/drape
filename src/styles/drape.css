@@ -3854,6 +3854,11 @@ input[type="search"]::-webkit-search-decoration {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
 .notif-time { font-size: 0.75rem; color: var(--text-muted); flex: 0 0 auto; }
+.notif-sysicon {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
+  background: var(--accent-soft, #eef4ee); color: var(--text-secondary);
+}
 
 .thread {
   /* Cover the whole viewport so the input bar can dock at the bottom

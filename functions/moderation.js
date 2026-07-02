@@ -18,6 +18,7 @@ const admin = require('firebase-admin');
 // NSFW scoring) instead of a Gemini yes/no — cheaper, more reliable, and
 // service-account/ADC auth (no key, no GEMINI secret). See docs/COST.md.
 const vision = require('@google-cloud/vision');
+const { notifySystem } = require('./notifications.js');
 
 let _visionClient = null;
 function visionClient() {
@@ -116,6 +117,8 @@ exports.onOutfitListed = onDocumentUpdated(
       moderationReason: verdict.reason,
       moderatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    // In-app bell notice so the owner knows why their post was hidden.
+    await notifySystem(after.userId, { type: 'moderation', targetType: 'outfit', targetId: outfitId });
   }
 );
 

@@ -31,7 +31,9 @@ let pendingNav = null;
 // Map a tapped notification's data payload to an in-app route.
 function routeForNotification(data = {}) {
   if (data.threadId) return `/messages/${data.threadId}`;
-  if ((data.type === 'like' || data.type === 'tryon') && data.outfitId) return `/o/${data.outfitId}`;
+  if (data.boardId) return `/boards/${data.boardId}`;
+  if (data.outfitId) return `/o/${data.outfitId}`;
+  if (data.type === 'follow' && data.handle) return `/u/${data.handle}`;
   if (data.type === 'reminder') return '/feed';
   return null;
 }
