@@ -104,9 +104,9 @@ invite/share deep-link fixes, and the 1.2.2 native analytics fix. Store note kep
 short — leads with notifications.
 
 **Release notes (store-facing, same for iOS + Android):**
-> EN: Notifications are here — see the likes, follows, comments, and try-ons on your looks, all in one place. Plus faster try-ons and refinements throughout.
-> KO: 알림이 생겼어요 — 내 룩에 달린 좋아요·팔로우·댓글·트라이온을 한곳에서 확인하세요. 더 빨라진 트라이온과 곳곳의 개선도 함께.
-> JA: 通知が登場 — あなたのルックへのいいね・フォロー・コメント・試着をひとつの場所で。試着はより高速に、細部も改善しました。
+> EN: New notifications, faster try-on, and improvements throughout.
+> KO: 새로운 알림, 더 빨라진 트라이온, 그리고 곳곳의 개선.
+> JA: 新しい通知、より高速な試着、そして各所の改善。
 
 ### 1.2.2 (iOS build 11 · Android versionCode 14) — fixes + polish
 
