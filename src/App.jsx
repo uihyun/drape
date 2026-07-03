@@ -312,6 +312,27 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
     if (pending) { logEvent(analytics, 'notification_open', { route: pending }); navigate(pending, { replace: true }); }
   }, [authReady, navigate]);
 
+  // Universal Link (iOS) / App Link (Android) deep link → route to the content
+  // IN-APP. The OS opens the app for a tapped web.app content URL (associated-
+  // domains / assetlinks); without this the app would just sit on home. Take the
+  // URL path (/s /o /i /u /boards …) and navigate to it.
+  useEffect(() => {
+    let cleanup;
+    (async () => {
+      const { Capacitor } = await import('@capacitor/core');
+      if (!Capacitor.isNativePlatform()) return;
+      const { App: CapApp } = await import('@capacitor/app');
+      const handle = await CapApp.addListener('appUrlOpen', ({ url }) => {
+        try {
+          const path = new URL(url).pathname;
+          if (path && path !== '/') navigate(path);
+        } catch { /* ignore malformed deep link */ }
+      });
+      cleanup = () => handle.remove();
+    })();
+    return () => { if (cleanup) cleanup(); };
+  }, [navigate]);
+
   // Save the scroll offset continuously under the CURRENT view (via ref). Bound
   // once, so a navigation-time scroll (our reset, or the browser clamping when
   // the list shrinks) lands on the new view — never clobbering the one we left.
