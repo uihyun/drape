@@ -95,6 +95,19 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.3.0 (iOS build 12 · Android versionCode 15) — notifications + faster try-on
+
+**Rollout:** feature release. iOS Archive build 12; Android upload versionCode-15
+.aab (Advertising ID still = No). Headline is the in-app notification center; also
+carries the faster/cheaper try-on + item crop, headwear transfer, try-on counts,
+invite/share deep-link fixes, and the 1.2.2 native analytics fix. Store note kept
+short — leads with notifications.
+
+**Release notes (store-facing, same for iOS + Android):**
+> EN: Notifications are here — see the likes, follows, comments, and try-ons on your looks, all in one place. Plus faster try-ons and refinements throughout.
+> KO: 알림이 생겼어요 — 내 룩에 달린 좋아요·팔로우·댓글·트라이온을 한곳에서 확인하세요. 더 빨라진 트라이온과 곳곳의 개선도 함께.
+> JA: 通知が登場 — あなたのルックへのいいね・フォロー・コメント・試着をひとつの場所で。試着はより高速に、細部も改善しました。
+
 ### 1.2.2 (iOS build 11 · Android versionCode 14) — fixes + polish
 
 **Rollout:** patch on top of 1.2.1. iOS Archive build 11; Android upload
