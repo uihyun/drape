@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## 1.3.0 (Android versionCode 15 · iOS build 12) — native release in progress
+## 1.3.0 (Android versionCode 15 · iOS build 12) — RELEASED 2026-07-05
 
 Headline: the **in-app notification center on the profile bell** + unified,
 localized push (details below). This build also carries the 1.2.2 native-only

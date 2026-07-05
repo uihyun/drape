@@ -35,7 +35,7 @@ per-user analytics.
   `cd functions && node test-item-crop-ab.js [IMG]` / `node test-tryon-ab.js <outfitId>...`.
   Both crop (→Flash-Lite @1K) and try-on (→Flash-3.1 @1K) were decided this way.
 
-- **In-app notification center on the profile bell (2026-07-02) — DONE (ships in 1.3.0).**
+- **In-app notification center on the profile bell (2026-07-02) — SHIPPED in 1.3.0 (released 2026-07-05).**
   The 🔔 bell is now an activity center: comments, new followers, try-ons of your
   look, **per-post batched** likes (outfits + boards), and **moderation** notices,
   with an unread **dot** (not a count), cleared on open; DMs stay on the 💬 icon.

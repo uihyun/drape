@@ -95,7 +95,7 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
-### 1.3.0 (iOS build 12 · Android versionCode 15) — notifications + faster try-on
+### 1.3.0 (iOS build 12 · Android versionCode 15) — notifications + faster try-on · RELEASED 2026-07-05
 
 **Rollout:** feature release. iOS Archive build 12; Android upload versionCode-15
 .aab (Advertising ID still = No). Headline is the in-app notification center; also
