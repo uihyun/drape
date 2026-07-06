@@ -11,6 +11,26 @@ Conventions:
 
 ---
 
+## Unreleased — accumulating toward the next native build (1.3.1)
+
+Web/functions are live now; the client-side items reach iOS/Android on the next
+native build. Bump the 3 version spots when cutting 1.3.1.
+
+- **2026-07-06 · Fix: other people's profiles now match your own — auto-hiding
+  tabs + clean notch.** On a public profile (`/u/:handle`, `.profile--sub`) the
+  section tabs (Outfits / Calendar / Boards) sat fixed and content peeked through
+  the notch, unlike your own profile. Two causes: the `useHideOnScroll` hook was
+  never wired on PublicProfile's tab row, and the `::before` notch filler was
+  excluded from `.profile--sub` on the wrong assumption that the (transparent)
+  `.page-back-bar` covered the notch. Fixes: added `useHideOnScroll({upThreshold:
+  130})` to PublicProfile (same params as Profile), and applied the notch filler
+  to all `.profile` (it's `position:fixed`, so no doubled top gap; sits at z-7,
+  below the back button at z-50). Behavior is now shared via one hook + one CSS
+  rule; covers Outfits, Boards, and Calendar identically. Client-only.
+- **2026-07-06 · Admin: boards column in the per-user table.** `counts.board` was
+  already computed server-side but never rendered; added the header + cell (between
+  OOTD and try-ons). Admin is web-only.
+
 ## 1.3.0 (Android versionCode 15 · iOS build 12) — RELEASED 2026-07-05
 
 Headline: the **in-app notification center on the profile bell** + unified,

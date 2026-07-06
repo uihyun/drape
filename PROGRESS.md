@@ -2,11 +2,18 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-06-28 (working toward 1.2.0 / build 9)
+## Snapshot — 2026-07-06 (1.3.0 released; accumulating toward 1.3.1)
 
-Released: 1.1.1 (iOS+Android). 1.1.4 (build 8) submitted. **1.2.0 (build 9)** is
-the next native submission (folds in everything below; supersedes 1.1.4 if still
-in review). Full detail in `CHANGELOG.md`.
+**Released: 1.3.0** (iOS build 12 · Android versionCode 15, on 2026-07-05) —
+in-app notification center, faster/cheaper try-on (Flash 1K) + item crop
+(Flash-Lite 1K), headwear transfer, try-on counts, invite/share deep-link split
+(invite→drape.nyc, content→web.app + iOS/Android App Links), localized push.
+
+**Accumulating toward 1.3.1** (web/functions live now, native on next build):
+public-profile tab auto-hide + notch parity, admin boards column. Bump the 3
+version spots when cutting the build. Full detail in `CHANGELOG.md`.
+
+Older milestones (1.1.1 → 1.2.x) are in `CHANGELOG.md`.
 
 Built since 1.1.1 (all web/functions live; native picks up on build 9):
 - i18n: generated text in the creator's language + on-demand "translate" toggle.
