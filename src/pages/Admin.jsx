@@ -266,7 +266,7 @@ function UsersTab({ onPick }) {
       {res && (
         <div className="adm-tablewrap">
           <table className="adm-table adm-users">
-            <thead><tr><th>user</th><th>location</th><th>joined</th><th>last active</th><th>prov</th><th>items</th><th>outfits</th><th>OOTD</th><th>try-ons</th><th>followers</th><th>following</th></tr></thead>
+            <thead><tr><th>user</th><th>location</th><th>joined</th><th>last active</th><th>prov</th><th>items</th><th>outfits</th><th>OOTD</th><th>boards</th><th>try-ons</th><th>followers</th><th>following</th></tr></thead>
             <tbody>
               {rows.map((u) => (
                 <tr key={u.uid} className="adm-clickable" onClick={() => onPick(u.uid)}>
@@ -281,6 +281,7 @@ function UsersTab({ onPick }) {
                   <td>{fmt(u.counts.items)}</td>
                   <td>{fmt(u.counts.outfits)}</td>
                   <td>{fmt(u.counts.ootd)}</td>
+                  <td>{fmt(u.counts.board)}</td>
                   <td>{fmt(u.counts.tryon)}</td>
                   <td>{fmt(u.followerCount)}</td>
                   <td>{fmt(u.followingCount)}</td>
