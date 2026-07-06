@@ -5422,9 +5422,12 @@ input[type="search"]::-webkit-search-decoration {
 /* Notch/status-bar filler — same as the feed. The section tabs auto-hide
    into the safe-area, and the identity header scrolls under it, so without
    this the notch region would let content show through behind the Dynamic
-   Island. Kept on the root profile only (not .profile--sub, which sits under
-   the sticky back-bar that already owns the notch). */
-.profile:not(.profile--sub)::before {
+   Island. Applied to BOTH the root profile and .profile--sub (PublicProfile):
+   the .page-back-bar over the sub page is transparent, so it does NOT paint the
+   notch — content peeked through without this. It's position:fixed (no layout
+   space), so it only covers the notch and can't double the top gap; it sits at
+   z-7, below the back button (z-50), so the button stays visible. */
+.profile::before {
   content: '';
   position: fixed;
   top: 0;
@@ -5435,9 +5438,6 @@ input[type="search"]::-webkit-search-decoration {
   z-index: 7;
   pointer-events: none;
 }
-/* PublicProfile (/u/:handle) sits UNDER the sticky .page-back-bar, which
-   already consumes the notch inset — so don't add it again (that doubled the
-   top gap on native; desktop has safe-top:0 so it never showed there). */
 .profile--sub { padding-top: 0.25rem; }
 .profile-topbar {
   display: flex;

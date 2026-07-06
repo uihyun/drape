@@ -17,6 +17,7 @@ import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { formatCount } from '../utils/formatCount.js';
 import { cityDisplay } from '../data/cities.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
 
 // Read-only profile for *other* users (route: /u/:handle). Same identity
 // header as the owner Profile, with Follow + three tabs of public-only
@@ -47,6 +48,9 @@ export function PublicProfile({ user, onSignIn }) {
   const setTab = (next) => setSearchParams((prev) => {
     const p = new URLSearchParams(prev); p.set('pt', next); return p;
   }, { replace: true });
+  // Auto-hiding sticky tab row — identical behavior to the owner Profile: the
+  // tabs stick under the notch and slide up on scroll-down / back on scroll-up.
+  const tabsRef = useHideOnScroll({ upThreshold: 130 });
   const [ootds, setOotds] = useState(null);
   const [boards, setBoards] = useState(null);
   const [followSheet, setFollowSheet] = useState(null);
@@ -195,7 +199,7 @@ export function PublicProfile({ user, onSignIn }) {
 
       <ExpandableBio text={bio} />
 
-      <nav className="profile-tabs" role="tablist">
+      <nav className="profile-tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
         {PUBLIC_TABS.map(name => (
           <button
             key={name}
