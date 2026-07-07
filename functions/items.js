@@ -354,10 +354,24 @@ exports.processItem = onCall(
     // flow add: source photo has a top + bottom + shoes and the user picked
     // the top), pass focus so the prompt can disambiguate. Otherwise the
     // model picks the most prominent garment.
-    const focusClause = focus?.category || focus?.description
-      ? `\n\nIMPORTANT — this photo contains MULTIPLE clothing items. Extract \
-ONLY the ${focus.category || 'item'}${focus.description ? ` ("${focus.description}")` : ''}. \
-Ignore all other clothing the person is wearing.\n`
+    // The target is often ONE layer of a worn, multi-garment look (e.g. a tank
+    // UNDER an open cardigan). The description (color/neckline/sleeve) is the
+    // real disambiguator — category alone ("top") can't separate a tank from a
+    // cardigan, and without it the model grabs the most visible layer. So lead
+    // with the description and explicitly forbid returning a different, more
+    // visible layer.
+    const focusKey = focus?.description
+      ? `the ${focus.description}${focus.category ? ` (a ${focus.category})` : ''}`
+      : (focus?.category ? `the ${focus.category}` : '');
+    const focusClause = focusKey
+      ? `\n\nTARGET GARMENT — this photo shows a person wearing MULTIPLE layered \
+garments. Extract ONLY ${focusKey}, and NOTHING else. Its description is the \
+primary identifier — match its exact color, neckline, and sleeve length. The \
+target may be PARTIALLY HIDDEN under or behind other clothing (a cardigan, \
+jacket, or bag): reconstruct only that one target garment. Do NOT output a \
+different, more visible layer such as the outer cardigan/jacket. If the target \
+is a sleeveless tank/top, the result MUST be sleeveless — never add sleeves or \
+return a long-sleeve garment. Ignore every other garment the person is wearing.\n`
       : '';
     const cropPrompt = `Extract ONLY the item from this photo and present it
 in the standard catalog product view for its category:

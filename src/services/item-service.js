@@ -45,6 +45,22 @@ function itemStorageRef(uid, itemId, filename) {
   return ref(storage, `items/${uid}/${itemId}/${filename}`);
 }
 
+// Build the `focus.description` for processItem from a piece's name + description.
+// Both are disambiguators for which layer to extract from a multi-garment photo;
+// combine them (trimmed, deduped, longer-if-substring) so the crop gets max
+// signal. Either may be empty.
+function focusDescriptor(name, description) {
+  const parts = [name, description].map((s) => (s || '').trim()).filter(Boolean);
+  if (parts.length === 2) {
+    const [a, b] = parts;
+    // If one contains the other, the longer already says everything.
+    if (b.toLowerCase().includes(a.toLowerCase())) return b;
+    if (a.toLowerCase().includes(b.toLowerCase())) return a;
+    return `${a} — ${b}`;
+  }
+  return parts[0] || '';
+}
+
 /**
  * Create a new closet item. Returns { id } immediately — caller can render a
  * skeleton card while `status='processing'`. The cropped image + tags are
@@ -253,14 +269,17 @@ async function reprocessItem(itemId) {
   // re-cropping whichever garment dominates the frame. Single-item adds have
   // no detected tags yet → no focus → a full crop+tag pass.
   const snap = await getDoc(doc(db, ITEMS, itemId));
-  const tags = (snap.exists() && snap.data().tags) || {};
+  const data = (snap.exists() && snap.data()) || {};
+  const tags = data.tags || {};
   await updateDoc(doc(db, ITEMS, itemId), {
     status: 'processing',
     updatedAt: serverTimestamp(),
   });
   const processItem = httpsCallable(functions, 'processItem');
+  // Name + description together disambiguate which layer to re-extract; the tag
+  // description is often empty, so the name (e.g. "Cream scoop tank") carries it.
   const focus = tags.category
-    ? { category: tags.category, description: tags.description || '' }
+    ? { category: tags.category, description: focusDescriptor(data.name, tags.description) }
     : null;
   await processItem(focus ? { itemId, focus, lang: currentLang() } : { itemId, lang: currentLang() });
 }
@@ -346,7 +365,12 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
     lang: currentLang(),
     focus: {
       category: detected.category || null,
-      description: detected.description || '',
+      // Both the name ("cream scoop tank") and any longer description are strong
+      // disambiguators — combine them (deduped) so the crop has max signal about
+      // which layer to extract. Detect often leaves description empty, so the
+      // name alone must still carry it; category ("top") can't separate a tank
+      // from a cardigan on its own.
+      description: focusDescriptor(detected.name, detected.description),
     },
   }).catch((err) => {
     console.warn('processItem (detected) failed:', err?.message);
@@ -396,7 +420,7 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
   processFn({
     itemId: id,
     lang: currentLang(),
-    focus: { category: detected.category || null, description: detected.description || '' },
+    focus: { category: detected.category || null, description: focusDescriptor(detected.name, detected.description) },
   }).catch((err) => {
     console.warn('processItem (existing photo) failed:', err?.message);
     markFailedIfStuck(id);
