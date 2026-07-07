@@ -16,6 +16,22 @@ Conventions:
 Web/functions are live now; the client-side items reach iOS/Android on the next
 native build. Bump the 3 version spots when cutting 1.3.1.
 
+- **2026-07-07 · Fix: focus crop pulled the wrong garment on multi-item photos.**
+  Detect-adding a specific piece from a worn look (e.g. a "Cream scoop tank" under
+  an open cardigan) sometimes cropped the wrong, more-visible layer (the cardigan).
+  Root cause: the item NAME held the descriptor but `tags.description` was empty,
+  and `focus` passed only the empty description — so the crop prompt saw just
+  "Extract ONLY the top." with no color/neckline to separate a tank from a
+  cardigan, and the model grabbed the dominant layer ~half the time. Fix (NO model
+  change — stays on Flash-Lite): `focusDescriptor(name, description)` in
+  `item-service.js` combines both (deduped) into `focus.description` across
+  `createFromDetected` / `createFromDetectedExistingPhoto` / `reprocessItem`; and
+  `items.js`'s focus clause was strengthened (lead with the description, warn the
+  target may be hidden under other layers, forbid returning a more-visible layer,
+  require sleeveless→sleeveless). Verified on the real failing photo: the shipped
+  Lite config now returns the tank 4/4 (was 1/2 cardigan). This case was the gap
+  the original Flash-Lite crop A/B missed (it only tested single clean garments).
+  Server + web live; client bits reach native on the next build.
 - **2026-07-06 · Fix: other people's profiles now match your own — auto-hiding
   tabs + clean notch.** On a public profile (`/u/:handle`, `.profile--sub`) the
   section tabs (Outfits / Calendar / Boards) sat fixed and content peeked through

@@ -65,7 +65,14 @@ Implementation:
   **~$0.041/img (−72%)** and **~3x faster** (3–8s vs 21–27s → shorter "processing"
   state). 1K is invisible vs 2K on-device and halves stored size. Prompt gained
   explicit hard constraints (hem/sleeve length, piece count, shoe pair, fill frame).
-  Try-on stays Pro (identity preservation). Test rig: scratchpad `flash-test/compare.js`.
+  Try-on stays Pro (identity preservation). Test rig: `functions/test-item-crop-ab.js`.
+  - **Follow-up (2026-07-07):** the A/B only tested SINGLE clean garments, so it
+    missed the detect-add **focus** path (extract one layer from a worn multi-item
+    photo). That mis-cropped (tank → cardigan) — but the cause was an **empty
+    `focus.description`** (only "top" reached the prompt), NOT Lite being too weak.
+    Filling the descriptor (name + description) + a stronger focus clause fixed it
+    on Lite, 4/4 — **no model escalation needed.** Lesson: the crop A/B must
+    include a multi-item + focus case, not just isolated garments.
 
 - **Try-on → `gemini-3.1-flash-image` @1K (2026-07-02).** Was Pro 3 @2K
   ($0.150/img measured). A/B on 4 real men's outfit-ref looks (identity photo +
