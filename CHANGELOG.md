@@ -16,6 +16,21 @@ Conventions:
 Web/functions are live now; the client-side items reach iOS/Android on the next
 native build. Bump the 3 version spots when cutting 1.3.1.
 
+- **2026-07-07 · Try-on "fits" — daily quota + invite rewards (Phase 1).** Try-on
+  was unlimited; introduced a soft economy. **5 free "fits"/day** (1 fit = 1 try-on),
+  reset at the user's local midnight (non-accumulating), plus **+10 bonus fits to the
+  INVITER** when someone redeems their invite code. Bonus fits persist, spent only
+  after the daily 5. Server-authoritative: new `functions/fits.js`
+  (`reserveFit` in a txn before generation, `refundFit` if every variant fails so a
+  failed try-on costs nothing, `ensureInviteCode`, `redeemInvite` onCall with self/
+  dupe/cap guards). Fields (`fitDayKey/fitDailyUsed/fitBonus/invitedBy/inviteCode/
+  inviteCount`) live on `users/{uid}` and are added to the firestore.rules deny lists
+  (client reads for display, can never write); `inviteCodes/{code}` reverse index is
+  server-only. Client: `useFits` hook, TryOn gate + out-of-fits modal ("invite friends
+  → +10"), Settings fits row + invite code share + "enter invite code". Reward name is
+  lowercase **`fit`** ("3 fits left"). en/ko/ja. Server + web live; the UI reaches
+  native in 1.3.1. (Phase 2 = free auto-attribution: deep-link/install-referrer/
+  clipboard. IAP purchase deferred.)
 - **2026-07-07 · Fix: focus crop pulled the wrong garment on multi-item photos.**
   Detect-adding a specific piece from a worn look (e.g. a "Cream scoop tank" under
   an open cardigan) sometimes cropped the wrong, more-visible layer (the cardigan).

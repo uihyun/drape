@@ -19,16 +19,22 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
 
+      // followerCount/followingCount are server-only; the "fit" economy fields
+      // (daily quota, bonus balance, invite attribution + code) are ALSO
+      // server-authoritative — the client reads them for display but must never
+      // write them, or it could mint itself unlimited try-ons.
       allow create: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.keys().hasAny(
-            ['followerCount', 'followingCount']
+            ['followerCount', 'followingCount',
+             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount']
            );
 
       allow update: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['followerCount', 'followingCount']);
+            .hasAny(['followerCount', 'followingCount',
+             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount']);
 
       allow delete: if false;
     }
@@ -455,6 +461,11 @@ service cloud.firestore {
 
     // ── Rate limits + admin — backend only ─────────────────────────────
     match /rateLimits/{identifier} {
+      allow read, write: if false;
+    }
+    // Invite-code reverse index (code → uid). Server-only: minted by
+    // ensureInviteCode, read by redeemInvite; clients never touch it.
+    match /inviteCodes/{code} {
       allow read, write: if false;
     }
     match /admin/{document=**} {

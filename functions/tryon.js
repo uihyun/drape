@@ -27,6 +27,7 @@ const { GoogleGenAI } = require('@google/genai');
 // Auth is the function's service-account (ADC); no API key. Free ≤1000/mo.
 const visionApi = require('@google-cloud/vision');
 const { removeBackground } = require('@imgly/background-removal-node');
+const { reserveFit, refundFit } = require('./fits.js');
 
 let _visionClient = null;
 function visionClient() {
@@ -592,6 +593,22 @@ exports.virtualTryOn = onCall(
       : (customPhotoPath ? 'custom-photo' : 'identity-refs');
     parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) + ANATOMY_GUARD });
 
+    // ── Reserve a fit (daily free first, then bonus) ───────────────────
+    // Done AFTER validation so a bad request never burns a fit, and BEFORE the
+    // expensive generation. `resource-exhausted` → mark this pending doc failed
+    // and rethrow so the client shows the out-of-fits prompt. Refunded below if
+    // every variant fails. The client also pre-checks, so this is the backstop.
+    let fitCharged = null;
+    try {
+      fitCharged = await db.runTransaction((txn) => reserveFit(txn, uid));
+    } catch (err) {
+      if (err?.code === 'resource-exhausted') {
+        await genRef.update({ status: 'failed', errors: ['out_of_fits'], updatedAt: admin.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+      }
+      throw err;
+    }
+    await genRef.update({ fitCharged }).catch(() => {});
+
     // ── Run N variants in parallel ─────────────────────────────────────
     // Relax safety to BLOCK_ONLY_HIGH: at the default MEDIUM threshold the
     // image model over-refuses ordinary fashion photos of people (esp. young
@@ -684,6 +701,9 @@ exports.virtualTryOn = onCall(
     const results = await Promise.all(runs);
     const variantUrls = results.filter(r => r.ok).map(r => r.url);
     const variantPaths = results.filter(r => r.ok).map(r => r.path);
+
+    // Nothing generated → refund the reserved fit (don't charge for a failure).
+    if (variantUrls.length === 0) await refundFit(uid, fitCharged);
 
     await genRef.update({
       status: variantUrls.length > 0 ? 'ready' : 'failed',

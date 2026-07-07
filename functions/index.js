@@ -13,6 +13,7 @@ const cors = require('cors');
 admin.initializeApp();
 
 const profileFns = require('./profile.js');
+const fitsFns = require('./fits.js');
 
 const corsHandler = cors({ origin: true });
 const db = admin.firestore();
@@ -72,6 +73,9 @@ exports.initializeUser = onRequest(async (req, res) => {
             } catch (e) {
                 console.warn('ensureProfile failed (non-fatal):', e.message);
             }
+            // Mint the user's invite code (new users + lazily for existing ones).
+            try { await fitsFns.ensureInviteCode(auth.uid); }
+            catch (e) { console.warn('ensureInviteCode failed (non-fatal):', e.message); }
 
             res.json({ ok: true });
         } catch (err) {
@@ -113,6 +117,9 @@ exports.onLookTriedOn = socialFns.onLookTriedOn;
 const tryonFns = require('./tryon.js');
 exports.virtualTryOn = tryonFns.virtualTryOn;
 exports.cleanupStuckTryons = tryonFns.cleanupStuckTryons;
+
+// ── Try-on "fits" quota + invite rewards ───────────────────────────────
+exports.redeemInvite = fitsFns.redeemInvite;
 
 // ── Moderation triggers ────────────────────────────────────────────────
 const moderationFns = require('./moderation.js');

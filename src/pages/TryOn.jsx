@@ -12,6 +12,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useFits } from '../hooks/useFits.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -23,6 +24,8 @@ const MAX_TRYON_ITEMS = 6;
 export function TryOn({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const fits = useFits(user);
+  const [outOfFits, setOutOfFits] = useState(false);
   const [search] = useSearchParams();
   const [refs, setRefs] = useState(null);
   const [items, setItems] = useState([]);
@@ -150,6 +153,9 @@ export function TryOn({ user, onSignIn }) {
 
   const submit = async () => {
     if (!outfitRefId && selected.size === 0) return;
+    // Fits gate — pre-check for instant feedback; the server enforces the real
+    // limit (this can be stale across devices, so the catch below also handles it).
+    if (fits.loaded && fits.total <= 0) { setOutOfFits(true); return; }
     setSubmitting(true);
     setError(null);
     // Kick off in the background so the user can browse other tabs while
@@ -183,7 +189,8 @@ export function TryOn({ user, onSignIn }) {
         navigate('/profile/tryon');
       }
     } catch (err) {
-      setError(err.message);
+      if (/out_of_fits|resource-exhausted/i.test(err?.message || '')) setOutOfFits(true);
+      else setError(err.message);
     } finally { setSubmitting(false); }
   };
 
@@ -339,8 +346,21 @@ export function TryOn({ user, onSignIn }) {
       )}
 
       <AlertModal open={!!error} message={error} onClose={() => setError(null)} />
+      <AlertModal
+        open={outOfFits}
+        title={t('fitsOutTitle')}
+        message={t('fitsOutBody')}
+        actionLabel={t('inviteFriends')}
+        onAction={() => { setOutOfFits(false); navigate('/settings'); }}
+        onClose={() => setOutOfFits(false)}
+      />
 
       <div className="builder-cta">
+        {fits.loaded && (
+          <span className="tryon-fits-left">
+            {t('fitsLeft', { n: fits.total })}{fits.bonus > 0 ? ` ${t('fitsBonus', { n: fits.bonus })}` : ''}
+          </span>
+        )}
         <button
           type="button"
           className="btn btn-primary"

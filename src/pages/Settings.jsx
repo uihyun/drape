@@ -5,6 +5,9 @@ import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
 import { brandOrigin } from '../services/platform-service.js';
+import { FitsService } from '../services/fits-service.js';
+import { useFits } from '../hooks/useFits.js';
+import { AlertModal } from '../components/AlertModal.jsx';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
@@ -584,22 +587,42 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
     }
   };
 
-  // Invite = share the brand landing page (drape.nyc). It's the marketing /
-  // signup funnel (auth is disabled there) — the right place to send someone who
-  // doesn't have the app yet, vs a content link that deep-opens the app.
+  const fits = useFits(user);
+  const [codeInput, setCodeInput] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemMsg, setRedeemMsg] = useState(null);
+
+  // Invite = share the brand landing page (drape.nyc) + the user's invite code.
+  // The invitee enters the code after installing + signing up → the INVITER gets
+  // +10 fits. (Code entry is the reliable cross-platform attribution path.)
   const onInvite = async () => {
-    const url = brandOrigin();
+    const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
     try {
-      // Pass text + url SEPARATELY (like every other share call site). Folding
-      // the url into text as well made it render twice on targets that show both.
       await shareLink({
         title: t('inviteShareTitle'),
-        text: t('inviteShareText'),
-        url,
+        text: `${t('inviteShareText')}${codeLine}`,
+        url: brandOrigin(),
       });
     } catch (err) {
       console.warn('invite share failed', err?.message);
     }
+  };
+
+  const REDEEM_MSG = {
+    already_redeemed: t('inviteAlreadyRedeemed'),
+    invalid_code: t('inviteInvalidCode'),
+    self_referral: t('inviteSelf'),
+    no_code: t('inviteInvalidCode'),
+  };
+  const onRedeem = async () => {
+    setRedeeming(true);
+    try {
+      await FitsService.redeemInvite(codeInput);
+      setRedeemMsg(t('inviteRedeemed'));
+      setCodeInput('');
+    } catch (err) {
+      setRedeemMsg(REDEEM_MSG[err?.reason] || t('inviteInvalidCode'));
+    } finally { setRedeeming(false); }
   };
 
   return (
@@ -611,13 +634,49 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
         <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
       </div>
 
+      {fits.loaded && (
+        <div className="settings-row">
+          <span className="settings-row-label">{t('fitsRow')}</span>
+          <span className="settings-row-value">
+            {t('fitsToday', { n: fits.dailyRemaining })}{fits.bonus > 0 ? ` · ${t('fitsBonus', { n: fits.bonus })}` : ''}
+          </span>
+        </div>
+      )}
+
       <button type="button" className="settings-row settings-row-action" onClick={onInvite}>
         <span className="settings-row-label">
           <Share2 size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
           {t('invite')}
+          <span className="settings-row-sub">{t('inviteEarnFits')}</span>
         </span>
         <ChevronRight size={16} strokeWidth={1.5} className="muted" />
       </button>
+
+      {fits.loaded && !fits.redeemed && (
+        <div className="settings-row settings-row-inputrow">
+          <span className="settings-row-label">{t('inviteEnterCode')}</span>
+          <span className="settings-invite-redeem">
+            <input
+              className="settings-invite-code-input"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+              placeholder={t('inviteCodeLabel')}
+              maxLength={6}
+              autoCapitalize="characters"
+              autoCorrect="off"
+            />
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onRedeem}
+              disabled={redeeming || codeInput.length < 4}
+            >
+              {redeeming ? <Loader2 size={14} className="spin" /> : t('inviteCodeApply')}
+            </button>
+          </span>
+        </div>
+      )}
+      <AlertModal open={!!redeemMsg} message={redeemMsg} onClose={() => setRedeemMsg(null)} />
 
       <div className="settings-row">
         <span className="settings-row-label">{t('langLabel')}</span>

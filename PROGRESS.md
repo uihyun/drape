@@ -10,7 +10,9 @@ in-app notification center, faster/cheaper try-on (Flash 1K) + item crop
 (invite→drape.nyc, content→web.app + iOS/Android App Links), localized push.
 
 **Accumulating toward 1.3.1** (web/functions live now, native on next build):
-public-profile tab auto-hide + notch parity, admin boards column, focus-crop fix
+try-on "fits" economy (5/day + invite +10, Phase 1 = manual code; Phase 2 auto-
+attribution + IAP still TODO), public-profile tab auto-hide + notch parity,
+admin boards column, focus-crop fix
 (detect-add of a specific piece pulled the wrong layer — empty focus.description;
 now combines name+description, no model change). Bump the 3 version spots when
 cutting the build. Full detail in `CHANGELOG.md`.
