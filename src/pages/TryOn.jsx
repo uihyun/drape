@@ -18,6 +18,24 @@ import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 // message instead of a failed request after pressing Start.
 const MAX_TRYON_ITEMS = 6;
 
+// Small circular gauge of daily fits (사주핑 energy-ring style): a track ring +
+// an accent arc filling remaining/max, drawn from 12 o'clock.
+function FitsRing({ remaining, max, size = 22, stroke = 3 }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const frac = Math.max(0, Math.min(1, max ? remaining / max : 0));
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="fits-ring" aria-hidden="true">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
+        strokeDasharray={c} strokeDashoffset={c * (1 - frac)} strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+
 // Try-on entry. Pick WHO (saved identity refs, or a one-shot custom photo)
 // and WHAT (one or more closet items). On submit, navigates to
 // /tryon/:generationId for the variant gallery.
@@ -359,10 +377,11 @@ export function TryOn({ user, onSignIn }) {
         <div className="tryon-cta-stack">
           {fits.loaded && (
             <div className="tryon-fits-meter">
+              <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
               <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
-              <div className="tryon-fits-bar" aria-hidden="true">
-                <div className="tryon-fits-bar-fill" style={{ width: `${(fits.dailyRemaining / FITS_PER_DAY) * 100}%` }} />
-              </div>
+              <button type="button" className="tryon-fits-invite" onClick={() => navigate('/settings')}>
+                {t('inviteEarnFits')}
+              </button>
             </div>
           )}
           <button

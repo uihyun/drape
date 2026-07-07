@@ -462,7 +462,7 @@ export const en = {
   onboardSlide1Title: 'Your closet, on your phone',
   onboardSlide1Body: 'Snap each piece — drape cuts it out and tags it automatically. Combine pieces into outfits and log a daily OOTD on your calendar.',
   onboardSlide2Title: 'See it on you, first',
-  onboardSlide2Body: 'Try any item on yourself with the photos you’ve added. Without actually wearing it, see whether it suits you — and where you’d wear it. It’s really your face and body, so the result looks natural.',
+  onboardSlide2Body: 'Try any item on yourself with the photos you’ve added. Without actually wearing it, see whether it suits you — and where you’d wear it. It’s really your face and body, so the result looks natural. You get 5 free try-ons a day; invite friends to earn more.',
   onboardSlide3Title: 'Browse & refresh your closet',
   onboardSlide3Body: 'Browse the feed — try on others’ pieces, analyze a look to find out what it is, and save what you love. Sell what you no longer wear and buy what you need to clear out and refresh your closet.',
   onboardChooseTitle: 'How will you use drape?',

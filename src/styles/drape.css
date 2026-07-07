@@ -2994,20 +2994,18 @@ input[type="search"]::-webkit-search-decoration {
   display: flex; flex-direction: column; gap: 0.5rem;
   width: 100%; max-width: 480px;
 }
-/* Continuous energy bar (사주핑 style) + an "N/5" count. */
+/* Fits gauge row above the button: a round energy ring + "N/5" + an invite nudge. */
 .tryon-fits-meter {
-  display: flex; align-items: center; gap: 0.55rem; padding: 0 0.15rem;
+  display: flex; align-items: center; gap: 0.45rem; padding: 0 0.25rem;
 }
+.fits-ring { display: block; flex: 0 0 auto; }
 .tryon-fits-count {
-  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+  font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.tryon-fits-bar {
-  flex: 1; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
-}
-.tryon-fits-bar-fill {
-  height: 100%; border-radius: 999px; background: var(--accent);
-  transition: width 0.3s ease;
+.tryon-fits-invite {
+  margin-left: auto; background: none; border: none; padding: 0;
+  font-size: 0.78rem; font-weight: 500; color: var(--accent); cursor: pointer;
 }
 .settings-label {
   font-size: 0.78rem;
