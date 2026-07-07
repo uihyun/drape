@@ -13,6 +13,8 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
+import { shareLink } from '../services/share-service.js';
+import { brandOrigin } from '../services/platform-service.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -44,6 +46,14 @@ export function TryOn({ user, onSignIn }) {
   const navigate = useNavigate();
   const fits = useFits(user);
   const [outOfFits, setOutOfFits] = useState(false);
+  // Invite directly from here (opens the share sheet with the user's code) — the
+  // whole point of the nudge is to invite, not to hunt through Settings.
+  const doInvite = async () => {
+    const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
+    try {
+      await shareLink({ title: t('inviteShareTitle'), text: `${t('inviteShareText')}${codeLine}`, url: brandOrigin() });
+    } catch (err) { console.warn('invite share failed', err?.message); }
+  };
   const [search] = useSearchParams();
   const [refs, setRefs] = useState(null);
   const [items, setItems] = useState([]);
@@ -369,7 +379,7 @@ export function TryOn({ user, onSignIn }) {
         title={t('fitsOutTitle')}
         message={t('fitsOutBody')}
         actionLabel={t('inviteFriends')}
-        onAction={() => { setOutOfFits(false); navigate('/settings'); }}
+        onAction={() => { setOutOfFits(false); doInvite(); }}
         onClose={() => setOutOfFits(false)}
       />
 
@@ -379,7 +389,7 @@ export function TryOn({ user, onSignIn }) {
             <div className="tryon-fits-meter">
               <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
               <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
-              <button type="button" className="tryon-fits-invite" onClick={() => navigate('/settings')}>
+              <button type="button" className="tryon-fits-invite" onClick={doInvite}>
                 {t('inviteEarnFits')}
               </button>
             </div>
