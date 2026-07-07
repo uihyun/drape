@@ -47,6 +47,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
+      <FitsSection user={user} t={t} />
       <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
       <AccountSection
@@ -568,44 +569,19 @@ function IdentitySection({ user, t }) {
   );
 }
 
-function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
-  // Friendly reminder push toggle — kept simple here under Account (like the
-  // language row). Switch ON = reminders enabled; stored as `remindersOptOut`
-  // (default-absent = ON). Optimistic; native push only.
-  const serverOptOut = !!profile?.remindersOptOut;
-  const [remPending, setRemPending] = useState(null);
-  const remindersOn = remPending == null ? !serverOptOut : remPending;
-  useEffect(() => { if (remPending != null && (!serverOptOut) === remPending) setRemPending(null); }, [serverOptOut, remPending]);
-  const toggleReminders = async () => {
-    const next = !remindersOn;
-    setRemPending(next);
-    try {
-      await ProfileService.updateRemindersOptOut(!next); // optOut = !on
-    } catch (e) {
-      console.warn('reminder opt-out save failed:', e?.message);
-      setRemPending(null);
-    }
-  };
-
+// Try-on "fits" — daily balance, invite-to-earn, and redeem-a-code, grouped in
+// one card (the whole "run out → invite friends → +10" story lives together).
+function FitsSection({ user, t }) {
   const fits = useFits(user);
   const [codeInput, setCodeInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemMsg, setRedeemMsg] = useState(null);
 
-  // Invite = share the brand landing page (drape.nyc) + the user's invite code.
-  // The invitee enters the code after installing + signing up → the INVITER gets
-  // +10 fits. (Code entry is the reliable cross-platform attribution path.)
   const onInvite = async () => {
     const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
     try {
-      await shareLink({
-        title: t('inviteShareTitle'),
-        text: `${t('inviteShareText')}${codeLine}`,
-        url: brandOrigin(),
-      });
-    } catch (err) {
-      console.warn('invite share failed', err?.message);
-    }
+      await shareLink({ title: t('inviteShareTitle'), text: `${t('inviteShareText')}${codeLine}`, url: brandOrigin() });
+    } catch (err) { console.warn('invite share failed', err?.message); }
   };
 
   const REDEEM_MSG = {
@@ -627,19 +603,12 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
 
   return (
     <section className="settings-card">
-      <h2 className="settings-h2">{t('account')}</h2>
-
-      <div className="settings-row">
-        <span className="settings-row-label">{t('signedInAs')}</span>
-        <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
-      </div>
+      <h2 className="settings-h2">{t('fitsRow')}</h2>
 
       {fits.loaded && (
         <div className="settings-row">
-          <span className="settings-row-label">{t('fitsRow')}</span>
-          <span className="settings-row-value">
-            {t('fitsToday', { n: fits.dailyRemaining })}{fits.bonus > 0 ? ` · ${t('fitsBonus', { n: fits.bonus })}` : ''}
-          </span>
+          <span className="settings-row-label">{t('fitsToday', { n: fits.dailyRemaining })}</span>
+          {fits.bonus > 0 && <span className="settings-row-value">{t('fitsBonus', { n: fits.bonus })}</span>}
         </div>
       )}
 
@@ -677,6 +646,37 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
         </div>
       )}
       <AlertModal open={!!redeemMsg} message={redeemMsg} onClose={() => setRedeemMsg(null)} />
+    </section>
+  );
+}
+
+function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
+  // Friendly reminder push toggle — kept simple here under Account (like the
+  // language row). Switch ON = reminders enabled; stored as `remindersOptOut`
+  // (default-absent = ON). Optimistic; native push only.
+  const serverOptOut = !!profile?.remindersOptOut;
+  const [remPending, setRemPending] = useState(null);
+  const remindersOn = remPending == null ? !serverOptOut : remPending;
+  useEffect(() => { if (remPending != null && (!serverOptOut) === remPending) setRemPending(null); }, [serverOptOut, remPending]);
+  const toggleReminders = async () => {
+    const next = !remindersOn;
+    setRemPending(next);
+    try {
+      await ProfileService.updateRemindersOptOut(!next); // optOut = !on
+    } catch (e) {
+      console.warn('reminder opt-out save failed:', e?.message);
+      setRemPending(null);
+    }
+  };
+
+  return (
+    <section className="settings-card">
+      <h2 className="settings-h2">{t('account')}</h2>
+
+      <div className="settings-row">
+        <span className="settings-row-label">{t('signedInAs')}</span>
+        <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
+      </div>
 
       <div className="settings-row">
         <span className="settings-row-label">{t('langLabel')}</span>

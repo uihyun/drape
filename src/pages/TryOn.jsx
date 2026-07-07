@@ -357,9 +357,16 @@ export function TryOn({ user, onSignIn }) {
 
       <div className="builder-cta">
         {fits.loaded && (
-          <span className="tryon-fits-left">
-            {t('fitsLeft', { n: fits.total })}{fits.bonus > 0 ? ` ${t('fitsBonus', { n: fits.bonus })}` : ''}
-          </span>
+          <div className="tryon-fits-meter">
+            <div className="tryon-fits-segs" aria-hidden="true">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span key={i} className={`tryon-fits-seg${i < fits.dailyRemaining ? ' filled' : ''}`} />
+              ))}
+            </div>
+            <span className="tryon-fits-label">
+              {t('fitsLeft', { n: fits.dailyRemaining })}{fits.bonus > 0 ? ` · ${t('fitsBonus', { n: fits.bonus })}` : ''}
+            </span>
+          </div>
         )}
         <button
           type="button"
