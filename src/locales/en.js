@@ -396,6 +396,8 @@ export const en = {
   tryOnSignInTitle: 'Virtual try-on',
   tryOnPick: 'Pick items to try on',
   startTryOn: 'Start try-on',
+  startTryOnItems: 'Start try-on · {n} items',
+  inviteForMore: 'invite for more',
   generating: 'Generating…',
   tryOnResult: 'Try-on result',
   tryOnFailed: 'Try-on failed.',

@@ -386,13 +386,11 @@ export function TryOn({ user, onSignIn }) {
       <div className="builder-cta">
         <div className="tryon-cta-stack">
           {fits.loaded && (
-            <div className="tryon-fits-meter">
+            <button type="button" className="tryon-fits-meter" onClick={doInvite}>
+              <span className="tryon-fits-invite">{t('inviteForMore')}</span>
               <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
               <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
-              <button type="button" className="tryon-fits-invite" onClick={doInvite}>
-                {t('inviteEarnFits')}
-              </button>
-            </div>
+            </button>
           )}
           <button
             type="button"
@@ -401,7 +399,7 @@ export function TryOn({ user, onSignIn }) {
             disabled={submitting || (!outfitRefId && selected.size === 0)}
           >
             <Sparkles size={16} strokeWidth={1.8} />
-            {submitting ? t('generating') : (outfitRefId ? t('startTryOn') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`)}
+            {submitting ? t('generating') : (outfitRefId || selected.size === 0 ? t('startTryOn') : t('startTryOnItems', { n: selected.size }))}
           </button>
         </div>
       </div>

@@ -2994,26 +2994,26 @@ input[type="search"]::-webkit-search-decoration {
   display: flex; flex-direction: column; gap: 0.5rem;
   width: 100%; max-width: 480px;
 }
-/* Fits gauge above the button: one compact, centered pill — round energy ring +
-   "N/5" + an invite nudge — rather than elements flung to opposite edges. */
+/* Fits gauge above the button: one compact, centered, TAPPABLE pill — a tiny
+   "invite for more" nudge + the round energy ring + "N/5". Tapping opens the
+   invite share. */
 .tryon-fits-meter {
   align-self: center;
   display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.3rem 0.8rem; border-radius: 999px;
+  padding: 0.3rem 0.75rem; border-radius: 999px;
   background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border: none; cursor: pointer;
 }
+.tryon-fits-meter:active { background: color-mix(in srgb, var(--text-primary) 11%, transparent); }
 .fits-ring { display: block; flex: 0 0 auto; }
 .tryon-fits-count {
   font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
+/* Very small invite hint before the ring. */
 .tryon-fits-invite {
-  background: none; border: none; padding: 0;
-  font-size: 0.78rem; font-weight: 600; color: var(--accent); cursor: pointer;
-  white-space: nowrap;
-}
-.tryon-fits-invite::before {
-  content: '·'; margin-right: 0.4rem; color: var(--text-muted); font-weight: 400;
+  font-size: 0.68rem; font-weight: 600; color: var(--accent);
+  white-space: nowrap; text-transform: none;
 }
 .settings-label {
   font-size: 0.78rem;

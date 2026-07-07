@@ -398,6 +398,8 @@ export const ja = {
   tryOnSignInTitle: 'バーチャル試着',
   tryOnPick: '試着するアイテムを選んでください',
   startTryOn: '試着を開始',
+  startTryOnItems: '試着を開始 · {n}点',
+  inviteForMore: '招待して増やす',
   generating: '生成中…',
   tryOnResult: '試着結果',
   tryOnFailed: '試着に失敗しました。',

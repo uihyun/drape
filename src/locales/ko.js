@@ -396,6 +396,8 @@ export const ko = {
   tryOnSignInTitle: '가상 피팅',
   tryOnPick: '입어볼 아이템을 골라주세요',
   startTryOn: '입어보기 시작',
+  startTryOnItems: '입어보기 · {n}개',
+  inviteForMore: '초대하고 더 받기',
   generating: '생성 중…',
   tryOnResult: '입어보기 결과',
   tryOnFailed: '생성 실패.',
