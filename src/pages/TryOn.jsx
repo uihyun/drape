@@ -356,23 +356,25 @@ export function TryOn({ user, onSignIn }) {
       />
 
       <div className="builder-cta">
-        {fits.loaded && (
-          <div className="tryon-fits-meter">
-            <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
-            <div className="tryon-fits-bar" aria-hidden="true">
-              <div className="tryon-fits-bar-fill" style={{ width: `${(fits.dailyRemaining / FITS_PER_DAY) * 100}%` }} />
+        <div className="tryon-cta-stack">
+          {fits.loaded && (
+            <div className="tryon-fits-meter">
+              <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
+              <div className="tryon-fits-bar" aria-hidden="true">
+                <div className="tryon-fits-bar-fill" style={{ width: `${(fits.dailyRemaining / FITS_PER_DAY) * 100}%` }} />
+              </div>
             </div>
-          </div>
-        )}
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={submit}
-          disabled={submitting || (!outfitRefId && selected.size === 0)}
-        >
-          <Sparkles size={16} strokeWidth={1.8} />
-          {submitting ? t('generating') : (outfitRefId ? t('startTryOn') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`)}
-        </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={submit}
+            disabled={submitting || (!outfitRefId && selected.size === 0)}
+          >
+            <Sparkles size={16} strokeWidth={1.8} />
+            {submitting ? t('generating') : (outfitRefId ? t('startTryOn') : `${t('startTryOn')}${selected.size > 0 ? ` · ${selected.size}` : ''}`)}
+          </button>
+        </div>
       </div>
     </div>
   );

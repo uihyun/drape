@@ -2988,21 +2988,25 @@ input[type="search"]::-webkit-search-decoration {
   text-transform: none; letter-spacing: normal; font-weight: 400;
   font-size: 0.8rem; color: var(--text-muted);
 }
-/* Try-on fits meter above the generate button — a continuous energy bar (사주핑
-   style) + an "N/5" count. */
+/* Try-on CTA stack: the fits energy bar sits ABOVE the full-width Start button
+   (not beside it). */
+.tryon-cta-stack {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  width: 100%; max-width: 480px;
+}
+/* Continuous energy bar (사주핑 style) + an "N/5" count. */
 .tryon-fits-meter {
-  display: flex; align-items: center; gap: 0.5rem;
-  width: 70%; max-width: 260px; margin: 0 auto 0.55rem;
+  display: flex; align-items: center; gap: 0.55rem; padding: 0 0.15rem;
 }
 .tryon-fits-count {
   font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .tryon-fits-bar {
-  flex: 1; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden;
+  flex: 1; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
 }
 .tryon-fits-bar-fill {
-  height: 100%; border-radius: 3px; background: var(--accent);
+  height: 100%; border-radius: 999px; background: var(--accent);
   transition: width 0.3s ease;
 }
 .settings-label {
