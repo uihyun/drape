@@ -47,7 +47,6 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
-      <FitsSection user={user} t={t} />
       <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
       <AccountSection
@@ -569,88 +568,32 @@ function IdentitySection({ user, t }) {
   );
 }
 
-// Try-on "fits" — daily balance, invite-to-earn, and redeem-a-code, grouped in
-// one card (the whole "run out → invite friends → +10" story lives together).
-function FitsSection({ user, t }) {
+function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
+  // Fits: invite-to-earn + redeem-a-code live compactly under Account (the daily
+  // balance itself is shown in the try-on UI, not here, to keep Settings short).
   const fits = useFits(user);
   const [codeInput, setCodeInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemMsg, setRedeemMsg] = useState(null);
-
   const onInvite = async () => {
     const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
     try {
       await shareLink({ title: t('inviteShareTitle'), text: `${t('inviteShareText')}${codeLine}`, url: brandOrigin() });
     } catch (err) { console.warn('invite share failed', err?.message); }
   };
-
   const REDEEM_MSG = {
-    already_redeemed: t('inviteAlreadyRedeemed'),
-    invalid_code: t('inviteInvalidCode'),
-    self_referral: t('inviteSelf'),
-    no_code: t('inviteInvalidCode'),
+    already_redeemed: t('inviteAlreadyRedeemed'), invalid_code: t('inviteInvalidCode'),
+    self_referral: t('inviteSelf'), no_code: t('inviteInvalidCode'),
   };
   const onRedeem = async () => {
     setRedeeming(true);
     try {
       await FitsService.redeemInvite(codeInput);
-      setRedeemMsg(t('inviteRedeemed'));
-      setCodeInput('');
-    } catch (err) {
-      setRedeemMsg(REDEEM_MSG[err?.reason] || t('inviteInvalidCode'));
-    } finally { setRedeeming(false); }
+      setRedeemMsg(t('inviteRedeemed')); setCodeInput('');
+    } catch (err) { setRedeemMsg(REDEEM_MSG[err?.reason] || t('inviteInvalidCode')); }
+    finally { setRedeeming(false); }
   };
 
-  return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('fitsRow')}</h2>
-
-      {fits.loaded && (
-        <div className="settings-row">
-          <span className="settings-row-label">{t('fitsToday', { n: fits.dailyRemaining })}</span>
-          {fits.bonus > 0 && <span className="settings-row-value">{t('fitsBonus', { n: fits.bonus })}</span>}
-        </div>
-      )}
-
-      <button type="button" className="settings-row settings-row-action" onClick={onInvite}>
-        <span className="settings-row-label">
-          <Share2 size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
-          {t('invite')}
-          <span className="settings-row-sub">{t('inviteEarnFits')}</span>
-        </span>
-        <ChevronRight size={16} strokeWidth={1.5} className="muted" />
-      </button>
-
-      {fits.loaded && !fits.redeemed && (
-        <div className="settings-row settings-row-inputrow">
-          <span className="settings-row-label">{t('inviteEnterCode')}</span>
-          <span className="settings-invite-redeem">
-            <input
-              className="settings-invite-code-input"
-              value={codeInput}
-              onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
-              placeholder={t('inviteCodeLabel')}
-              maxLength={6}
-              autoCapitalize="characters"
-              autoCorrect="off"
-            />
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={onRedeem}
-              disabled={redeeming || codeInput.length < 4}
-            >
-              {redeeming ? <Loader2 size={14} className="spin" /> : t('inviteCodeApply')}
-            </button>
-          </span>
-        </div>
-      )}
-      <AlertModal open={!!redeemMsg} message={redeemMsg} onClose={() => setRedeemMsg(null)} />
-    </section>
-  );
-}
-
-function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   // Friendly reminder push toggle — kept simple here under Account (like the
   // language row). Switch ON = reminders enabled; stored as `remindersOptOut`
   // (default-absent = ON). Optimistic; native push only.
@@ -677,6 +620,34 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
         <span className="settings-row-label">{t('signedInAs')}</span>
         <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
       </div>
+
+      <button type="button" className="settings-row settings-row-action" onClick={onInvite}>
+        <span className="settings-row-label">
+          <Share2 size={14} strokeWidth={1.8} style={{ marginRight: 4, verticalAlign: -2 }} />
+          {t('invite')}
+          <span className="settings-row-sub">{t('inviteEarnFits')}</span>
+        </span>
+        <ChevronRight size={16} strokeWidth={1.5} className="muted" />
+      </button>
+
+      {fits.loaded && !fits.redeemed && (
+        <div className="settings-row settings-row-inputrow">
+          <span className="settings-row-label">{t('inviteEnterCode')}</span>
+          <span className="settings-invite-redeem">
+            <input
+              className="settings-invite-code-input"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+              placeholder={t('inviteCodeLabel')}
+              maxLength={6} autoCapitalize="characters" autoCorrect="off"
+            />
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onRedeem} disabled={redeeming || codeInput.length < 4}>
+              {redeeming ? <Loader2 size={14} className="spin" /> : t('inviteCodeApply')}
+            </button>
+          </span>
+        </div>
+      )}
+      <AlertModal open={!!redeemMsg} message={redeemMsg} onClose={() => setRedeemMsg(null)} />
 
       <div className="settings-row">
         <span className="settings-row-label">{t('langLabel')}</span>

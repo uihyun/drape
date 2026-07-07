@@ -2988,19 +2988,23 @@ input[type="search"]::-webkit-search-decoration {
   text-transform: none; letter-spacing: normal; font-weight: 400;
   font-size: 0.8rem; color: var(--text-muted);
 }
-/* Try-on fits meter above the generate button: 5 segments (1 per daily fit) +
-   a "N left" label. */
+/* Try-on fits meter above the generate button — a continuous energy bar (사주핑
+   style) + an "N/5" count. */
 .tryon-fits-meter {
-  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-  margin-bottom: 0.55rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  width: 70%; max-width: 260px; margin: 0 auto 0.55rem;
 }
-.tryon-fits-segs { display: flex; gap: 4px; width: 60%; max-width: 220px; }
-.tryon-fits-seg {
-  flex: 1; height: 4px; border-radius: 2px; background: var(--border);
-  transition: background 0.2s ease;
+.tryon-fits-count {
+  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.tryon-fits-seg.filled { background: var(--accent); }
-.tryon-fits-label { font-size: 0.8rem; color: var(--text-muted); }
+.tryon-fits-bar {
+  flex: 1; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden;
+}
+.tryon-fits-bar-fill {
+  height: 100%; border-radius: 3px; background: var(--accent);
+  transition: width 0.3s ease;
+}
 .settings-label {
   font-size: 0.78rem;
   font-weight: 600;

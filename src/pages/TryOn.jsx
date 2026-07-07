@@ -12,7 +12,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { useFits } from '../hooks/useFits.js';
+import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -358,14 +358,10 @@ export function TryOn({ user, onSignIn }) {
       <div className="builder-cta">
         {fits.loaded && (
           <div className="tryon-fits-meter">
-            <div className="tryon-fits-segs" aria-hidden="true">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <span key={i} className={`tryon-fits-seg${i < fits.dailyRemaining ? ' filled' : ''}`} />
-              ))}
+            <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
+            <div className="tryon-fits-bar" aria-hidden="true">
+              <div className="tryon-fits-bar-fill" style={{ width: `${(fits.dailyRemaining / FITS_PER_DAY) * 100}%` }} />
             </div>
-            <span className="tryon-fits-label">
-              {t('fitsLeft', { n: fits.dailyRemaining })}{fits.bonus > 0 ? ` · ${t('fitsBonus', { n: fits.bonus })}` : ''}
-            </span>
           </div>
         )}
         <button
