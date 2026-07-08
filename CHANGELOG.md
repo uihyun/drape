@@ -33,6 +33,12 @@ Web/functions live now; the client-side items reach iOS/Android with this build.
   `ANATOMY_GUARD` with a blunt "ONE frame, ONE person — never a grid/collage/repeated
   poses; if about to add a second figure, STOP" clause to lower the grid rate at the
   source (fewer regenerates).
+- **2026-07-07 · Invite reward is now two-sided (+10 each).** Phase 1 credited only
+  the inviter, which made the share copy read as a bare favor ("enter my code so I get
+  10"). Changed `redeemInvite` to also credit the **invitee** +10 (once ever, gated by
+  the existing `invitedBy` guard; the per-inviter `INVITE_CAP` still bounds the inviter
+  side against abuse). Copy across en/ko/ja now states both sides get 10 ("we both get
+  10 bonus try-ons", `inviteShareCode`/`inviteRedeemed`/`inviteEarnFits`/`fitsOutBody`).
 - **2026-07-07 · Fix: invite share text was missing the code.** Users who signed in
   before the fits rollout never hit the `initializeUser` bootstrap, so their
   `inviteCode` was never minted and the share sheet dropped it. Added a `getInviteCode`

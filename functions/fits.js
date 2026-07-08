@@ -118,7 +118,8 @@ exports.redeemInvite = onCall({ cors: true }, async (request) => {
   const codeRef = db.collection('inviteCodes').doc(code);
   return db.runTransaction(async (txn) => {
     const [userSnap, codeSnap] = await Promise.all([txn.get(userRef), txn.get(codeRef)]);
-    if ((userSnap.exists ? userSnap.data() : {}).invitedBy) {
+    const u = userSnap.exists ? userSnap.data() : {};
+    if (u.invitedBy) {
       throw new HttpsError('failed-precondition', 'already_redeemed');
     }
     if (!codeSnap.exists) throw new HttpsError('not-found', 'invalid_code');
@@ -130,11 +131,13 @@ exports.redeemInvite = onCall({ cors: true }, async (request) => {
     const inv = invSnap.exists ? invSnap.data() : {};
     const count = inv.inviteCount || 0;
 
-    txn.set(userRef, { invitedBy: inviterUid }, { merge: true });
+    // Both sides get +10: the invitee here (once ever, gated by invitedBy),
+    // the inviter below (capped per-account against abuse).
+    txn.set(userRef, { invitedBy: inviterUid, fitBonus: (u.fitBonus || 0) + INVITE_REWARD }, { merge: true });
     if (count < INVITE_CAP) {
       txn.set(inviterRef, { fitBonus: (inv.fitBonus || 0) + INVITE_REWARD, inviteCount: count + 1 }, { merge: true });
     }
-    return { ok: true, reward: count < INVITE_CAP ? INVITE_REWARD : 0 };
+    return { ok: true, reward: INVITE_REWARD };
   });
 });
 
