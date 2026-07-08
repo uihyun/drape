@@ -33,14 +33,15 @@ Web/functions live now; the client-side items reach iOS/Android with this build.
   `ANATOMY_GUARD` with a blunt "ONE frame, ONE person — never a grid/collage/repeated
   poses; if about to add a second figure, STOP" clause to lower the grid rate at the
   source (fewer regenerates).
-- **2026-07-07 · Try-on meter ring shows daily + bonus in two colors.** The ring was
-  bound to the daily bucket only (`remaining/5`), so a user who'd spent their 5 free
-  try-ons but still had bonus (e.g. 0/5 +10) saw a fully empty ring — reading as "out"
-  when they had 10 usable. `FitsRing` now draws both buckets as contiguous arcs over a
-  `dailyMax + bonus` capacity: daily in accent green, bonus in a new warm-gold
-  `--fits-bonus` token, from 12 o'clock; the leftover gap is the daily already spent.
-  Bonus-only users now see a gold-filled ring. Daily-drain behavior is unchanged when
-  there's no bonus. Number text ("N/5 +M") unchanged.
+- **2026-07-07 · Try-on meter ring reflects total (daily + bonus).** The ring was bound
+  to the daily bucket only (`remaining/5`), so a user who'd spent their 5 free try-ons
+  but still had bonus (e.g. 0/5 +10) saw a fully empty ring — reading as "out" when they
+  had 10 usable. `FitsRing` now fills a single accent arc over a `dailyMax + bonus`
+  capacity, so the ring shows the TOTAL usable now; bonus-only users see a partly-full
+  ring, not an empty one. Kept single-color on purpose — a second arc hue clashes with
+  the disciplined green/neutral palette. The `+M` bonus in the count text is now a small
+  soft-green pill (`--accent-soft`/`--accent`) so it reads as an "extra reserve" distinct
+  from the daily N/5 and scales cleanly as it accumulates (+20, +100…).
 - **2026-07-07 · Invite reward is now two-sided (+10 each).** Phase 1 credited only
   the inviter, which made the share copy read as a bare favor ("enter my code so I get
   10"). Changed `redeemInvite` to also credit the **invitee** +10 (once ever, gated by

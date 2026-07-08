@@ -3016,8 +3016,16 @@ input[type="search"]::-webkit-search-decoration {
 .tryon-fits-top .tryon-fits-count { font-size: 0.74rem; }
 .fits-ring { display: block; flex: 0 0 auto; }
 .tryon-fits-count {
+  display: inline-flex; align-items: center; gap: 0.28rem;
   font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
   font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* Bonus try-ons as a small soft-green pill — reads as an "extra reserve"
+   distinct from the daily N/5, without adding a clashing hue to the ring. */
+.tryon-fits-bonus {
+  background: var(--accent-soft); color: var(--accent);
+  border-radius: 999px; padding: 0.02rem 0.32rem;
+  font-size: 0.68rem; font-weight: 700;
 }
 /* Very small invite hint before the ring. */
 .tryon-fits-invite {
