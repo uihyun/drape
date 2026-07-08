@@ -138,6 +138,15 @@ exports.redeemInvite = onCall({ cors: true }, async (request) => {
   });
 });
 
+// Mint (if needed) + return the caller's invite code. Called by the client when
+// it notices the code is missing (existing users who signed in before the fits
+// rollout never hit the initializeUser bootstrap).
+exports.getInviteCode = onCall({ cors: true }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
+  return { code: await ensureInviteCode(uid) };
+});
+
 module.exports.reserveFit = reserveFit;
 module.exports.refundFit = refundFit;
 module.exports.ensureInviteCode = ensureInviteCode;

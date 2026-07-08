@@ -11,11 +11,28 @@ Conventions:
 
 ---
 
-## Unreleased — accumulating toward the next native build (1.3.1)
+## 1.3.1 — native build (versionCode 16 / iOS build 13)
 
-Web/functions are live now; the client-side items reach iOS/Android on the next
-native build. Bump the 3 version spots when cutting 1.3.1.
+Web/functions live now; the client-side items reach iOS/Android with this build.
 
+- **2026-07-07 · Fix: try-on returned a contact-sheet of several people instead of
+  one.** The image model intermittently rendered a horizontal strip of ~4–6 tiny
+  figures in a single frame (seen on a 3-item multi-select try-on). Reproduced it and
+  confirmed the failure is **stochastic** — it fires regardless of output resolution
+  (1K/2K) or prompt wording (the `ANATOMY_GUARD` didn't prevent it), so no prompt/size
+  tweak fixes it reliably. Real fix in `functions/tryon.js`: **detect + regenerate.**
+  A single full-body figure segments to a tall, narrow mask (aspect w/h ~0.3–0.7); a
+  contact-sheet spans wide (~2.7). The no-scene normalize path already segments the
+  output, so we reuse that mask's bounding box — if `w/h > 0.9` it's a grid, and the
+  variant is regenerated (up to 3 tries). Clean single-figure results break out on the
+  first pass, so normal runs pay no extra latency. Verified: A/B/C singles pass
+  (0.33/0.72/0.31), the grid case is caught (2.74). Refactored the alpha-bbox scan out
+  of `figureOnWhiteCard` into a shared `alphaBBox` helper.
+- **2026-07-07 · Fix: invite share text was missing the code.** Users who signed in
+  before the fits rollout never hit the `initializeUser` bootstrap, so their
+  `inviteCode` was never minted and the share sheet dropped it. Added a `getInviteCode`
+  onCall (mints on demand, idempotent) + `useFits` lazily backfills it when the user
+  doc lacks one. `FitsService.getInviteCode`.
 - **2026-07-07 · Try-on "fits" — daily quota + invite rewards (Phase 1).** Try-on
   was unlimited; introduced a soft economy. **5 free "fits"/day** (1 fit = 1 try-on),
   reset at the user's local midnight (non-accumulating), plus **+10 bonus fits to the

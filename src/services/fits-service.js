@@ -4,6 +4,12 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 
 export const FitsService = {
+  // Mint (if missing) + fetch the caller's own invite code.
+  async getInviteCode() {
+    const { data } = await httpsCallable(functions, 'getInviteCode')({});
+    return data?.code || '';
+  },
+
   // Redeem an inviter's code (once ever). Credits the INVITER +10 fits.
   // Resolves { ok, reward }; rejects with a Firebase callable error whose
   // `message` is a stable token ('already_redeemed' | 'invalid_code' |

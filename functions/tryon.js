@@ -157,23 +157,43 @@ function extractImage(response) {
 // from the ALPHA channel (solid pixels, alpha>128) instead of color-trim, so
 // a faint segmentation artifact on one side can't widen the box and shove the
 // figure off-center (which read as "the result is shifted right").
-async function figureOnWhiteCard(cutoutBuf, W = 900, H = 1200) {
-  try {
-    const { data, info } = await sharp(cutoutBuf).ensureAlpha().raw()
-      .toBuffer({ resolveWithObject: true });
-    const { width, height, channels } = info;
-    let minX = width, minY = height, maxX = -1, maxY = -1;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (data[(y * width + x) * channels + 3] > 128) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
+// Tight bounding box of the opaque (alpha>128) pixels of a segmentation cutout.
+// Returns null on an empty mask. Shared by figureOnWhiteCard (centering) and the
+// grid detector (a single standing person is portrait; a contact-sheet strip of
+// figures is wide — the aspect gives it away).
+async function alphaBBox(cutoutBuf) {
+  const { data, info } = await sharp(cutoutBuf).ensureAlpha().raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height, channels } = info;
+  let minX = width, minY = height, maxX = -1, maxY = -1;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (data[(y * width + x) * channels + 3] > 128) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
       }
     }
-    if (maxX < minX || maxY < minY) throw new Error('empty mask');
+  }
+  if (maxX < minX || maxY < minY) return null;
+  return { minX, minY, maxX, maxY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
+// A single full-body figure fills a tall, narrow box (aspect w/h ~0.3–0.6). When
+// Gemini returns a contact sheet — several figures side by side in one PNG — the
+// combined mask spans them all and goes wide. Flag anything not clearly portrait
+// as a probable grid so the caller can regenerate.
+const GRID_ASPECT = 0.9;
+function looksLikeGrid(bbox) {
+  return !!bbox && bbox.w / bbox.h > GRID_ASPECT;
+}
+
+async function figureOnWhiteCard(cutoutBuf, W = 900, H = 1200, bbox = null) {
+  try {
+    const b = bbox || await alphaBBox(cutoutBuf);
+    if (!b) throw new Error('empty mask');
+    const { minX, minY, maxX, maxY } = b;
     const cropped = await sharp(cutoutBuf)
       .extract({ left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
       .resize({ width: Math.round(W * 0.9), height: Math.round(H * 0.92), fit: 'inside' })
@@ -622,71 +642,97 @@ exports.virtualTryOn = onCall(
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
     ];
+    // One generate + normalize pass. Returns the finished 3:4 buffer plus
+    // `gridly` — true when the segmented figure box is wide (a contact-sheet of
+    // several people rather than one). The caller retries on `gridly`.
+    const generateVariant = async (idx) => {
+      // 1K output — the result is normalized to 900x1200 downstream, so 2K
+      // would just be downscaled away; 1K covers it, at lower cost + faster.
+      const res = await aiImg.models.generateContent({
+        model: modelId,
+        contents: parts,
+        config: { safetySettings, imageConfig: { imageSize: '1K' } },
+      });
+      if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
+      const img = extractImage(res);
+      if (!img) return null;
+      // Normalize EVERY variant (except custom-photo) to a fixed 3:4
+      // canvas so every result card renders at the same size:
+      //   - default identity-refs (no backgroundDesc) → Gemini paints
+      //     the figure on a plain white catalog backdrop. trim strips
+      //     that padding, then resize fit:contain pads back into 900x1200
+      //     with white — figure fills the canvas vertically.
+      //   - backgroundDesc set → Gemini paints a real scene. trim is a
+      //     no-op on a varied edge; fit:cover scales to fill 900x1200
+      //     and side-crops the scene (figure is centered, stays in
+      //     frame). fit:contain would leave white bars top+bottom
+      //     because the scene was 1:1 instead of 3:4.
+      // Custom-photo mode: skip both — preserve the real photo aspect
+      // and background.
+      let buf = Buffer.from(img.data, 'base64');
+      let gridly = false;
+      // Normalize unless we're in custom-photo mode AND the user
+      // wants the original scene preserved. removeCustomBg=true
+      // opts custom-photo into the same segmentation+white-card
+      // pipeline as the identity-refs default.
+      const shouldNormalize = !customPhotoPath || removeCustomBg;
+      if (shouldNormalize) {
+        const hasScene = !customPhotoPath && !!(backgroundDesc && backgroundDesc.trim());
+        try {
+          if (hasScene) {
+            // Real scene — keep Gemini's backdrop, just fit to
+            // the 3:4 canvas via cover crop.
+            buf = await sharp(buf)
+              .resize({ width: 900, height: 1200, fit: 'cover' })
+              .png().toBuffer();
+          } else {
+            // No-scene mode: figure size must be consistent across
+            // variants, but color-trim fails when Gemini draws a
+            // gradient / cast shadow in its catalog backdrop (it
+            // stops at the first non-matching pixel, leaving a
+            // few-cm margin above the head and below the feet).
+            // Solution: run segmentation on the Gemini output to
+            // get a semantic figure mask, trim transparent edges
+            // (always accurate, no threshold guesswork), then
+            // composite the trimmed figure centered on a 900x1200
+            // white card.
+            const blob = new Blob([buf], { type: img.mimeType || 'image/png' });
+            const cutoutBlob = await removeBackground(blob, {
+              output: { format: 'image/png' },
+            });
+            const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
+            const bbox = await alphaBBox(cutout);
+            // Wide mask ⇒ Gemini returned a contact-sheet of figures, not one
+            // person. Signal a retry (the segmentation bbox is free here).
+            gridly = looksLikeGrid(bbox);
+            // Center the figure on a white 3:4 card via its alpha bbox
+            // (robust to faint artifacts that color-trim would mis-include).
+            buf = await figureOnWhiteCard(cutout, 900, 1200, bbox);
+          }
+        } catch (e) {
+          console.warn('try-on normalize skipped:', e?.message);
+        }
+      }
+      return { buf, gridly };
+    };
+
     const runs = Array.from({ length: n }, async (_, idx) => {
       try {
-        // 1K output — the result is normalized to 900x1200 downstream, so 2K
-        // would just be downscaled away; 1K covers it, at lower cost + faster.
-        const res = await aiImg.models.generateContent({
-          model: modelId,
-          contents: parts,
-          config: { safetySettings, imageConfig: { imageSize: '1K' } },
-        });
-        if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
-        const img = extractImage(res);
-        if (!img) return { idx, ok: false, error: 'no image returned' };
-        const path = `generations/${uid}/${genRef.id}/${idx}.png`;
-        // Normalize EVERY variant (except custom-photo) to a fixed 3:4
-        // canvas so every result card renders at the same size:
-        //   - default identity-refs (no backgroundDesc) → Gemini paints
-        //     the figure on a plain white catalog backdrop. trim strips
-        //     that padding, then resize fit:contain pads back into 900x1200
-        //     with white — figure fills the canvas vertically.
-        //   - backgroundDesc set → Gemini paints a real scene. trim is a
-        //     no-op on a varied edge; fit:cover scales to fill 900x1200
-        //     and side-crops the scene (figure is centered, stays in
-        //     frame). fit:contain would leave white bars top+bottom
-        //     because the scene was 1:1 instead of 3:4.
-        // Custom-photo mode: skip both — preserve the real photo aspect
-        // and background.
-        let buf = Buffer.from(img.data, 'base64');
-        // Normalize unless we're in custom-photo mode AND the user
-        // wants the original scene preserved. removeCustomBg=true
-        // opts custom-photo into the same segmentation+white-card
-        // pipeline as the identity-refs default.
-        const shouldNormalize = !customPhotoPath || removeCustomBg;
-        if (shouldNormalize) {
-          const hasScene = !customPhotoPath && !!(backgroundDesc && backgroundDesc.trim());
-          try {
-            if (hasScene) {
-              // Real scene — keep Gemini's backdrop, just fit to
-              // the 3:4 canvas via cover crop.
-              buf = await sharp(buf)
-                .resize({ width: 900, height: 1200, fit: 'cover' })
-                .png().toBuffer();
-            } else {
-              // No-scene mode: figure size must be consistent across
-              // variants, but color-trim fails when Gemini draws a
-              // gradient / cast shadow in its catalog backdrop (it
-              // stops at the first non-matching pixel, leaving a
-              // few-cm margin above the head and below the feet).
-              // Solution: run segmentation on the Gemini output to
-              // get a semantic figure mask, trim transparent edges
-              // (always accurate, no threshold guesswork), then
-              // composite the trimmed figure centered on a 900x1200
-              // white card.
-              const blob = new Blob([buf], { type: img.mimeType || 'image/png' });
-              const cutoutBlob = await removeBackground(blob, {
-                output: { format: 'image/png' },
-              });
-              const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
-              // Center the figure on a white 3:4 card via its alpha bbox
-              // (robust to faint artifacts that color-trim would mis-include).
-              buf = await figureOnWhiteCard(cutout);
-            }
-          } catch (e) {
-            console.warn('try-on normalize skipped:', e?.message);
-          }
+        // The image model intermittently returns a contact-sheet of several
+        // figures instead of one; regenerate when we detect that (up to 3 tries).
+        // A clean single-figure result breaks out on the first pass, so normal
+        // runs pay no extra latency. Keep the last attempt if all came back grid.
+        let out = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const r = await generateVariant(idx);
+          if (!r) { if (attempt === 2 && !out) return { idx, ok: false, error: 'no image returned' }; continue; }
+          out = r;
+          if (!r.gridly) break;
+          console.warn('try-on grid retry', idx, 'attempt', attempt + 1);
         }
+        if (!out) return { idx, ok: false, error: 'no image returned' };
+        const buf = out.buf;
+        const path = `generations/${uid}/${genRef.id}/${idx}.png`;
         await bucket.file(path).save(buf, {
           metadata: { contentType: 'image/png', cacheControl: 'public,max-age=31536000,immutable' },
         });

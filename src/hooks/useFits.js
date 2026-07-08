@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebase.js';
+import { FitsService } from '../services/fits-service.js';
 
 const DAILY_FITS = 5;
 
@@ -22,7 +23,9 @@ export function useFits(user) {
     inviteCode: '', redeemed: false, loaded: false,
   });
 
+  const mintedRef = useRef(false);
   useEffect(() => {
+    mintedRef.current = false;
     const uid = user?.uid || auth.currentUser?.uid;
     if (!user || user.isAnonymous || !uid) {
       setState({ dailyRemaining: DAILY_FITS, bonus: 0, total: DAILY_FITS, inviteCode: '', redeemed: false, loaded: false });
@@ -37,6 +40,13 @@ export function useFits(user) {
         dailyRemaining, bonus, total: dailyRemaining + bonus,
         inviteCode: u.inviteCode || '', redeemed: !!u.invitedBy, loaded: true,
       });
+      // Backfill the invite code for users who signed in before the fits
+      // rollout (they never hit the initializeUser bootstrap). The mint writes
+      // users.inviteCode → this snapshot fires again with it. Once per mount.
+      if (!u.inviteCode && !mintedRef.current) {
+        mintedRef.current = true;
+        FitsService.getInviteCode().catch(() => { mintedRef.current = false; });
+      }
     }, () => setState((s) => ({ ...s, loaded: true })));
   }, [user?.uid]);
 

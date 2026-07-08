@@ -120,6 +120,7 @@ exports.cleanupStuckTryons = tryonFns.cleanupStuckTryons;
 
 // ── Try-on "fits" quota + invite rewards ───────────────────────────────
 exports.redeemInvite = fitsFns.redeemInvite;
+exports.getInviteCode = fitsFns.getInviteCode;
 
 // ── Moderation triggers ────────────────────────────────────────────────
 const moderationFns = require('./moderation.js');
