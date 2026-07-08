@@ -11,9 +11,11 @@ Conventions:
 
 ---
 
-## 1.3.1 — native build (versionCode 16 / iOS build 13)
+## 1.4.0 — native build (versionCode 16 / iOS build 13)
 
-Web/functions live now; the client-side items reach iOS/Android with this build.
+Minor bump (not 1.3.1) — the try-on "fits" economy + invite rewards are a
+feature addition, not a fix. Web/functions live now; the client-side items reach
+iOS/Android with this build.
 
 - **2026-07-07 · Fix: try-on returned a contact-sheet of several people instead of
   one.** The image model intermittently rendered a horizontal strip of ~4–6 tiny
@@ -68,7 +70,7 @@ Web/functions live now; the client-side items reach iOS/Android with this build.
   server-only. Client: `useFits` hook, TryOn gate + out-of-fits modal ("invite friends
   → +10"), Settings fits row + invite code share + "enter invite code". Reward name is
   lowercase **`fit`** ("3 fits left"). en/ko/ja. Server + web live; the UI reaches
-  native in 1.3.1. (Phase 2 = free auto-attribution: deep-link/install-referrer/
+  native in 1.4.0. (Phase 2 = free auto-attribution: deep-link/install-referrer/
   clipboard. IAP purchase deferred.)
 - **2026-07-07 · Fix: focus crop pulled the wrong garment on multi-item photos.**
   Detect-adding a specific piece from a worn look (e.g. a "Cream scoop tank" under
