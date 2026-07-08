@@ -3005,10 +3005,15 @@ input[type="search"]::-webkit-search-decoration {
   border: none; cursor: pointer;
 }
 .tryon-fits-meter:active { background: color-mix(in srgb, var(--text-primary) 11%, transparent); }
-/* Comparison: a top-of-page variant sitting on the title row, right-aligned. */
-.tryon-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
-.tryon-entry-head .page-h1 { margin: 0; }
-.tryon-fits-top { align-self: auto; }
+/* Top-of-page fits chip: its own line above the title, right-aligned, so the
+   title never wraps to two lines. Smaller than the CTA-area variant. */
+.tryon-entry-head { display: flex; flex-direction: column; align-items: stretch; }
+.tryon-fits-top {
+  align-self: flex-end; margin-bottom: 0.4rem;
+  padding: 0.2rem 0.55rem; gap: 0.3rem;
+}
+.tryon-fits-top .tryon-fits-invite { font-size: 0.64rem; }
+.tryon-fits-top .tryon-fits-count { font-size: 0.74rem; }
 .fits-ring { display: block; flex: 0 0 auto; }
 .tryon-fits-count {
   font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);

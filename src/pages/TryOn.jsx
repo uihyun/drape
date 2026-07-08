@@ -58,7 +58,7 @@ export function TryOn({ user, onSignIn }) {
   const fitsChip = (extra = '') => fits.loaded && (
     <button type="button" className={`tryon-fits-meter ${extra}`} onClick={doInvite}>
       <span className="tryon-fits-invite">{t('inviteForMore')}</span>
-      <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
+      <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} size={17} stroke={2.5} />
       <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
     </button>
   );
@@ -233,8 +233,8 @@ export function TryOn({ user, onSignIn }) {
   return (
     <div className="page tryon-entry">
       <div className="tryon-entry-head">
-        <h1 className="page-h1">{t('tryOnPick')}</h1>
         {fitsChip('tryon-fits-top')}
+        <h1 className="page-h1">{t('tryOnPick')}</h1>
       </div>
 
       {/* ── Reference: identity refs OR custom one-shot photo ─────── */}
@@ -396,7 +396,6 @@ export function TryOn({ user, onSignIn }) {
 
       <div className="builder-cta">
         <div className="tryon-cta-stack">
-          {fitsChip()}
           <button
             type="button"
             className="btn btn-primary"
