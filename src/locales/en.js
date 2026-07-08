@@ -29,7 +29,7 @@ export const en = {
   inviteAlreadyRedeemed: 'You’ve already used an invite code.',
   inviteInvalidCode: 'That invite code isn’t valid.',
   inviteSelf: 'You can’t use your own code.',
-  inviteShareCode: 'Get drape and enter my code {code} for 10 bonus try-ons.',
+  inviteShareCode: 'Get drape and enter my code {code} — I get 10 bonus try-ons when you do.',
   commentsTitle: 'Comments',
   commentEmpty: 'No comments yet.',
   commentPlaceholder: 'Add a comment…',

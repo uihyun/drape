@@ -245,9 +245,13 @@ function categoryRegion(category, subcategory) {
 const ANATOMY_GUARD = `
 
 ANATOMY — HARD CONSTRAINTS (do not violate):
-- Render exactly ONE person with correct, natural human anatomy: exactly TWO
-  legs, TWO arms, TWO hands, ONE head. NEVER produce extra, duplicated, mirrored,
-  or merged limbs. No malformed or fused hands/fingers.
+- ONE frame, ONE person. Output a single photograph of exactly ONE individual.
+  NEVER a grid, contact sheet, collage, film strip, storyboard, side-by-side,
+  before/after, or the same person repeated in multiple poses across the canvas.
+  If you are about to place a second figure, STOP — there is only one person.
+- That one person has correct, natural human anatomy: exactly TWO legs, TWO arms,
+  TWO hands, ONE head. NEVER produce extra, duplicated, mirrored, or merged limbs.
+  No malformed or fused hands/fingers.
 - Any draped or held garment (e.g. a jacket over the lap, a bag) MUST read as a
   clearly separate object. It must NOT blend into, overlap ambiguously with, or
   duplicate the legs — do not let draped clothing create the illusion of extra

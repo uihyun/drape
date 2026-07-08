@@ -28,7 +28,7 @@ export const ko = {
   inviteAlreadyRedeemed: '이미 초대코드를 사용했어요.',
   inviteInvalidCode: '유효하지 않은 초대코드예요.',
   inviteSelf: '자기 코드는 쓸 수 없어요.',
-  inviteShareCode: 'drape 받고 내 코드 {code} 입력하면 보너스 try-on 10개 받아.',
+  inviteShareCode: 'drape 받고 내 코드 {code} 입력해줘 — 그럼 내가 보너스 try-on 10개 받아.',
   inviteShareText: 'drape — 손안의 옷장, 코디하고 입어보고.',
   commentsTitle: '댓글',
   commentEmpty: '아직 댓글이 없어요.',

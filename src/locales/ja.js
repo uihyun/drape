@@ -30,7 +30,7 @@ export const ja = {
   inviteAlreadyRedeemed: 'すでに招待コードを使用しています。',
   inviteInvalidCode: 'その招待コードは無効です。',
   inviteSelf: '自分のコードは使えません。',
-  inviteShareCode: 'drape を入れて私のコード {code} を入力すると、ボーナス試着が10個もらえるよ。',
+  inviteShareCode: 'drape を入れて私のコード {code} を入力してね — そうすると私がボーナス試着を10個もらえるんだ。',
   inviteShareText: 'drape — 手のなかのクローゼット。コーデも試着も。',
   commentsTitle: 'コメント',
   commentEmpty: 'まだコメントはありません。',

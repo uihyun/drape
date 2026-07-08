@@ -25,9 +25,14 @@ Web/functions live now; the client-side items reach iOS/Android with this build.
   contact-sheet spans wide (~2.7). The no-scene normalize path already segments the
   output, so we reuse that mask's bounding box — if `w/h > 0.9` it's a grid, and the
   variant is regenerated (up to 3 tries). Clean single-figure results break out on the
-  first pass, so normal runs pay no extra latency. Verified: A/B/C singles pass
+  first pass, so normal runs pay no extra latency. Detection is **free** — it reuses the
+  segmentation the no-scene path already runs (local onnx model, not a paid API) plus
+  pixel math; only the regenerate call costs anything. Verified: A/B/C singles pass
   (0.33/0.72/0.31), the grid case is caught (2.74). Refactored the alpha-bbox scan out
-  of `figureOnWhiteCard` into a shared `alphaBBox` helper.
+  of `figureOnWhiteCard` into a shared `alphaBBox` helper. Also strengthened
+  `ANATOMY_GUARD` with a blunt "ONE frame, ONE person — never a grid/collage/repeated
+  poses; if about to add a second figure, STOP" clause to lower the grid rate at the
+  source (fewer regenerates).
 - **2026-07-07 · Fix: invite share text was missing the code.** Users who signed in
   before the fits rollout never hit the `initializeUser` bootstrap, so their
   `inviteCode` was never minted and the share sheet dropped it. Added a `getInviteCode`
