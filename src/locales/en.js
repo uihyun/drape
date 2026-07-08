@@ -397,6 +397,7 @@ export const en = {
   tryOnPick: 'Pick items to try on',
   startTryOn: 'Start try-on',
   startTryOnItems: 'Start try-on · {n} items',
+  startTryOnItem: 'Start try-on · 1 item',
   inviteForMore: 'invite for more',
   generating: 'Generating…',
   tryOnResult: 'Try-on result',

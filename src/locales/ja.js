@@ -399,6 +399,7 @@ export const ja = {
   tryOnPick: '試着するアイテムを選んでください',
   startTryOn: '試着を開始',
   startTryOnItems: '試着を開始 · {n}点',
+  startTryOnItem: '試着を開始 · 1点',
   inviteForMore: '招待して増やす',
   generating: '生成中…',
   tryOnResult: '試着結果',

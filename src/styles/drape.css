@@ -3005,6 +3005,10 @@ input[type="search"]::-webkit-search-decoration {
   border: none; cursor: pointer;
 }
 .tryon-fits-meter:active { background: color-mix(in srgb, var(--text-primary) 11%, transparent); }
+/* Comparison: a top-of-page variant sitting on the title row, right-aligned. */
+.tryon-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.tryon-entry-head .page-h1 { margin: 0; }
+.tryon-fits-top { align-self: auto; }
 .fits-ring { display: block; flex: 0 0 auto; }
 .tryon-fits-count {
   font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);

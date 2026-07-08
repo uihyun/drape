@@ -54,6 +54,14 @@ export function TryOn({ user, onSignIn }) {
       await shareLink({ title: t('inviteShareTitle'), text: `${t('inviteShareText')}${codeLine}`, url: brandOrigin() });
     } catch (err) { console.warn('invite share failed', err?.message); }
   };
+  // The fits pill (tiny "invite for more" + ring + N/5), tappable → invite share.
+  const fitsChip = (extra = '') => fits.loaded && (
+    <button type="button" className={`tryon-fits-meter ${extra}`} onClick={doInvite}>
+      <span className="tryon-fits-invite">{t('inviteForMore')}</span>
+      <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
+      <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
+    </button>
+  );
   const [search] = useSearchParams();
   const [refs, setRefs] = useState(null);
   const [items, setItems] = useState([]);
@@ -224,7 +232,10 @@ export function TryOn({ user, onSignIn }) {
 
   return (
     <div className="page tryon-entry">
-      <h1 className="page-h1">{t('tryOnPick')}</h1>
+      <div className="tryon-entry-head">
+        <h1 className="page-h1">{t('tryOnPick')}</h1>
+        {fitsChip('tryon-fits-top')}
+      </div>
 
       {/* ── Reference: identity refs OR custom one-shot photo ─────── */}
       <section className="tryon-source">
@@ -385,13 +396,7 @@ export function TryOn({ user, onSignIn }) {
 
       <div className="builder-cta">
         <div className="tryon-cta-stack">
-          {fits.loaded && (
-            <button type="button" className="tryon-fits-meter" onClick={doInvite}>
-              <span className="tryon-fits-invite">{t('inviteForMore')}</span>
-              <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} />
-              <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
-            </button>
-          )}
+          {fitsChip()}
           <button
             type="button"
             className="btn btn-primary"
@@ -399,7 +404,10 @@ export function TryOn({ user, onSignIn }) {
             disabled={submitting || (!outfitRefId && selected.size === 0)}
           >
             <Sparkles size={16} strokeWidth={1.8} />
-            {submitting ? t('generating') : (outfitRefId || selected.size === 0 ? t('startTryOn') : t('startTryOnItems', { n: selected.size }))}
+            {submitting ? t('generating')
+              : (outfitRefId || selected.size === 0 ? t('startTryOn')
+                : selected.size === 1 ? t('startTryOnItem')
+                  : t('startTryOnItems', { n: selected.size }))}
           </button>
         </div>
       </div>
