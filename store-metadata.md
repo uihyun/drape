@@ -95,6 +95,21 @@ wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsu
 Store-facing copy (App Store Connect "What's New" / Play Console "Release notes").
 Keep these short and stylish; the full internal record is `CHANGELOG.md`. Newest first.
 
+### 1.4.0 (iOS build 13 · Android versionCode 16) — try-on quota + invite rewards
+
+**Rollout:** minor feature release. iOS Archive build 13; Android upload
+versionCode-16 .aab (Advertising ID still = No). Headline is the try-on daily
+allowance + two-sided invite reward (invite a friend → you both get +10 bonus
+try-ons). Also carries the contact-sheet ("several people in one image") try-on
+fix, the multi-item focus-crop fix, and public-profile tab/notch polish. Store
+note leads with the invite hook; kept short. Do NOT say "fits" — user-facing
+name is "try-on".
+
+**Release notes (store-facing, same for iOS + Android):**
+> EN: Invite a friend and you both get bonus try-ons. Now with a daily free allowance, more reliable results, and fixes throughout.
+> KO: 친구를 초대하면 둘 다 보너스 트라이온을 받아요. 매일 무료 제공과 더 안정적인 결과, 그리고 곳곳의 개선까지.
+> JA: 友達を招待すると二人ともボーナス試着がもらえます。毎日の無料枠、より安定した仕上がり、各所の改善も。
+
 ### 1.3.0 (iOS build 12 · Android versionCode 15) — notifications + faster try-on · RELEASED 2026-07-05
 
 **Rollout:** feature release. iOS Archive build 12; Android upload versionCode-15

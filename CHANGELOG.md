@@ -13,9 +13,10 @@ Conventions:
 
 ## 1.4.0 — native build (versionCode 16 / iOS build 13)
 
-Minor bump (not 1.3.1) — the try-on "fits" economy + invite rewards are a
-feature addition, not a fix. Web/functions live now; the client-side items reach
-iOS/Android with this build.
+Minor bump (not 1.3.1) — the try-on quota + invite rewards are a feature
+addition, not a fix. (User-facing name is **try-on**; the `fit*` code
+identifiers below are internal field/module names only.) Web/functions live now;
+the client-side items reach iOS/Android with this build.
 
 - **2026-07-07 · Fix: try-on returned a contact-sheet of several people instead of
   one.** The image model intermittently rendered a horizontal strip of ~4–6 tiny
@@ -53,23 +54,23 @@ iOS/Android with this build.
   side against abuse). Copy across en/ko/ja now states both sides get 10 ("we both get
   10 bonus try-ons", `inviteShareCode`/`inviteRedeemed`/`inviteEarnFits`/`fitsOutBody`).
 - **2026-07-07 · Fix: invite share text was missing the code.** Users who signed in
-  before the fits rollout never hit the `initializeUser` bootstrap, so their
+  before the try-on quota rollout never hit the `initializeUser` bootstrap, so their
   `inviteCode` was never minted and the share sheet dropped it. Added a `getInviteCode`
   onCall (mints on demand, idempotent) + `useFits` lazily backfills it when the user
   doc lacks one. `FitsService.getInviteCode`.
-- **2026-07-07 · Try-on "fits" — daily quota + invite rewards (Phase 1).** Try-on
-  was unlimited; introduced a soft economy. **5 free "fits"/day** (1 fit = 1 try-on),
-  reset at the user's local midnight (non-accumulating), plus **+10 bonus fits to the
-  INVITER** when someone redeems their invite code. Bonus fits persist, spent only
-  after the daily 5. Server-authoritative: new `functions/fits.js`
+- **2026-07-07 · Try-on quota — daily allowance + invite rewards (Phase 1).** Try-on
+  was unlimited; introduced a soft economy. **5 free try-ons/day**, reset at the user's
+  local midnight (non-accumulating), plus **+10 bonus try-ons to the INVITER** when
+  someone redeems their invite code. Bonus try-ons persist, spent only after the daily 5. Server-authoritative: new `functions/fits.js`
   (`reserveFit` in a txn before generation, `refundFit` if every variant fails so a
   failed try-on costs nothing, `ensureInviteCode`, `redeemInvite` onCall with self/
   dupe/cap guards). Fields (`fitDayKey/fitDailyUsed/fitBonus/invitedBy/inviteCode/
   inviteCount`) live on `users/{uid}` and are added to the firestore.rules deny lists
   (client reads for display, can never write); `inviteCodes/{code}` reverse index is
-  server-only. Client: `useFits` hook, TryOn gate + out-of-fits modal ("invite friends
-  → +10"), Settings fits row + invite code share + "enter invite code". Reward name is
-  lowercase **`fit`** ("3 fits left"). en/ko/ja. Server + web live; the UI reaches
+  server-only. Client: `useFits` hook, TryOn gate + out-of-try-ons modal ("invite
+  friends → +10"), Settings invite code share + "enter invite code". User-facing name is
+  **try-on** ("N/5" ring + bonus pill); an earlier "fit" name was dropped. en/ko/ja.
+  Server + web live; the UI reaches
   native in 1.4.0. (Phase 2 = free auto-attribution: deep-link/install-referrer/
   clipboard. IAP purchase deferred.)
 - **2026-07-07 · Fix: focus crop pulled the wrong garment on multi-item photos.**
