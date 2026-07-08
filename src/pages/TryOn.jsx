@@ -20,20 +20,34 @@ import { brandOrigin } from '../services/platform-service.js';
 // message instead of a failed request after pressing Start.
 const MAX_TRYON_ITEMS = 6;
 
-// Small circular gauge of daily fits (사주핑 energy-ring style): a track ring +
-// an accent arc filling remaining/max, drawn from 12 o'clock.
-function FitsRing({ remaining, max, size = 22, stroke = 3 }) {
+// Small circular gauge of remaining try-ons (사주핑 energy-ring style). The ring
+// holds BOTH buckets so a user with bonus left never sees an empty ring:
+// capacity = dailyMax + bonus, drawn from 12 o'clock as two contiguous arcs —
+// daily (accent green) then bonus (gold). The gap left at the end is the daily
+// already spent today; total 0 leaves the ring correctly empty.
+function FitsRing({ daily, bonus, dailyMax, size = 22, stroke = 3 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const frac = Math.max(0, Math.min(1, max ? remaining / max : 0));
+  const max = dailyMax + bonus;
+  const dailyLen = max > 0 ? c * (Math.max(0, daily) / max) : 0;
+  const bonusLen = max > 0 ? c * (Math.max(0, bonus) / max) : 0;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="fits-ring" aria-hidden="true">
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
-      <circle
-        cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
-        strokeDasharray={c} strokeDashoffset={c * (1 - frac)} strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
+      {dailyLen > 0 && (
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--accent)" strokeWidth={stroke}
+          strokeDasharray={`${dailyLen} ${c}`} strokeLinecap="butt"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      )}
+      {bonusLen > 0 && (
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--fits-bonus)" strokeWidth={stroke}
+          strokeDasharray={`${bonusLen} ${c}`} strokeDashoffset={-dailyLen} strokeLinecap="butt"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      )}
     </svg>
   );
 }
@@ -58,7 +72,7 @@ export function TryOn({ user, onSignIn }) {
   const fitsChip = (extra = '') => fits.loaded && (
     <button type="button" className={`tryon-fits-meter ${extra}`} onClick={doInvite}>
       <span className="tryon-fits-invite">{t('inviteForMore')}</span>
-      <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} size={17} stroke={2.5} />
+      <FitsRing daily={fits.dailyRemaining} bonus={fits.bonus} dailyMax={FITS_PER_DAY} size={17} stroke={2.5} />
       <span className="tryon-fits-count">{fits.dailyRemaining}/{FITS_PER_DAY}{fits.bonus > 0 ? ` +${fits.bonus}` : ''}</span>
     </button>
   );
