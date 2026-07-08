@@ -18,20 +18,20 @@ android {
     }
     // Release signing — reads from ~/.gradle/gradle.properties (user-global,
     // never in the repo). Properties:
-    //   ARCHELIER_UPLOAD_STORE_FILE     (path to .keystore)
-    //   ARCHELIER_UPLOAD_STORE_PASSWORD
-    //   ARCHELIER_UPLOAD_KEY_ALIAS
-    //   ARCHELIER_UPLOAD_KEY_PASSWORD
+    //   DRAPE_UPLOAD_STORE_FILE     (path to .keystore)
+    //   DRAPE_UPLOAD_STORE_PASSWORD
+    //   DRAPE_UPLOAD_KEY_ALIAS
+    //   DRAPE_UPLOAD_KEY_PASSWORD
     // CI / contributors without the keystore get a graceful skip (release
     // build will fail at the actual sign step with a clear error instead of
     // a confusing Groovy NPE).
     signingConfigs {
         release {
-            if (project.hasProperty('ARCHELIER_UPLOAD_STORE_FILE')) {
-                storeFile file(ARCHELIER_UPLOAD_STORE_FILE)
-                storePassword ARCHELIER_UPLOAD_STORE_PASSWORD
-                keyAlias ARCHELIER_UPLOAD_KEY_ALIAS
-                keyPassword ARCHELIER_UPLOAD_KEY_PASSWORD
+            if (project.hasProperty('DRAPE_UPLOAD_STORE_FILE')) {
+                storeFile file(DRAPE_UPLOAD_STORE_FILE)
+                storePassword DRAPE_UPLOAD_STORE_PASSWORD
+                keyAlias DRAPE_UPLOAD_KEY_ALIAS
+                keyPassword DRAPE_UPLOAD_KEY_PASSWORD
             }
         }
     }
