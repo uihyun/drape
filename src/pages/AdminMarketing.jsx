@@ -208,6 +208,9 @@ export function MarketingTab() {
               <div className="admk-meta">
                 <span className="admk-status" style={{ color: STATUS_COLOR[p.status] || 'inherit' }}>{p.status}</span>
                 <span className="adm-muted">{fmtWhen(p.scheduledAt)}</span>
+                <span className={`admk-chip admk-kind ${/\.(mp4|mov)(\?|$)/i.test(p.imageUrl) ? 'reel' : ''}`}>
+                  {/\.(mp4|mov)(\?|$)/i.test(p.imageUrl) ? 'reel' : 'post'}
+                </span>
                 {p.targets.map((t) => <span key={t} className="admk-chip">{t}</span>)}
               </div>
               <div className="admk-cap">{p.caption}</div>
@@ -257,6 +260,8 @@ const MARKETING_CSS = `
 .admk-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .admk-status{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .admk-chip{font-size:11px;border:1px solid var(--border);border-radius:20px;padding:2px 8px;color:var(--text-secondary)}
+.admk-kind{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.admk-kind.reel{background:var(--accent);border-color:var(--accent);color:#fff}
 .admk-cap{font-size:13px;margin-top:6px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .admk-failmsg{margin-top:4px;word-break:break-all}
 .admk-rowactions{display:flex;flex-direction:column;gap:6px;flex:none}
