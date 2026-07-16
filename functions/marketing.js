@@ -160,12 +160,24 @@ async function publishInstagram({ imageUrl, caption }, cfg) {
   const container = await metaFetch(`${IG_GRAPH}/me/media`, video
     ? { media_type: 'REELS', video_url: imageUrl, caption, access_token: cfg.igToken }
     : { image_url: imageUrl, caption, access_token: cfg.igToken });
-  if (video) await waitForContainer(container.id, cfg.igToken);
-  const pub = await metaFetch(`${IG_GRAPH}/me/media_publish`, {
-    creation_id: container.id,
-    access_token: cfg.igToken,
-  });
-  return { mediaId: pub.id, type: video ? 'reel' : 'image' };
+  // Image containers process too — publishing immediately intermittently
+  // throws "Media ID is not available" (bit us on the very first post).
+  await waitForContainer(container.id, cfg.igToken, video ? 40 : 12);
+  let lastErr;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const pub = await metaFetch(`${IG_GRAPH}/me/media_publish`, {
+        creation_id: container.id,
+        access_token: cfg.igToken,
+      });
+      return { mediaId: pub.id, type: video ? 'reel' : 'image' };
+    } catch (e) {
+      lastErr = e;
+      if (!/not available|try again/i.test(String(e.message))) throw e;
+      await new Promise((r) => setTimeout(r, 6000));
+    }
+  }
+  throw lastErr;
 }
 
 // Threads: same two-step shape, 500-char text cap.
