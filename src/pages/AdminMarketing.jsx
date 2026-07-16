@@ -130,10 +130,13 @@ function PostForm({ initial, assets, onSaved, onClose }) {
   );
 }
 
+const FILTERS = ['all', 'queued', 'published', 'failed'];
+
 export function MarketingTab() {
   const [posts, setPosts] = useState(null);
   const [assets, setAssets] = useState([]);
   const [editing, setEditing] = useState(null); // null | {} (new) | post (edit)
+  const [filter, setFilter] = useState('all');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -160,14 +163,19 @@ export function MarketingTab() {
   if (err && !posts) return <div className="adm-err">{err}</div>;
   if (!posts) return <div className="adm-loading"><Loader2 className="spin" /> loading queue…</div>;
 
+  const shown = filter === 'all' ? posts : posts.filter((p) => p.status === filter);
+
   return (
     <>
       <style>{MARKETING_CSS}</style>
       <div className="adm-toolbar">
-        <span className="adm-muted">
-          {counts.queued} queued · {counts.published} published{counts.failed ? ` · ${counts.failed} failed` : ''}
-          {' — '}publisher goes live once Meta tokens are set (resources/marketing/README.md)
-        </span>
+        <div className="adm-seg">
+          {FILTERS.map((f) => (
+            <button key={f} className={f === filter ? 'on' : ''} onClick={() => setFilter(f)}>
+              {f}{f === 'queued' ? ` ${counts.queued}` : f === 'published' ? ` ${counts.published}` : f === 'failed' && counts.failed ? ` ${counts.failed}` : ''}
+            </button>
+          ))}
+        </div>
         <div className="admk-actions">
           <button className="adm-btn" onClick={load} disabled={busy}><RefreshCw size={14} /> Refresh</button>
           <button className="adm-btn" onClick={() => setEditing({})}><Plus size={14} /> New post</button>
@@ -184,10 +192,10 @@ export function MarketingTab() {
         />
       )}
 
-      {!posts.length && !editing && <div className="adm-muted admk-empty">Queue is empty — add the launch kit posts.</div>}
+      {!shown.length && !editing && <div className="adm-muted admk-empty">{filter === 'all' ? 'Queue is empty — add the launch kit posts.' : `No ${filter} posts.`}</div>}
 
       <div className="admk-list">
-        {posts.map((p) => (
+        {shown.map((p) => (
           <div key={p.id} className="admk-row">
             <img className="admk-thumb" src={p.imageUrl} alt="" loading="lazy" />
             <div className="admk-body">
