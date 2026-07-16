@@ -1,0 +1,84 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:960px; background:#141312; overflow:hidden; position:relative; font-family:"Helvetica Neue",sans-serif; }
+  .abs { position:absolute; }
+  #eyebrow { top:380px; left:0; right:0; text-align:center; font-size:12px; letter-spacing:5px; color:#8a857d; }
+  #h1a, #h1b { left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; font-weight:400; color:#f2ede4; font-size:54px; line-height:1.1; }
+  #h1a { top:432px; } #h1b { top:500px; }
+  .ph { position:absolute; inset:0; opacity:0; }
+  .ph img { width:100%; height:100%; object-fit:cover; }
+  .ph .shadeg { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,19,18,.25),rgba(20,19,18,0) 30%,rgba(20,19,18,0) 65%,rgba(20,19,18,.6)); }
+  .ph .handle { position:absolute; bottom:64px; left:28px; font-size:15px; font-weight:600; color:#f2ede4; text-shadow:0 1px 8px rgba(0,0,0,.4); }
+  .ph .day { position:absolute; top:28px; right:28px; font-size:10px; letter-spacing:2px; color:#f2ede4; border:1px solid rgba(242,237,228,.6); padding:7px 13px; border-radius:100px; backdrop-filter:blur(4px); }
+  #wmtop { top:26px; left:28px; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:24px; z-index:20; text-shadow:0 1px 10px rgba(0,0,0,.35); }
+  #shade { inset:0; background:#141312; }
+  #wordmark { top:400px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:110px; }
+  #tagline { top:552px; left:0; right:0; text-align:center; font-size:13px; letter-spacing:3px; color:#8a857d; }
+  #cta { top:618px; left:0; right:0; display:flex; justify-content:center; }
+  #cta span { font-size:13px; letter-spacing:3px; color:#f2ede4; border:1px solid #4a463f; border-radius:100px; padding:14px 30px; }
+</style>
+<body>
+  <div class="abs" id="eyebrow">STYLE ARCHIVE</div>
+  <div class="abs" id="h1a">Today's looks,</div>
+  <div class="abs" id="h1b">archived.</div>
+  <div class="abs" id="wmtop">drape</div>
+
+  <div class="ph" data-i="0"><img src="seed/jisu_daily/outfit-3.jpg"><div class="shadeg"></div><div class="handle">@jisu_daily</div><div class="day">SEOUL</div></div>
+  <div class="ph" data-i="1"><img src="seed/bibi/outfit-1.jpg"><div class="shadeg"></div><div class="handle">@bibi</div><div class="day">SEOUL</div></div>
+  <div class="ph" data-i="2"><img src="seed/natalie/outfit-2.jpg"><div class="shadeg"></div><div class="handle">@natalie</div><div class="day">NYC</div></div>
+  <div class="ph" data-i="3"><img src="seed/rina_cafe_life/outfit-4.jpg"><div class="shadeg"></div><div class="handle">@rina_cafe_life</div><div class="day">TOKYO</div></div>
+  <div class="ph" data-i="4"><img src="seed/jiho/outfit-5.jpg"><div class="shadeg"></div><div class="handle">@jiho</div><div class="day">SEOUL</div></div>
+  <div class="ph" data-i="5"><img src="seed/kazuki_t/outfit-3.jpg"><div class="shadeg"></div><div class="handle">@kazuki_t</div><div class="day">TOKYO</div></div>
+  <div class="ph" data-i="6"><img src="seed/jiyongg/outfit-0.jpg"><div class="shadeg"></div><div class="handle">@jiyongg</div><div class="day">SEOUL</div></div>
+  <div class="ph" data-i="7"><img src="seed/amy/outfit-2.jpg"><div class="shadeg"></div><div class="handle">@amy</div><div class="day">NYC</div></div>
+
+  <div class="abs" id="shade"></div>
+  <div class="abs" id="wordmark">drape</div>
+  <div class="abs" id="tagline">EVERY OUTFIT YOU WEAR, ARCHIVED</div>
+  <div class="abs" id="cta"><span>GET THE APP</span></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => { x = clamp(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; };
+  const seg = (t, a, b) => ease((t - a) / (b - a));
+
+  const START = 1.7, DUR = 1.05, N = 8;
+  window.setFrame = (t) => {
+    const iIn = seg(t, 0.1, 0.7), iOut = seg(t, 1.3, 1.75);
+    $('eyebrow').style.opacity = iIn * (1 - iOut);
+    for (const [id, d] of [['h1a', 0.12], ['h1b', 0.24]]) {
+      const a = seg(t, 0.1 + d, 0.7 + d);
+      $(id).style.opacity = a * (1 - iOut);
+      $(id).style.transform = `translateY(${(1 - a) * 30 - iOut * 18}px)`;
+    }
+    $('wmtop').style.opacity = seg(t, START, START + 0.4) * (1 - seg(t, START + N * DUR + 0.1, START + N * DUR + 0.5));
+    document.querySelectorAll('.ph').forEach((el) => {
+      const i = +el.dataset.i;
+      const a = START + i * DUR, b = a + DUR;
+      const on = t >= a && t < b + 0.18 ? 1 : 0;
+      const fin = seg(t, a, a + 0.18);
+      el.style.opacity = on * fin;
+      el.style.zIndex = 10 - i + '';
+      const z = 1.06 - clamp((t - a) / DUR) * 0.06;
+      el.querySelector('img').style.transform = `scale(${z})`;
+      const h = el.querySelector('.handle');
+      h.style.opacity = seg(t, a + 0.12, a + 0.4);
+      h.style.transform = `translateY(${(1 - seg(t, a + 0.12, a + 0.4)) * 12}px)`;
+    });
+    const END = START + N * DUR; // 10.1
+    const sh = seg(t, END, END + 0.5);
+    $('shade').style.opacity = sh;
+    const w = seg(t, END + 0.3, END + 1.0);
+    $('wordmark').style.opacity = w;
+    $('wordmark').style.transform = `scale(${0.94 + w * 0.06})`;
+    const tg = seg(t, END + 0.7, END + 1.3);
+    $('tagline').style.opacity = tg;
+    $('tagline').style.transform = `translateY(${(1 - tg) * 14}px)`;
+    $('cta').style.opacity = seg(t, END + 1.0, END + 1.6);
+    return 'f';
+  };
+  window.setFrame(0);
+</script>
+</body>

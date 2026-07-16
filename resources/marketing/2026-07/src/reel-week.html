@@ -1,0 +1,84 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:960px; background:#141312; overflow:hidden; position:relative; font-family:"Helvetica Neue",sans-serif; }
+  .abs { position:absolute; }
+  #eyebrow { top:380px; left:0; right:0; text-align:center; font-size:12px; letter-spacing:5px; color:#8a857d; }
+  #h1a, #h1b { left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; font-weight:400; color:#f2ede4; font-size:54px; line-height:1.1; }
+  #h1a { top:432px; } #h1b { top:500px; }
+  .ph { position:absolute; inset:0; opacity:0; }
+  .ph img { width:100%; height:100%; object-fit:cover; }
+  .ph .shadeg { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,19,18,.25),rgba(20,19,18,0) 30%,rgba(20,19,18,0) 60%,rgba(20,19,18,.65)); }
+  .ph .day { position:absolute; bottom:120px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; font-size:44px; color:#f2ede4; text-shadow:0 2px 14px rgba(0,0,0,.45); }
+  #wmtop { top:26px; left:28px; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:24px; z-index:20; text-shadow:0 1px 10px rgba(0,0,0,.35); }
+  #handle { top:30px; right:28px; font-size:13px; font-weight:600; color:#f2ede4; z-index:20; text-shadow:0 1px 8px rgba(0,0,0,.4); }
+  #shade { inset:0; background:#141312; }
+  #outroA { top:390px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:44px; line-height:1.25; }
+  #wordmark { top:560px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:72px; }
+  #cta { top:680px; left:0; right:0; display:flex; justify-content:center; }
+  #cta span { font-size:13px; letter-spacing:3px; color:#f2ede4; border:1px solid #4a463f; border-radius:100px; padding:14px 30px; }
+</style>
+<body>
+  <div class="abs" id="eyebrow">OOTD CALENDAR</div>
+  <div class="abs" id="h1a">One week.</div>
+  <div class="abs" id="h1b">Seven looks.</div>
+  <div class="abs" id="wmtop">drape</div>
+  <div class="abs" id="handle">@jisu_daily</div>
+
+  <div class="ph" data-i="0"><img src="seed/jisu_daily/outfit-0.jpg"><div class="shadeg"></div><div class="day">Monday</div></div>
+  <div class="ph" data-i="1"><img src="seed/jisu_daily/outfit-1.jpg"><div class="shadeg"></div><div class="day">Tuesday</div></div>
+  <div class="ph" data-i="2"><img src="seed/jisu_daily/outfit-2.jpg"><div class="shadeg"></div><div class="day">Wednesday</div></div>
+  <div class="ph" data-i="3"><img src="seed/jisu_daily/outfit-3.jpg"><div class="shadeg"></div><div class="day">Thursday</div></div>
+  <div class="ph" data-i="4"><img src="seed/jisu_daily/outfit-4.jpg"><div class="shadeg"></div><div class="day">Friday</div></div>
+  <div class="ph" data-i="5"><img src="seed/jisu_daily/outfit-5.jpg"><div class="shadeg"></div><div class="day">Saturday</div></div>
+
+  <div class="abs" id="shade"></div>
+  <div class="abs" id="outroA">One photo a day.<br>That's the whole habit.</div>
+  <div class="abs" id="wordmark">drape</div>
+  <div class="abs" id="cta"><span>GET THE APP</span></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => { x = clamp(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; };
+  const seg = (t, a, b) => ease((t - a) / (b - a));
+
+  const START = 1.7, DUR = 1.15, N = 6;
+  window.setFrame = (t) => {
+    const iOut = seg(t, 1.3, 1.75);
+    $('eyebrow').style.opacity = seg(t, 0.1, 0.7) * (1 - iOut);
+    for (const [id, d] of [['h1a', 0.12], ['h1b', 0.24]]) {
+      const a = seg(t, 0.1 + d, 0.7 + d);
+      $(id).style.opacity = a * (1 - iOut);
+      $(id).style.transform = `translateY(${(1 - a) * 30 - iOut * 18}px)`;
+    }
+    const END = START + N * DUR; // 8.6
+    const hud = seg(t, START, START + 0.4) * (1 - seg(t, END, END + 0.4));
+    $('wmtop').style.opacity = hud;
+    $('handle').style.opacity = hud;
+    document.querySelectorAll('.ph').forEach((el) => {
+      const i = +el.dataset.i;
+      const a = START + i * DUR;
+      const on = t >= a && t < a + DUR + 0.18 ? 1 : 0;
+      el.style.opacity = on * seg(t, a, a + 0.18);
+      el.style.zIndex = 10 - i + '';
+      const z = 1.06 - clamp((t - a) / DUR) * 0.06;
+      el.querySelector('img').style.transform = `scale(${z})`;
+      const d = el.querySelector('.day');
+      const dp = seg(t, a + 0.1, a + 0.38);
+      d.style.opacity = dp;
+      d.style.transform = `translateY(${(1 - dp) * 14}px)`;
+    });
+    const sh = seg(t, END, END + 0.5);
+    $('shade').style.opacity = sh;
+    const oa = seg(t, END + 0.3, END + 1.0);
+    $('outroA').style.opacity = oa;
+    $('outroA').style.transform = `translateY(${(1 - oa) * 18}px)`;
+    const w = seg(t, END + 0.9, END + 1.6);
+    $('wordmark').style.opacity = w;
+    $('cta').style.opacity = seg(t, END + 1.3, END + 1.9);
+    return 'f';
+  };
+  window.setFrame(0);
+</script>
+</body>
