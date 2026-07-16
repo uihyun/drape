@@ -201,7 +201,9 @@ export function MarketingTab() {
       <div className="admk-list">
         {shown.map((p) => (
           <div key={p.id} className="admk-row">
-            <img className="admk-thumb" src={p.imageUrl} alt="" loading="lazy" />
+            {/\.(mp4|mov)(\?|$)/i.test(p.imageUrl)
+              ? <video className="admk-thumb" src={p.imageUrl} muted playsInline preload="metadata" />
+              : <img className="admk-thumb" src={p.imageUrl} alt="" loading="lazy" />}
             <div className="admk-body">
               <div className="admk-meta">
                 <span className="admk-status" style={{ color: STATUS_COLOR[p.status] || 'inherit' }}>{p.status}</span>
