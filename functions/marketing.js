@@ -8,14 +8,17 @@
 //     scheduledAt: Timestamp, status: 'queued'|'published'|'failed'|'canceled',
 //     results: { instagram?, threads? }, createdAt, updatedAt }
 //
-// The publisher (onSchedule every 15 min → IG Graph API container/publish +
-// Threads API) lands in this file once the Meta tokens exist as secrets
-// (META_IG_TOKEN / META_IG_USER_ID / THREADS_TOKEN) — setup checklist in
-// resources/marketing/README.md. Until then the queue is fully manageable;
-// nothing goes out.
+// Publisher: `publishMarketingPosts` (onSchedule, 15 min) drains due queued
+// docs → IG Graph (media container → publish) + Threads API. Tokens live in
+// the admin-only `marketingConfig/tokens` doc — NOT in deploy-time secrets —
+// because both are 60-day tokens the weekly `refreshMarketingTokens` job
+// rotates in place (a secret would go stale between deploys). Seed/rotate by
+// hand with scripts/seed-marketing-tokens.cjs. Setup history in
+// resources/marketing/README.md.
 
 const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { assertAdmin } = require('./admin.js');
 
 const opts = { cors: true, timeoutSeconds: 60, memory: '256MiB' };
@@ -117,3 +120,128 @@ exports.adminMarketingAssets = onCall(opts, async (request) => {
     }));
   return { assets };
 });
+
+// ── Publisher ───────────────────────────────────────────────────────────
+// Tokens doc: marketingConfig/tokens { igToken, igUserId, threadsToken,
+// threadsUserId?, igRefreshedAt, threadsRefreshedAt }. Rules never expose it.
+
+const IG_GRAPH = 'https://graph.instagram.com/v23.0';
+const TH_GRAPH = 'https://graph.threads.net/v1.0';
+
+async function metaFetch(url, params) {
+  const body = new URLSearchParams(params);
+  const res = await fetch(url, { method: 'POST', body });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.error) {
+    throw new Error(json.error?.message || `HTTP_${res.status}`);
+  }
+  return json;
+}
+
+// IG: create container → publish. Image must be at a public URL (our Storage objects).
+async function publishInstagram({ imageUrl, caption }, cfg) {
+  const container = await metaFetch(`${IG_GRAPH}/me/media`, {
+    image_url: imageUrl,
+    caption,
+    access_token: cfg.igToken,
+  });
+  const pub = await metaFetch(`${IG_GRAPH}/me/media_publish`, {
+    creation_id: container.id,
+    access_token: cfg.igToken,
+  });
+  return { mediaId: pub.id };
+}
+
+// Threads: same two-step shape, 500-char text cap.
+async function publishThreads({ imageUrl, caption }, cfg) {
+  const container = await metaFetch(`${TH_GRAPH}/me/threads`, {
+    media_type: 'IMAGE',
+    image_url: imageUrl,
+    text: caption.slice(0, 500),
+    access_token: cfg.threadsToken,
+  });
+  const pub = await metaFetch(`${TH_GRAPH}/me/threads_publish`, {
+    creation_id: container.id,
+    access_token: cfg.threadsToken,
+  });
+  return { mediaId: pub.id };
+}
+
+exports.publishMarketingPosts = onSchedule(
+  { schedule: 'every 15 minutes', timeoutSeconds: 300, memory: '256MiB', retryCount: 0 },
+  async () => {
+    const db = admin.firestore();
+    const cfgSnap = await db.doc('marketingConfig/tokens').get();
+    if (!cfgSnap.exists) { console.log('marketing: no tokens configured, skipping'); return; }
+    const cfg = cfgSnap.data();
+
+    const due = await db.collection(COLL)
+      .where('status', '==', 'queued')
+      .where('scheduledAt', '<=', admin.firestore.Timestamp.now())
+      .orderBy('scheduledAt')
+      .limit(5) // spread bursts across runs — IG rate limits per account
+      .get();
+    if (due.empty) return;
+
+    for (const doc of due.docs) {
+      const post = doc.data();
+      const results = {};
+      let anyFail = false;
+      for (const target of post.targets) {
+        try {
+          if (target === 'instagram') {
+            if (!cfg.igToken) throw new Error('IG_TOKEN_MISSING');
+            results.instagram = await publishInstagram(post, cfg);
+          } else if (target === 'threads') {
+            if (!cfg.threadsToken) throw new Error('THREADS_TOKEN_MISSING');
+            results.threads = await publishThreads(post, cfg);
+          }
+        } catch (e) {
+          anyFail = true;
+          results[target] = { error: String(e.message || e).slice(0, 300) };
+          console.error(`marketing publish ${doc.id} → ${target} failed:`, e.message);
+        }
+      }
+      await doc.ref.update({
+        status: anyFail ? 'failed' : 'published',
+        results,
+        publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log(`marketing publish ${doc.id}: ${anyFail ? 'FAILED' : 'ok'}`, JSON.stringify(results));
+    }
+  },
+);
+
+// Both platforms hand out 60-day tokens that can be refreshed once they're
+// >24h old. Weekly keeps them perpetually fresh with a wide safety margin.
+exports.refreshMarketingTokens = onSchedule(
+  { schedule: 'every monday 04:00', timeZone: 'Etc/UTC', timeoutSeconds: 60, memory: '256MiB' },
+  async () => {
+    const db = admin.firestore();
+    const ref = db.doc('marketingConfig/tokens');
+    const snap = await ref.get();
+    if (!snap.exists) return;
+    const cfg = snap.data();
+    const patch = {};
+    const refresh = async (url) => {
+      const res = await fetch(url);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.error) throw new Error(json.error?.message || `HTTP_${res.status}`);
+      return json.access_token;
+    };
+    if (cfg.igToken) {
+      try {
+        patch.igToken = await refresh(`https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${encodeURIComponent(cfg.igToken)}`);
+        patch.igRefreshedAt = admin.firestore.FieldValue.serverTimestamp();
+      } catch (e) { console.error('IG token refresh failed:', e.message); }
+    }
+    if (cfg.threadsToken) {
+      try {
+        patch.threadsToken = await refresh(`https://graph.threads.net/refresh_access_token?grant_type=th_refresh_token&access_token=${encodeURIComponent(cfg.threadsToken)}`);
+        patch.threadsRefreshedAt = admin.firestore.FieldValue.serverTimestamp();
+      } catch (e) { console.error('Threads token refresh failed:', e.message); }
+    }
+    if (Object.keys(patch).length) await ref.set(patch, { merge: true });
+  },
+);
