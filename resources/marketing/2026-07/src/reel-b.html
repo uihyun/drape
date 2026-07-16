@@ -1,0 +1,92 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:960px; background:#141312; overflow:hidden; position:relative; font-family:"Helvetica Neue",sans-serif; }
+  .abs { position:absolute; }
+
+  /* scene 1 — headline */
+  #eyebrow { top:330px; left:0; right:0; text-align:center; font-size:12px; letter-spacing:5px; color:#8a857d; }
+  #h1a, #h1b { left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; font-weight:400; color:#f2ede4; font-size:52px; line-height:1.1; }
+  #h1a { top:390px; } #h1b { top:455px; }
+
+  /* scene 2 — item card */
+  #card { top:200px; left:70px; width:400px; height:500px; background:#f5f1ea; border-radius:20px; display:flex; align-items:center; justify-content:center; }
+  #card img { width:82%; height:78%; object-fit:contain; }
+  #tag1 { top:730px; left:0; right:0; display:flex; justify-content:center; }
+  #tag1 span, #tag2 span { font-size:12px; letter-spacing:2.5px; background:rgba(20,19,18,.88); color:#f2ede4; padding:10px 20px; border-radius:100px; }
+
+  /* scene 3 — model reveal */
+  #model { inset:0; }
+  #model img { width:100%; height:100%; object-fit:cover; object-position:top; }
+  #tag2 { bottom:150px; left:0; right:0; display:flex; justify-content:center; }
+
+  /* outro */
+  #shade { inset:0; background:#141312; }
+  #wordmark { top:400px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:110px; }
+  #tagline { top:555px; left:0; right:0; text-align:center; font-size:13px; letter-spacing:3px; color:#8a857d; }
+  #cta { top:620px; left:0; right:0; display:flex; justify-content:center; }
+  #cta span { font-size:13px; letter-spacing:3px; color:#f2ede4; border:1px solid #4a463f; border-radius:100px; padding:14px 30px; }
+</style>
+<body>
+  <div class="abs" id="eyebrow">VIRTUAL TRY-ON</div>
+  <div class="abs" id="h1a">See it on you.</div>
+  <div class="abs" id="h1b">Before you put it on.</div>
+  <div class="abs" id="card"><img src="assets/item7440.png"></div>
+  <div class="abs" id="tag1"><span>IN YOUR CLOSET</span></div>
+  <div class="abs" id="model"><img src="model-bomber.png"></div>
+  <div class="abs" id="tag2"><span>ON YOU — AI TRY-ON</span></div>
+  <div class="abs" id="shade"></div>
+  <div class="abs" id="wordmark">drape</div>
+  <div class="abs" id="tagline">DIGITAL CLOSET · VIRTUAL TRY-ON · OOTD CALENDAR</div>
+  <div class="abs" id="cta"><span>GET THE APP</span></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => { x = clamp(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; };
+  // fade-slide helper: returns progress of a segment [a,b]
+  const seg = (t, a, b) => ease((t - a) / (b - a));
+
+  window.setFrame = (t) => {
+    // Scene 1: headline 0–2.6s (in 0–0.9, out 2.1–2.6)
+    const s1in = seg(t, 0.1, 0.9), s1out = seg(t, 2.1, 2.6);
+    const s1o = s1in * (1 - s1out);
+    $('eyebrow').style.opacity = s1o;
+    $('eyebrow').style.transform = `translateY(${(1 - s1in) * 20 - s1out * 14}px)`;
+    for (const [id, d] of [['h1a', 0.15], ['h1b', 0.3]]) {
+      const i2 = seg(t, 0.1 + d, 0.9 + d), o2 = seg(t, 2.1, 2.6);
+      $(id).style.opacity = i2 * (1 - o2);
+      $(id).style.transform = `translateY(${(1 - i2) * 34 - o2 * 20}px)`;
+    }
+    // Scene 2: item card 2.5–5.2s (in 2.5–3.3), tag 3.2–3.8
+    const cIn = seg(t, 2.5, 3.3);
+    const card = $('card');
+    card.style.opacity = cIn;
+    card.style.transform = `scale(${0.92 + cIn * 0.08}) translateY(${(1 - cIn) * 30}px)`;
+    const t1 = seg(t, 3.2, 3.8) * (1 - seg(t, 4.9, 5.3));
+    $('tag1').style.opacity = t1;
+    // Scene 3: model wipe 5.0–6.0s (clip from right), slow zoom to 8.9
+    const m = seg(t, 5.0, 6.0);
+    const model = $('model');
+    model.style.opacity = m > 0 ? 1 : 0;
+    model.style.clipPath = `inset(0 0 0 ${(1 - m) * 100}%)`;
+    const zoom = 1 + seg(t, 5.0, 8.9) * 0.045;
+    model.querySelector('img').style.transform = `scale(${zoom})`;
+    const t2 = seg(t, 6.1, 6.7) * (1 - seg(t, 8.3, 8.8));
+    $('tag2').style.opacity = t2;
+    // Outro: shade 8.5–9.2, wordmark/tagline/cta staggered to 10.4, hold to 12
+    const sh = seg(t, 8.5, 9.2);
+    $('shade').style.opacity = sh;
+    const w = seg(t, 8.9, 9.7);
+    $('wordmark').style.opacity = w;
+    $('wordmark').style.transform = `scale(${0.94 + w * 0.06})`;
+    const tg = seg(t, 9.3, 10.0);
+    $('tagline').style.opacity = tg;
+    $('tagline').style.transform = `translateY(${(1 - tg) * 14}px)`;
+    const ct = seg(t, 9.7, 10.4);
+    $('cta').style.opacity = ct;
+    return 'f';
+  };
+  window.setFrame(0);
+</script>
+</body>
