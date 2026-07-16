@@ -28,6 +28,9 @@ function assertAdmin(request) {
   const email = request.auth.token?.email || '';
   if (!ADMIN_EMAILS.includes(email)) throw new HttpsError('permission-denied', 'ADMIN_ONLY');
 }
+// Shared with sibling admin-gated modules (marketing.js) so the roster
+// stays defined in exactly one place.
+exports.assertAdmin = assertAdmin;
 
 // ── Single full-corpus pass ────────────────────────────────────────────
 // One read of every collection, assembling everything the heavy endpoints

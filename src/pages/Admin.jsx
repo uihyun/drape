@@ -8,8 +8,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, ArrowLeft, TrendingUp, Users, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, RefreshCw, ArrowLeft, TrendingUp, Users, Sparkles, AlertTriangle, Megaphone } from 'lucide-react';
 import { AdminService } from '../services/admin-service.js';
+import { MarketingTab } from './AdminMarketing.jsx';
 import { cityDisplay, cityCountry } from '../data/cities.js';
 
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString());
@@ -406,7 +407,7 @@ function PublicGallery({ title, items, to }) {
   );
 }
 
-const TABS = [['overview', 'Overview', TrendingUp], ['top', 'Top try-ons', Sparkles], ['users', 'Users', Users], ['errors', 'Errors', AlertTriangle]];
+const TABS = [['overview', 'Overview', TrendingUp], ['top', 'Top try-ons', Sparkles], ['users', 'Users', Users], ['marketing', 'Marketing', Megaphone], ['errors', 'Errors', AlertTriangle]];
 
 export function Admin({ user }) {
   const [tab, setTab] = useState('overview');
@@ -436,7 +437,8 @@ export function Admin({ user }) {
           : tab === 'overview' ? <Overview />
             : tab === 'top' ? <TopTryons />
               : tab === 'errors' ? <ErrorsTab />
-                : <UsersTab onPick={setDetailUid} />}
+                : tab === 'marketing' ? <MarketingTab />
+                  : <UsersTab onPick={setDetailUid} />}
       </main>
     </div>
   );

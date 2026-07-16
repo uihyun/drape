@@ -44,7 +44,13 @@ whenever kits are added or the pipeline changes (same spirit as CHANGELOG.md).
      preservation prompt.
 4. Sanity-check contact sheets before shipping; IG compression eats Didot hairlines below 2×.
 
-## Publishing pipeline (Cloud Functions — planned, next up)
+## Publishing pipeline (Cloud Functions)
+
+**Shipped so far (2026-07-15):** `/admin` → Marketing tab manages the queue
+(create/edit/delete scheduled posts, creative picker). Backing callables in
+`functions/marketing.js`; kit creatives uploaded public to Storage
+`marketing/2026-07/` via `scripts/upload-marketing-assets.cjs`.
+**Not yet shipped:** the actual publisher — blocked on the token checklist below.
 
 Local machines can't stay on; the scheduler lives in Functions:
 

@@ -11,6 +11,29 @@ Conventions:
 
 ---
 
+## Unreleased (web live)
+
+### Admin: Marketing tab — IG/Threads post queue
+
+- New `/admin` **Marketing** tab: schedule Instagram/Threads posts into the
+  `marketingPosts` Firestore queue — creative picker (Storage-hosted kit
+  thumbnails or any https URL), caption editor (2200 cap), per-target chips,
+  local-time scheduling, edit/delete for anything not yet published.
+- `functions/marketing.js`: admin-gated callables `adminMarketingList` /
+  `adminMarketingUpsert` / `adminMarketingDelete` / `adminMarketingAssets`
+  (reuses `assertAdmin` from admin.js — roster stays single-source).
+  Published posts are immutable (audit trail); clients never touch the
+  collection (default-deny rules).
+- `scripts/upload-marketing-assets.cjs`: uploads `resources/marketing/<kit>`
+  creatives to Storage as public objects — needed by both the picker and the
+  IG Graph API (which ingests by public URL). 2026-07 kit (20 PNGs) uploaded.
+- Publisher (onSchedule → IG Graph + Threads APIs) intentionally not shipped
+  yet — blocked on the owner's one-time Meta token setup; checklist in
+  `resources/marketing/README.md`. Queued posts wait harmlessly until then.
+- Marketing asset kit + ops doc live under `resources/marketing/` (2026-07
+  launch kit: EN feed set A–J, KO/JA dark-post variants, captions, HTML
+  templates + rebuild scripts).
+
 ## 1.4.0 — native build (versionCode 16 / iOS build 13)
 
 Minor bump (not 1.3.1) — the try-on quota + invite rewards are a feature

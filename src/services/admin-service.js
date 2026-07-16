@@ -39,4 +39,22 @@ export const AdminService = {
     const { data } = await call('adminErrors')({ limit, q });
     return data.errors;
   },
+
+  // ── Marketing post queue (functions/marketing.js) ───────────────────
+  async marketingList() {
+    const { data } = await call('adminMarketingList')();
+    return data.posts;
+  },
+  async marketingUpsert(post) {
+    const { data } = await call('adminMarketingUpsert')(post);
+    return data.id;
+  },
+  async marketingDelete(id) {
+    await call('adminMarketingDelete')({ id });
+  },
+  // Storage-hosted creatives for the image picker.
+  async marketingAssets() {
+    const { data } = await call('adminMarketingAssets')();
+    return data.assets;
+  },
 };

@@ -80,3 +80,4 @@ public/firebase-config.js
 
 # item-crop A/B test photos/results (personal images — never commit)
 .crop-ab/
+.gstack/

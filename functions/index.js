@@ -167,3 +167,10 @@ exports.adminUsers         = adminFns.adminUsers;
 exports.adminUserDetail    = adminFns.adminUserDetail;
 exports.adminErrors        = adminFns.adminErrors;
 exports.dailyAdminSnapshot = adminFns.dailyAdminSnapshot;
+
+// ── Marketing post queue (admin-gated; publisher lands once Meta tokens exist) ──
+const marketingFns = require('./marketing.js');
+exports.adminMarketingList   = marketingFns.adminMarketingList;
+exports.adminMarketingUpsert = marketingFns.adminMarketingUpsert;
+exports.adminMarketingDelete = marketingFns.adminMarketingDelete;
+exports.adminMarketingAssets = marketingFns.adminMarketingAssets;
