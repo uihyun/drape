@@ -2,10 +2,10 @@
 
 Organic feed = English only. KO/JA copy at the bottom is for dark-post ads only (never on the grid).
 
-Base hashtag pool (rotate 8–12 per post, don't paste all):
-`#digitalcloset #virtualtryon #ootd #ootdfashion #wardrobeapp #closetorganization #capsulewardrobe #outfitplanner #styleapp #fashiontech #whatiwore #dailyoutfit #outfitinspo #stylediary`
-JP-reach tags (fine on an EN post): `#コーデ #今日のコーデ #置き画倶楽部`
-KR-reach tags: `#옷스타그램 #데일리룩 #오오티디`
+**No hashtags** (decided 2026-07-16): they read as cheap and barely move the
+algorithm anymore — discovery keywords go in the caption text itself
+("digital closet", "outfit calendar", "try-on") instead.
+
 
 ---
 
