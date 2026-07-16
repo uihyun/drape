@@ -77,6 +77,14 @@ Firestore `marketingPosts` queue          functions/marketing.js
 4. [ ] Same app → Threads use case → token with `threads_content_publish`
 5. [ ] Hand tokens over → they go into Firebase Secrets, then the function gets built
 
+## Posting cadence (decided 2026-07-16)
+
+Mon/Wed/Fri, US-first timing, alternating two windows for 3 weeks then keep the
+insights winner: **A** 12:00pm ET (US lunch peak) / **B** 7:30pm ET (US evening
+prime; doubles as 8:30am KST/JST commute). Launch queue: 10 EN posts 7/15–8/5
+(order D F B E H A J G I C), seeded via scripts in `src/`, visible in /admin →
+Marketing. Threads target off until its token is seeded.
+
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
 CozyLook / Array Closet / Verifyt / DressYou IG ads boil down to four genres we cover:
