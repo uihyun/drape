@@ -104,6 +104,27 @@ Paid ads are separate from this queue: boost published posts in-app, or run
 country-targeted dark posts in Ads Manager (`ads-ko/`, `ads-ja/` creatives;
 objective "App promotion"; Threads placement via checkbox).
 
+## Launch plan & checkpoint (as of 2026-07-16)
+
+**Live queue (14 posts, 7/16–8/5):** images Mon/Wed/Fri (12pm ⇄ 7:30pm ET
+alternating), Reels Tue/Sat (ootd 7/18, features 7/21, week 7/25, howto 7/28).
+Front-loaded on purpose — a new account's bottleneck is reach, not content, and
+batch production cost is ~zero now (HTML card + reel templates, 64 seed photos,
+crop pipeline in `src/`).
+
+**No hashtags** on organic posts — discovery keywords live in caption prose.
+
+**Checkpoint ~Jul 28:** review 2 weeks of insights — watch saves + profile
+visits + follows per post (not likes), and the 12pm vs 7:30pm window split.
+Then build batch 2 from what worked: variations of winning concepts, unused
+seed photos (~40), new persona mixes, unpitched features (marketplace, DM),
+seasonal angle (fall closet). From batch 2, settle into 3–4 posts/week.
+
+**Reels library** (`2026-07/reels/`, all 1080×1920): ootd (montage, reach),
+howto (snap→catalogued, conversion), week (jisu weekly), features (3-feature
+demo, female items), tryon (Veo motion — backup; API reels publish silent, so
+trending-audio uploads still go via the app manually).
+
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
 CozyLook / Array Closet / Verifyt / DressYou IG ads boil down to four genres we cover:
