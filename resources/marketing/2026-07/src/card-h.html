@@ -1,0 +1,42 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:675px; background:#f5f1ea; font-family:"Helvetica Neue",sans-serif; overflow:hidden; position:relative; }
+  .copy { padding:44px 40px 0; position:relative; z-index:2; }
+  .eyebrow { font-size:10px; letter-spacing:4px; color:#8a857d; text-transform:uppercase; }
+  h1 { font-family:"Didot",serif; color:#141312; font-size:46px; font-weight:400; font-style:italic; line-height:1.12; margin-top:14px; }
+  .sub { margin-top:14px; font-size:13px; color:#6f6a61; line-height:1.5; }
+  .phone { position:absolute; left:50%; transform:translateX(-50%) rotate(-4deg); bottom:-175px; width:320px; height:560px; background:#141312; border-radius:44px; padding:12px; box-shadow:0 30px 60px rgba(20,19,18,.28); z-index:1; }
+  .screen { width:100%; height:100%; background:#faf7f1; border-radius:34px; overflow:hidden; display:flex; flex-direction:column; }
+  .notch { width:90px; height:22px; background:#141312; border-radius:100px; margin:8px auto 0; }
+  .appbar { display:flex; justify-content:space-between; align-items:baseline; padding:12px 16px 6px; }
+  .appbar .wm { font-family:"Didot",serif; font-style:italic; font-size:20px; color:#141312; }
+  .appbar span { font-size:8px; letter-spacing:1.5px; color:#8a857d; }
+  .igrid { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:6px 12px; }
+  .icell { background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(20,19,18,.06); }
+  .icell img { width:82%; height:82%; object-fit:contain; }
+  .wordmark { position:absolute; top:44px; right:40px; font-family:"Didot",serif; font-style:italic; font-size:26px; color:#141312; z-index:3; }
+</style>
+<body>
+<div class="wordmark">drape</div>
+<div class="copy">
+  <div class="eyebrow">Digital Closet</div>
+  <h1>You don't need<br>more clothes.<br>You need drape.</h1>
+  <div class="sub">Your closet, catalogued. Every piece, tried on with AI.</div>
+</div>
+<div class="phone"><div class="screen">
+  <div class="notch"></div>
+  <div class="appbar"><div class="wm">drape</div><span>CLOSET · 36</span></div>
+  <div class="igrid">
+    <div class="icell"><img src="seed/amy/items/item-0-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-4-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-6-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-5-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-10-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-7-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-9-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-2-x.png"></div>
+    <div class="icell"><img src="seed/amy/items/item-13-x.png"></div>
+  </div>
+</div></div>
+</body>

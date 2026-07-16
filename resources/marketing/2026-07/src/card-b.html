@@ -1,0 +1,30 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:675px; background:#141312; font-family:"Didot","Didot LT STD",serif; overflow:hidden; }
+  .card { width:100%; height:100%; display:flex; flex-direction:column; padding:44px 40px 36px; }
+  .eyebrow { font-family:"Helvetica Neue",sans-serif; font-size:10px; letter-spacing:4px; color:#8a857d; text-transform:uppercase; }
+  h1 { color:#f2ede4; font-size:42px; font-weight:400; font-style:italic; line-height:1.12; margin-top:14px; }
+  .split { flex:1; display:grid; grid-template-columns:1fr 1.35fr; gap:12px; margin-top:28px; min-height:0; }
+  .pane { background:#f5f1ea; border-radius:12px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .pane img.flat { width:82%; height:70%; object-fit:contain; }
+  .pane img.worn { width:100%; height:100%; object-fit:cover; object-position:top; }
+  .tag { position:absolute; bottom:12px; left:12px; font-family:"Helvetica Neue",sans-serif; font-size:9px; letter-spacing:2.5px; text-transform:uppercase; background:#141312; color:#f2ede4; padding:6px 10px; border-radius:100px; }
+  .footer { display:flex; align-items:baseline; justify-content:space-between; margin-top:28px; }
+  .wordmark { color:#f2ede4; font-style:italic; font-size:34px; }
+  .cta { font-family:"Helvetica Neue",sans-serif; font-size:9px; letter-spacing:2.5px; color:#8a857d; text-transform:uppercase; }
+</style>
+<body>
+<div class="card">
+  <div class="eyebrow">Virtual Try-On</div>
+  <h1>See it on you.<br>Before you put it on.</h1>
+  <div class="split">
+    <div class="pane"><img class="flat" src="assets/item7440.png"><div class="tag">In your closet</div></div>
+    <div class="pane"><img class="worn" src="model-bomber.png"><div class="tag">On you</div></div>
+  </div>
+  <div class="footer">
+    <div class="wordmark">drape</div>
+    <div class="cta">Try it free</div>
+  </div>
+</div>
+</body>

@@ -1,0 +1,45 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:675px; background:#f5f1ea; font-family:"Apple SD Gothic Neo",sans-serif; overflow:hidden; position:relative; }
+  .top { text-align:center; padding-top:46px; position:relative; z-index:2; }
+  .eyebrow { font-family:"Helvetica Neue",sans-serif; font-size:10px; letter-spacing:4px; color:#8a857d; text-transform:uppercase; }
+  .wm { font-family:"Didot",serif; font-style:italic; font-size:42px; color:#141312; margin-top:10px; }
+  h1 { margin-top:18px; font-size:24px; font-weight:600; color:#141312; line-height:1.55; letter-spacing:.5px; }
+  .sub { margin-top:12px; font-size:11px; letter-spacing:2px; color:#8a857d; }
+  .phones { position:absolute; bottom:-170px; left:0; right:0; display:flex; justify-content:center; gap:0; z-index:1; }
+  .phone { width:250px; height:470px; background:#141312; border-radius:38px; padding:10px; box-shadow:0 24px 48px rgba(20,19,18,.25); }
+  .phone.l { transform:rotate(-7deg) translateX(24px) translateY(24px); }
+  .phone.r { transform:rotate(6deg) translateX(-24px); z-index:2; }
+  .screen { width:100%; height:100%; border-radius:30px; overflow:hidden; background:#faf7f1; position:relative; }
+  .screen img.full { width:100%; height:100%; object-fit:cover; object-position:top; }
+  .bar { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:baseline; padding:12px 14px; background:linear-gradient(180deg,rgba(250,247,241,.92),rgba(250,247,241,0)); }
+  .bar .wm2 { font-family:"Didot",serif; font-style:italic; font-size:17px; color:#141312; }
+  .bar span { font-size:7px; letter-spacing:1.5px; color:#6f6a61; }
+  .igrid { position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:40px 10px 10px; }
+  .icell { background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .icell img { width:80%; height:80%; object-fit:contain; }
+</style>
+<body>
+<div class="top">
+  <div class="eyebrow">Digital Closet</div>
+  <div class="wm">drape</div>
+  <h1>옷장을 주머니에.<br>입기 전에, 트라이온.</h1>
+  <div class="sub">디지털 옷장 · AI 트라이온 · OOTD 캘린더</div>
+</div>
+<div class="phones">
+  <div class="phone l"><div class="screen">
+    <div class="igrid">
+      <div class="icell"><img src="seed/amy/items/item-0-x.png"></div>
+      <div class="icell"><img src="seed/amy/items/item-6-x.png"></div>
+      <div class="icell"><img src="seed/amy/items/item-5-x.png"></div>
+      <div class="icell"><img src="seed/amy/items/item-2-x.png"></div>
+    </div>
+    <div class="bar"><div class="wm2">drape</div><span>옷장</span></div>
+  </div></div>
+  <div class="phone r"><div class="screen">
+    <img class="full" src="seed/amy/gens/gen-1.png">
+    <div class="bar"><div class="wm2">drape</div><span>AI 트라이온</span></div>
+  </div></div>
+</div>
+</body>
