@@ -74,7 +74,9 @@ function PostForm({ initial, assets, onSaved, onClose }) {
         <div>
           <div className="admk-label">Creative</div>
           {imageUrl
-            ? <img className="admk-preview" src={imageUrl} alt="" />
+            ? /\.(mp4|mov)(\?|$)/i.test(imageUrl)
+              ? <video className="admk-preview" src={imageUrl} muted loop autoPlay playsInline />
+              : <img className="admk-preview" src={imageUrl} alt="" />
             : <div className="admk-preview admk-preview-empty">no image</div>}
           <input
             className="adm-search admk-url"
@@ -91,7 +93,9 @@ function PostForm({ initial, assets, onSaved, onClose }) {
                   title={a.path}
                   onClick={() => setImageUrl(a.url)}
                 >
-                  <img src={a.url} alt="" loading="lazy" />
+                  {/\.mp4$/i.test(a.path)
+                    ? <video src={a.url} muted playsInline />
+                    : <img src={a.url} alt="" loading="lazy" />}
                 </button>
               ))}
             </div>
@@ -235,7 +239,7 @@ const MARKETING_CSS = `
 .admk-assets{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;max-height:180px;overflow-y:auto}
 .admk-assets button{padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:4/5}
 .admk-assets button.on{border-color:var(--accent)}
-.admk-assets img{width:100%;height:100%;object-fit:cover;display:block}
+.admk-assets img,.admk-assets video{width:100%;height:100%;object-fit:cover;display:block}
 .admk-fields{display:flex;flex-direction:column}
 .admk-caption{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-family:var(--font-body);resize:vertical}
 .admk-targets{display:flex;gap:6px}

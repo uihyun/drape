@@ -113,7 +113,7 @@ exports.adminMarketingAssets = onCall(opts, async (request) => {
   const bucket = admin.storage().bucket();
   const [files] = await bucket.getFiles({ prefix: 'marketing/' });
   const assets = files
-    .filter((f) => /\.(png|jpe?g|webp)$/i.test(f.name))
+    .filter((f) => /\.(png|jpe?g|webp|mp4)$/i.test(f.name))
     .map((f) => ({
       path: f.name,
       url: `https://storage.googleapis.com/${bucket.name}/${encodeURI(f.name)}`,
@@ -138,18 +138,34 @@ async function metaFetch(url, params) {
   return json;
 }
 
-// IG: create container → publish. Image must be at a public URL (our Storage objects).
+// IG: create container → publish. Media must be at a public URL (our Storage
+// objects). Videos publish as Reels: their container processes async, so we
+// poll status_code until FINISHED before media_publish (API-published Reels
+// can't attach licensed audio — trending-music posts still go via the app).
+const isVideo = (url) => /\.(mp4|mov)(\?|$)/i.test(url);
+
+async function waitForContainer(id, token, tries = 40) {
+  for (let i = 0; i < tries; i++) {
+    const res = await fetch(`${IG_GRAPH}/${id}?fields=status_code&access_token=${encodeURIComponent(token)}`);
+    const json = await res.json().catch(() => ({}));
+    if (json.status_code === 'FINISHED') return;
+    if (json.status_code === 'ERROR') throw new Error('CONTAINER_PROCESSING_ERROR');
+    await new Promise((r) => setTimeout(r, 5000));
+  }
+  throw new Error('CONTAINER_PROCESSING_TIMEOUT');
+}
+
 async function publishInstagram({ imageUrl, caption }, cfg) {
-  const container = await metaFetch(`${IG_GRAPH}/me/media`, {
-    image_url: imageUrl,
-    caption,
-    access_token: cfg.igToken,
-  });
+  const video = isVideo(imageUrl);
+  const container = await metaFetch(`${IG_GRAPH}/me/media`, video
+    ? { media_type: 'REELS', video_url: imageUrl, caption, access_token: cfg.igToken }
+    : { image_url: imageUrl, caption, access_token: cfg.igToken });
+  if (video) await waitForContainer(container.id, cfg.igToken);
   const pub = await metaFetch(`${IG_GRAPH}/me/media_publish`, {
     creation_id: container.id,
     access_token: cfg.igToken,
   });
-  return { mediaId: pub.id };
+  return { mediaId: pub.id, type: video ? 'reel' : 'image' };
 }
 
 // Threads: same two-step shape, 500-char text cap.

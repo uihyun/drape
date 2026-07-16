@@ -22,7 +22,7 @@ const bucket = admin.storage().bucket();
   const dirs = fs.readdirSync(ROOT).filter((d) => fs.statSync(path.join(ROOT, d)).isDirectory() && d !== 'src');
   let n = 0;
   for (const dir of dirs) {
-    for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((f) => /\.(png|jpe?g|webp)$/i.test(f))) {
+    for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((f) => /\.(png|jpe?g|webp|mp4)$/i.test(f))) {
       const dest = `marketing/${KIT}/${dir}/${f}`;
       await bucket.upload(path.join(ROOT, dir, f), {
         destination: dest,
