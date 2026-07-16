@@ -27,9 +27,16 @@ Conventions:
 - `scripts/upload-marketing-assets.cjs`: uploads `resources/marketing/<kit>`
   creatives to Storage as public objects — needed by both the picker and the
   IG Graph API (which ingests by public URL). 2026-07 kit (20 PNGs) uploaded.
-- Publisher (onSchedule → IG Graph + Threads APIs) intentionally not shipped
-  yet — blocked on the owner's one-time Meta token setup; checklist in
-  `resources/marketing/README.md`. Queued posts wait harmlessly until then.
+- **Publisher live (2026-07-16)**: `publishMarketingPosts` (every 15 min)
+  publishes due queued posts via IG Graph (`me/media` → `me/media_publish`);
+  `refreshMarketingTokens` (weekly) keeps the 60-day tokens fresh. Tokens in
+  admin-only `marketingConfig/tokens` (seeded by
+  `scripts/seed-marketing-tokens.cjs --from-file`); required composite index
+  (marketingPosts: status + scheduledAt) added to firestore.indexes.json —
+  without it every publisher run failed FAILED_PRECONDITION. Threads target
+  parked (no token yet); Threads ads are an Ads Manager placement, not API.
+- Marketing tab: status filter (all/queued/published/failed). Launch queue
+  loaded: 10 EN posts, Mon/Wed/Fri alternating 12pm/7:30pm ET, 7/16–8/5.
 - Marketing asset kit + ops doc live under `resources/marketing/` (2026-07
   launch kit: EN feed set A–J, KO/JA dark-post variants, captions, HTML
   templates + rebuild scripts).

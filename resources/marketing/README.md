@@ -44,13 +44,28 @@ whenever kits are added or the pipeline changes (same spirit as CHANGELOG.md).
      preservation prompt.
 4. Sanity-check contact sheets before shipping; IG compression eats Didot hairlines below 2×.
 
-## Publishing pipeline (Cloud Functions)
+## Publishing pipeline (Cloud Functions) — LIVE
 
-**Shipped so far (2026-07-15):** `/admin` → Marketing tab manages the queue
-(create/edit/delete scheduled posts, creative picker). Backing callables in
-`functions/marketing.js`; kit creatives uploaded public to Storage
-`marketing/2026-07/` via `scripts/upload-marketing-assets.cjs`.
-**Not yet shipped:** the actual publisher — blocked on the token checklist below.
+**Fully live since 2026-07-16.** `/admin` → Marketing tab manages the queue
+(create/edit/delete, creative picker, status filter). `functions/marketing.js`:
+admin callables + `publishMarketingPosts` (onSchedule 15 min; queued docs whose
+scheduledAt passed → IG Graph `me/media` → `me/media_publish`) +
+`refreshMarketingTokens` (weekly; 60-day tokens never expire in practice).
+Kit creatives are public Storage objects under `marketing/2026-07/`
+(`scripts/upload-marketing-assets.cjs`) — same URLs feed the picker and the IG API.
+
+Tokens live in the admin-only `marketingConfig/tokens` doc (NOT deploy-time
+secrets — the weekly refresher rotates them in place). Seed/rotate with
+`scripts/seed-marketing-tokens.cjs --from-file=<json>` (file outside the repo,
+delete after). IG token from the Meta app "drape" (app id 963836626700601,
+use case *Manage messaging & content on Instagram*, @drape.nyc added as
+Instagram Tester; app stays in dev mode — no App Review needed for own-account
+publishing). The publisher's queue query needs the `marketingPosts`
+(status, scheduledAt) composite index — in firestore.indexes.json.
+
+**Threads:** API use case exists on the app but token setup was abandoned for
+now (organic Threads posting off). Threads *ads* don't need it — they're a
+placement checkbox in Ads Manager.
 
 Local machines can't stay on; the scheduler lives in Functions:
 
@@ -77,13 +92,17 @@ Firestore `marketingPosts` queue          functions/marketing.js
 4. [ ] Same app → Threads use case → token with `threads_content_publish`
 5. [ ] Hand tokens over → they go into Firebase Secrets, then the function gets built
 
-## Posting cadence (decided 2026-07-16)
+## Posting cadence (decided 2026-07-16; owner is in New York — schedule in ET)
 
 Mon/Wed/Fri, US-first timing, alternating two windows for 3 weeks then keep the
 insights winner: **A** 12:00pm ET (US lunch peak) / **B** 7:30pm ET (US evening
-prime; doubles as 8:30am KST/JST commute). Launch queue: 10 EN posts 7/15–8/5
-(order D F B E H A J G I C), seeded via scripts in `src/`, visible in /admin →
-Marketing. Threads target off until its token is seeded.
+prime; doubles as 8:30am KST/JST commute). Launch queue: 10 EN posts, first one
+Thu 7/16 7:30pm ET, then Fri 7/17 noon → Mon/Wed/Fri through 8/5 (order
+D F B E H A J G I C). Visible/editable in /admin → Marketing.
+
+Paid ads are separate from this queue: boost published posts in-app, or run
+country-targeted dark posts in Ads Manager (`ads-ko/`, `ads-ja/` creatives;
+objective "App promotion"; Threads placement via checkbox).
 
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
