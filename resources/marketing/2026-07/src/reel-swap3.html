@@ -35,22 +35,16 @@
     <div class="before"><img src="picked/RhsGGCxmcOXaK1QtJkM1.jpg"></div>
     <div class="after"><img src="picked/r2a.png"></div>
     <div class="line"></div><div class="g"></div>
-    <div class="tagchip"><span>SWAP 01</span></div>
-    <div class="cap"><div class="who">@prof_arthur_p</div><div class="what">wearing @jiyongg's fit</div></div>
   </div>
   <div class="seg" data-i="1">
     <div class="before"><img src="picked/hFYWQp87kVrWexlFW8cs.jpg"></div>
     <div class="after"><img src="picked/r2b.png"></div>
     <div class="line"></div><div class="g"></div>
-    <div class="tagchip"><span>SWAP 02</span></div>
-    <div class="cap"><div class="who">@prof_arthur_p</div><div class="what">wearing @youngsoo's fit</div></div>
   </div>
   <div class="seg" data-i="2">
     <div class="before"><img src="picked/kyQumlrafbhMSzV4G3lI.jpg"></div>
     <div class="after"><img src="picked/r2c.png"></div>
     <div class="line"></div><div class="g"></div>
-    <div class="tagchip"><span>SWAP 03</span></div>
-    <div class="cap"><div class="who">@jisu_daily</div><div class="what">wearing @jiyongg's fit</div></div>
   </div>
 
   <div class="abs" id="shade"></div>
@@ -93,11 +87,6 @@
       // slow zoom on both
       const z = 1.045 - clamp(local / DUR) * 0.045;
       el.querySelectorAll('img').forEach((im) => im.style.transform = `scale(${z})`);
-      const cap = el.querySelector('.cap');
-      const cp = seg2(local, 0.25, 0.6);
-      cap.style.opacity = cp;
-      cap.style.transform = `translateY(${(1 - cp) * 14}px)`;
-      el.querySelector('.tagchip').style.opacity = seg2(local, 0.2, 0.5);
     });
 
     const sh = seg2(t, END, END + 0.5);
