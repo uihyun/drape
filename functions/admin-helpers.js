@@ -32,7 +32,7 @@ function dayKey(v) {
 }
 
 function emptyTrends() {
-  return { signups: {}, items: {}, tryons: {}, ootds: {} };
+  return { signups: {}, items: {}, tryons: {}, ootds: {}, boards: {} };
 }
 function bump(map, key) { if (key) map[key] = (map[key] || 0) + 1; }
 

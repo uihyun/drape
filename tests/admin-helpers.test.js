@@ -47,8 +47,8 @@ describe('bump / emptyTrends', () => {
     bump(m, '2026-06-30'); bump(m, '2026-06-30'); bump(m, null); bump(m, '');
     expect(m).toEqual({ '2026-06-30': 2 });
   });
-  it('emptyTrends has the four metric maps', () => {
-    expect(Object.keys(emptyTrends()).sort()).toEqual(['items', 'ootds', 'signups', 'tryons']);
+  it('emptyTrends has the five metric maps', () => {
+    expect(Object.keys(emptyTrends()).sort()).toEqual(['boards', 'items', 'ootds', 'signups', 'tryons']);
   });
 });
 

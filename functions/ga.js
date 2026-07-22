@@ -41,30 +41,48 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from || '') || !/^\d{4}-\d{2}-\d{2}$/.test(to || '')) {
     throw new HttpsError('invalid-argument', 'FROM_TO_REQUIRED');
   }
-  const key = `${from}_${to}`;
+  // kind: 'screens' (default) = per-screen engagement; 'daily' = per-day
+  // active users + engagement (the DAU series the Firestore trends can't give).
+  const kind = request.data?.kind === 'daily' ? 'daily' : 'screens';
+  const key = `${kind}_${from}_${to}`;
   const hit = reportCache.get(key);
   if (hit && Date.now() - hit.at < 10 * 60 * 1000) return { rows: hit.rows, cached: true };
 
   const token = await gaToken();
+  const body = kind === 'daily'
+    ? {
+        dateRanges: [{ startDate: from, endDate: to }],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'activeUsers' }, { name: 'userEngagementDuration' }],
+        orderBys: [{ dimension: { dimensionName: 'date' } }],
+        limit: 400,
+      }
+    : {
+        dateRanges: [{ startDate: from, endDate: to }],
+        dimensions: [{ name: 'unifiedScreenName' }],
+        metrics: [{ name: 'screenPageViews' }, { name: 'userEngagementDuration' }, { name: 'activeUsers' }],
+        orderBys: [{ metric: { metricName: 'userEngagementDuration' }, desc: true }],
+        limit: 30,
+      };
   const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${PROPERTY}:runReport`, {
     method: 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      dateRanges: [{ startDate: from, endDate: to }],
-      dimensions: [{ name: 'unifiedScreenName' }],
-      metrics: [{ name: 'screenPageViews' }, { name: 'userEngagementDuration' }, { name: 'activeUsers' }],
-      orderBys: [{ metric: { metricName: 'userEngagementDuration' }, desc: true }],
-      limit: 30,
-    }),
+    body: JSON.stringify(body),
   });
   const json = await res.json();
   if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
-  const rows = (json.rows || []).map((r) => ({
-    screen: r.dimensionValues[0].value,
-    views: +r.metricValues[0].value,
-    engagementSec: Math.round(+r.metricValues[1].value),
-    users: +r.metricValues[2].value,
-  }));
+  const rows = (json.rows || []).map((r) => (kind === 'daily'
+    ? {
+        day: r.dimensionValues[0].value.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
+        users: +r.metricValues[0].value,
+        engagementSec: Math.round(+r.metricValues[1].value),
+      }
+    : {
+        screen: r.dimensionValues[0].value,
+        views: +r.metricValues[0].value,
+        engagementSec: Math.round(+r.metricValues[1].value),
+        users: +r.metricValues[2].value,
+      }));
   reportCache.set(key, { at: Date.now(), rows });
   return { rows, cached: false };
 });

@@ -111,35 +111,26 @@ const CAL_PRESETS = [['this week', 'thisWeek'], ['last week', 'lastWeek'], ['thi
 // ── GA screen engagement (where users spend time) ──────────────────────
 const fmtDur = (s) => (s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.round((s % 3600) / 60)}m` : s >= 60 ? `${Math.round(s / 60)}m` : `${s}s`);
 
-function ScreensCard() {
-  const [preset, setPreset] = useState('thisMonth');
+function ScreensCard({ from, to }) {
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const load = (p) => {
+  useEffect(() => {
+    if (!from || !to) return;
     setBusy(true); setErr('');
-    AdminService.screenEngagement(presetRange(p))
+    AdminService.screenEngagement({ from, to })
       .then(setRows)
       .catch((e) => setErr(e.message || 'GA query failed'))
       .finally(() => setBusy(false));
-  };
-  useEffect(() => { load(preset); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [from, to]);
 
   const total = (rows || []).reduce((s, r) => s + r.engagementSec, 0);
   const shown = (rows || []).filter((r) => r.engagementSec > 0 || r.views > 5).slice(0, 14);
 
   return (
     <>
-      <h3 className="adm-h3">Where users spend time <span className="adm-muted">(GA screen engagement)</span></h3>
-      <div className="adm-daterow">
-        <div className="adm-seg">
-          {CAL_PRESETS.map(([label, name]) => (
-            <button key={name} className={name === preset ? 'on' : ''} onClick={() => { setPreset(name); load(name); }}>{label}</button>
-          ))}
-        </div>
-        {busy && <Loader2 size={15} className="spin" />}
-      </div>
+      <h3 className="adm-h3">Where users spend time <span className="adm-muted">(GA screen engagement, {from} → {to}){busy && <Loader2 size={13} className="spin" style={{ marginLeft: 6 }} />}</span></h3>
       {err && <div className="adm-err">{err}</div>}
       {rows && !err && (
         <div className="adm-tablewrap">
@@ -175,6 +166,21 @@ function Overview() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [range, setRange] = useState(null); // { from, to }
+  const [gaRows, setGaRows] = useState(null); // GA daily {day, users, engagementSec}
+
+  useEffect(() => {
+    if (!range) return;
+    AdminService.gaDaily(range).then(setGaRows).catch(() => setGaRows([]));
+  }, [range?.from, range?.to]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  const gaDaily = gaRows && gaRows.map((r) => ({ day: r.day, count: r.users }));
+  // "How much does an active user actually do per day" — Firestore action
+  // counts over GA's DAU. GA can't see our action docs; Firestore can't see DAU.
+  const perUser = (gaRows || []).map((r) => {
+    const acts = ['items', 'tryons', 'ootds', 'boards'].reduce(
+      (s, k) => s + ((data?.trends?.[k] || []).find((p) => p.day === r.day)?.count || 0), 0);
+    return { day: r.day, count: r.users ? Math.round((acts / r.users) * 10) / 10 : 0 };
+  });
 
   const load = () => {
     setBusy(true); setErr('');
@@ -235,30 +241,38 @@ function Overview() {
         </>
       )}
 
-      <ScreensCard />
-
-      <h3 className="adm-h3">Activity over time</h3>
+      {/* One range control for everything below — GA screens card + all charts. */}
+      <h3 className="adm-h3">Date range</h3>
       <div className="adm-daterow">
-        <label>from <input type="date" value={range.from} min={firstDay} max={range.to} onChange={(e) => setRange({ ...range, from: e.target.value })} /></label>
-        <label>to <input type="date" value={range.to} min={range.from} max={lastDay} onChange={(e) => setRange({ ...range, to: e.target.value })} /></label>
+        <label>from <input type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} /></label>
+        <label>to <input type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} /></label>
         <div className="adm-seg">{PRESETS.map(([l, d]) => (
           <button key={l} onClick={() => applyPreset(d)}>{l}</button>
         ))}</div>
         <div className="adm-seg">{CAL_PRESETS.map(([l, name]) => (
-          <button key={name} onClick={() => { const r = presetRange(name); setRange({ from: r.from < firstDay ? firstDay : r.from, to: r.to > lastDay ? lastDay : r.to }); }}>{l}</button>
+          <button key={name} onClick={() => setRange(presetRange(name))}>{l}</button>
         ))}</div>
       </div>
+
+      <ScreensCard from={range.from} to={range.to} />
+
+      <h3 className="adm-h3">Activity over time <span className="adm-muted">({range.from} → {range.to})</span></h3>
       <div className="adm-tiles">
         <Tile label="signups" value={fmt(win('signups'))} sub="in range" />
         <Tile label="items added" value={fmt(win('items'))} sub="in range" />
         <Tile label="try-ons" value={fmt(win('tryons'))} sub="in range" />
         <Tile label="OOTDs" value={fmt(win('ootds'))} sub="in range" />
+        <Tile label="boards" value={fmt(win('boards'))} sub="in range" />
       </div>
       <div className="adm-grid">
         <AxisChart title="Signups" series={slice(data.trends.signups, range.from, range.to)} />
         <AxisChart title="Items added" series={slice(data.trends.items, range.from, range.to)} />
         <AxisChart title="Try-ons" series={slice(data.trends.tryons, range.from, range.to)} />
         <AxisChart title="OOTDs" series={slice(data.trends.ootds, range.from, range.to)} />
+        <AxisChart title="Boards" series={slice(data.trends.boards, range.from, range.to)} />
+        <AxisChart title="Active users / day (GA)" series={gaDaily || []} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="Actions per active user / day" series={perUser} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="Engagement min / day (GA)" series={(gaRows || []).map((r) => ({ day: r.day, count: Math.round(r.engagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
       </div>
 
       <h3 className="adm-h3">Try-on health <span className="adm-muted">(all time)</span></h3>

@@ -40,9 +40,13 @@ export const AdminService = {
     return data.errors;
   },
 
-  // GA screen-engagement proxy (functions/ga.js). from/to: YYYY-MM-DD.
+  // GA proxies (functions/ga.js). from/to: YYYY-MM-DD.
   async screenEngagement({ from, to }) {
     const { data } = await call('adminScreenEngagement')({ from, to });
+    return data.rows;
+  },
+  async gaDaily({ from, to }) {
+    const { data } = await call('adminScreenEngagement')({ from, to, kind: 'daily' });
     return data.rows;
   },
 

@@ -37,9 +37,12 @@ Conventions:
   parked (no token yet); Threads ads are an Ads Manager placement, not API.
 - Overview: **Activation funnel** tiles (real users: signup→item→try-on→OOTD→
   outfit with %) and **Where users spend time** — GA screen engagement proxied
-  through `adminScreenEngagement` (functions/ga.js; appspot impersonates the
-  ga-reader SA, 10-min report cache) with this/last week/month presets. Same
-  calendar presets added to the Activity charts. /admin now escapes the 540px
+  through `adminScreenEngagement` (functions/ga.js; the gen2 compute SA
+  impersonates the ga-reader SA, 10-min report cache). One unified date-range
+  control (from/to + 7d/30d/90d/all + this/last week/month) drives the GA card
+  AND all charts. New charts: Boards (new `trends.boards` series), Active
+  users/day (GA DAU), Actions per active user/day (Firestore actions ÷ GA DAU
+  — a cross-source ratio neither system shows alone), Engagement min/day. /admin now escapes the 540px
   "wide phone" cap (`main--wide`) — full-viewport dashboard, still responsive.
 - Marketing tab: status filter (all/queued/published/failed), reel/post kind
   chips, video thumbnails. Launch queue: 10 EN image posts Mon/Wed/Fri + 8

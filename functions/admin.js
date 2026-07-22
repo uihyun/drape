@@ -115,9 +115,11 @@ async function collectAll() {
   });
 
   (await db.collection('boards').get()).forEach((d) => {
-    const uid = d.data().userId;
+    const x = d.data();
+    const uid = x.userId;
     if (!uid) return;
     touch(uid).board++;
+    if (bucketOf(uid) === 'real') bump(trends.boards, dayKey(x.createdAt));
   });
 
   (await db.collection('generations').get()).forEach((d) => {
@@ -209,6 +211,7 @@ async function computeOverview() {
       items: trends.items,
       tryons: trends.tryons,
       ootds: trends.ootds,
+      boards: trends.boards,
     }),
   };
 }
