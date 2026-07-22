@@ -106,23 +106,28 @@ objective "App promotion"; Threads placement via checkbox).
 
 ## Launch plan & checkpoint (as of 2026-07-16)
 
-**Live queue (final shape, 7/16–8/5):** images Mon/Wed/Fri (12pm ⇄ 7:30pm ET
-alternating) + reels roughly every other day: swap3 7/23, week 7/25, swap4 7/26,
-howto 7/28, swap8 7/30, inspo 8/1 (ootd + features already out 7/18 & 7/21).
-Front-loaded on purpose — a new account's bottleneck is reach, not content, and
-batch production cost is ~zero now (HTML card + reel templates, 64 seed photos,
-crop pipeline in `src/`).
+**Live queue (rebalanced 2026-07-22, runs 7/16–8/12):** dense grid-filling week
+first (daily through 7/25), then deliberately thinned to 3–4/week with rest
+days: swap4 7/27 → A 7/29 → howto 7/31 → J 8/2 → swap8 8/4 → G 8/6 → inspo 8/8
+→ I 8/10 → C 8/12. The earlier daily density was an accident of adding swap
+reels, not design — daily-then-silent is the worst pattern, so the tail was
+stretched (+1 week runway) instead. 12pm ⇄ 7:30pm ET alternation preserved for
+the window A/B.
 
 **No hashtags AND no captions** on organic posts (decided 2026-07-21 — captions
 read as clutter; the creative carries everything). Queue docs get `caption: ''`
 (written via admin SDK; the admin-UI upsert still requires text, so blank
 captions are seeded by script for now).
 
-**Checkpoint ~Jul 28:** review 2 weeks of insights — watch saves + profile
-visits + follows per post (not likes), and the 12pm vs 7:30pm window split.
-Then build batch 2 from what worked: variations of winning concepts, unused
-seed photos (~40), new persona mixes, unpitched features (marketplace, DM),
-seasonal angle (fall closet). From batch 2, settle into 3–4 posts/week.
+**Checkpoint Mon Aug 3** (moved from 7/28 — by 8/2 there are 7 images + 6 reels
+out, enough sample on all three axes). Review per-post insights: saves +
+profile visits + follows (ignore likes); reels: 3-sec retention + non-follower
+reach share; noon-vs-evening window winner (unify batch 2 timing); concept axis
+(swap series vs feature demos vs type cards). Batch 2 = 60% variations of
+winners + 40% new bets (marketplace/DM angles, fall closet, new persona mixes —
+~40 unused seed photos + the crop pipeline make production ~free). Settle at
+3/week from 8/13. Insights pull: screenshots, or IG media-insights API if the
+token carries instagram_business_manage_insights.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
 masters in `reels/silent/`): ootd (montage), howto (snap→catalogued), week
