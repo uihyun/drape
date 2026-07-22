@@ -174,6 +174,7 @@ exports.adminMarketingList   = marketingFns.adminMarketingList;
 exports.adminMarketingUpsert = marketingFns.adminMarketingUpsert;
 exports.adminMarketingDelete = marketingFns.adminMarketingDelete;
 exports.adminMarketingAssets = marketingFns.adminMarketingAssets;
+exports.adminMarketingInsights = marketingFns.adminMarketingInsights;
 exports.publishMarketingPosts   = marketingFns.publishMarketingPosts;
 exports.refreshMarketingTokens  = marketingFns.refreshMarketingTokens;
 

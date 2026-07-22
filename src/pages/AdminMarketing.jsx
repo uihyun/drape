@@ -143,6 +143,17 @@ export function MarketingTab() {
   const [filter, setFilter] = useState('all');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [insights, setInsights] = useState(null); // by post id
+
+  useEffect(() => {
+    AdminService.marketingInsights()
+      .then((rows) => setInsights(Object.fromEntries(rows.map((r) => [r.id, r]))))
+      .catch(() => setInsights({}));
+  }, []);
+
+  const insTotals = insights && Object.values(insights).reduce(
+    (a, r) => ({ reach: a.reach + (r.reach || 0), likes: a.likes + (r.likes || 0), saved: a.saved + (r.saved || 0), views: a.views + (r.views || 0) }),
+    { reach: 0, likes: 0, saved: 0, views: 0 });
 
   const load = () => {
     setBusy(true); setErr('');
@@ -186,6 +197,16 @@ export function MarketingTab() {
         </div>
       </div>
 
+      {insTotals && Object.keys(insights).length > 0 && (
+        <div className="admk-instotals">
+          <span><b>{insTotals.reach.toLocaleString()}</b> reach</span>
+          <span><b>{insTotals.views.toLocaleString()}</b> views</span>
+          <span><b>{insTotals.likes.toLocaleString()}</b> likes</span>
+          <span><b>{insTotals.saved.toLocaleString()}</b> saves</span>
+          <span className="adm-muted">published posts, lifetime (IG insights, 1h cache)</span>
+        </div>
+      )}
+
       {err && <div className="adm-err">{err}</div>}
       {editing && (
         <PostForm
@@ -214,6 +235,15 @@ export function MarketingTab() {
                 {p.targets.map((t) => <span key={t} className="admk-chip">{t}</span>)}
               </div>
               <div className="admk-cap">{p.caption}</div>
+              {p.status === 'published' && insights?.[p.id] && !insights[p.id].error && (
+                <div className="admk-ins">
+                  <span>{(insights[p.id].reach || 0).toLocaleString()} reach</span>
+                  <span>{(insights[p.id].views || 0).toLocaleString()} views</span>
+                  <span>{(insights[p.id].likes || 0).toLocaleString()} likes</span>
+                  <span>{(insights[p.id].saved || 0).toLocaleString()} saves</span>
+                  {insights[p.id].comments > 0 && <span>{insights[p.id].comments} comments</span>}
+                </div>
+              )}
               {p.status === 'failed' && p.results && (
                 <div className="adm-muted admk-failmsg">{JSON.stringify(p.results)}</div>
               )}
@@ -265,4 +295,8 @@ const MARKETING_CSS = `
 .admk-cap{font-size:13px;margin-top:6px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .admk-failmsg{margin-top:4px;word-break:break-all}
 .admk-rowactions{display:flex;flex-direction:column;gap:6px;flex:none}
+.admk-instotals{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;background:var(--surface)}
+.admk-instotals b{font-size:16px}
+.admk-ins{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-size:12px;color:var(--text-secondary)}
+.admk-ins span{border:1px solid var(--border);border-radius:20px;padding:2px 9px}
 `;

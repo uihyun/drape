@@ -6,7 +6,9 @@
 //
 //   'profile' → personal hub (closet / OOTD / try-on management)
 //   'feed'    → discovery feed (others' OOTDs, boards, marketplace)
-//   null      → first run, never chosen → default to feed (with a nudge)
+//   null      → first run, never chosen → default to PROFILE. GA (2026-07):
+//               closet/try-on engagement dwarfs feed ~40:1, and onboarding
+//               skippers live on the default — the closet is the product.
 
 const HOME_KEY = 'drape_home';
 
@@ -24,9 +26,9 @@ export function setHomePref(v) {
   try { localStorage.setItem(HOME_KEY, v); } catch { /* ignore */ }
 }
 
-// Route for the cold-start landing. First run (no choice yet) → feed, as before.
+// Route for the cold-start landing. First run (no choice yet) → profile.
 export function getHomeRoute() {
-  return getHomePref() === 'profile' ? '/profile' : '/feed';
+  return getHomePref() === 'feed' ? '/feed' : '/profile';
 }
 
 // One-time UI flags (the onboarding nudges). Same persistence idea as SwipeHint.

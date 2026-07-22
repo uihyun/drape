@@ -13,6 +13,27 @@ Conventions:
 
 ## Unreleased (web live)
 
+### Default home → Closet; tab renames (data-driven)
+
+- GA (30d): closet/try-on engagement outweighs the feed ~40:1, and onboarding
+  skippers land on the default — so the cold-start default home is now
+  **/profile** (`homePref.js getHomeRoute`), and Welcome's post-sign-in route
+  follows the pref instead of hardcoding /feed.
+- Tab bar renamed to match reality: Home→**Feed** (Compass icon), Profile→
+  **Closet** (`navFeed`/`navCloset`, en+ko+ja). The old "Home"→feed naming
+  implied the feed was the main surface; it isn't.
+- Guest taps on create-sheet rows now open the shared SignInModal instead of
+  hard-bouncing to /welcome (MobileTabBar gets `onSignIn`).
+
+### Admin: per-post IG insights
+
+- `adminMarketingInsights` (functions/marketing.js): lifetime reach/likes/
+  saved/comments/shares/views for every published queue post via IG Graph
+  insights (existing publish token — no extra permission needed), 1h cache.
+- Marketing tab: totals strip (reach/views/likes/saves) + per-row insight
+  chips on published posts. Paid-ads stats need the Marketing API use case —
+  deferred until that token exists.
+
 ### Admin: Marketing tab — IG/Threads post queue
 
 - New `/admin` **Marketing** tab: schedule Instagram/Threads posts into the

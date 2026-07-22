@@ -121,6 +121,38 @@ exports.adminMarketingAssets = onCall(opts, async (request) => {
   return { assets };
 });
 
+// Per-post IG insights for the published queue — reach/likes/saves/etc pulled
+// straight from the IG Graph API (works with the existing publish token).
+// 1h cache: insights move slowly and the media list only grows.
+let insightsCache = { at: 0, rows: null };
+exports.adminMarketingInsights = onCall(opts, async (request) => {
+  assertAdmin(request);
+  if (insightsCache.rows && Date.now() - insightsCache.at < 60 * 60 * 1000 && !request.data?.fresh) {
+    return { rows: insightsCache.rows, cached: true };
+  }
+  const db = admin.firestore();
+  const cfg = (await db.doc('marketingConfig/tokens').get()).data();
+  if (!cfg?.igToken) throw new HttpsError('failed-precondition', 'IG_TOKEN_MISSING');
+  const snap = await db.collection(COLL).where('status', '==', 'published').get();
+  const rows = [];
+  for (const d of snap.docs) {
+    const x = d.data();
+    const mediaId = x.results?.instagram?.mediaId;
+    if (!mediaId) continue;
+    try {
+      const r = await fetch(`https://graph.instagram.com/v23.0/${mediaId}/insights?metric=reach,likes,saved,comments,shares,views&access_token=${encodeURIComponent(cfg.igToken)}`);
+      const j = await r.json();
+      const m = {};
+      (j.data || []).forEach((it) => { m[it.name] = it.values?.[0]?.value ?? 0; });
+      rows.push({ id: d.id, mediaId, imageUrl: x.imageUrl, publishedAt: x.publishedAt?.toMillis?.() || null, ...m, error: j.error?.message || null });
+    } catch (e) {
+      rows.push({ id: d.id, mediaId, imageUrl: x.imageUrl, error: String(e.message).slice(0, 120) });
+    }
+  }
+  insightsCache = { at: Date.now(), rows };
+  return { rows, cached: false };
+});
+
 // ── Publisher ───────────────────────────────────────────────────────────
 // Tokens doc: marketingConfig/tokens { igToken, igUserId, threadsToken,
 // threadsUserId?, igRefreshedAt, threadsRefreshedAt }. Rules never expose it.

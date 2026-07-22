@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
+import { Compass, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { AddItemSheet } from './AddItemSheet.jsx';
 import { ProfileService } from '../services/profile-service.js';
@@ -27,11 +27,12 @@ function Avatar({ src, size = 22 }) {
 }
 
 // Lekondo-style bottom nav: three separate white circular pills floating
-// over the content (Home / + / Profile). Not a single bar — each button
+// over the content (Feed / + / Closet). Not a single bar — each button
 // is its own circle with its own shadow, so the page peeks through the
-// gaps between them. Home also routes to the profile (the app's main
-// surface) — Feed is kept as a route but isn't a primary destination.
-export function MobileTabBar({ user }) {
+// gaps between them. Labels tell the truth about the product (GA 2026-07:
+// the closet IS the main surface, ~40:1 engagement over the feed) — the
+// old "Home"→feed naming implied the opposite.
+export function MobileTabBar({ user, onSignIn }) {
   const { t } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
@@ -52,14 +53,19 @@ export function MobileTabBar({ user }) {
     return ProfileService.subscribeByUid(user.uid, p => setProfilePhoto(p?.photoURL || null));
   }, [isLoggedIn, user?.uid]);
 
+  // Guests hit the shared SignInModal (same as every other gated action) —
+  // bouncing to /welcome mid-flow read as a hard eject, not a prompt.
+  const gate = () => { if (onSignIn) onSignIn(); else navigate('/welcome'); };
+
   const go = (path) => () => {
     setSheetOpen(false);
-    navigate(isLoggedIn ? path : '/welcome');
+    if (!isLoggedIn) { gate(); return; }
+    navigate(path);
   };
 
   const openAddItem = () => {
     setSheetOpen(false);
-    if (!isLoggedIn) { navigate('/welcome'); return; }
+    if (!isLoggedIn) { gate(); return; }
     setAddItemOpen(true);
   };
 
@@ -69,12 +75,12 @@ export function MobileTabBar({ user }) {
         <Link
           to="/feed"
           className={`floating-nav-btn${onHome ? ' active' : ''}`}
-          aria-label={t('navHome')}
+          aria-label={t('navFeed')}
         >
           <span className="floating-nav-icon">
-            <Home size={22} strokeWidth={1.6} />
+            <Compass size={22} strokeWidth={1.6} />
           </span>
-          <span className="floating-nav-label">{t('navHome')}</span>
+          <span className="floating-nav-label">{t('navFeed')}</span>
         </Link>
 
         <button
@@ -91,12 +97,12 @@ export function MobileTabBar({ user }) {
         <Link
           to="/profile"
           className={`floating-nav-btn${onProfile ? ' active' : ''}`}
-          aria-label={t('navProfile')}
+          aria-label={t('navCloset')}
         >
           <span className="floating-nav-icon">
             <Avatar src={profilePhoto} />
           </span>
-          <span className="floating-nav-label">{t('navProfile')}</span>
+          <span className="floating-nav-label">{t('navCloset')}</span>
         </Link>
       </nav>
 

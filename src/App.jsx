@@ -451,7 +451,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
         </Suspense>
       </main>
 
-      {!hideNav && <MobileTabBar user={user} />}
+      {!hideNav && <MobileTabBar user={user} onSignIn={handleSignIn} />}
 
       {/* Onboarding only after sign-in — never on /welcome or /landing. */}
       {isLoggedIn && !noChrome && <Onboarding user={user} />}

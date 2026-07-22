@@ -11,6 +11,7 @@ export const ja = {
   navMe: 'マイページ',
   navHome: 'ホーム',
   navProfile: 'プロフィール',
+  navCloset: 'クローゼット',
   invite: '招待',
   inviteShareTitle: 'drape を試してみて',
   // ── try-on "fits" ──

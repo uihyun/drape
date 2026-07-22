@@ -9,6 +9,7 @@ export const en = {
   navMe: 'Me',
   navHome: 'Home',
   navProfile: 'Profile',
+  navCloset: 'Closet',
   invite: 'Invite',
   inviteShareTitle: 'Try drape',
   inviteShareText: 'drape — your closet, styled and tried on.',

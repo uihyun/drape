@@ -9,6 +9,7 @@ export const ko = {
   navMe: '내 정보',
   navHome: '홈',
   navProfile: '프로필',
+  navCloset: '옷장',
   invite: '초대',
   inviteShareTitle: 'drape 써봐',
   // ── try-on "fits" ──

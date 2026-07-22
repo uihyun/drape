@@ -4,6 +4,7 @@ import { Compass, ChevronDown } from 'lucide-react';
 import { AuthService } from '../services/auth-service.js';
 import { PhoneShowcase } from '../components/PhoneShowcase.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
+import { getHomeRoute } from '../services/homePref.js';
 
 // First-run welcome / sign-in page (Lekondo capture 1):
 // brand wordmark + lang picker on top, a hero phone-mockup region in the
@@ -17,7 +18,8 @@ export function Welcome() {
   const [busy, setBusy] = useState(null); // 'google' | 'apple' | 'email' | null
   const [langOpen, setLangOpen] = useState(false);
 
-  const afterSignIn = () => navigate('/feed', { replace: true });
+  // Land on the home pref (default: profile — the closet is the product).
+  const afterSignIn = () => navigate(getHomeRoute(), { replace: true });
 
   // Cancelling sign-in is a choice, not an error — never surface it. We don't
   // show any sign-in error banner on the welcome screen at all: a genuine

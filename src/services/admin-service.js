@@ -68,4 +68,9 @@ export const AdminService = {
     const { data } = await call('adminMarketingAssets')();
     return data.assets;
   },
+  // IG insights (reach/likes/saved/…) for every published post. 1h server cache.
+  async marketingInsights() {
+    const { data } = await call('adminMarketingInsights')();
+    return data.rows;
+  },
 };
