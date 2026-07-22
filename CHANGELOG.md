@@ -35,8 +35,12 @@ Conventions:
   (marketingPosts: status + scheduledAt) added to firestore.indexes.json —
   without it every publisher run failed FAILED_PRECONDITION. Threads target
   parked (no token yet); Threads ads are an Ads Manager placement, not API.
-- Marketing tab: status filter (all/queued/published/failed). Launch queue
-  loaded: 10 EN posts, Mon/Wed/Fri alternating 12pm/7:30pm ET, 7/16–8/5.
+- Marketing tab: status filter (all/queued/published/failed), reel/post kind
+  chips, video thumbnails. Launch queue: 10 EN image posts Mon/Wed/Fri + 8
+  Reels (feature demos + closet-swap try-on series + SHIIR-style inspo edit),
+  7/16–8/5. Reels support in the publisher: REELS container + status polling.
+  Org decisions: no hashtags, then no captions at all; Mixkit music baked into
+  reels (IG trending audio is app-only, CC-BY tracks rejected over credit line).
 - Marketing asset kit + ops doc live under `resources/marketing/` (2026-07
   launch kit: EN feed set A–J, KO/JA dark-post variants, captions, HTML
   templates + rebuild scripts).

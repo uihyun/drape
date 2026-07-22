@@ -106,13 +106,17 @@ objective "App promotion"; Threads placement via checkbox).
 
 ## Launch plan & checkpoint (as of 2026-07-16)
 
-**Live queue (14 posts, 7/16–8/5):** images Mon/Wed/Fri (12pm ⇄ 7:30pm ET
-alternating), Reels Tue/Sat (ootd 7/18, features 7/21, week 7/25, howto 7/28).
+**Live queue (final shape, 7/16–8/5):** images Mon/Wed/Fri (12pm ⇄ 7:30pm ET
+alternating) + reels roughly every other day: swap3 7/23, week 7/25, swap4 7/26,
+howto 7/28, swap8 7/30, inspo 8/1 (ootd + features already out 7/18 & 7/21).
 Front-loaded on purpose — a new account's bottleneck is reach, not content, and
 batch production cost is ~zero now (HTML card + reel templates, 64 seed photos,
 crop pipeline in `src/`).
 
-**No hashtags** on organic posts — discovery keywords live in caption prose.
+**No hashtags AND no captions** on organic posts (decided 2026-07-21 — captions
+read as clutter; the creative carries everything). Queue docs get `caption: ''`
+(written via admin SDK; the admin-UI upsert still requires text, so blank
+captions are seeded by script for now).
 
 **Checkpoint ~Jul 28:** review 2 weeks of insights — watch saves + profile
 visits + follows per post (not likes), and the 12pm vs 7:30pm window split.
@@ -122,12 +126,31 @@ seasonal angle (fall closet). From batch 2, settle into 3–4 posts/week.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
 masters in `reels/silent/`): ootd (montage), howto (snap→catalogued), week
-(jisu weekly), features (3-feature demo), tryon (Veo backup), swap3/4/7
-(closet-swap split-wipe series; swap try-on composites via `src/gen-tryon.cjs`,
-two-step crop→dress pipeline when direct mode leaks source scene/person).
-Music: Kevin MacLeod tracks (incompetech, CC BY 4.0 — credit line REQUIRED in
-caption). IG's own trending audio is still app-upload-only; queue-published
-reels use the baked tracks instead.
+(jisu weekly), features (3-feature demo), tryon (Veo backup, unpublished),
+swap3/4/8 (closet-swap split-wipe series; swap5/6/7 retired/superseded),
+inspo (SHIIR-style hard-cut editorial: "The inspiration" sources → "The result"
+try-ons, 1.3s cuts — reference reel instagram.com/reels/DXrxPZCjpDv).
+
+**Reel production lessons (2026-07-21):**
+- Try-on composites: `src/gen-tryon.cjs`. Direct mode (identity + outfit photo)
+  leaks the source scene/person ~40% of the time — the reliable path is
+  two-step: crop items from the source (`gen-crop.cjs`, app's crop prompt) →
+  dress the identity with the catalog crops.
+- Pick source outfits VISUALLY DISTINCT from the wearer's own (pink dress →
+  pink dress reads as "nothing changed").
+- Square/portrait source for a full-bleed 9:16 slot → regenerate with
+  `AR=9:16` env on gen-tryon (Gemini aspectRatio) for full-body framing;
+  cover-crop makes faces huge.
+- Always cache-bust `<img>` srcs (?v=N) and restart the browse daemon before
+  re-rendering an edited reel — stale image cache shipped a wrong cut once.
+- Safety blocks on try-on prompts: reword to e-commerce framing and retry.
+
+**Music:** Mixkit tracks (Mixkit License — commercial OK, NO attribution):
+swap/inspo = Hazy After Hours / Cat Walk (house), features = Autofahren,
+howto = Deep Urban, week = New York, ootd = Cat Walk. mp3s not in repo —
+re-download from mixkit.co; bake with ffmpeg (afade + loudnorm, see git log).
+Kevin MacLeod (CC BY) was tried first and rejected — attribution line in the
+caption was the dealbreaker. IG trending audio remains app-upload-only.
 
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
