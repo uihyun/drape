@@ -127,8 +127,20 @@ export function PublicProfile({ user, onSignIn }) {
   const photoURL = profile.photoURL;
   const isSelf = user && profile.uid === user.uid;
 
+  // Guest landed here from /profile (demo closet). One banner sells the flip
+  // from "their archive" to "yours" — everything else stays read-only public.
+  const isDemo = searchParams.get('demo') === '1' && (!user || user.isAnonymous);
+
   return (
     <div className="profile profile--sub">
+      {isDemo && (
+        <div className="demo-banner">
+          <span>{t('demoBannerBody')}</span>
+          <button type="button" className="btn btn-primary" onClick={onSignIn}>
+            {t('demoBannerCta')}
+          </button>
+        </div>
+      )}
       <header className="profile-topbar">
         <span className="profile-handle">@{profile.handle}</span>
         <div className="profile-topbar-actions">

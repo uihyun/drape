@@ -3,6 +3,12 @@
 export const ja = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'クローゼット',
+  onboardActionTitle: '今日のコーデから始めよう',
+  onboardActionBody: '写真1枚でOK — 着ているアイテムをdrapeが見つけて、クローゼットに自動で登録します。',
+  onboardActionCta: '写真を撮る・選ぶ',
+  closetMagicCta: 'またはコーデ写真1枚でまとめて登録',
+  demoBannerBody: 'これはデモのクローゼットです — あなたのもこうなります。',
+  demoBannerCta: 'マイクローゼットを作る',
   navOutfits: 'コーデ',
   navItems: 'アイテム',
   navCalendar: 'カレンダー',

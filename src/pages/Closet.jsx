@@ -254,9 +254,17 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
               {t('wishlistAddCta')}
             </Link>
           ) : (
-            <Link to="/closet/add" className="btn btn-primary">
-              {t('addFirstItem')}
-            </Link>
+            <>
+              <Link to="/closet/add" className="btn btn-primary">
+                {t('addFirstItem')}
+              </Link>
+              {/* The activation lever: the analyze flow files a whole outfit
+                  from one photo — same CTA the onboarding action slide uses,
+                  pinned here for everyone who skipped it. */}
+              <Link to="/analyze" className="btn btn-secondary" style={{ marginTop: 8 }}>
+                {t('closetMagicCta')}
+              </Link>
+            </>
           )}
         </div>
       ) : view === 'usage' ? (

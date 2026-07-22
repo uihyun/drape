@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare } from 'lucide-react';
 import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
@@ -110,15 +110,11 @@ export function Profile({ user, authReady, onSignIn }) {
   }
 
   if (!user || user.isAnonymous) {
-    return (
-      <div className="empty-state">
-        <h2>{t('profileSignInTitle')}</h2>
-        <p>{t('profileSignInBody')}</p>
-        <button className="btn btn-primary" onClick={onSignIn}>
-          {t('signIn')}
-        </button>
-      </div>
-    );
+    // Guests get a lived-in demo closet instead of a sign-in wall — a full
+    // calendar/outfit archive sells the product better than copy. Actions
+    // inside still gate through onSignIn; the ?demo=1 banner carries the
+    // "start my closet" CTA (PublicProfile).
+    return <Navigate to="/u/jisu_daily?demo=1" replace />;
   }
 
   const handle = profile?.handle ? `@${profile.handle}` : '';

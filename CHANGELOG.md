@@ -13,6 +13,20 @@ Conventions:
 
 ## Unreleased (web live)
 
+### Action-first onboarding + guest demo closet (activation levers)
+
+- Onboarding v3 (`drape_onboarding_dismissed_v3`): the three description
+  slides + home-choice became ONE promise slide + an action slide — "start
+  with today's outfit" routes straight into /analyze (magic upload: one photo
+  → every piece detected and filed). Home-choice slide dropped; the default
+  is the closet now, Settings keeps the toggle.
+- Empty closet pins the same magic CTA ("add everything from one outfit
+  photo" → /analyze) for onboarding skippers.
+- Guest /profile no longer shows a sign-in wall — it redirects to a curated
+  demo closet (`/u/jisu_daily?demo=1`) with a "start my closet" banner;
+  all actions still gate through the shared SignInModal.
+- New locale keys (en/ko/ja): onboardAction*, closetMagicCta, demoBanner*.
+
 ### Default home → Closet; tab renames (data-driven)
 
 - GA (30d): closet/try-on engagement outweighs the feed ~40:1, and onboarding

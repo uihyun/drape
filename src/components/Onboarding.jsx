@@ -1,20 +1,19 @@
-// First-launch overlay. Three intro slides + a final "how will you use drape?"
-// choice that sets the home screen:
-//   1. Snap pieces → closet + build outfits + OOTD calendar
-//   2. Add full-body shots → virtual try-on
-//   3. Discover & shop — feed, spot pieces, buy/sell
-//   4. Choose home: My closet (→profile) or Browse (→feed)
+// First-launch overlay, v3 — action-first. GA showed the leak is activation
+// (signups who never add an item), so instead of three feature-description
+// slides we get the user to DO the core thing: one promise slide, then a
+// "start with today's outfit" action that drops them into the analyze flow
+// (photo → pieces detected → filed into the closet). Home-screen choice
+// slide is gone: the default is the closet now (homePref), and Settings
+// still has the toggle for feed-first people.
 //
-// Gated by a localStorage flag only (per-device). Reinstall re-shows it — rare,
-// and skippable. Bump the KEY version to re-show after a major onboarding change.
+// Gated by a localStorage flag only (per-device). Bump KEY to re-show after
+// a major onboarding change (v3 = action-first rework, 2026-07).
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { setHomePref } from '../services/homePref.js';
 
-// v2: the 5-slide intro became 3 slides + a "how will you use drape?" home choice.
-const KEY = 'drape_onboarding_dismissed_v2';
+const KEY = 'drape_onboarding_dismissed_v3';
 
 function isDismissed() {
   try { return localStorage.getItem(KEY) === '1'; } catch { return true; }
@@ -27,7 +26,6 @@ function dismiss() {
 export function Onboarding({ user, forceShow = false, onClose }) {
   const { t } = useLocale();
   const navigate = useNavigate();
-  // Show unless this device has already dismissed it (local flag only).
   const [hidden, setHidden] = useState(true);
   const [step, setStep] = useState(0);
 
@@ -37,81 +35,58 @@ export function Onboarding({ user, forceShow = false, onClose }) {
 
   if (hidden) return null;
 
-  const slides = [
-    { icon: 'checkroom', title: t('onboardSlide1Title'), body: t('onboardSlide1Body') },
-    { icon: 'face_retouching_natural', title: t('onboardSlide2Title'), body: t('onboardSlide2Body') },
-    { icon: 'explore', title: t('onboardSlide3Title'), body: t('onboardSlide3Body') },
-    { choice: true },
-  ];
-
   const close = () => {
     dismiss();
     setHidden(true);
     onClose?.();
   };
 
-  // Final slide: lock in the home screen, then drop the user straight onto it.
-  const chooseHome = (pref) => {
-    setHomePref(pref);
+  // The whole point of the overlay: route into the magic-upload flow while
+  // the motivation is fresh. Analyze detects every piece in one photo and
+  // files them — the "aha" the description slides only used to talk about.
+  const startWithPhoto = () => {
     close();
-    navigate(pref === 'profile' ? '/profile' : '/feed');
+    navigate('/analyze');
   };
-
-  const next = () => {
-    if (step < slides.length - 1) setStep(step + 1);
-    else close();
-  };
-
-  const s = slides[step];
 
   return (
     <div className="modal-overlay">
       <div className="modal-box onboarding-card">
-        {s.choice ? (
-          <>
-            <h2>{t('onboardChooseTitle')}</h2>
-            <p className="onboard-choose-sub">{t('onboardChooseSubtitle')}</p>
-            <div className="onboard-choose">
-              <button type="button" className="onboard-choose-card" onClick={() => chooseHome('profile')}>
-                <i className="material-icons">checkroom</i>
-                <span className="onboard-choose-label">{t('onboardChooseProfile')}</span>
-                <span className="onboard-choose-desc">{t('onboardChooseProfileDesc')}</span>
-              </button>
-              <button type="button" className="onboard-choose-card" onClick={() => chooseHome('feed')}>
-                <i className="material-icons">explore</i>
-                <span className="onboard-choose-label">{t('onboardChooseFeed')}</span>
-                <span className="onboard-choose-desc">{t('onboardChooseFeedDesc')}</span>
-              </button>
-            </div>
-            <div className="onboarding-dots" aria-hidden="true">
-              {slides.map((_, i) => (
-                <span key={i} className={`dot${i === step ? ' active' : ''}`} />
-              ))}
-            </div>
-            <button type="button" className="onboard-choose-later" onClick={close}>
-              {t('onboardChooseLater')}
-            </button>
-          </>
-        ) : (
+        {step === 0 ? (
           <>
             <div className="onboarding-icon">
-              <i className="material-icons">{s.icon}</i>
+              <i className="material-icons">checkroom</i>
             </div>
-            <h2>{s.title}</h2>
-            <p>{s.body}</p>
-
+            <h2>{t('onboardSlide1Title')}</h2>
+            <p>{t('onboardSlide1Body')}</p>
             <div className="onboarding-dots" aria-hidden="true">
-              {slides.map((_, i) => (
-                <span key={i} className={`dot${i === step ? ' active' : ''}`} />
-              ))}
+              <span className="dot active" /><span className="dot" />
             </div>
-
             <div className="controls" style={{ marginTop: '1rem' }}>
-              <button className="btn btn-primary" onClick={next}>
+              <button className="btn btn-primary" onClick={() => setStep(1)}>
                 {t('next')}
               </button>
               <button className="btn btn-secondary" onClick={close}>
                 {t('skip')}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="onboarding-icon">
+              <i className="material-icons">photo_camera</i>
+            </div>
+            <h2>{t('onboardActionTitle')}</h2>
+            <p>{t('onboardActionBody')}</p>
+            <div className="onboarding-dots" aria-hidden="true">
+              <span className="dot" /><span className="dot active" />
+            </div>
+            <div className="controls" style={{ marginTop: '1rem' }}>
+              <button className="btn btn-primary" onClick={startWithPhoto}>
+                {t('onboardActionCta')}
+              </button>
+              <button className="btn btn-secondary" onClick={close}>
+                {t('onboardChooseLater')}
               </button>
             </div>
           </>

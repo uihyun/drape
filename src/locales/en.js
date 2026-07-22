@@ -1,6 +1,12 @@
 export const en = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'Closet',
+  onboardActionTitle: "Start with today's outfit",
+  onboardActionBody: 'One photo is enough — drape finds every piece you are wearing and files each one into your closet automatically.',
+  onboardActionCta: 'Snap or pick a photo',
+  closetMagicCta: 'Or add everything from one outfit photo',
+  demoBannerBody: "You're browsing a demo closet — this is what yours becomes.",
+  demoBannerCta: 'Start my closet',
   navOutfits: 'Outfits',
   navItems: 'Items',
   navCalendar: 'Calendar',

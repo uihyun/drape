@@ -5504,6 +5504,22 @@ input[type="search"]::-webkit-search-decoration {
   pointer-events: none;
 }
 .profile--sub { padding-top: 0.25rem; }
+/* Guest demo-closet banner (/profile → /u/…?demo=1) */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 8px 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-elevated, var(--surface));
+  font-size: 13px;
+  line-height: 1.4;
+}
+.demo-banner .btn { flex: none; white-space: nowrap; padding: 8px 14px; font-size: 13px; }
+
 .profile-topbar {
   display: flex;
   align-items: center;

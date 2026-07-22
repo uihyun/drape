@@ -1,6 +1,12 @@
 export const ko = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: '옷장',
+  onboardActionTitle: '오늘 입은 옷으로 시작해요',
+  onboardActionBody: '사진 한 장이면 충분해요 — 입고 있는 아이템들을 drape가 찾아서 옷장에 자동으로 등록해줘요.',
+  onboardActionCta: '사진 찍기 · 고르기',
+  closetMagicCta: '또는 착장 사진 한 장으로 한꺼번에 등록',
+  demoBannerBody: '지금 보는 건 데모 옷장이에요 — 내 옷장도 이렇게 돼요.',
+  demoBannerCta: '내 옷장 만들기',
   navOutfits: '아웃핏',
   navItems: '아이템',
   navCalendar: '캘린더',
