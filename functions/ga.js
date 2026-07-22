@@ -54,6 +54,10 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
         dateRanges: [{ startDate: from, endDate: to }],
         dimensions: [{ name: 'date' }],
         metrics: [{ name: 'activeUsers' }, { name: 'userEngagementDuration' }],
+        // App users only — the web platform is dominated by landing-page
+        // visitors who never touch the product, which would drown the DAU
+        // series (and the actions-per-user ratio) in marketing traffic.
+        dimensionFilter: { filter: { fieldName: 'platform', inListFilter: { values: ['iOS', 'Android'] } } },
         orderBys: [{ dimension: { dimensionName: 'date' } }],
         limit: 400,
       }

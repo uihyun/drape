@@ -270,9 +270,9 @@ function Overview() {
         <AxisChart title="Try-ons" series={slice(data.trends.tryons, range.from, range.to)} />
         <AxisChart title="OOTDs" series={slice(data.trends.ootds, range.from, range.to)} />
         <AxisChart title="Boards" series={slice(data.trends.boards, range.from, range.to)} />
-        <AxisChart title="Active users / day (GA)" series={gaDaily || []} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="Actions per active user / day" series={perUser} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="Engagement min / day (GA)" series={(gaRows || []).map((r) => ({ day: r.day, count: Math.round(r.engagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App active users / day (GA, iOS+Android — web landing excluded)" series={gaDaily || []} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="Actions per app user / day" series={perUser} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App engagement min / day (GA)" series={(gaRows || []).map((r) => ({ day: r.day, count: Math.round(r.engagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
       </div>
 
       <h3 className="adm-h3">Try-on health <span className="adm-muted">(all time)</span></h3>
