@@ -157,6 +157,36 @@ re-download from mixkit.co; bake with ffmpeg (afade + loudnorm, see git log).
 Kevin MacLeod (CC BY) was tried first and rejected — attribution line in the
 caption was the dealbreaker. IG trending audio remains app-upload-only.
 
+## Analytics snapshot (2026-07-22 — GA property 538664894 + Firebase Auth)
+
+**Access:** GA Data API via service account `ga-reader@drape-9e532.iam.gserviceaccount.com`
+(Viewer on the property; token minted by impersonation — `scripts`-free, see
+scratchpad ga-report pattern; gcloud needs `CLOUDSDK_PYTHON=python3.11`).
+
+**Where users actually spend time (30d, engagement seconds):** profile_closet
+58.5k · profile_tryon 12.4k · item 9.3k · tryon 4.5k · profile 2.3k — vs
+**feed 1.7k**. The product IS the closet + try-on; the feed barely registers
+(it only shows seed content today). → default home moved to profile.
+
+**Funnel (30d):** ~850 landing visitors (IG campaign works as top-of-funnel)
+→ 73 first_open in 90d (~8.5% visitor→install-open) → 29 real signups/30d
+(20 Google / 9 Apple) → but only ~7 users ever added an item, ~9 ran a try-on.
+**The leak is activation, not acquisition.** Post-signup first-run experience
+is the highest-leverage fix (e.g. force the "snap your outfit → items appear"
+moment in onboarding).
+
+**Platform:** real usage is iOS (187k engagement-sec vs Android 2.7k, web 3.3k
+— web is landing bounce). first_open spike 6/29–7/3 (launch), 1–3/day since.
+
+**Admin additions:** Overview now has an **Activation funnel** row (real users:
+signed up → added item → try-on → OOTD → outfit, with %) — the seed/dev split
+GA can't do. Everything time-on-screen stays in GA (Reports → Engagement →
+Pages and screens; screen names: feed, profile, profile_closet, …).
+
+**Note:** `home_pref` user property is logged but NOT registered as a GA custom
+dimension — register it in GA Admin → Custom definitions to query retention by
+landing surface.
+
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
 CozyLook / Array Closet / Verifyt / DressYou IG ads boil down to four genres we cover:

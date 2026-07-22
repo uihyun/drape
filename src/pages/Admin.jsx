@@ -140,6 +140,19 @@ function Overview() {
         <Tile label="listings" value={fmt(t.listings)} sub={Object.entries(data.marketplace.byCurrency).map(([c, n]) => `${c} ${n}`).join(' · ')} />
       </div>
 
+      {data.activation && (
+        <>
+          <h3 className="adm-h3">Activation funnel <span className="adm-muted">(real users, ever — the split GA can't do)</span></h3>
+          <div className="adm-tiles">
+            <Tile label="signed up" value={fmt(data.activation.signed)} />
+            <Tile label="added an item" value={fmt(data.activation.item)} sub={pct(data.activation.item / (data.activation.signed || 1))} />
+            <Tile label="ran a try-on" value={fmt(data.activation.tryon)} sub={pct(data.activation.tryon / (data.activation.signed || 1))} />
+            <Tile label="logged an OOTD" value={fmt(data.activation.ootd)} sub={pct(data.activation.ootd / (data.activation.signed || 1))} />
+            <Tile label="made an outfit" value={fmt(data.activation.outfit)} sub={pct(data.activation.outfit / (data.activation.signed || 1))} />
+          </div>
+        </>
+      )}
+
       <h3 className="adm-h3">Activity over time</h3>
       <div className="adm-daterow">
         <label>from <input type="date" value={range.from} min={firstDay} max={range.to} onChange={(e) => setRange({ ...range, from: e.target.value })} /></label>

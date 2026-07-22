@@ -183,7 +183,18 @@ async function computeOverview() {
     tryons: summary.real.tryon.total,
     listings: marketplace.listings,
   };
+  // Activation funnel over REAL users — the one view GA can't produce (it has
+  // no seed/dev split). "Did a signup ever do the core actions at all?"
+  const act = { signed: buckets.real.length, item: 0, tryon: 0, ootd: 0, outfit: 0 };
+  buckets.real.forEach((uid) => {
+    const c = data.u[uid] || {};
+    if (c.items) act.item += 1;
+    if (c.tryon) act.tryon += 1;
+    if (c.ootd || c.ootdPriv) act.ootd += 1;
+    if (c.outfits) act.outfit += 1;
+  });
   return {
+    activation: act,
     generatedAt: new Date().toISOString(),
     summary,
     totals,
