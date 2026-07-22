@@ -1,0 +1,64 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:540px; height:960px; background:#141312; overflow:hidden; position:relative; font-family:"Helvetica Neue",sans-serif; }
+  .abs { position:absolute; }
+  .shot { position:absolute; inset:0; opacity:0; }
+  .shot img { width:100%; height:100%; object-fit:cover; }
+  .shot .tint { position:absolute; inset:0; background:rgba(20,19,18,.12); }
+  #label { position:absolute; top:62%; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; font-weight:400; font-size:30px; color:#f2ede4; text-shadow:0 1px 14px rgba(0,0,0,.5); z-index:10; }
+  #wmtop { top:26px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:22px; z-index:10; text-shadow:0 1px 10px rgba(0,0,0,.4); }
+  #shade { inset:0; background:#141312; z-index:20; }
+  #outroA { top:398px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:44px; line-height:1.3; z-index:21; }
+  #wordmark { top:545px; left:0; right:0; text-align:center; font-family:"Didot",serif; font-style:italic; color:#f2ede4; font-size:78px; z-index:21; }
+</style>
+<body>
+  <div class="shot" data-i="0"><img src="picked/ntrCIB4HWFpQjjxg3SYG.jpg"><div class="tint"></div></div>
+  <div class="shot" data-i="1"><img src="picked/x9dhxtKBFkArHCn5SzkM.jpg"><div class="tint"></div></div>
+  <div class="shot" data-i="2"><img src="picked/2yZeoFxcD6dGAD25SwBR.jpg"><div class="tint"></div></div>
+  <div class="shot" data-i="3"><img src="picked/r7a.png"><div class="tint"></div></div>
+  <div class="shot" data-i="4"><img src="picked/r5b.png"><div class="tint"></div></div>
+  <div class="shot" data-i="5"><img src="picked/r7c.png"><div class="tint"></div></div>
+  <div class="abs" id="wmtop">drape</div>
+  <div class="abs" id="label">The inspiration</div>
+  <div class="abs" id="shade" style="opacity:0"></div>
+  <div class="abs" id="outroA">Anyone's closet.<br>Tried on you.</div>
+  <div class="abs" id="wordmark">drape</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => { x = clamp(x); return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; };
+  const seg = (t, a, b) => ease((t - a) / (b - a));
+
+  const CUT = 1.3, N = 6, END = N * CUT; // 7.8s of shots
+  window.setFrame = (t) => {
+    document.querySelectorAll('.shot').forEach((el) => {
+      const i = +el.dataset.i;
+      const a = i * CUT;
+      const on = t >= a && t < a + CUT + 0.001;
+      el.style.opacity = on ? 1 : 0; // hard cuts, SHIIR-style
+      if (!on) return;
+      const local = (t - a) / CUT;
+      // alternate zoom direction per shot for rhythm
+      const z = i % 2 === 0 ? 1.08 - local * 0.06 : 1.02 + local * 0.06;
+      el.querySelector('img').style.transform = `scale(${z})`;
+    });
+    const lb = $('label');
+    if (t < 3 * CUT) { lb.textContent = 'The inspiration'; }
+    else { lb.textContent = 'The result'; }
+    // quick dip at the phase change
+    const phaseDip = t > 3 * CUT - 0.12 && t < 3 * CUT + 0.12 ? 0 : 1;
+    lb.style.opacity = (t < END ? 1 : 0) * phaseDip * seg(t, 0.15, 0.5);
+    $('wmtop').style.opacity = seg(t, 0.1, 0.4) * (1 - seg(t, END, END + 0.3));
+    const sh = seg(t, END, END + 0.4);
+    $('shade').style.opacity = sh;
+    const oa = seg(t, END + 0.25, END + 0.85);
+    $('outroA').style.opacity = oa;
+    $('outroA').style.transform = `translateY(${(1 - oa) * 16}px)`;
+    $('wordmark').style.opacity = seg(t, END + 0.7, END + 1.3);
+    return 'f';
+  };
+  window.setFrame(0);
+</script>
+</body>
