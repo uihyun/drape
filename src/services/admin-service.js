@@ -45,8 +45,9 @@ export const AdminService = {
     const { data } = await call('adminScreenEngagement')({ from, to });
     return data.rows;
   },
-  async gaDaily({ from, to }) {
-    const { data } = await call('adminScreenEngagement')({ from, to, kind: 'daily' });
+  // { daily: [{day, landing, installs, appUsers, appEngagementSec}], totals }
+  async gaFunnel({ from, to }) {
+    const { data } = await call('adminScreenEngagement')({ from, to, kind: 'funnel' });
     return data.rows;
   },
 

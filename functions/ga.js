@@ -41,14 +41,59 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from || '') || !/^\d{4}-\d{2}-\d{2}$/.test(to || '')) {
     throw new HttpsError('invalid-argument', 'FROM_TO_REQUIRED');
   }
-  // kind: 'screens' (default) = per-screen engagement; 'daily' = per-day
-  // active users + engagement (the DAU series the Firestore trends can't give).
-  const kind = request.data?.kind === 'daily' ? 'daily' : 'screens';
+  // kind: 'screens' (default) = per-screen engagement; 'daily' = per-day app
+  // active users + engagement; 'funnel' = landing visitors → installs → app
+  // users, daily + range totals (batched GA queries, merged server-side).
+  const kind = ['daily', 'funnel'].includes(request.data?.kind) ? request.data.kind : 'screens';
   const key = `${kind}_${from}_${to}`;
   const hit = reportCache.get(key);
   if (hit && Date.now() - hit.at < 10 * 60 * 1000) return { rows: hit.rows, cached: true };
 
   const token = await gaToken();
+
+  if (kind === 'funnel') {
+    const range = [{ startDate: from, endDate: to }];
+    const web = { filter: { fieldName: 'platform', stringFilter: { value: 'web' } } };
+    const app = { filter: { fieldName: 'platform', inListFilter: { values: ['iOS', 'Android'] } } };
+    const firstOpen = { filter: { fieldName: 'eventName', stringFilter: { value: 'first_open' } } };
+    const mk = (extra) => ({ dateRanges: range, dimensions: [{ name: 'date' }], orderBys: [{ dimension: { dimensionName: 'date' } }], limit: 400, ...extra });
+    const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${PROPERTY}:batchRunReports`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requests: [
+          mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: web }),
+          mk({ metrics: [{ name: 'eventCount' }], dimensionFilter: firstOpen }),
+          mk({ metrics: [{ name: 'activeUsers' }, { name: 'userEngagementDuration' }], dimensionFilter: app }),
+          // range totals (no date dim) — daily uniques don't sum to range uniques
+          { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: web },
+          { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: app },
+        ],
+      }),
+    });
+    const json = await res.json();
+    if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
+    const [rWeb, rOpen, rApp, tWeb, tApp] = json.reports || [];
+    const day = (v) => v.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+    const map = {};
+    const put = (rep, fn) => (rep?.rows || []).forEach((r) => {
+      const d = day(r.dimensionValues[0].value);
+      map[d] = map[d] || { day: d, landing: 0, installs: 0, appUsers: 0, appEngagementSec: 0 };
+      fn(map[d], r.metricValues);
+    });
+    put(rWeb, (o, m) => { o.landing = +m[0].value; });
+    put(rOpen, (o, m) => { o.installs = +m[0].value; });
+    put(rApp, (o, m) => { o.appUsers = +m[0].value; o.appEngagementSec = Math.round(+m[1].value); });
+    const daily = Object.values(map).sort((a, b) => a.day.localeCompare(b.day));
+    const totals = {
+      landing: +(tWeb?.rows?.[0]?.metricValues?.[0]?.value || 0),
+      installs: daily.reduce((s, r) => s + r.installs, 0),
+      appUsers: +(tApp?.rows?.[0]?.metricValues?.[0]?.value || 0),
+    };
+    reportCache.set(key, { at: Date.now(), rows: { daily, totals } });
+    return { rows: { daily, totals }, cached: false };
+  }
+
   const body = kind === 'daily'
     ? {
         dateRanges: [{ startDate: from, endDate: to }],

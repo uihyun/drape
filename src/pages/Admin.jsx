@@ -166,20 +166,21 @@ function Overview() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [range, setRange] = useState(null); // { from, to }
-  const [gaRows, setGaRows] = useState(null); // GA daily {day, users, engagementSec}
+  const [gaFunnel, setGaFunnel] = useState(null); // { daily, totals }
 
   useEffect(() => {
     if (!range) return;
-    AdminService.gaDaily(range).then(setGaRows).catch(() => setGaRows([]));
+    AdminService.gaFunnel(range).then(setGaFunnel).catch(() => setGaFunnel({ daily: [], totals: null }));
   }, [range?.from, range?.to]);   // eslint-disable-line react-hooks/exhaustive-deps
 
-  const gaDaily = gaRows && gaRows.map((r) => ({ day: r.day, count: r.users }));
-  // "How much does an active user actually do per day" — Firestore action
-  // counts over GA's DAU. GA can't see our action docs; Firestore can't see DAU.
-  const perUser = (gaRows || []).map((r) => {
+  const gaDaily = gaFunnel?.daily || [];
+  const gaTotals = gaFunnel?.totals;
+  // "How much does an app user actually do per day" — Firestore action
+  // counts over GA's app DAU. GA can't see our action docs; Firestore can't see DAU.
+  const perUser = gaDaily.map((r) => {
     const acts = ['items', 'tryons', 'ootds', 'boards'].reduce(
       (s, k) => s + ((data?.trends?.[k] || []).find((p) => p.day === r.day)?.count || 0), 0);
-    return { day: r.day, count: r.users ? Math.round((acts / r.users) * 10) / 10 : 0 };
+    return { day: r.day, count: r.appUsers ? Math.round((acts / r.appUsers) * 10) / 10 : 0 };
   });
 
   const load = () => {
@@ -254,6 +255,18 @@ function Overview() {
         ))}</div>
       </div>
 
+      {gaTotals && (
+        <>
+          <h3 className="adm-h3">Acquisition funnel <span className="adm-muted">(GA, {range.from} → {range.to})</span></h3>
+          <div className="adm-tiles">
+            <Tile label="landing visitors" value={fmt(gaTotals.landing)} sub="web (marketing traffic)" />
+            <Tile label="app installs" value={fmt(gaTotals.installs)} sub={`first_open · ${gaTotals.landing ? pct(gaTotals.installs / gaTotals.landing) : '—'} of visitors`} />
+            <Tile label="app users" value={fmt(gaTotals.appUsers)} sub="opened the app in range (iOS+Android)" />
+            <Tile label="real signups" value={fmt(win('signups'))} sub="accounts created in range" />
+          </div>
+        </>
+      )}
+
       <ScreensCard from={range.from} to={range.to} />
 
       <h3 className="adm-h3">Activity over time <span className="adm-muted">({range.from} → {range.to})</span></h3>
@@ -270,9 +283,11 @@ function Overview() {
         <AxisChart title="Try-ons" series={slice(data.trends.tryons, range.from, range.to)} />
         <AxisChart title="OOTDs" series={slice(data.trends.ootds, range.from, range.to)} />
         <AxisChart title="Boards" series={slice(data.trends.boards, range.from, range.to)} />
-        <AxisChart title="App active users / day (GA, iOS+Android — web landing excluded)" series={gaDaily || []} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="Landing visitors / day (web)" series={gaDaily.map((r) => ({ day: r.day, count: r.landing }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App installs / day (first_open)" series={gaDaily.map((r) => ({ day: r.day, count: r.installs }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App active users / day (iOS+Android)" series={gaDaily.map((r) => ({ day: r.day, count: r.appUsers }))} color="var(--accent-strong, #7a5c3e)" />
         <AxisChart title="Actions per app user / day" series={perUser} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="App engagement min / day (GA)" series={(gaRows || []).map((r) => ({ day: r.day, count: Math.round(r.engagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App engagement min / day" series={gaDaily.map((r) => ({ day: r.day, count: Math.round(r.appEngagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
       </div>
 
       <h3 className="adm-h3">Try-on health <span className="adm-muted">(all time)</span></h3>
