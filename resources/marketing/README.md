@@ -120,10 +120,14 @@ Then build batch 2 from what worked: variations of winning concepts, unused
 seed photos (~40), new persona mixes, unpitched features (marketplace, DM),
 seasonal angle (fall closet). From batch 2, settle into 3–4 posts/week.
 
-**Reels library** (`2026-07/reels/`, all 1080×1920): ootd (montage, reach),
-howto (snap→catalogued, conversion), week (jisu weekly), features (3-feature
-demo, female items), tryon (Veo motion — backup; API reels publish silent, so
-trending-audio uploads still go via the app manually).
+**Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
+masters in `reels/silent/`): ootd (montage), howto (snap→catalogued), week
+(jisu weekly), features (3-feature demo), tryon (Veo backup), swap3/4/7
+(closet-swap split-wipe series; swap try-on composites via `src/gen-tryon.cjs`,
+two-step crop→dress pipeline when direct mode leaks source scene/person).
+Music: Kevin MacLeod tracks (incompetech, CC BY 4.0 — credit line REQUIRED in
+caption). IG's own trending audio is still app-upload-only; queue-published
+reels use the baked tracks instead.
 
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
