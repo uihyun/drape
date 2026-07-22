@@ -3,9 +3,10 @@
 // GA4 property (screen_view events logged by src/firebase.js logScreen); this
 // callable proxies a runReport so the dashboard never needs GA credentials.
 //
-// Auth chain: Functions runtime SA (appspot) impersonates ga-reader@…, which
-// is a Viewer on GA property 538664894. Requires appspot to hold
-// roles/iam.serviceAccountTokenCreator on ga-reader (one-time gcloud grant).
+// Auth chain: the Functions runtime SA (gen2 default = compute SA,
+// 284753548556-compute@developer.gserviceaccount.com) impersonates ga-reader@…,
+// which is a Viewer on GA property 538664894. Requires the compute SA to hold
+// roles/iam.serviceAccountTokenCreator on ga-reader (granted 2026-07-22).
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { GoogleAuth } = require('google-auth-library');
