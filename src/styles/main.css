@@ -157,6 +157,10 @@ img {
        area on side margins. */
     max-width: 540px;
   }
+  /* /admin is a data dashboard — give it the whole viewport. */
+  .main--wide {
+    max-width: none;
+  }
 }
 
 .upload-area {

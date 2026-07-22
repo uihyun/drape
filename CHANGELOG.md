@@ -35,6 +35,12 @@ Conventions:
   (marketingPosts: status + scheduledAt) added to firestore.indexes.json —
   without it every publisher run failed FAILED_PRECONDITION. Threads target
   parked (no token yet); Threads ads are an Ads Manager placement, not API.
+- Overview: **Activation funnel** tiles (real users: signup→item→try-on→OOTD→
+  outfit with %) and **Where users spend time** — GA screen engagement proxied
+  through `adminScreenEngagement` (functions/ga.js; appspot impersonates the
+  ga-reader SA, 10-min report cache) with this/last week/month presets. Same
+  calendar presets added to the Activity charts. /admin now escapes the 540px
+  "wide phone" cap (`main--wide`) — full-viewport dashboard, still responsive.
 - Marketing tab: status filter (all/queued/published/failed), reel/post kind
   chips, video thumbnails. Launch queue: 10 EN image posts Mon/Wed/Fri + 8
   Reels (feature demos + closet-swap try-on series + SHIIR-style inspo edit),

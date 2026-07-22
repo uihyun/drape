@@ -40,6 +40,12 @@ export const AdminService = {
     return data.errors;
   },
 
+  // GA screen-engagement proxy (functions/ga.js). from/to: YYYY-MM-DD.
+  async screenEngagement({ from, to }) {
+    const { data } = await call('adminScreenEngagement')({ from, to });
+    return data.rows;
+  },
+
   // ── Marketing post queue (functions/marketing.js) ───────────────────
   async marketingList() {
     const { data } = await call('adminMarketingList')();

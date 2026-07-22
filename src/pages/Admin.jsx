@@ -83,8 +83,90 @@ function BucketRow({ label, b }) {
   );
 }
 
-// ── Tabs ────────────────────────────────────────────────────────────────
+// ── Date presets ────────────────────────────────────────────────────────
 const PRESETS = [['7d', 7], ['30d', 30], ['90d', 90], ['all', 0]];
+// Calendar presets (local time, weeks start Monday). Returns {from,to} YYYY-MM-DD.
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function presetRange(name) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const monday = (d) => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+  switch (name) {
+    case 'thisWeek': return { from: iso(monday(today)), to: iso(today) };
+    case 'lastWeek': {
+      const m = monday(today); const from = new Date(m); from.setDate(from.getDate() - 7);
+      const to = new Date(m); to.setDate(to.getDate() - 1);
+      return { from: iso(from), to: iso(to) };
+    }
+    case 'thisMonth': return { from: iso(new Date(today.getFullYear(), today.getMonth(), 1)), to: iso(today) };
+    case 'lastMonth': return {
+      from: iso(new Date(today.getFullYear(), today.getMonth() - 1, 1)),
+      to: iso(new Date(today.getFullYear(), today.getMonth(), 0)),
+    };
+    default: return { from: iso(today), to: iso(today) };
+  }
+}
+const CAL_PRESETS = [['this week', 'thisWeek'], ['last week', 'lastWeek'], ['this month', 'thisMonth'], ['last month', 'lastMonth']];
+
+// ── GA screen engagement (where users spend time) ──────────────────────
+const fmtDur = (s) => (s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.round((s % 3600) / 60)}m` : s >= 60 ? `${Math.round(s / 60)}m` : `${s}s`);
+
+function ScreensCard() {
+  const [preset, setPreset] = useState('thisMonth');
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = (p) => {
+    setBusy(true); setErr('');
+    AdminService.screenEngagement(presetRange(p))
+      .then(setRows)
+      .catch((e) => setErr(e.message || 'GA query failed'))
+      .finally(() => setBusy(false));
+  };
+  useEffect(() => { load(preset); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  const total = (rows || []).reduce((s, r) => s + r.engagementSec, 0);
+  const shown = (rows || []).filter((r) => r.engagementSec > 0 || r.views > 5).slice(0, 14);
+
+  return (
+    <>
+      <h3 className="adm-h3">Where users spend time <span className="adm-muted">(GA screen engagement)</span></h3>
+      <div className="adm-daterow">
+        <div className="adm-seg">
+          {CAL_PRESETS.map(([label, name]) => (
+            <button key={name} className={name === preset ? 'on' : ''} onClick={() => { setPreset(name); load(name); }}>{label}</button>
+          ))}
+        </div>
+        {busy && <Loader2 size={15} className="spin" />}
+      </div>
+      {err && <div className="adm-err">{err}</div>}
+      {rows && !err && (
+        <div className="adm-tablewrap">
+          <table className="adm-table">
+            <thead><tr><th>screen</th><th>time</th><th>share</th><th>views</th><th>users</th><th>avg/user</th></tr></thead>
+            <tbody>
+              {shown.map((r) => (
+                <tr key={r.screen}>
+                  <td>{r.screen}</td>
+                  <td>{fmtDur(r.engagementSec)}</td>
+                  <td>
+                    <div className="adm-bar" style={{ minWidth: 90 }}>
+                      <span style={{ width: `${total ? Math.round((r.engagementSec / total) * 100) : 0}%` }} />
+                    </div>
+                  </td>
+                  <td>{fmt(r.views)}</td>
+                  <td>{fmt(r.users)}</td>
+                  <td>{r.users ? fmtDur(Math.round(r.engagementSec / r.users)) : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
 const sumRange = (series, from, to) => (series || []).filter((d) => d.day >= from && d.day <= to).reduce((s, d) => s + d.count, 0);
 const slice = (series, from, to) => (series || []).filter((d) => d.day >= from && d.day <= to);
 
@@ -153,12 +235,17 @@ function Overview() {
         </>
       )}
 
+      <ScreensCard />
+
       <h3 className="adm-h3">Activity over time</h3>
       <div className="adm-daterow">
         <label>from <input type="date" value={range.from} min={firstDay} max={range.to} onChange={(e) => setRange({ ...range, from: e.target.value })} /></label>
         <label>to <input type="date" value={range.to} min={range.from} max={lastDay} onChange={(e) => setRange({ ...range, to: e.target.value })} /></label>
         <div className="adm-seg">{PRESETS.map(([l, d]) => (
           <button key={l} onClick={() => applyPreset(d)}>{l}</button>
+        ))}</div>
+        <div className="adm-seg">{CAL_PRESETS.map(([l, name]) => (
+          <button key={name} onClick={() => { const r = presetRange(name); setRange({ from: r.from < firstDay ? firstDay : r.from, to: r.to > lastDay ? lastDay : r.to }); }}>{l}</button>
         ))}</div>
       </div>
       <div className="adm-tiles">
@@ -458,7 +545,8 @@ export function Admin({ user }) {
 }
 
 const ADMIN_CSS = `
-.adm-wrap{max-width:1100px;margin:0 auto;padding:16px;color:var(--text-primary);font-family:var(--font-body)}
+.adm-wrap{max-width:1720px;margin:0 auto;padding:20px 32px;color:var(--text-primary);font-family:var(--font-body)}
+@media (max-width:768px){.adm-wrap{padding:12px}}
 .adm-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px}
 .adm-top h1{font-size:22px;margin:0;font-weight:700}
 .adm-tabs{display:flex;gap:6px}

@@ -376,7 +376,8 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}${isBare ? ' app-bare' : ''}`}>
       {!noChrome && <MobileHeader />}
 
-      <main className="main">
+      {/* /admin is a desktop dashboard, not a "wide phone" — release the 540px cap there. */}
+      <main className={location.pathname.startsWith('/admin') ? 'main main--wide' : 'main'}>
         <Suspense fallback={<div className="loading"><div className="spinner" /></div>}>
         <Routes>
           <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />
