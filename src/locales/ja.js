@@ -7,7 +7,7 @@ export const ja = {
   onboardActionBody: '写真1枚でOK — 着ているアイテムをdrapeが見つけて、クローゼットに自動で登録します。',
   onboardActionCta: '写真を撮る・選ぶ',
   closetMagicCta: 'またはコーデ写真1枚でまとめて登録',
-  demoBannerBody: 'これはデモのクローゼットです — あなたのもこうなります。',
+  demoBannerBody: 'メンバーの公開クローゼットを見ています — あなたのもこんなふうに作れます。',
   demoBannerCta: 'マイクローゼットを作る',
   navOutfits: 'コーデ',
   navItems: 'アイテム',

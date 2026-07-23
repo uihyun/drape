@@ -5,7 +5,7 @@ export const en = {
   onboardActionBody: 'One photo is enough — drape finds every piece you are wearing and files each one into your closet automatically.',
   onboardActionCta: 'Snap or pick a photo',
   closetMagicCta: 'Or add everything from one outfit photo',
-  demoBannerBody: "You're browsing a demo closet — this is what yours becomes.",
+  demoBannerBody: "You're browsing a member's public closet — yours could look like this.",
   demoBannerCta: 'Start my closet',
   navOutfits: 'Outfits',
   navItems: 'Items',
