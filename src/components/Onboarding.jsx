@@ -6,14 +6,15 @@
 // slide is gone: the default is the closet now (homePref), and Settings
 // still has the toggle for feed-first people.
 //
-// Gated by a localStorage flag only (per-device). Bump KEY to re-show after
-// a major onboarding change (v3 = action-first rework, 2026-07).
+// Gated by a localStorage flag only (per-device). KEY stays at v2 on purpose:
+// the v3 rework (action-first, 2026-07) targets NEW users — existing users
+// who already dismissed v2 should not be re-interrupted.
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-const KEY = 'drape_onboarding_dismissed_v3';
+const KEY = 'drape_onboarding_dismissed_v2';
 
 function isDismissed() {
   try { return localStorage.getItem(KEY) === '1'; } catch { return true; }
@@ -41,12 +42,13 @@ export function Onboarding({ user, forceShow = false, onClose }) {
     onClose?.();
   };
 
-  // The whole point of the overlay: route into the magic-upload flow while
-  // the motivation is fresh. Analyze detects every piece in one photo and
-  // files them — the "aha" the description slides only used to talk about.
+  // The whole point of the overlay: route into logging TODAY's outfit while
+  // the motivation is fresh — same path as the + sheet's OOTD row. One photo
+  // fills the first calendar day, and the analyzed pieces can be added to
+  // the closet from there (the "aha" the old slides only talked about).
   const startWithPhoto = () => {
     close();
-    navigate('/analyze');
+    navigate('/profile/calendar?ootd=today');
   };
 
   return (

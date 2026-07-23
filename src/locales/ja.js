@@ -4,7 +4,7 @@ export const ja = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'クローゼット',
   onboardActionTitle: '今日のコーデから始めよう',
-  onboardActionBody: '写真1枚でOK — 着ているアイテムをdrapeが見つけて、クローゼットに自動で登録します。',
+  onboardActionBody: '写真1枚で今日のコーデがカレンダーに記録されます — 着ているアイテムもdrapeが見つけて、クローゼットに追加できます。',
   onboardActionCta: '写真を撮る・選ぶ',
   closetMagicCta: 'またはコーデ写真1枚でまとめて登録',
   demoBannerBody: 'メンバーの公開クローゼットを見ています — あなたのもこんなふうに作れます。',
