@@ -247,7 +247,7 @@ export const ko = {
   remindersToggle: '리마인드 알림',
   remindersHint: 'OOTD 기록·트라이온·옷장 정리를 며칠에 한 번씩 부드럽게 알려드려요 — 적당한 시간에 폰으로.',
   homeScreen: '첫 화면',
-  homeScreenProfile: '내 프로필',
+  homeScreenProfile: '옷장',
   homeScreenFeed: '피드',
   homeScreenProfileHint: '앱을 열면 내 옷장·캘린더·트라이온으로 시작해요.',
   homeScreenFeedHint: '앱을 열면 피드로 시작해요 — 다른 사람 OOTD·보드·마켓을 둘러봐요.',

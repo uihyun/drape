@@ -249,7 +249,7 @@ export const ja = {
   remindersToggle: 'リマインド通知',
   remindersHint: 'OOTDの記録・試着・クローゼット整理を数日に一度やさしくお知らせ — 適切な時間にスマホへ。',
   homeScreen: '最初の画面',
-  homeScreenProfile: 'マイプロフィール',
+  homeScreenProfile: 'クローゼット',
   homeScreenFeed: 'フィード',
   homeScreenProfileHint: 'アプリを開くと自分のクローゼット・カレンダー・試着から始まります。',
   homeScreenFeedHint: 'アプリを開くとフィードから始まります — 他の人のOOTD・ボード・マーケットを見られます。',

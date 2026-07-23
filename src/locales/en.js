@@ -247,7 +247,7 @@ export const en = {
   remindersToggle: 'Friendly reminders',
   remindersHint: 'Occasional nudges — log an OOTD, try something on, tidy your closet — sent to your phone at a reasonable hour, every few days.',
   homeScreen: 'Home screen',
-  homeScreenProfile: 'My profile',
+  homeScreenProfile: 'Closet',
   homeScreenFeed: 'Feed',
   homeScreenProfileHint: 'Open to your own closet, calendar and try-ons.',
   homeScreenFeedHint: 'Open to the feed — browse others’ OOTDs, boards and the marketplace.',
