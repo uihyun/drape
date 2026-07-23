@@ -116,12 +116,24 @@ export function Profile({ user, authReady, onSignIn }) {
     // "start my closet" CTA (PublicProfile). Persona matches the viewer's
     // locale, alternating genders so the demo doesn't read women-only.
     const DEMO_HANDLES = {
-      ko: ['jisu_daily', 'jiho'],
+      ko: ['jisu_daily', 'jiyongg', 'jiho'],
       ja: ['rina_cafe_life', 'kenta_games_jp'],
       en: ['natalie', 'prof_arthur_p'],
     };
     const pool = DEMO_HANDLES[lang] || DEMO_HANDLES.en;
-    const handle = pool[Math.floor(Math.random() * pool.length)];
+    // Sticky per browsing session: hopping tabs and coming back should show
+    // the SAME demo person (per-visit reroll read as a glitch). Next session
+    // gets a fresh roll for variety.
+    let handle;
+    try {
+      handle = sessionStorage.getItem('drape_demo_handle');
+      if (!pool.includes(handle)) {
+        handle = pool[Math.floor(Math.random() * pool.length)];
+        sessionStorage.setItem('drape_demo_handle', handle);
+      }
+    } catch {
+      handle = pool[0];
+    }
     return <Navigate to={`/u/${handle}?demo=1`} replace />;
   }
 
