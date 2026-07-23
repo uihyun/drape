@@ -113,8 +113,16 @@ export function Profile({ user, authReady, onSignIn }) {
     // Guests get a lived-in demo closet instead of a sign-in wall — a full
     // calendar/outfit archive sells the product better than copy. Actions
     // inside still gate through onSignIn; the ?demo=1 banner carries the
-    // "start my closet" CTA (PublicProfile).
-    return <Navigate to="/u/jisu_daily?demo=1" replace />;
+    // "start my closet" CTA (PublicProfile). Persona matches the viewer's
+    // locale, alternating genders so the demo doesn't read women-only.
+    const DEMO_HANDLES = {
+      ko: ['jisu_daily', 'jiho'],
+      ja: ['rina_cafe_life', 'kenta_games_jp'],
+      en: ['natalie', 'prof_arthur_p'],
+    };
+    const pool = DEMO_HANDLES[lang] || DEMO_HANDLES.en;
+    const handle = pool[Math.floor(Math.random() * pool.length)];
+    return <Navigate to={`/u/${handle}?demo=1`} replace />;
   }
 
   const handle = profile?.handle ? `@${profile.handle}` : '';
