@@ -69,9 +69,11 @@ export function Settings({ user, onSignIn, onSignOut }) {
 // flips immediately, reverts if the server write fails.
 // Home screen — which surface drape opens on. localStorage-backed (per device)
 // so the cold-start router can read it synchronously; see services/homePref.
-// Default (unset) reads as 'feed', matching first-run behavior.
+// Default (unset) reads as 'profile', matching first-run behavior (the closet
+// is the cold-start default since the 1.5.0 repositioning). Button order
+// mirrors the tab bar: Feed on the left, Closet on the right.
 function HomeScreenSection({ t }) {
-  const [choice, setChoice] = useState(() => getHomePref() || 'feed');
+  const [choice, setChoice] = useState(() => getHomePref() || 'profile');
   const pick = (v) => { setChoice(v); setHomePref(v); };
   return (
     <section className="settings-card">
@@ -80,20 +82,20 @@ function HomeScreenSection({ t }) {
         <button
           type="button"
           role="radio"
-          aria-checked={choice === 'profile'}
-          className={`settings-segment-btn${choice === 'profile' ? ' on' : ''}`}
-          onClick={() => pick('profile')}
-        >
-          {t('homeScreenProfile')}
-        </button>
-        <button
-          type="button"
-          role="radio"
           aria-checked={choice === 'feed'}
           className={`settings-segment-btn${choice === 'feed' ? ' on' : ''}`}
           onClick={() => pick('feed')}
         >
           {t('homeScreenFeed')}
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={choice === 'profile'}
+          className={`settings-segment-btn${choice === 'profile' ? ' on' : ''}`}
+          onClick={() => pick('profile')}
+        >
+          {t('homeScreenProfile')}
         </button>
       </div>
       <p className="settings-hint">
