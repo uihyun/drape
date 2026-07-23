@@ -117,8 +117,8 @@ export function Profile({ user, authReady, onSignIn }) {
     // locale, alternating genders so the demo doesn't read women-only.
     const DEMO_HANDLES = {
       ko: ['jisu_daily', 'jiyongg', 'jiho'],
-      ja: ['rina_cafe_life', 'kenta_games_jp'],
-      en: ['natalie', 'prof_arthur_p'],
+      ja: ['rina_cafe_life', 'miisuzu_desu', 'kenta_games_jp'],
+      en: ['natalie', 'bibi', 'prof_arthur_p'],
     };
     const pool = DEMO_HANDLES[lang] || DEMO_HANDLES.en;
     // Sticky per browsing session: hopping tabs and coming back should show
