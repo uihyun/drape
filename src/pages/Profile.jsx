@@ -116,9 +116,9 @@ export function Profile({ user, authReady, onSignIn }) {
     // "start my closet" CTA (PublicProfile). Persona matches the viewer's
     // locale, alternating genders so the demo doesn't read women-only.
     const DEMO_HANDLES = {
-      ko: ['jisu_daily', 'jiyongg', 'jiho'],
-      ja: ['rina_cafe_life', 'miisuzu_desu', 'kenta_games_jp'],
-      en: ['natalie', 'bibi', 'prof_arthur_p'],
+      ko: ['jisu_daily', 'jiyongg', 'haeun_jung', 'jiho'],
+      ja: ['rina_cafe_life', 'miisuzu_desu', 'kenta_games_jp', 'kazuki_t'],
+      en: ['natalie', 'bibi', 'chloe_reads_alot', 'prof_arthur_p'],
     };
     const pool = DEMO_HANDLES[lang] || DEMO_HANDLES.en;
     // Sticky per browsing session: hopping tabs and coming back should show

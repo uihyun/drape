@@ -11,7 +11,21 @@ Conventions:
 
 ---
 
-## Unreleased (web live)
+## 1.5.0 — native build (versionCode 17 / iOS build 14)
+
+Minor bump — the closet-first repositioning (default home, tab renames,
+action-first onboarding, guest demo closet) is a feature set, not a fix.
+Everything below was already live on web; this build brings it to iOS/Android.
+
+**Store release notes (short, user-facing):**
+- EN: "drape now opens to your closet. New one-photo start: log today's outfit
+  and let AI file every piece into your closet. Browse member closets before
+  you sign up."
+- KO: "이제 drape가 내 옷장에서 시작해요. 사진 한 장으로 오늘의 착장을 기록하면
+  AI가 아이템까지 옷장에 담아줘요. 가입 전에 멤버들의 공개 옷장도 구경해보세요."
+- JA: "drapeがクローゼットから始まるようになりました。写真1枚で今日のコーデを記録、
+  AIがアイテムもクローゼットへ。登録前にメンバーの公開クローゼットも見られます。"
+
 
 ### Action-first onboarding + guest demo closet (activation levers)
 
