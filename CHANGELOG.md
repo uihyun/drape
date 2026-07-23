@@ -11,7 +11,11 @@ Conventions:
 
 ---
 
-## 1.5.0 — native build (versionCode 17 / iOS build 14)
+## 1.5.0 — native build (versionCode 18 / iOS build 14)
+
+Android now targets **API 36** (Play's Aug 2026 target-API requirement;
+compileSdk/targetSdk 35→36 in variables.gradle). versionCode 17 was burned
+by the pre-bump build.
 
 Minor bump — the closet-first repositioning (default home, tab renames,
 action-first onboarding, guest demo closet) is a feature set, not a fix.
