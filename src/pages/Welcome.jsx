@@ -44,7 +44,9 @@ export function Welcome() {
     finally { setBusy(null); }
   };
 
-  const onBrowse = () => navigate('/feed');
+  // Guests who don't sign in get the demo closet, not the feed — the closet
+  // is the product, and the demo banner keeps a sign-up CTA in view.
+  const onBrowse = () => navigate('/profile');
 
   const version = (typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__) || '0.1.0';
 

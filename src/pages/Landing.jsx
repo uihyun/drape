@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { PhoneShowcase } from '../components/PhoneShowcase.jsx';
+import { analytics, logEvent } from '../firebase.js';
 import '../styles/landing.css';
 
 // Marketing landing page. Lives at /landing and is the page the buyable
@@ -72,6 +73,7 @@ export function Landing() {
               href="https://apps.apple.com/app/id6775511709"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => logEvent(analytics, 'store_click', { store: 'app_store', lang })}
             >
               <AppleGlyph />
               <span className="lp-store-text">
@@ -84,6 +86,7 @@ export function Landing() {
               href="https://play.google.com/store/apps/details?id=com.uihyun.drape"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => logEvent(analytics, 'store_click', { store: 'play', lang })}
             >
               <PlayGlyph />
               <span className="lp-store-text">
