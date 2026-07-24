@@ -191,6 +191,19 @@ Pages and screens; screen names: feed, profile, profile_closet, …).
 dimension — register it in GA Admin → Custom definitions to query retention by
 landing surface.
 
+## Landing funnel (drape.nyc — conversion pass 2026-07-24)
+
+Diagnosis: ~850 visitors/30d → 73 first_opens (~8.5%), zero click telemetry.
+Shipped: `store_click` events (hero + how placements) and `get_redirect`;
+desktop-only QR encoding drape.nyc/get (UA bridge → device's own store —
+ONE code on purpose, the route picks the store); below-the-fold how-it-works
+3-step + mobile-only repeat CTA. Hero visuals stayed the original
+calendar+feed pair (tried try-on swap, reverted on looks). Decision kept:
+NO web-signup CTA on the landing — install is the landing's only goal
+(web demo closet lives behind /welcome "browse" for people already in the app).
+Watch in GA: store_click / landing visits ratio, then App Store Connect /
+Play Console page→install conversion to localize remaining leaks.
+
 ## Reference genres (competitor ad patterns, analyzed 2026-07)
 
 CozyLook / Array Closet / Verifyt / DressYou IG ads boil down to four genres we cover:

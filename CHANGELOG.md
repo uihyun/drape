@@ -50,12 +50,13 @@ Everything below was already live on web; this build brings it to iOS/Android.
 - Instrumented: `store_click` (hero + how-it-works placements) and
   `get_redirect` GA events — the visit→store-click leg of the funnel is now
   visible (was a black box).
-- Hero front phone shows the try-on result instead of the feed
-  (PhoneShowcase, shared with Welcome).
+- Hero kept the original calendar+feed shots after an A/B look (prettier;
+  the try-on sell moved to the how-it-works section instead).
 - Desktop-only QR block (`/lp/qr-get.svg` → `/get` UA bridge: iPhone→App
   Store, Android→Play, desktop→landing). Hidden on touch/mobile widths.
 - New below-the-fold "how it works" 3-step section + second store CTA pair
-  (hero remains a single screen). Locale keys landingQrHint/landingHow* ×3.
+  (mobile-only — desktop already has the hero pair + QR one screen up; hero
+  remains a single screen). Locale keys landingQrHint/landingHow* ×3.
 - Welcome "Browse without sign in" → guest demo closet (was /feed).
 
 ### Default home → Closet; tab renames (data-driven)
