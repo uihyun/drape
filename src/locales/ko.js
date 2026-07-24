@@ -7,7 +7,7 @@ export const ko = {
   closetMagicCta: '또는 착장 사진 한 장으로 한꺼번에 등록',
   demoBannerBody: '멤버의 공개 옷장을 구경하는 중이에요 — 내 옷장도 이렇게 꾸밀 수 있어요.',
   demoBannerCta: '내 옷장 만들기',
-  landingQrHint: '폰으로 스캔하면 앱을 받을 수 있어요',
+  landingQrHint: '폰으로 스캔하면 기종에 맞는 스토어가 자동으로 열려요 (아이폰·안드로이드).',
   landingHow1T: '오늘 입은 옷 찍기',
   landingHow1B: '사진 한 장으로 OOTD가 기록되고, AI가 아이템까지 옷장에 담아줘요.',
   landingHow2T: '뭐든 내 몸에 트라이온',

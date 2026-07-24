@@ -13,9 +13,9 @@ export function PhoneShowcase() {
       </div>
       <div className="lp-phone lp-phone--front">
         <div className="lp-phone-screen">
-          {/* Front phone shows the try-on result — the wow feature — instead
-              of the feed (GA: the feed is the weakest surface). */}
-          <img className="lp-phone-img" src="/lp/tryon.webp" alt="" loading="lazy" />
+          {/* Front phone stays the feed shot — the prettier hero; the try-on
+              sell lives in the landing's how-it-works section below. */}
+          <img className="lp-phone-img" src="/lp/feed.webp" alt="" loading="lazy" />
         </div>
       </div>
     </div>

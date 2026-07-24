@@ -9,7 +9,7 @@ export const ja = {
   closetMagicCta: 'またはコーデ写真1枚でまとめて登録',
   demoBannerBody: 'メンバーの公開クローゼットを見ています — あなたのもこんなふうに作れます。',
   demoBannerCta: 'マイクローゼットを作る',
-  landingQrHint: 'スマホでスキャンしてアプリを入手',
+  landingQrHint: 'スマホでスキャンすると機種に合ったストアが自動で開きます（iPhone・Android）。',
   landingHow1T: '今日のコーデを撮る',
   landingHow1B: '写真1枚でOOTDを記録 — AIがアイテムもクローゼットへ。',
   landingHow2T: 'なんでも自分で試着',

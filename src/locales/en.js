@@ -7,7 +7,7 @@ export const en = {
   closetMagicCta: 'Or add everything from one outfit photo',
   demoBannerBody: "You're browsing a member's public closet — yours could look like this.",
   demoBannerCta: 'Start my closet',
-  landingQrHint: 'Scan with your phone to get the app',
+  landingQrHint: 'Scan with your phone — it opens your app store (iPhone or Android).',
   landingHow1T: "Snap today's outfit",
   landingHow1B: 'One photo logs your OOTD — and AI files every piece into your closet.',
   landingHow2T: 'Try anything on you',
