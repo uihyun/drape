@@ -146,6 +146,10 @@ try-ons, 1.3s cuts — reference reel instagram.com/reels/DXrxPZCjpDv).
 - Square/portrait source for a full-bleed 9:16 slot → regenerate with
   `AR=9:16` env on gen-tryon (Gemini aspectRatio) for full-body framing;
   cover-crop makes faces huge.
+- Organic reels can't carry a tappable link (IG policy) — outros bake the
+  visible URL instead: pill text is DRAPE.NYC, not "get the app". Clickable
+  paths are the bio link, story reshares with a link sticker, and boosted
+  reels (real CTA button).
 - Always cache-bust `<img>` srcs (?v=N) and restart the browse daemon before
   re-rendering an edited reel — stale image cache shipped a wrong cut once.
 - Safety blocks on try-on prompts: reword to e-commerce framing and retry.
