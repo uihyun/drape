@@ -45,6 +45,19 @@ Everything below was already live on web; this build brings it to iOS/Android.
   all actions still gate through the shared SignInModal.
 - New locale keys (en/ko/ja): onboardAction*, closetMagicCta, demoBanner*.
 
+### Landing conversion pass (drape.nyc)
+
+- Instrumented: `store_click` (hero + how-it-works placements) and
+  `get_redirect` GA events — the visit→store-click leg of the funnel is now
+  visible (was a black box).
+- Hero front phone shows the try-on result instead of the feed
+  (PhoneShowcase, shared with Welcome).
+- Desktop-only QR block (`/lp/qr-get.svg` → `/get` UA bridge: iPhone→App
+  Store, Android→Play, desktop→landing). Hidden on touch/mobile widths.
+- New below-the-fold "how it works" 3-step section + second store CTA pair
+  (hero remains a single screen). Locale keys landingQrHint/landingHow* ×3.
+- Welcome "Browse without sign in" → guest demo closet (was /feed).
+
 ### Default home → Closet; tab renames (data-driven)
 
 - GA (30d): closet/try-on engagement outweighs the feed ~40:1, and onboarding

@@ -57,6 +57,7 @@ const Profile = page(() => import('./pages/Profile.jsx'), 'Profile');
 const PublicProfile = page(() => import('./pages/PublicProfile.jsx'), 'PublicProfile');
 const Welcome = page(() => import('./pages/Welcome.jsx'), 'Welcome');
 const Landing = page(() => import('./pages/Landing.jsx'), 'Landing');
+const Get = page(() => import('./pages/Get.jsx'), 'Get');
 const BoardEditor = page(() => import('./pages/BoardEditor.jsx'), 'BoardEditor');
 const BoardDetail = page(() => import('./pages/BoardDetail.jsx'), 'BoardDetail');
 // /b/:boardId removed — canonical board URL is /boards/:boardId (detail);
@@ -384,6 +385,8 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/welcome" element={isLoggedIn ? <Navigate to="/profile" replace /> : <Welcome />} />
           {/* Public marketing page — the drape.nyc domain points here. */}
           <Route path="/landing" element={<Landing />} />
+          {/* QR bridge: phone scans → its store; desktop → landing (Get.jsx). */}
+          <Route path="/get" element={<Get />} />
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/profile/:tab" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />
           <Route path="/u/:handle" element={<PublicProfile user={user} onSignIn={handleSignIn} />} />

@@ -95,8 +95,68 @@ export function Landing() {
               </span>
             </a>
           </div>
+
+          {/* Desktop-only: a phone can't scan itself — hidden on touch widths
+              (landing.css). QR encodes drape.nyc/get → UA store bridge. */}
+          <div className="lp-qr">
+            <img src="/lp/qr-get.svg" alt="QR code to download drape" />
+            <span>{t('landingQrHint')}</span>
+          </div>
         </div>
       </main>
+
+      {/* Persuasion block for the undecided — hero stays a single screen;
+          this only exists below the fold. */}
+      <section className="lp-how">
+        <div className="lp-how-grid">
+          <div className="lp-how-step">
+            <img src="/lp/calendar.webp" alt="" loading="lazy" />
+            <div className="lp-how-num">STEP 1</div>
+            <h3>{t('landingHow1T')}</h3>
+            <p>{t('landingHow1B')}</p>
+          </div>
+          <div className="lp-how-step">
+            <img src="/lp/tryon.webp" alt="" loading="lazy" />
+            <div className="lp-how-num">STEP 2</div>
+            <h3>{t('landingHow2T')}</h3>
+            <p>{t('landingHow2B')}</p>
+          </div>
+          <div className="lp-how-step">
+            <img src="/lp/feed.webp" alt="" loading="lazy" />
+            <div className="lp-how-num">STEP 3</div>
+            <h3>{t('landingHow3T')}</h3>
+            <p>{t('landingHow3B')}</p>
+          </div>
+        </div>
+        <div className="lp-stores lp-stores--how">
+          <a
+            className="lp-store"
+            href="https://apps.apple.com/app/id6775511709"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => logEvent(analytics, 'store_click', { store: 'app_store', lang, placement: 'how' })}
+          >
+            <AppleGlyph />
+            <span className="lp-store-text">
+              <small>{t('landingStoreOn')}</small>
+              <strong>App Store</strong>
+            </span>
+          </a>
+          <a
+            className="lp-store"
+            href="https://play.google.com/store/apps/details?id=com.uihyun.drape"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => logEvent(analytics, 'store_click', { store: 'play', lang, placement: 'how' })}
+          >
+            <PlayGlyph />
+            <span className="lp-store-text">
+              <small>{t('landingStoreGet')}</small>
+              <strong>Google Play</strong>
+            </span>
+          </a>
+        </div>
+      </section>
 
       <footer className="lp-footer">
         <span className="lp-foot-brand">drape</span>
