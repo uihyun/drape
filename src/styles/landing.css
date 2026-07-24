@@ -276,3 +276,9 @@
   .lp-how { margin-top: 8px; }
   .lp-how-grid { grid-template-columns: 1fr; gap: 36px; }
 }
+
+/* Desktop already has the hero store pair one screen up (plus the QR) — the
+   repeat CTA only earns its place on mobile, after the scroll. */
+@media (min-width: 900px) {
+  .lp-stores--how { display: none; }
+}
