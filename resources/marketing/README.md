@@ -114,10 +114,11 @@ reels, not design — daily-then-silent is the worst pattern, so the tail was
 stretched (+1 week runway) instead. 12pm ⇄ 7:30pm ET alternation preserved for
 the window A/B.
 
-**No hashtags AND no captions** on organic posts (decided 2026-07-21 — captions
-read as clutter; the creative carries everything). Queue docs get `caption: ''`
-(written via admin SDK; the admin-UI upsert still requires text, so blank
-captions are seeded by script for now).
+**No hashtags** on organic posts. Captions came BACK on 2026-07-26 (fully blank
+posts read as broken): short hook + one line, no hashtags, no music credits.
+Ad destination switched to `drape.nyc/get?utm_source=instagram&utm_medium=paid`
+(UA store bridge — kills the landing hop for paid taps); ad KPI = installs +
+sign_up (GA `sign_up` event added 7/26, fired on first-ever session).
 
 **Checkpoint Mon Aug 3** (moved from 7/28 — by 8/2 there are 7 images + 6 reels
 out, enough sample on all three axes). Review per-post insights: saves +

@@ -290,7 +290,13 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   useEffect(() => {
     if (!user?.uid) return;
     setUserId(analytics, user.uid);
-    setUserProp('home_pref', getHomePref() || 'feed'); // for retention split by landing
+    setUserProp('home_pref', getHomePref() || 'profile'); // for retention split by landing
+    // First-ever session for this account → sign_up. Closes the GA funnel gap
+    // (install → signup was invisible; Auth knew, GA didn't). creationTime ==
+    // lastSignInTime only on the very first sign-in.
+    if (!user.isAnonymous && user.metadata?.creationTime && user.metadata.creationTime === user.metadata.lastSignInTime) {
+      logEvent(analytics, 'sign_up', { method: user.providerData?.[0]?.providerId || 'unknown' });
+    }
   }, [user?.uid]);
 
   // Notification-tap deep link → open the target route via the router (no
