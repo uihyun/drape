@@ -115,6 +115,10 @@ at ~2/week. 12pm ⇄ 7:30pm ET alternation preserved.
 
 **No hashtags** on organic posts. Captions came BACK on 2026-07-26 (fully blank
 posts read as broken): short hook + one line, no hashtags, no music credits.
+Reel captions end with a plain `Get the app — link in bio.` line (decided
+7/30 — caption URLs aren't tappable outside a Meta-Verified-only test, so the
+bio link `/get?utm_medium=bio` is the organic path; no emoji, no stickers,
+no story-reshare routine — clean by choice).
 Ad destination switched to `drape.nyc/get?utm_source=instagram&utm_medium=paid`
 (UA store bridge — kills the landing hop for paid taps); ad KPI = installs +
 sign_up (GA `sign_up` event added 7/26, fired on first-ever session).
