@@ -106,13 +106,12 @@ objective "App promotion"; Threads placement via checkbox).
 
 ## Launch plan & checkpoint (as of 2026-07-16)
 
-**Live queue (rebalanced 2026-07-22, runs 7/16–8/12):** dense grid-filling week
-first (daily through 7/25), then deliberately thinned to 3–4/week with rest
-days: swap4 7/27 → A 7/29 → howto 7/31 → J 8/2 → swap8 8/4 → G 8/6 → inspo 8/8
-→ I 8/10 → C 8/12. The earlier daily density was an accident of adding swap
-reels, not design — daily-then-silent is the worst pattern, so the tail was
-stretched (+1 week runway) instead. 12pm ⇄ 7:30pm ET alternation preserved for
-the window A/B.
+**Live queue (rebalanced again 2026-07-30 — reels front-loaded):** howto 7/31
+(7:30p) → swap8 8/2 (12p) → inspo 8/4 (7:30p) → G 8/6 (12p) → J 8/9 (12p) →
+I 8/11 (7:30p) → C 8/13 (12p). Why: per-post insights show reels reach 2–5×
+the cards (ootd 164 / swap3 88 / swap4 86 vs cards decaying 92→36→18→3), so
+the two remaining reels moved inside the ad window and the cards now trail
+at ~2/week. 12pm ⇄ 7:30pm ET alternation preserved.
 
 **No hashtags** on organic posts. Captions came BACK on 2026-07-26 (fully blank
 posts read as broken): short hook + one line, no hashtags, no music credits.
@@ -161,6 +160,35 @@ howto = Deep Urban, week = New York, ootd = Cat Walk. mp3s not in repo —
 re-download from mixkit.co; bake with ffmpeg (afade + loudnorm, see git log).
 Kevin MacLeod (CC BY) was tried first and rejected — attribution line in the
 caption was the dealbreaker. IG trending audio remains app-upload-only.
+
+## Data review 2026-07-30 (ad-period funnel, country split)
+
+**Japan traffic is junk clicks, not demand.** 7/16–29: Japan = 2,095 of ~2,570
+landing users (81%) but **~0.2 s engagement per user** (whole-day totals of
+10–80 s across 150–270 users), 0 first_opens, 0 signups. The JA ad set wins
+Meta's link-click auction because its clicks are cheapest — accidental taps
+in the IG in-app browser — and eats the budget. US is the opposite: 161
+visitors at 25–57% engagement rate, 13 of 23 first_opens, and nearly all July
+signups (19 total: mostly US/global, 2 KR, **0 JP**). The "Japanese users are
+signing up" impression came from landing volume, not conversions. → Ads
+Manager actions (owner): split countries into separate ad sets with their own
+budgets, move main budget to US, optimize for **landing page views** (not
+link clicks) to filter accidental taps; keep JP only as a small
+landing-page-view test.
+
+**/get switch works.** After pointing ads at the /get bridge (~7/28):
+39 store redirects in 2 days vs 2 store_clicks in the prior 12 days. Store
+availability checked: app live + JA-localized listing on JP App Store & Play.
+
+**sign_up GA event is silent until the next native build** — it shipped to
+hosting 7/27 but Capacitor apps bundle their own web assets, and the 1.5.0
+binaries were built before it landed. Web will report; native starts at 1.5.1.
+
+**Activation is improving post-1.5.0** (closet-first + action onboarding,
+live 7/24): 8 of 13 mid-July+ signups did something (item or try-on), incl.
+one 7/26 signup who came back 7/29 and added **97 items**. Earlier 30d
+snapshot had ~7 activated ever. Retention beyond day 0 is still near-zero
+for everyone else — that stays the #1 leak.
 
 ## Analytics snapshot (2026-07-22 — GA property 538664894 + Firebase Auth)
 
