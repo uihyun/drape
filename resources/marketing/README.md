@@ -106,12 +106,16 @@ objective "App promotion"; Threads placement via checkbox).
 
 ## Launch plan & checkpoint (as of 2026-07-16)
 
-**Live queue (rebalanced again 2026-07-30 — reels front-loaded):** howto 7/31
-(7:30p) → swap8 8/2 (12p) → inspo 8/4 (7:30p) → G 8/6 (12p) → J 8/9 (12p) →
-I 8/11 (7:30p) → C 8/13 (12p). Why: per-post insights show reels reach 2–5×
-the cards (ootd 164 / swap3 88 / swap4 86 vs cards decaying 92→36→18→3), so
-the two remaining reels moved inside the ad window and the cards now trail
-at ~2/week. 12pm ⇄ 7:30pm ET alternation preserved.
+**Live queue (posting pause 8/6–8/16, set 2026-08-06):** the four remaining
+cards moved out past 8/16 — G 8/17 (12p) → J 8/19 (12p) → I 8/21 (7:30p) →
+C 8/23 (12p). Reels all published on the 7/30 plan (howto 7/31, swap8 8/2,
+inspo 8/4). Paid ads are user-managed in Ads Manager and were left as-is by
+this change. 12pm ⇄ 7:30pm ET alternation preserved.
+
+Prior arrangement (2026-07-30, reels front-loaded): howto 7/31 (7:30p) →
+swap8 8/2 (12p) → inspo 8/4 (7:30p) → G 8/6 → J 8/9 → I 8/11 → C 8/13.
+Why reels first: per-post insights show reels reach 2–5× the cards (ootd 164 /
+swap3 88 / swap4 86 vs cards decaying 92→36→18→3).
 
 **No hashtags** on organic posts. Captions came BACK on 2026-07-26 (fully blank
 posts read as broken): short hook + one line, no hashtags, no music credits.
@@ -130,7 +134,7 @@ reach share; noon-vs-evening window winner (unify batch 2 timing); concept axis
 (swap series vs feature demos vs type cards). Batch 2 = 60% variations of
 winners + 40% new bets (marketplace/DM angles, fall closet, new persona mixes —
 ~40 unused seed photos + the crop pipeline make production ~free). Settle at
-3/week from 8/13. Insights pull: screenshots, or IG media-insights API if the
+3/week once the queue resumes (was "from 8/13"; pushed by the 8/6–8/16 pause). Insights pull: screenshots, or IG media-insights API if the
 token carries instagram_business_manage_insights.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
