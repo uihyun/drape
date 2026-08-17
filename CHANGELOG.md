@@ -11,6 +11,40 @@ Conventions:
 
 ---
 
+## 1.5.1 — native build (versionCode 19 / iOS build 15)
+
+Try-on discovery + server-editable copy. The 2026-08 funnel review found the
+biggest leak is that users never learn try-on exists (64% of signups create
+nothing; zero organic try-ons since 7/28 while item-creators kept arriving —
+the v3 onboarding dropped every try-on mention).
+
+- **Remote copy layer** (`src/services/remote-copy.js` + `useLocale` merge):
+  Firestore `config/copy` can override any `t()` string per language
+  (`strings.{en,ko,ja}.{key}`) and replace the onboarding step list
+  (`onboardingSteps` — icon/title/body/cta/route/skip, text as locale keys).
+  Same safety contract as `config/app`: missing/malformed doc → bundled copy;
+  overrides applied per key at render, so no doc state can blank the UI.
+  After this build, copy fixes and onboarding re-arrangements need no release.
+- **Onboarding v4**: renders from a steps array (server-overridable). Restores
+  a try-on step between the closet promise and the "start with today's outfit"
+  action: "See it on you" — real face/body, 5 free per day. Dots now track the
+  step count. Dismissal key unchanged (existing users aren't re-interrupted).
+- **Try-on hints (one-time, dismissible)**: Calendar shows "every look here
+  can be tried on again" once it has at least one OOTD; the unified look
+  detail (`/o/:id`, own OOTD or feed look) shows a "this look can go on you"
+  banner with a Try-this-on CTA that routes to the same target as the action
+  buttons (outfitRef when a photo exists, itemIds fallback for owners).
+- New locale keys ×3 languages: `onboardTryonTitle/Body`,
+  `hintTryonCalendar`, `hintTryonLook`.
+
+**Store release notes (short, user-facing):**
+- EN: "Find try-on faster: drape now shows you where to try any look on your
+  own photo — from your calendar, the feed, or any look page."
+- KO: "트라이온을 더 쉽게 — 캘린더·피드·look 페이지 어디서든 내 사진에
+  입혀보는 길을 알려드려요."
+- JA: "試着がもっと見つけやすく — カレンダー・フィード・ルックページから、
+  自分の写真での試着へすぐたどり着けます。"
+
 ## 1.5.0 — native build (versionCode 18 / iOS build 14)
 
 Android now targets **API 36** (Play's Aug 2026 target-API requirement;

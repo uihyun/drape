@@ -6,6 +6,7 @@ import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { calendarWarm } from '../services/uiCache.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { OotdSheet } from '../components/OotdSheet.jsx';
+import { OnboardHint } from '../components/OnboardHint.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -128,6 +129,12 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
           <ChevronRight size={20} strokeWidth={1.6} />
         </button>
       </div>
+
+      {/* One-time try-on nudge, only once there's a look to try (the 2026-08
+          funnel review: most users never discover try-on exists). */}
+      {Object.keys(byDate).length > 0 && (
+        <OnboardHint storageKey="hint_tryon_calendar" text={t('hintTryonCalendar')} />
+      )}
 
       <div className="calendar-weekdays">
         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (

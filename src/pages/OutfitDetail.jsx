@@ -14,6 +14,7 @@ import { ShareButton } from '../components/ShareButton.jsx';
 import { PieceRow } from '../components/PieceRow.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
+import { OnboardHint } from '../components/OnboardHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
@@ -447,6 +448,25 @@ export function OutfitDetail({ user, onSignIn }) {
           </div>
         </section>
       )}
+
+      {/* One-time try-on nudge (2026-08 funnel review: most users never
+          discover try-on) — mirrors the affordance logic of the buttons
+          below so it never points at an action that isn't there. */}
+      {(() => {
+        const tryonHref = (!isOwner || isAnalyzed) && outfitCardPhoto(outfit)
+          ? `/tryon?outfitRef=${outfit.id}`
+          : (isOwner && (outfit.itemIds || []).length > 0
+            ? `/tryon?items=${outfit.itemIds.join(',')}`
+            : null);
+        return tryonHref ? (
+          <OnboardHint
+            storageKey="hint_tryon_look"
+            text={t('hintTryonLook')}
+            ctaLabel={t('tryThisOn')}
+            onCta={() => navigate(tryonHref)}
+          />
+        ) : null;
+      })()}
 
       {/* Asymmetric action bar: one prominent primary (publish for owners,
           try-on for visitors with items) spanning wide, then a compact

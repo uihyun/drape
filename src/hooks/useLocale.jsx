@@ -1,7 +1,8 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { en } from '../locales/en.js';
 import { ko } from '../locales/ko.js';
 import { ja } from '../locales/ja.js';
+import { initRemoteCopy, onRemoteCopy, getCopyOverride } from '../services/remote-copy.js';
 
 const LOCALES = { en, ko, ja };
 const SUPPORTED = Object.keys(LOCALES);
@@ -23,8 +24,22 @@ export function currentLang() {
 
 const LocaleContext = createContext(null);
 
+function bundled(lang, key) {
+  let val = LOCALES[lang];
+  for (const p of key.split('.')) val = val?.[p];
+  return val;
+}
+
 export function LocaleProvider({ children }) {
   const [lang, setLangState] = useState(detectLang);
+  const [, setCopyRev] = useState(0);
+
+  // Server copy overrides (config/copy) land async, once per session; bump a
+  // counter so every t() consumer re-renders the moment they arrive.
+  useEffect(() => {
+    initRemoteCopy();
+    return onRemoteCopy(() => setCopyRev((r) => r + 1));
+  }, []);
 
   const setLang = (l) => {
     if (!SUPPORTED.includes(l)) return;
@@ -33,16 +48,13 @@ export function LocaleProvider({ children }) {
   };
 
   // t('key') or t('styles.modern.name') or t('photoLabel', { n: 2 })
+  // Server override wins over the bundle at each fallback tier, so a key can
+  // be hot-fixed for one language without touching the others.
   const t = (key, params) => {
-    const parts = key.split('.');
-    let val = LOCALES[lang];
-    for (const p of parts) val = val?.[p];
-
-    // Fallback to English
-    if (val === undefined || val === null) {
-      val = LOCALES.en;
-      for (const p of parts) val = val?.[p];
-    }
+    let val = getCopyOverride(lang, key);
+    if (val === undefined || val === null) val = bundled(lang, key);
+    if (val === undefined || val === null) val = getCopyOverride('en', key);
+    if (val === undefined || val === null) val = bundled('en', key);
 
     if (typeof val !== 'string') return key;
     if (!params) return val;
