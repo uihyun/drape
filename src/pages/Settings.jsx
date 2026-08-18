@@ -6,7 +6,7 @@ import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
 import { brandOrigin } from '../services/platform-service.js';
 import { FitsService } from '../services/fits-service.js';
-import { useFits } from '../hooks/useFits.js';
+import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 import { AlertModal } from '../components/AlertModal.jsx';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
@@ -622,6 +622,19 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
         <span className="settings-row-label">{t('signedInAs')}</span>
         <span className="settings-row-value">{user.email || user.displayName || user.uid.slice(0, 8)}</span>
       </div>
+
+      {/* Balance right above the invite row, so the +10 reward reads against
+          a number you can actually see (the builder's meter is the only other
+          place the balance shows). */}
+      {fits.loaded && (
+        <div className="settings-row">
+          <span className="settings-row-label">{t('fitsBalanceLabel')}</span>
+          <span className="settings-row-value">
+            {t('fitsBalanceValue', { left: fits.dailyRemaining, max: FITS_PER_DAY })}
+            {fits.bonus > 0 && ` (+${fits.bonus})`}
+          </span>
+        </div>
+      )}
 
       <button type="button" className="settings-row settings-row-action" onClick={onInvite}>
         <span className="settings-row-label">

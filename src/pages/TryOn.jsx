@@ -13,6 +13,7 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
+import { analytics, logEvent } from '../firebase.js';
 import { shareLink } from '../services/share-service.js';
 import { brandOrigin } from '../services/platform-service.js';
 
@@ -54,6 +55,14 @@ export function TryOn({ user, onSignIn }) {
   const navigate = useNavigate();
   const fits = useFits(user);
   const [outOfFits, setOutOfFits] = useState(false);
+  // Hidden-demand signal: reaching the builder with nothing left to spend.
+  // The server has never rejected a call (out_of_fits: 0 all-time), so this
+  // is the only way to see people silently hitting the daily cap.
+  useEffect(() => {
+    if (fits.loaded && fits.dailyRemaining === 0 && fits.bonus === 0) {
+      logEvent(analytics, 'out_of_fits', { source: 'enter' });
+    }
+  }, [fits.loaded, fits.dailyRemaining, fits.bonus]);
   // Invite directly from here (opens the share sheet with the user's code) — the
   // whole point of the nudge is to invite, not to hunt through Settings.
   const doInvite = async () => {
@@ -236,7 +245,10 @@ export function TryOn({ user, onSignIn }) {
         navigate('/profile/tryon');
       }
     } catch (err) {
-      if (/out_of_fits|resource-exhausted/i.test(err?.message || '')) setOutOfFits(true);
+      if (/out_of_fits|resource-exhausted/i.test(err?.message || '')) {
+        setOutOfFits(true);
+        logEvent(analytics, 'out_of_fits', { source: 'submit' });
+      }
       else setError(err.message);
     } finally { setSubmitting(false); }
   };

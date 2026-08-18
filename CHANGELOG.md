@@ -36,6 +36,17 @@ the v3 onboarding dropped every try-on mention).
   buttons (outfitRef when a photo exists, itemIds fallback for owners).
 - New locale keys ×3 languages: `onboardTryonTitle/Body`,
   `hintTryonCalendar`, `hintTryonLook`.
+- **Fits balance visibility** (follow-up in the same build): the try-on
+  result page shows "{n}/5 try-ons left today" under both regenerate spots
+  (regenerate spends a fit and the page had no meter at all), and Settings
+  gets a balance row right above the invite row so the +10 reward reads
+  against a visible number. Deliberately NOT on outfit cards/detail or the
+  Start button caption — balance stays inside try-on contexts.
+- **`out_of_fits` GA event** (no UI): fired with `source: 'enter'` when the
+  builder loads with a zero balance and `source: 'submit'` on a server
+  rejection — measures silent cap-hits (server rejections are 0 all-time,
+  so this is the only demand signal). Keys: `fitsBalanceLabel/Value`,
+  `fitsLeftToday` ×3 languages.
 
 **Store release notes (short, user-facing):**
 - EN: "Find try-on faster: drape now shows you where to try any look on your

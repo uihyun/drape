@@ -11,6 +11,7 @@ import { Comments } from '../components/Comments.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
@@ -32,6 +33,15 @@ export function GenerationDetail({ user }) {
   const swipe = useSwipeNavigate(); // swipe hero left/right → prev/next try-on in the list you came from
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  // Regenerate spends a fit like any try-on — show the balance where the
+  // spending happens (the builder's meter isn't visible from here).
+  const fits = useFits(user);
+  const fitsLeftLine = fits.loaded && (
+    <p className="muted" style={{ textAlign: 'center', fontSize: '0.8rem', marginTop: 6 }}>
+      {t('fitsLeftToday', { left: fits.dailyRemaining, max: FITS_PER_DAY })}
+      {fits.bonus > 0 && ` (+${fits.bonus})`}
+    </p>
+  );
   const [items, setItems] = useState([]);
   const [sourceOutfit, setSourceOutfit] = useState(null);
   const [, setStuckTick] = useState(0); // forces a re-render when a watched pending crosses the stuck threshold
@@ -193,6 +203,7 @@ export function GenerationDetail({ user }) {
               <Trash2 size={14} strokeWidth={1.7} /> {t('delete')}
             </button>
           </div>
+          {fitsLeftLine}
         </div>
       )}
 
@@ -330,6 +341,7 @@ export function GenerationDetail({ user }) {
               </button>
             </div>
           </div>
+          {fitsLeftLine}
 
           <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid var(--border)' }} />
           <Comments
