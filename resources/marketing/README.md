@@ -147,7 +147,19 @@ reach share; noon-vs-evening window winner (unify batch 2 timing); concept axis
 (swap series vs feature demos vs type cards). Batch 2 = 60% variations of
 winners + 40% new bets (marketplace/DM angles, fall closet, new persona mixes —
 ~40 unused seed photos + the crop pipeline make production ~free). Settle at
-3/week once the queue resumes (was "from 8/13"; pushed by the 8/6–8/16 pause). Insights pull: screenshots, or IG media-insights API if the
+3/week once the queue resumes (was "from 8/13"; pushed by the 8/6–8/16 pause).
+
+**Batch 2 direction (decided 2026-08-24, supersedes the 60/40 split above):**
+queue is fully drained as of 8/23 — the only unpublished asset is the tryon
+reel (Veo backup). Cards are RETIRED: reels reached 2–5× the cards and card
+reach decayed 92→36→18→3, so batch 2 is **reels-only, EN-only captions,
+US-first timing** (per the 8/24 US-first data review — Asia bilingual captions
+dropped). Concept mix leans NEW BETS over winner-clones this round (owner's
+call): lead with the tryon reel (slot 1, also patches the try-on discovery
+gap), then new concepts on the winner axes (montage / swap / inspo hard-cut).
+Paid: don't cut new ad creatives — boost the winning reels US-targeted
+(boosted reels get a real CTA button; ootd was the reach winner). Cadence
+3/week (Mon/Wed/Fri, 12p ⇄ 7:30p ET) → 6 reels per 2-week batch. Insights pull: screenshots, or IG media-insights API if the
 token carries instagram_business_manage_insights.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
