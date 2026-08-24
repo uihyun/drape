@@ -117,6 +117,19 @@ swap8 8/2 (12p) → inspo 8/4 (7:30p) → G 8/6 → J 8/9 → I 8/11 → C 8/13.
 Why reels first: per-post insights show reels reach 2–5× the cards (ootd 164 /
 swap3 88 / swap4 86 vs cards decaying 92→36→18→3).
 
+**8/24 data review — US-first targeting (decided 2026-08-24).** Two weeks
+after the owner shifted paid ads West (US/Europe over Japan): the US is the
+only country where the full funnel works — 12 app installs (11 iOS) and the
+bulk of the 25 signups (signup timestamps cluster in US waking hours ET).
+France buys the most ad clicks (218 web new users) but produced zero
+installs; Poland/Germany similar. Japan traffic is gone as intended
+(1,159→44). An 8/23 one-day Indonesia spike (506 web users via IG referral
+off card C) converted to 1 install — junk, same profile as the July JP
+clicks. Decision: concentrate ad budget on the US (iOS-weighted) for now;
+Asia-female targeting shows no install signal yet (JP 43 / KR 2 / TH 6 web
+clicks only). Re-check the country split after the 1.5.1 native build ships
+the `sign_up` GA event (install→signup by country becomes visible).
+
 **No hashtags** on organic posts. Captions came BACK on 2026-07-26 (fully blank
 posts read as broken): short hook + one line, no hashtags, no music credits.
 Reel captions end with a plain `Get the app — link in bio.` line (decided
