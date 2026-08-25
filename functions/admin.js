@@ -32,13 +32,32 @@ function assertAdmin(request) {
 // stays defined in exactly one place.
 exports.assertAdmin = assertAdmin;
 
-// ── Single full-corpus pass ────────────────────────────────────────────
+// ── Corpus pass (windowed) ─────────────────────────────────────────────
 // One read of every collection, assembling everything the heavy endpoints
 // need: identity, per-user action counts, bucket assignment, time-series,
 // try-on health, marketplace, and a top-tried-on tally.
-async function collectAll() {
+//
+// `days` windows the big collections (items/boards/generations/outfits) by
+// createdAt so the default dashboard load stays cheap as the corpus grows.
+// Identity (profiles/users/auth) is always read in full — it's small and the
+// seed/real classification needs it. Callers that need all-time semantics
+// (top try-ons, user table, the daily snapshot) pass ALL_DAYS.
+const ALL_DAYS = 800; // matches the buildTrends axis cap
+async function collectAll(days = ALL_DAYS) {
   const db = admin.firestore();
   const auth = admin.auth();
+
+  const cutoff = new Date();
+  cutoff.setUTCDate(cutoff.getUTCDate() - Math.min(days, ALL_DAYS));
+  const cutTs = admin.firestore.Timestamp.fromDate(cutoff);
+  const cutDay = cutoff.toISOString().slice(0, 10);
+  // Persona sunset always needs 8 full ISO weeks regardless of the window.
+  const outfitCutoff = new Date();
+  outfitCutoff.setUTCDate(outfitCutoff.getUTCDate() - Math.min(Math.max(days, 63), ALL_DAYS));
+  const outfitCutTs = admin.firestore.Timestamp.fromDate(outfitCutoff);
+  const windowed = (coll, ts) => days >= ALL_DAYS
+    ? db.collection(coll).get()
+    : db.collection(coll).where('createdAt', '>=', ts).get();
 
   // Identity from Auth — email is the authoritative seed marker.
   const id = {};
@@ -83,8 +102,9 @@ async function collectAll() {
 
   const trends = emptyTrends();
   // Signups come from the profile/auth creation date (real users only).
+  // Windowed like the doc collections so the shared trend axis matches.
   Object.keys(prof).forEach((uid) => {
-    if (bucketOf(uid) === 'real') bump(trends.signups, prof[uid].createdAt);
+    if (bucketOf(uid) === 'real' && (prof[uid].createdAt || '') >= cutDay) bump(trends.signups, prof[uid].createdAt);
   });
 
   const tryon = { ready: 0, failed: 0, pending: 0, total: 0, variantReq: 0, variantRet: 0 };
@@ -95,7 +115,7 @@ async function collectAll() {
   // Skip ownerless docs everywhere below — a doc with no userId (e.g. a stray
   // resurrection orphan) would otherwise aggregate under an `undefined` key and
   // surface as a phantom "(no handle)" user + inflate the try-on "pending" count.
-  (await db.collection('items').get()).forEach((d) => {
+  (await windowed('items', cutTs)).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
     if (!uid) return;
@@ -114,7 +134,7 @@ async function collectAll() {
     }
   });
 
-  (await db.collection('boards').get()).forEach((d) => {
+  (await windowed('boards', cutTs)).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
     if (!uid) return;
@@ -122,7 +142,7 @@ async function collectAll() {
     if (bucketOf(uid) === 'real') bump(trends.boards, dayKey(x.createdAt));
   });
 
-  (await db.collection('generations').get()).forEach((d) => {
+  (await windowed('generations', cutTs)).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
     if (!uid) return;
@@ -142,7 +162,7 @@ async function collectAll() {
   // OOTDs are `outfits` docs carrying a `date`; plain outfits are the
   // builder's saved looks (counted under `outfits`, not `ootd`).
   const outfitWeekly = {}; // weekKey → { real, seed, realPublic } (persona sunset)
-  (await db.collection('outfits').get()).forEach((d) => {
+  (await windowed('outfits', outfitCutTs)).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
     if (!uid) return;
@@ -166,7 +186,7 @@ async function collectAll() {
   const buckets = { real: [], seed: [], dev: [] };
   allUids.forEach((uid) => buckets[bucketOf(uid)].push(uid));
 
-  return { id, prof, u, buckets, trends, tryon, marketplace, topCount, itemMeta, outfitWeekly };
+  return { id, prof, u, buckets, trends, tryon, marketplace, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
 }
 
 // Recently-active real users (lastActiveAt within `days`).
@@ -177,10 +197,51 @@ function activeWithin(prof, buckets, days) {
   return buckets.real.filter((uid) => (prof[uid]?.lastActiveAt || '') >= cut).length;
 }
 
-// Shared by adminOverview (live) and dailyAdminSnapshot (cron).
-async function computeOverview() {
-  const data = await collectAll();
+// Shared by adminOverview (live, default 30-day window) and
+// dailyAdminSnapshot (cron, full pass). On a windowed load the all-time
+// numbers (totals / activation / summary / tryon / marketplace) come from
+// the latest adminStats snapshot instead of a full-corpus read — the window
+// only has to pay for what it charts (trends + persona sunset).
+async function computeOverview(days = ALL_DAYS) {
+  const data = await collectAll(days);
   const { prof, buckets, trends, tryon, marketplace } = data;
+
+  if (days < ALL_DAYS) {
+    const snap = await admin.firestore().collection('adminStats')
+      .orderBy('day', 'desc').limit(1).get();
+    const s = snap.empty ? null : snap.docs[0].data();
+    if (s?.totals) {
+      return {
+        activation: s.activation || null,
+        generatedAt: new Date().toISOString(),
+        window: { days, from: data.windowFrom },
+        totalsAsOf: s.day,
+        personaSunset: personaSunset(data.outfitWeekly, new Date().toISOString().slice(0, 10)),
+        summary: s.summary,
+        totals: {
+          ...s.totals,
+          // Live where cheap: active-user recency comes from profiles,
+          // which are always read in full.
+          active7: activeWithin(prof, buckets, 7),
+          active30: activeWithin(prof, buckets, 30),
+          users: buckets.real.length,
+        },
+        tryon: s.tryon,
+        marketplace: s.marketplace,
+        trends: buildTrends({
+          signups: trends.signups,
+          items: trends.items,
+          tryons: trends.tryons,
+          ootds: trends.ootds,
+          boards: trends.boards,
+        }),
+      };
+    }
+    // No snapshot yet (fresh project) — the windowed data would mislabel
+    // itself as all-time, so pay for one honest full pass instead.
+    return computeOverview(ALL_DAYS);
+  }
+
   const summary = summarizeBuckets(data);
   const totals = {
     users: buckets.real.length,
@@ -230,10 +291,12 @@ const opts = { cors: true, timeoutSeconds: 120, memory: '512MiB' };
 
 exports.adminOverview = onCall(opts, async (request) => {
   assertAdmin(request);
+  // Default 30-day window; the client's "90d"/"all" presets re-request wider.
   // Trends are recomputed live from createdAt on each load; point-in-time
   // history (follower counts, that-day active) accumulates via
   // dailyAdminSnapshot into adminStats/{day} for a future history view.
-  return computeOverview();
+  const days = Math.min(Math.max(Number(request.data?.days) || 30, 7), ALL_DAYS);
+  return computeOverview(days);
 });
 
 exports.adminTopTryons = onCall(opts, async (request) => {
@@ -429,6 +492,9 @@ exports.dailyAdminSnapshot = onSchedule(
       stamp: overview.generatedAt,
       summary: overview.summary,
       totals: overview.totals,
+      // Windowed adminOverview loads serve these from the latest snapshot
+      // instead of a full-corpus pass — keep them complete here.
+      activation: overview.activation,
       tryon: overview.tryon,
       marketplace: overview.marketplace,
       source: 'dailyAdminSnapshot',

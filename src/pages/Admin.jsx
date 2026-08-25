@@ -165,6 +165,7 @@ function Overview() {
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [days, setDays] = useState(30); // server-side window; 800 = all
   const [range, setRange] = useState(null); // { from, to }
   const [gaFunnel, setGaFunnel] = useState(null); // { daily, totals }
 
@@ -185,7 +186,7 @@ function Overview() {
 
   const load = () => {
     setBusy(true); setErr('');
-    AdminService.overview().then((d) => {
+    AdminService.overview(days).then((d) => {
       setData(d);
       const axis = d.trends.signups.map((p) => p.day);
       // Empty corpus → no dated docs → empty axis; still set a range so the
@@ -194,17 +195,20 @@ function Overview() {
       setRange(axis.length ? { from: axis[0], to: axis[axis.length - 1] } : { from: today, to: today });
     }).catch((e) => setErr(e.message || 'failed')).finally(() => setBusy(false));
   };
-  useEffect(load, []);
+  useEffect(load, [days]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (err) return <div className="adm-err">{err}</div>;
-  if (!data || !range) return <div className="adm-loading"><Loader2 className="spin" /> crunching the whole corpus…</div>;
+  if (!data || !range) return <div className="adm-loading"><Loader2 className="spin" /> {days >= 800 ? 'crunching the whole corpus…' : `loading last ${days} days…`}</div>;
 
   const t = data.totals;
   const axis = data.trends.signups.map((p) => p.day);
   const firstDay = axis[0] || range.from; const lastDay = axis[axis.length - 1] || range.to;
-  const applyPreset = (days) => {
-    if (!days) return setRange({ from: firstDay, to: lastDay });
-    const d = new Date(lastDay + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - days + 1);
+  const applyPreset = (preset) => {
+    // Preset wider than the loaded server window → re-request; else slice.
+    const need = preset === 0 ? 800 : preset;
+    if (need > days) return setDays(need);
+    if (!preset) return setRange({ from: firstDay, to: lastDay });
+    const d = new Date(lastDay + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - preset + 1);
     const from = d.toISOString().slice(0, 10);
     setRange({ from: from < firstDay ? firstDay : from, to: lastDay });
   };
@@ -219,7 +223,7 @@ function Overview() {
         </button>
       </div>
 
-      <h3 className="adm-h3">Totals <span className="adm-muted">(all time)</span></h3>
+      <h3 className="adm-h3">Totals <span className="adm-muted">(all time{data.totalsAsOf ? ` · snapshot ${data.totalsAsOf}` : ''})</span></h3>
       <div className="adm-tiles">
         <Tile label="real users" value={fmt(t.users)} sub={`${fmt(t.active7)} active 7d · ${fmt(t.active30)} 30d`} />
         <Tile label="items" value={fmt(t.items)} />

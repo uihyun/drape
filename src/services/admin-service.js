@@ -10,9 +10,11 @@ const call = (name) => httpsCallable(functions, name);
 
 export const AdminService = {
   // Full dashboard payload: bucket summary, totals, try-on health,
-  // marketplace, and trailing daily trend series.
-  async overview() {
-    const { data } = await call('adminOverview')();
+  // marketplace, and trailing daily trend series. `days` windows the heavy
+  // reads server-side (default 30; all-time numbers come from the daily
+  // snapshot on windowed loads).
+  async overview(days = 30) {
+    const { data } = await call('adminOverview')({ days });
     return data;
   },
 

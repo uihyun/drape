@@ -18,6 +18,15 @@ biggest leak is that users never learn try-on exists (64% of signups create
 nothing; zero organic try-ons since 7/28 while item-creators kept arriving —
 the v3 onboarding dropped every try-on mention).
 
+- **Admin: default 30-day window** (`adminOverview({ days })`, default 30,
+  clamp 7–800). Windowed loads read only the last N days of
+  items/boards/generations (outfits: ≥63d so persona-sunset always has its 8
+  weeks) and take the all-time numbers (totals / activation / summary /
+  try-on health / marketplace) from the latest `adminStats` daily snapshot —
+  no more full-corpus read on every dashboard open. The 90d/all presets
+  re-request a wider window; totals header shows the snapshot date; the
+  snapshot cron now also stores `activation` (fills in from the next 03:00
+  UTC run). Fresh projects with no snapshot fall back to one honest full pass.
 - **Admin: persona-sunset panel** (web + functions, shipped via hosting
   2026-08-25 — no native dependency). `adminOverview` now returns
   `personaSunset`: real-vs-seed public outfits per ISO week (last 8, current
