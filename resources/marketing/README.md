@@ -169,6 +169,15 @@ swap3/4/8 (closet-swap split-wipe series; swap5/6/7 retired/superseded),
 inspo (SHIIR-style hard-cut editorial: "The inspiration" sources → "The result"
 try-ons, 1.3s cuts — reference reel instagram.com/reels/DXrxPZCjpDv).
 
+**Veo rules (owner, 2026-08-24):** always render at max quality — Veo 3.1,
+4K, 9:16 portrait (portrait 4K landed in the 3.1 API updates); never ship a
+lower-res render to save time/cost. And **no ambiguous synthetic humans**:
+uncanny AI "models" are off-brand for a product whose whole claim is real
+face/body preservation. Faces on screen come from real app output (actual
+try-on results via the composite pipeline) only; Veo footage is for
+faceless/anonymous shots — hands, closet pans, mirror-from-behind, walking
+feet, fabric detail, UI-over-shoulder.
+
 **Reel production lessons (2026-07-21):**
 - Try-on composites: `src/gen-tryon.cjs`. Direct mode (identity + outfit photo)
   leaks the source scene/person ~40% of the time — the reliable path is
