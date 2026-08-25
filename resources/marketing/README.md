@@ -159,7 +159,16 @@ call): lead with the tryon reel (slot 1, also patches the try-on discovery
 gap), then new concepts on the winner axes (montage / swap / inspo hard-cut).
 Paid: don't cut new ad creatives — boost the winning reels US-targeted
 (boosted reels get a real CTA button; ootd was the reach winner). Cadence
-3/week (Mon/Wed/Fri, 12p ⇄ 7:30p ET) → 6 reels per 2-week batch. Insights pull: screenshots, or IG media-insights API if the
+3/week (Mon/Wed/Fri, 12p ⇄ 7:30p ET) → 6 reels per 2-week batch.
+
+**Amendment (2026-08-25, lekondo IG analysis — docs/COMPETITOR-lekondo.md):**
+on the closest comparable account, creator TALKING-HEAD reels (real person +
+mini mic) reach 10–50× their aesthetic/product clips (65.8K/23.5K/18K vs
+0.6–2.5K). Batch 2 adds: one creator-format experiment (the "3 apps that
+upgrade your style" listicle genre) and a weekly real-user spotlight card
+series (face-blurred via our own pipeline, consent by DM first). Composite
+reels stay but are no longer the whole strategy. Persona faces phase out as
+real spotlights ramp. Insights pull: screenshots, or IG media-insights API if the
 token carries instagram_business_manage_insights.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
