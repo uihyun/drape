@@ -18,6 +18,16 @@ biggest leak is that users never learn try-on exists (64% of signups create
 nothing; zero organic try-ons since 7/28 while item-creators kept arriving —
 the v3 onboarding dropped every try-on mention).
 
+- **Admin: persona-sunset panel** (web + functions, shipped via hosting
+  2026-08-25 — no native dependency). `adminOverview` now returns
+  `personaSunset`: real-vs-seed public outfits per ISO week (last 8, current
+  week live), streak counters, and a phase computed from the seed-bot exit
+  rule (taper: ≥8 real public outfits/week × 2 completed weeks → halve bot
+  posting; sunset: ≥20/week × 4 weeks → bots off). Pure helpers `weekKey` /
+  `personaSunset` in `functions/admin-helpers.js` with unit tests; rendered
+  as a tile row + weekly bar table in the Overview tab. Context:
+  `docs/COMPETITOR-lekondo.md` (feed is 87% seed content today; the panel
+  tells us when the bots can retire).
 - **Remote copy layer** (`src/services/remote-copy.js` + `useLocale` merge):
   Firestore `config/copy` can override any `t()` string per language
   (`strings.{en,ko,ja}.{key}`) and replace the onboarding step list

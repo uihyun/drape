@@ -162,11 +162,20 @@ neutral-looking recommendation video.
 - lekondo shows the endgame: real community content as both product and
   marketing. Our feed is 87% bot outfits (540/623) from 30 seed accounts,
   KR/JP-skewed while ads target US women.
-- Plan stands, now with a destination: **① stamp `isSeed` on the 30 accounts
-  + 540 outfits (restore separability) → ② taper bot posting probability +
-  rebalance persona mix toward US looks → ③ sunset bots when the real-UGC
-  spotlight engine produces enough weekly content.** Persona faces phase out
-  of marketing entirely as real spotlights ramp.
+- Plan stands, now with a destination — **the sunset rule (decided 2026-08-25,
+  live in /admin → Overview → "Persona sunset")**. Measured on PUBLIC outfits
+  by real users per ISO week (server-classified; seed = `@extras-seed` Auth
+  email, so no client-side stamping needed):
+  - **Taper**: ≥8 real public outfits/week for 2 consecutive completed weeks
+    → halve bot posting probability in `extras/configs/drape.config.yaml`
+    (0.134 → 0.067 per window).
+  - **Sunset**: ≥20/week (≈3/day of fresh real content) for 4 consecutive
+    completed weeks → bots off for good; seed content stays but stops growing.
+  - Current-week counts show live but never count toward streaks (a viral
+    blip can't trigger sunset). Threshold changes are code-reviewed, not
+    eyeballed: `SUNSET_RULES` in `functions/admin-helpers.js`.
+  - Persona mix rebalances toward US looks during taper; persona faces phase
+    out of marketing as real spotlights ramp.
 
 ## Ads
 

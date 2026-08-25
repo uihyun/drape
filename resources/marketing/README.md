@@ -168,8 +168,35 @@ mini mic) reach 10–50× their aesthetic/product clips (65.8K/23.5K/18K vs
 upgrade your style" listicle genre) and a weekly real-user spotlight card
 series (face-blurred via our own pipeline, consent by DM first). Composite
 reels stay but are no longer the whole strategy. Persona faces phase out as
-real spotlights ramp. Insights pull: screenshots, or IG media-insights API if the
-token carries instagram_business_manage_insights.
+real spotlights ramp (retirement thresholds live in /admin → "Persona
+sunset"; rule in docs/COMPETITOR-lekondo.md). Insights pull: screenshots, or
+IG media-insights API if the token carries
+instagram_business_manage_insights.
+
+**@drape.nyc account fixes (8/25 logged-in audit; owner does these in the IG
+app):** ① several reels have NO cover image — the grid shows black tiles and
+looks broken; set covers on every published reel. ② account follows 0 —
+start following/engaging real drape users and adjacent fashion accounts
+(lekondo follows 757; community management is part of the format). ③ one
+grid card credits @rina_cafe_life — a seed persona — as if a real user;
+don't credit personas as users again, retire that card when the real
+spotlight series starts. ④ grid imagery reads KR/JP while ads target US
+women — new cards/reels use US-context looks.
+
+**Creator open call (decided 2026-08-25, owner posts):** hire 1 part-time
+US-based content creator, lekondo-style — talking-head reels, 2/week to
+start, paid per reel. Post the call as a styled grid card (lekondo's
+flip-phone hiring post is the reference). Formats they'd own: "apps that
+upgrade your style" listicles, try-on demos on their own closet, weekly
+spotlight voiceovers.
+
+**Real-user recruitment (US), priority order:** ① boost the tryon reel +
+winning reels US-targeted (proven installs); ② creator reels (above); ③ the
+weekly spotlight series turns featured users into recruiters (they reshare);
+④ micro-seeding: DM ~20 small US fashion accounts (1–10K followers) offering
+early access + a spotlight feature, no payment; ⑤ App Store search ads on
+"digital closet" / "virtual try-on" once 1.5.1 ships (native sign_up event
+makes CPI→signup measurable). No paid Asia.
 
 **Reels library** (`2026-07/reels/`, all 1080×1920, music baked in — silent
 masters in `reels/silent/`): ootd (montage), howto (snap→catalogued), week

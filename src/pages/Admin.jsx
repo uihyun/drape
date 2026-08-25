@@ -242,6 +242,41 @@ function Overview() {
         </>
       )}
 
+      {data.personaSunset && (() => {
+        const ps = data.personaSunset;
+        const phaseLabel = { seeding: 'SEEDING', taper: 'TAPER', sunset: 'SUNSET' }[ps.phase];
+        const cur = ps.weeks.find((w) => w.current) || { realPublic: 0, seed: 0 };
+        const maxW = Math.max(1, ...ps.weeks.map((w) => Math.max(w.realPublic, w.seed)));
+        return (
+          <>
+            <h3 className="adm-h3">Persona sunset <span className="adm-muted">(real public outfits/week decide when the bots retire)</span></h3>
+            <div className="adm-tiles">
+              <Tile label="phase" value={phaseLabel}
+                sub={ps.phase === 'sunset' ? 'turn the extras bots OFF' : ps.phase === 'taper' ? 'halve bot posting probability' : 'bots carry the feed'} />
+              <Tile label="this week (live)" value={fmt(cur.realPublic)} sub={`real public · ${fmt(cur.seed)} seed`} />
+              <Tile label="taper streak" value={`${ps.taperStreak}/${ps.rules.taperWeeks}`} sub={`weeks ≥${ps.rules.taperAt} real public`} />
+              <Tile label="sunset streak" value={`${ps.sunsetStreak}/${ps.rules.sunsetWeeks}`} sub={`weeks ≥${ps.rules.sunsetAt} real public`} />
+            </div>
+            <div className="adm-tablewrap">
+              <table className="adm-table">
+                <thead><tr><th>week of</th><th>real public</th><th></th><th>seed</th><th></th></tr></thead>
+                <tbody>
+                  {ps.weeks.map((w) => (
+                    <tr key={w.week}>
+                      <td>{w.week}{w.current ? ' ·' : ''}</td>
+                      <td>{fmt(w.realPublic)}</td>
+                      <td><div className="adm-bar" style={{ minWidth: 70 }}><span style={{ width: `${Math.round((w.realPublic / maxW) * 100)}%` }} /></div></td>
+                      <td>{fmt(w.seed)}</td>
+                      <td><div className="adm-bar" style={{ minWidth: 70 }}><span style={{ width: `${Math.round((w.seed / maxW) * 100)}%`, opacity: 0.4 }} /></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        );
+      })()}
+
       {/* One range control for everything below — GA screens card + all charts. */}
       <h3 className="adm-h3">Date range</h3>
       <div className="adm-daterow">

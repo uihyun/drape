@@ -21,7 +21,7 @@ const ADMIN_EMAILS = ['uihyunkei@gmail.com'];
 
 // Pure aggregation helpers live in a firebase-free module so they're unit-
 // testable (tests/admin-helpers.test.js).
-const { DEV, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets } = require('./admin-helpers.js');
+const { DEV, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset } = require('./admin-helpers.js');
 
 function assertAdmin(request) {
   if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -141,16 +141,24 @@ async function collectAll() {
 
   // OOTDs are `outfits` docs carrying a `date`; plain outfits are the
   // builder's saved looks (counted under `outfits`, not `ootd`).
+  const outfitWeekly = {}; // weekKey → { real, seed, realPublic } (persona sunset)
   (await db.collection('outfits').get()).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
     if (!uid) return;
     const rec = touch(uid);
     rec.outfits++;
+    const bucket = bucketOf(uid);
+    const wk = weekKey(dayKey(x.createdAt));
+    if (wk && bucket !== 'dev') {
+      const w = (outfitWeekly[wk] ||= { real: 0, seed: 0, realPublic: 0 });
+      w[bucket]++;
+      if (bucket === 'real' && (x.isPublic === true || x.isListed === true)) w.realPublic++;
+    }
     if (x.date) {
       rec.ootd++;
       if (x.isPublic === false) rec.ootdPriv++;
-      if (bucketOf(uid) === 'real') bump(trends.ootds, dayKey(x.createdAt));
+      if (bucket === 'real') bump(trends.ootds, dayKey(x.createdAt));
     }
   });
 
@@ -158,7 +166,7 @@ async function collectAll() {
   const buckets = { real: [], seed: [], dev: [] };
   allUids.forEach((uid) => buckets[bucketOf(uid)].push(uid));
 
-  return { id, prof, u, buckets, trends, tryon, marketplace, topCount, itemMeta };
+  return { id, prof, u, buckets, trends, tryon, marketplace, topCount, itemMeta, outfitWeekly };
 }
 
 // Recently-active real users (lastActiveAt within `days`).
@@ -198,6 +206,7 @@ async function computeOverview() {
   return {
     activation: act,
     generatedAt: new Date().toISOString(),
+    personaSunset: personaSunset(data.outfitWeekly, new Date().toISOString().slice(0, 10)),
     summary,
     totals,
     tryon: {

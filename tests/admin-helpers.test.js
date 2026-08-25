@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   classify, dayKey, buildTrends, summarizeBuckets, bump, emptyTrends,
+  weekKey, personaSunset,
 } from '../functions/admin-helpers.js';
 
 describe('classify — real / seed / dev buckets', () => {
@@ -95,5 +96,55 @@ describe('summarizeBuckets — per-bucket account/active/action totals', () => {
   it('empty bucket → zeros', () => {
     expect(out.seed.accounts).toBe(0);
     expect(out.seed.items).toEqual({ users: 0, total: 0 });
+  });
+});
+
+describe('weekKey — Monday of the ISO week', () => {
+  it('maps any weekday to its Monday', () => {
+    expect(weekKey('2026-08-25')).toBe('2026-08-24'); // Tue → Mon
+    expect(weekKey('2026-08-24')).toBe('2026-08-24'); // Mon → itself
+    expect(weekKey('2026-08-30')).toBe('2026-08-24'); // Sun → prior Mon
+  });
+  it('junk in, null out', () => {
+    expect(weekKey(null)).toBe(null);
+    expect(weekKey('not-a-date')).toBe(null);
+  });
+});
+
+describe('personaSunset — phase from completed-week streaks', () => {
+  // today = Tue 2026-08-25 → current week is 2026-08-24; completed weeks end 2026-08-17.
+  const TODAY = '2026-08-25';
+  const wk = (mondaysAgo) => {
+    const d = new Date('2026-08-24T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - mondaysAgo * 7);
+    return d.toISOString().slice(0, 10);
+  };
+  it('seeding when real public volume is low', () => {
+    const out = personaSunset({ [wk(1)]: { real: 3, seed: 30, realPublic: 2 } }, TODAY);
+    expect(out.phase).toBe('seeding');
+    expect(out.weeks).toHaveLength(8);
+    expect(out.weeks.at(-1).current).toBe(true);
+  });
+  it('taper after 2 completed weeks ≥8', () => {
+    const weekly = { [wk(1)]: { realPublic: 9 }, [wk(2)]: { realPublic: 8 } };
+    const out = personaSunset(weekly, TODAY);
+    expect(out.taperStreak).toBe(2);
+    expect(out.phase).toBe('taper');
+  });
+  it('current week never counts toward streaks', () => {
+    const weekly = { [wk(0)]: { realPublic: 50 }, [wk(1)]: { realPublic: 9 } };
+    const out = personaSunset(weekly, TODAY);
+    expect(out.taperStreak).toBe(1);
+    expect(out.phase).toBe('seeding');
+  });
+  it('streak breaks on a weak week', () => {
+    const weekly = { [wk(1)]: { realPublic: 9 }, [wk(2)]: { realPublic: 3 }, [wk(3)]: { realPublic: 9 } };
+    expect(personaSunset(weekly, TODAY).taperStreak).toBe(1);
+  });
+  it('sunset after 4 completed weeks ≥20', () => {
+    const weekly = Object.fromEntries([1, 2, 3, 4].map((i) => [wk(i), { realPublic: 21 }]));
+    const out = personaSunset(weekly, TODAY);
+    expect(out.sunsetStreak).toBe(4);
+    expect(out.phase).toBe('sunset');
   });
 });
