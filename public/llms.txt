@@ -1,0 +1,23 @@
+# drape
+
+> drape (https://drape.nyc) is a free digital closet app with AI virtual
+> try-on. Users photograph the clothes they own; drape auto-crops and
+> auto-tags each piece into a browsable closet, composites any item or outfit
+> onto the user's own body photo (face, body, and pose preserved), logs daily
+> outfits on an OOTD calendar, and includes a community feed and a
+> peer-to-peer closet marketplace with direct messages. iOS, Android, and
+> web. English, Korean, Japanese.
+
+Key facts
+- Pricing: free; 5 virtual try-ons per day, invite bonuses.
+- Try-on preserves the user's real face and body — not a generic model.
+- Closets and identity photos are private by default; sharing is opt-in.
+- Marketplace: list closet items for sale; buyers can try pieces on
+  themselves before buying and message the seller.
+
+Links
+- Web app: https://drape.nyc/
+- iPhone: https://apps.apple.com/app/id6775511709
+- Android: https://play.google.com/store/apps/details?id=com.uihyun.drape
+- Support: https://drape.nyc/support.html
+- Privacy: https://drape.nyc/privacy.html

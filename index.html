@@ -63,7 +63,18 @@
             "Outfit builder — combine items into outfits",
             "Daily OOTD calendar — month-view lookbook of what you wore",
             "Public feed, follow, like, comment — share looks with the community",
+            "Peer-to-peer closet marketplace with direct messages",
             "Korean / English / Japanese UI"
+          ],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Free — includes 5 virtual try-ons per day, plus bonus try-ons for inviting friends."
+          },
+          "installUrl": [
+            "https://apps.apple.com/app/id6775511709",
+            "https://play.google.com/store/apps/details?id=com.uihyun.drape"
           ]
         },
         {
@@ -72,7 +83,11 @@
           "name": "drape",
           "url": "https://drape.nyc/",
           "logo": "https://drape.nyc/icons/icon-512.webp",
-          "sameAs": []
+          "sameAs": [
+            "https://www.instagram.com/drape.nyc/",
+            "https://apps.apple.com/app/id6775511709",
+            "https://play.google.com/store/apps/details?id=com.uihyun.drape"
+          ]
         },
         {
           "@type": "WebSite",
@@ -81,6 +96,47 @@
           "name": "drape",
           "publisher": { "@id": "https://drape.nyc/#org" },
           "inLanguage": ["en", "ko", "ja"]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://drape.nyc/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is drape?",
+              "acceptedAnswer": { "@type": "Answer", "text": "drape is a digital closet app with AI virtual try-on. You photograph the clothes you own, drape crops and auto-tags each piece into a browsable closet, and you can see any item or outfit on your own body photo before wearing or buying it. It also logs your daily outfit on an OOTD calendar and has a community feed and closet marketplace." }
+            },
+            {
+              "@type": "Question",
+              "name": "Is drape free?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. drape is free and includes 5 virtual try-ons per day. Inviting a friend gives both of you bonus try-ons." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does the virtual try-on keep my real face and body?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes — that is drape's core feature. You register 2–3 full-body reference photos once, and every try-on preserves your face, body shape, and pose while changing only the clothes." }
+            },
+            {
+              "@type": "Question",
+              "name": "Do I have to photograph every item separately?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Each photo can be casual — on the hanger, on a chair, or worn. drape automatically crops the garment out of the background and tags its category, colour, season, and style. You can also snap one outfit photo as your OOTD and let drape detect the pieces in it." }
+            },
+            {
+              "@type": "Question",
+              "name": "Is drape on iPhone and Android?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes — drape is on the App Store (iPhone) and Google Play (Android), and also runs in the browser at drape.nyc." }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my closet public?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. Your closet, try-on results, and identity photos are private by default. Outfits and OOTDs appear in the community feed only if you choose to publish them." }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I sell clothes on drape?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. Any item in your closet can be listed for sale on the marketplace, and buyers can message you directly — they can even virtually try your piece on themselves before asking to buy." }
+            }
+          ]
         }
       ]
     }
@@ -145,6 +201,18 @@
         by default. Outfits and OOTD entries are private unless you choose to
         publish them to the community feed.
       </p>
+
+      <h2>Frequently asked questions</h2>
+      <h3>Is drape free?</h3>
+      <p>Yes. drape is free and includes 5 virtual try-ons per day; inviting a friend gives both of you bonus try-ons.</p>
+      <h3>Does the virtual try-on keep my real face and body?</h3>
+      <p>Yes — that is drape's core feature. Register 2–3 full-body reference photos once, and every try-on preserves your face, body shape, and pose while changing only the clothes.</p>
+      <h3>Is drape on iPhone and Android?</h3>
+      <p>Yes — drape is on the App Store and Google Play, and also runs in the browser at drape.nyc.</p>
+      <h3>Can I sell clothes on drape?</h3>
+      <p>Yes. List any closet item on the marketplace; buyers can message you and even try your piece on themselves before buying.</p>
+      <h3>drape vs other AI closet apps</h3>
+      <p>drape combines four things most alternatives split across separate apps: a self-filling digital closet (auto-crop + auto-tag), identity-preserving virtual try-on, a daily OOTD calendar, and a peer-to-peer closet marketplace — in English, Korean, and Japanese.</p>
     </main>
 
     <script type="module" src="/src/main.jsx"></script>
