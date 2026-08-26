@@ -63,6 +63,12 @@ export const AdminService = {
     const { data } = await call('adminScreenEngagement')({ from, to, kind: 'funnel' });
     return data.rows;
   },
+  // { acquisition: [{source, medium, newUsers, activeUsers}],
+  //   traffic: [{source, medium, platform, sessions, newUsers}] }
+  async gaChannels({ from, to }) {
+    const { data } = await call('adminScreenEngagement')({ from, to, kind: 'channels' });
+    return data.rows;
+  },
 
   // ── Marketing post queue (functions/marketing.js) ───────────────────
   async marketingList() {

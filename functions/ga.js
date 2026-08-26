@@ -43,13 +43,60 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
   }
   // kind: 'screens' (default) = per-screen engagement; 'daily' = per-day app
   // active users + engagement; 'funnel' = landing visitors → installs → app
-  // users, daily + range totals (batched GA queries, merged server-side).
-  const kind = ['daily', 'funnel'].includes(request.data?.kind) ? request.data.kind : 'screens';
+  // users, daily + range totals (batched GA queries, merged server-side);
+  // 'channels' = acquisition sources (first-touch) + session sources.
+  const kind = ['daily', 'funnel', 'channels'].includes(request.data?.kind) ? request.data.kind : 'screens';
   const key = `${kind}_${from}_${to}`;
   const hit = reportCache.get(key);
   if (hit && Date.now() - hit.at < 10 * 60 * 1000) return { rows: hit.rows, cached: true };
 
   const token = await gaToken();
+
+  if (kind === 'channels') {
+    const range = [{ startDate: from, endDate: to }];
+    const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${PROPERTY}:batchRunReports`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requests: [
+          // Who did we ACQUIRE (first-touch — the channel that brought the user in)
+          {
+            dateRanges: range,
+            dimensions: [{ name: 'firstUserSource' }, { name: 'firstUserMedium' }],
+            metrics: [{ name: 'newUsers' }, { name: 'activeUsers' }],
+            orderBys: [{ metric: { metricName: 'newUsers' }, desc: true }],
+            limit: 15,
+          },
+          // What's driving SESSIONS in range, split by platform (web vs app)
+          {
+            dateRanges: range,
+            dimensions: [{ name: 'sessionSource' }, { name: 'sessionMedium' }, { name: 'platform' }],
+            metrics: [{ name: 'sessions' }, { name: 'newUsers' }],
+            orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+            limit: 15,
+          },
+        ],
+      }),
+    });
+    const json = await res.json();
+    if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
+    const [rFirst, rSess] = json.reports || [];
+    const acquisition = (rFirst?.rows || []).map((r) => ({
+      source: r.dimensionValues[0].value,
+      medium: r.dimensionValues[1].value,
+      newUsers: +r.metricValues[0].value,
+      activeUsers: +r.metricValues[1].value,
+    }));
+    const traffic = (rSess?.rows || []).map((r) => ({
+      source: r.dimensionValues[0].value,
+      medium: r.dimensionValues[1].value,
+      platform: r.dimensionValues[2].value,
+      sessions: +r.metricValues[0].value,
+      newUsers: +r.metricValues[1].value,
+    }));
+    reportCache.set(key, { at: Date.now(), rows: { acquisition, traffic } });
+    return { rows: { acquisition, traffic }, cached: false };
+  }
 
   if (kind === 'funnel') {
     const range = [{ startDate: from, endDate: to }];

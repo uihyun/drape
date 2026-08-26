@@ -18,6 +18,13 @@ biggest leak is that users never learn try-on exists (64% of signups create
 nothing; zero organic try-ons since 7/28 while item-creators kept arriving —
 the v3 onboarding dropped every try-on mention).
 
+- **Admin: acquisition channels + IndexNow.** Overview gains an
+  "Acquisition channels" section (GA first-touch source/medium with new-user
+  bars, plus a session source × platform table) via `adminScreenEngagement
+  kind:'channels'`, following the shared date range. SEO: IndexNow key
+  published and all sitemap URLs submitted (Bing had zero drape.nyc pages
+  indexed while GSC was already verified via DNS TXT); FAQPage JSON-LD +
+  store links + llms.txt shipped the same day (docs/SEO.md has the status).
 - **Server-driven announcement banner + /admin Config tab.**
   `config/copy.notice` ({ id, enabled, text.{en,ko,ja}, link?, linkLabel? })
   renders as a dismissible in-app banner (`NoticeBanner`, reuses the

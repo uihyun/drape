@@ -34,18 +34,30 @@ This is what archelier's ChatGPT traffic runs on.
 - `public/sitemap.xml` — /, /landing, /get, /feed, support/privacy/terms.
 - `public/llms.txt` — LLM-crawler summary (emerging convention; costs nothing).
 
-## OWNER TODO — the step code can't do (same 10-min flow as archelier 5/8)
+## Registration status (verified 2026-08-26)
 
-1. [ ] **Google Search Console**: add property `drape.nyc` (DNS TXT at
-       Namecheap), submit `https://drape.nyc/sitemap.xml`.
-2. [ ] **Bing Webmaster Tools**: "Import from Google Search Console" right
-       after. REMEMBER: the import is one-shot — future new subdomains or
-       sitemap files must be added to Bing manually.
-3. [ ] (after 1–2 weeks) check `site:drape.nyc` on Google AND Bing; then ask
-       ChatGPT "what is drape.nyc?" to see if the index reaches it.
-
-Without step 1–2 nothing else in this file produces traffic — archelier had
-this done on 2026-05-08 and that's the difference today.
+1. [x] **Google Search Console** — REGISTERED (verified via the
+       `google-site-verification` TXT record on drape.nyc DNS). GA already
+       shows a trickle of `bing / organic` (7 users in 30d) and
+       `google / organic`.
+2. [?] **Bing Webmaster Tools** — status unknown from here, but
+       `site:drape.nyc` on Bing returns ZERO pages (checked 2026-08-26).
+       Since ChatGPT search rides the Bing index, this is the gap between
+       archelier's ChatGPT traffic and ours. Owner: open Bing Webmaster
+       Tools and confirm drape.nyc is imported + sitemap listed; if not,
+       "Import from Google Search Console" (one-shot import — future
+       subdomains/sitemaps must be added to Bing manually).
+3. **IndexNow** (done 2026-08-26): key file
+       `public/51aba95749d1f22ca525c9e82873ab3e.txt` is live and all 7
+       sitemap URLs were submitted to api.indexnow.org (HTTP 202). Bing/
+       Copilot/Seznam consume IndexNow directly — this accelerates indexing
+       independent of Webmaster Tools. Re-ping after adding major pages:
+       `curl -X POST https://api.indexnow.org/indexnow -H 'Content-Type:
+       application/json' -d '{"host":"drape.nyc","key":"51ab…3e",
+       "keyLocation":"https://drape.nyc/51ab…3e.txt","urlList":[…]}'`
+4. [ ] (after 1–2 weeks) re-check `site:drape.nyc` on Bing; then ask
+       ChatGPT "what is drape.nyc?" — and watch GA for `chatgpt.com`
+       referrals.
 
 ## Keyword reality check (2026-08-26)
 

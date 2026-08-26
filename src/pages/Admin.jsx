@@ -173,9 +173,11 @@ function Overview() {
   const [range, setRange] = useState(null); // { from, to }
   const [gaFunnel, setGaFunnel] = useState(null); // { daily, totals }
 
+  const [gaChannels, setGaChannels] = useState(null); // { acquisition, traffic }
   useEffect(() => {
     if (!range) return;
     AdminService.gaFunnel(range).then(setGaFunnel).catch(() => setGaFunnel({ daily: [], totals: null }));
+    AdminService.gaChannels(range).then(setGaChannels).catch(() => setGaChannels(null));
   }, [range?.from, range?.to]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const gaDaily = gaFunnel?.daily || [];
@@ -307,6 +309,49 @@ function Overview() {
             <Tile label="app users" value={fmt(gaTotals.appUsers)} sub="opened the app in range (iOS+Android)" />
             <Tile label="real signups" value={fmt(win('signups'))} sub="accounts created in range" />
           </div>
+        </>
+      )}
+
+      {gaChannels?.acquisition?.length > 0 && (
+        <>
+          <h3 className="adm-h3">Acquisition channels <span className="adm-muted">(first touch — what brought each new user, {range.from} → {range.to})</span></h3>
+          <div className="adm-tablewrap" style={{ marginBottom: 14 }}>
+            <table className="adm-table">
+              <thead><tr><th>source</th><th>medium</th><th>new users</th><th></th><th>active</th></tr></thead>
+              <tbody>
+                {(() => {
+                  const max = Math.max(1, ...gaChannels.acquisition.map((r) => r.newUsers));
+                  return gaChannels.acquisition.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.source}</td>
+                      <td className="adm-muted">{r.medium}</td>
+                      <td>{fmt(r.newUsers)}</td>
+                      <td><div className="adm-bar" style={{ minWidth: 90 }}><span style={{ width: `${Math.round((r.newUsers / max) * 100)}%` }} /></div></td>
+                      <td>{fmt(r.activeUsers)}</td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+          {gaChannels.traffic?.length > 0 && (
+            <div className="adm-tablewrap" style={{ marginBottom: 18 }}>
+              <table className="adm-table">
+                <thead><tr><th>session source</th><th>medium</th><th>platform</th><th>sessions</th><th>new</th></tr></thead>
+                <tbody>
+                  {gaChannels.traffic.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.source}</td>
+                      <td className="adm-muted">{r.medium}</td>
+                      <td>{r.platform}</td>
+                      <td>{fmt(r.sessions)}</td>
+                      <td>{fmt(r.newUsers)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
 
