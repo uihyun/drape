@@ -166,6 +166,8 @@ exports.adminTopTryons     = adminFns.adminTopTryons;
 exports.adminUsers         = adminFns.adminUsers;
 exports.adminUserDetail    = adminFns.adminUserDetail;
 exports.adminErrors        = adminFns.adminErrors;
+exports.adminGetConfig     = adminFns.adminGetConfig;
+exports.adminSetConfig     = adminFns.adminSetConfig;
 exports.dailyAdminSnapshot = adminFns.dailyAdminSnapshot;
 
 // ── Marketing post queue (admin-gated; publisher lands once Meta tokens exist) ──

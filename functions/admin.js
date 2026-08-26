@@ -478,6 +478,119 @@ exports.adminErrors = onCall(opts, async (request) => {
   return { errors: rows };
 });
 
+// ── Remote config editor (config/copy) ─────────────────────────────────
+// firestore.rules keeps config/* write-false for clients; these callables
+// are the only write path besides the console. Validation mirrors the
+// client's sane* parsers (src/services/remote-copy.js) so /admin can't
+// publish a doc a deployed client would silently reject.
+const CFG_LANGS = ['en', 'ko', 'ja'];
+
+function validStrings(v) {
+  if (!v || typeof v !== 'object') return null;
+  const out = {};
+  for (const lang of CFG_LANGS) {
+    if (!v[lang] || typeof v[lang] !== 'object') continue;
+    out[lang] = {};
+    for (const [k, s] of Object.entries(v[lang])) {
+      if (typeof k !== 'string' || typeof s !== 'string') return null;
+      out[lang][k] = s;
+    }
+  }
+  return out;
+}
+
+function validSteps(v) {
+  if (!Array.isArray(v) || v.length === 0 || v.length > 8) return null;
+  const ok = v.every((s) =>
+    s && typeof s === 'object' &&
+    typeof s.icon === 'string' && s.icon.trim() &&
+    typeof s.title === 'string' && s.title.trim() &&
+    typeof s.body === 'string' && s.body.trim() &&
+    (s.cta === undefined || typeof s.cta === 'string') &&
+    (s.skip === undefined || typeof s.skip === 'string') &&
+    (s.route === undefined || (typeof s.route === 'string' && s.route.startsWith('/'))));
+  if (!ok) return null;
+  // Strip unknown fields so the doc stays exactly the documented shape.
+  return v.map((s) => {
+    const out = { icon: s.icon.trim(), title: s.title.trim(), body: s.body.trim() };
+    if (s.cta) out.cta = s.cta;
+    if (s.skip) out.skip = s.skip;
+    if (s.route) out.route = s.route;
+    return out;
+  });
+}
+
+function validNotice(v) {
+  if (!v || typeof v !== 'object') return null;
+  if (typeof v.id !== 'string' || !v.id.trim()) return null;
+  const text = {};
+  for (const lang of CFG_LANGS) {
+    if (typeof v.text?.[lang] === 'string' && v.text[lang].trim()) text[lang] = v.text[lang];
+  }
+  if (!Object.keys(text).length) return null;
+  const out = { id: v.id.trim(), enabled: v.enabled === true, text };
+  if (typeof v.link === 'string' && (v.link.startsWith('/') || v.link.startsWith('http'))) {
+    out.link = v.link;
+    const labels = {};
+    for (const lang of CFG_LANGS) {
+      if (typeof v.linkLabel?.[lang] === 'string' && v.linkLabel[lang].trim()) labels[lang] = v.linkLabel[lang];
+    }
+    if (Object.keys(labels).length) out.linkLabel = labels;
+  }
+  return out;
+}
+
+exports.adminGetConfig = onCall(opts, async (request) => {
+  assertAdmin(request);
+  const db = admin.firestore();
+  const [copy, app] = await Promise.all([
+    db.collection('config').doc('copy').get(),
+    db.collection('config').doc('app').get(),
+  ]);
+  return { copy: copy.exists ? copy.data() : {}, app: app.exists ? app.data() : {} };
+});
+
+// Partial update: only the fields present in request.data.copy are touched.
+// Pass null to remove a field (fall back to baked-in behavior).
+exports.adminSetConfig = onCall(opts, async (request) => {
+  assertAdmin(request);
+  const copy = request.data?.copy;
+  if (!copy || typeof copy !== 'object') throw new HttpsError('invalid-argument', 'copy object required');
+
+  const patch = {};
+  if ('notice' in copy) {
+    if (copy.notice === null) patch.notice = admin.firestore.FieldValue.delete();
+    else {
+      const n = validNotice(copy.notice);
+      if (!n) throw new HttpsError('invalid-argument', 'notice: need id + at least one language text');
+      patch.notice = n;
+    }
+  }
+  if ('onboardingSteps' in copy) {
+    if (copy.onboardingSteps === null) patch.onboardingSteps = admin.firestore.FieldValue.delete();
+    else {
+      const s = validSteps(copy.onboardingSteps);
+      if (!s) throw new HttpsError('invalid-argument', 'onboardingSteps: 1–8 steps with icon/title/body (route must start with /)');
+      patch.onboardingSteps = s;
+    }
+  }
+  if ('strings' in copy) {
+    const s = validStrings(copy.strings);
+    if (s === null) throw new HttpsError('invalid-argument', 'strings: { en|ko|ja: { key: string } }');
+    // Nested merge per language so unrelated override keys survive.
+    for (const lang of Object.keys(s)) {
+      for (const [k, val] of Object.entries(s[lang])) patch[`strings.${lang}.${k}`] = val;
+    }
+  }
+  if (!Object.keys(patch).length) throw new HttpsError('invalid-argument', 'nothing to update');
+
+  const ref = admin.firestore().collection('config').doc('copy');
+  // update() with dotted paths needs the doc to exist; create it lazily.
+  await ref.set({}, { merge: true });
+  await ref.update(patch);
+  return { ok: true };
+});
+
 // ── Daily snapshot ───────────────────────────────────────────────────────
 // Point-in-time metrics (follower counts, that-day active users) can't be
 // reconstructed from createdAt later, so we stamp them daily into

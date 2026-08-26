@@ -18,6 +18,17 @@ export const AdminService = {
     return data;
   },
 
+  // Remote config (config/copy + config/app) — read + partial write.
+  // setConfig({ copy: { notice?, onboardingSteps?, strings? } }); null removes.
+  async getConfig() {
+    const { data } = await call('adminGetConfig')();
+    return data;
+  },
+  async setConfig(payload) {
+    const { data } = await call('adminSetConfig')(payload);
+    return data;
+  },
+
   // Items ranked by how many try-ons reference them.
   async topTryons(limit = 30) {
     const { data } = await call('adminTopTryons')({ limit });

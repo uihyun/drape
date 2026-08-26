@@ -11,6 +11,7 @@ import { useLocale, currentLang } from './hooks/useLocale.jsx';
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
 import { Onboarding } from './components/Onboarding.jsx';
+import { NoticeBanner } from './components/NoticeBanner.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
 import { JsSplash } from './components/JsSplash.jsx';
 import { warmUp } from './services/warmup.js';
@@ -385,6 +386,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
       {/* /admin is a desktop dashboard, not a "wide phone" — release the 540px cap there. */}
       <main className={location.pathname.startsWith('/admin') ? 'main main--wide' : 'main'}>
+        {!noChrome && <NoticeBanner />}
         <Suspense fallback={<div className="loading"><div className="spinner" /></div>}>
         <Routes>
           <Route path="/" element={authReady ? <Navigate to={rootTarget} replace /> : <div className="loading"><div className="spinner" /></div>} />

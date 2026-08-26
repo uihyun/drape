@@ -18,6 +18,19 @@ biggest leak is that users never learn try-on exists (64% of signups create
 nothing; zero organic try-ons since 7/28 while item-creators kept arriving —
 the v3 onboarding dropped every try-on mention).
 
+- **Server-driven announcement banner + /admin Config tab.**
+  `config/copy.notice` ({ id, enabled, text.{en,ko,ja}, link?, linkLabel? })
+  renders as a dismissible in-app banner (`NoticeBanner`, reuses the
+  OnboardHint chrome; dismissal is keyed by notice id so a new id re-shows
+  for everyone). Parsed with the same never-break contract as the copy
+  overrides. New /admin → Config tab edits the notice AND the onboarding
+  flow (step count, order, icon, route, per-language title/body/CTA — empty
+  ko/ja fall back to en) through new email-gated callables
+  `adminGetConfig` / `adminSetConfig`; the server validates against the
+  client's parsers so /admin can't publish a doc deployed clients would
+  reject. Onboarding edits store generated keys (onbA{i}…) + strings
+  overrides — one override mechanism end to end. Web picks changes up next
+  session; native from build 1.5.1.
 - **Admin: default 30-day window** (`adminOverview({ days })`, default 30,
   clamp 7–800). Windowed loads read only the last N days of
   items/boards/generations (outfits: ≥63d so persona-sunset always has its 8

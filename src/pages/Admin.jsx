@@ -8,8 +8,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, ArrowLeft, TrendingUp, Users, Sparkles, AlertTriangle, Megaphone } from 'lucide-react';
+import { Loader2, RefreshCw, ArrowLeft, TrendingUp, Users, Sparkles, AlertTriangle, Megaphone, SlidersHorizontal, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { AdminService } from '../services/admin-service.js';
+import { BAKED_STEPS } from '../components/Onboarding.jsx';
+import { en as L_EN } from '../locales/en.js';
+import { ko as L_KO } from '../locales/ko.js';
+import { ja as L_JA } from '../locales/ja.js';
 import { MarketingTab } from './AdminMarketing.jsx';
 import { cityDisplay, cityCountry } from '../data/cities.js';
 
@@ -575,7 +579,173 @@ function PublicGallery({ title, items, to }) {
   );
 }
 
-const TABS = [['overview', 'Overview', TrendingUp], ['top', 'Top try-ons', Sparkles], ['users', 'Users', Users], ['marketing', 'Marketing', Megaphone], ['errors', 'Errors', AlertTriangle]];
+// ── Config tab — announcement banner + onboarding flow (config/copy) ────
+// Edits land through adminSetConfig; deployed clients pick them up on next
+// session start (remote-copy.js reads once per session). Steps are stored
+// with generated locale keys (onbA{i}…) + matching strings overrides, so the
+// client's one override mechanism serves both.
+const CFG_LANGS = [['en', L_EN], ['ko', L_KO], ['ja', L_JA]];
+const emptyLangs = () => ({ en: '', ko: '', ja: '' });
+
+function ConfigTab() {
+  const [copyDoc, setCopyDoc] = useState(null);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [notice, setNotice] = useState(null);
+  const [steps, setSteps] = useState(null);
+  const [stepsRemote, setStepsRemote] = useState(false);
+
+  const resolveKey = (doc, lang, bundled, key) =>
+    doc?.strings?.[lang]?.[key] ?? bundled[key] ?? '';
+
+  const load = () => {
+    setErr(''); setMsg('');
+    AdminService.getConfig().then(({ copy }) => {
+      setCopyDoc(copy || {});
+      const n = copy?.notice;
+      setNotice({
+        id: n?.id || `n-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`,
+        enabled: n?.enabled === true,
+        text: { ...emptyLangs(), ...(n?.text || {}) },
+        link: n?.link || '',
+        linkLabel: { ...emptyLangs(), ...(n?.linkLabel || {}) },
+      });
+      const src = Array.isArray(copy?.onboardingSteps) && copy.onboardingSteps.length ? copy.onboardingSteps : BAKED_STEPS;
+      setStepsRemote(src !== BAKED_STEPS);
+      setSteps(src.map((s) => ({
+        icon: s.icon || 'info',
+        route: s.route || '',
+        title: Object.fromEntries(CFG_LANGS.map(([l, b]) => [l, resolveKey(copy, l, b, s.title)])),
+        body: Object.fromEntries(CFG_LANGS.map(([l, b]) => [l, resolveKey(copy, l, b, s.body)])),
+        cta: Object.fromEntries(CFG_LANGS.map(([l, b]) => [l, s.cta ? resolveKey(copy, l, b, s.cta) : ''])),
+      })));
+    }).catch((e) => setErr(e.message || 'failed'));
+  };
+  useEffect(load, []);
+
+  const saveNotice = (remove) => {
+    setBusy(true); setErr(''); setMsg('');
+    const payload = remove ? null : {
+      id: notice.id,
+      enabled: notice.enabled,
+      text: Object.fromEntries(Object.entries(notice.text).filter(([, v]) => v.trim())),
+      ...(notice.link.trim() ? {
+        link: notice.link.trim(),
+        linkLabel: Object.fromEntries(Object.entries(notice.linkLabel).filter(([, v]) => v.trim())),
+      } : {}),
+    };
+    AdminService.setConfig({ copy: { notice: payload } })
+      .then(() => { setMsg(remove ? 'notice removed' : 'notice saved'); load(); })
+      .catch((e) => setErr(e.message || 'failed')).finally(() => setBusy(false));
+  };
+
+  const saveSteps = (reset) => {
+    setBusy(true); setErr(''); setMsg('');
+    let payload;
+    if (reset) payload = { onboardingSteps: null };
+    else {
+      const strings = { en: {}, ko: {}, ja: {} };
+      const arr = steps.map((s, i) => {
+        const out = { icon: s.icon.trim() || 'info', title: `onbA${i}Title`, body: `onbA${i}Body` };
+        for (const [l] of CFG_LANGS) {
+          if (s.title[l].trim()) strings[l][`onbA${i}Title`] = s.title[l];
+          if (s.body[l].trim()) strings[l][`onbA${i}Body`] = s.body[l];
+        }
+        if (Object.values(s.cta).some((v) => v.trim())) {
+          out.cta = `onbA${i}Cta`;
+          for (const [l] of CFG_LANGS) if (s.cta[l].trim()) strings[l][`onbA${i}Cta`] = s.cta[l];
+        }
+        if (s.route.trim()) out.route = s.route.trim();
+        return out;
+      });
+      payload = { onboardingSteps: arr, strings };
+    }
+    AdminService.setConfig({ copy: payload })
+      .then(() => { setMsg(reset ? 'onboarding reset to app defaults' : 'onboarding saved'); load(); })
+      .catch((e) => setErr(e.message || 'failed')).finally(() => setBusy(false));
+  };
+
+  const upStep = (i, patch) => setSteps(steps.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+  const upLang = (i, field, lang, v) => upStep(i, { [field]: { ...steps[i][field], [lang]: v } });
+  const move = (i, d) => {
+    const j = i + d;
+    if (j < 0 || j >= steps.length) return;
+    const next = [...steps];
+    [next[i], next[j]] = [next[j], next[i]];
+    setSteps(next);
+  };
+
+  if (err && !copyDoc) return <div className="adm-err">{err}</div>;
+  if (!notice || !steps) return <div className="adm-loading"><Loader2 className="spin" /> loading config…</div>;
+
+  return (
+    <>
+      {err && <div className="adm-err">{err}</div>}
+      {msg && <div className="adm-muted" style={{ marginBottom: 10 }}>✓ {msg}</div>}
+
+      <h3 className="adm-h3">Announcement banner <span className="adm-muted">(shows in-app to everyone until each user dismisses it — new id re-shows)</span></h3>
+      <div className="adm-cfgcard">
+        <div className="adm-cfgrow">
+          <label className="adm-cfginline">
+            <input type="checkbox" checked={notice.enabled} onChange={(e) => setNotice({ ...notice, enabled: e.target.checked })} /> enabled
+          </label>
+          <label>id <input value={notice.id} onChange={(e) => setNotice({ ...notice, id: e.target.value })} style={{ width: 140 }} /></label>
+          <label>link <input value={notice.link} placeholder="/tryon or https://…" onChange={(e) => setNotice({ ...notice, link: e.target.value })} style={{ width: 220 }} /></label>
+        </div>
+        {CFG_LANGS.map(([l]) => (
+          <div className="adm-cfgrow" key={l}>
+            <span className="adm-cfglang">{l}</span>
+            <textarea rows={1} value={notice.text[l]} placeholder="banner text"
+              onChange={(e) => setNotice({ ...notice, text: { ...notice.text, [l]: e.target.value } })} />
+            {notice.link.trim() && (
+              <input value={notice.linkLabel[l]} placeholder="button label"
+                onChange={(e) => setNotice({ ...notice, linkLabel: { ...notice.linkLabel, [l]: e.target.value } })} style={{ width: 140 }} />
+            )}
+          </div>
+        ))}
+        <div className="adm-cfgrow">
+          <button className="adm-btn" disabled={busy} onClick={() => saveNotice(false)}>save notice</button>
+          {copyDoc?.notice && <button className="adm-btn" disabled={busy} onClick={() => saveNotice(true)}>remove notice</button>}
+        </div>
+      </div>
+
+      <h3 className="adm-h3">Onboarding flow <span className="adm-muted">({stepsRemote ? 'server override active' : 'app defaults shown'} · applies without an app release)</span></h3>
+      {steps.map((s, i) => (
+        <div className="adm-cfgcard" key={i}>
+          <div className="adm-cfgrow">
+            <strong>step {i + 1}</strong>
+            <label>icon <input value={s.icon} onChange={(e) => upStep(i, { icon: e.target.value })} style={{ width: 130 }} title="material symbol name" /></label>
+            <label>route <input value={s.route} placeholder="(optional) /path — CTA navigates" onChange={(e) => upStep(i, { route: e.target.value })} style={{ width: 220 }} /></label>
+            <span className="adm-cfgtools">
+              <button className="adm-btn" onClick={() => move(i, -1)} disabled={i === 0}><ChevronUp size={13} /></button>
+              <button className="adm-btn" onClick={() => move(i, 1)} disabled={i === steps.length - 1}><ChevronDown size={13} /></button>
+              <button className="adm-btn" onClick={() => setSteps(steps.filter((_, j) => j !== i))} disabled={steps.length <= 1}><Trash2 size={13} /></button>
+            </span>
+          </div>
+          {CFG_LANGS.map(([l]) => (
+            <div className="adm-cfgrow" key={l}>
+              <span className="adm-cfglang">{l}</span>
+              <input value={s.title[l]} placeholder="title" onChange={(e) => upLang(i, 'title', l, e.target.value)} style={{ width: 220 }} />
+              <textarea rows={1} value={s.body[l]} placeholder="body" onChange={(e) => upLang(i, 'body', l, e.target.value)} />
+              <input value={s.cta[l]} placeholder="CTA label (optional)" onChange={(e) => upLang(i, 'cta', l, e.target.value)} style={{ width: 160 }} />
+            </div>
+          ))}
+        </div>
+      ))}
+      <div className="adm-cfgrow" style={{ marginBottom: 18 }}>
+        <button className="adm-btn" onClick={() => setSteps([...steps, { icon: 'info', route: '', title: emptyLangs(), body: emptyLangs(), cta: emptyLangs() }])} disabled={steps.length >= 8}>
+          <Plus size={13} /> add step
+        </button>
+        <button className="adm-btn" disabled={busy} onClick={() => saveSteps(false)}>save onboarding</button>
+        <button className="adm-btn" disabled={busy} onClick={() => saveSteps(true)}>reset to app defaults</button>
+      </div>
+      <p className="adm-muted">Empty ko/ja fields fall back to en at runtime. Native apps pick these up from build 1.5.1; web is immediate (next session).</p>
+    </>
+  );
+}
+
+const TABS = [['overview', 'Overview', TrendingUp], ['top', 'Top try-ons', Sparkles], ['users', 'Users', Users], ['marketing', 'Marketing', Megaphone], ['config', 'Config', SlidersHorizontal], ['errors', 'Errors', AlertTriangle]];
 
 export function Admin({ user }) {
   const [tab, setTab] = useState('overview');
@@ -605,7 +775,8 @@ export function Admin({ user }) {
           : tab === 'overview' ? <Overview />
             : tab === 'top' ? <TopTryons />
               : tab === 'errors' ? <ErrorsTab />
-                : tab === 'marketing' ? <MarketingTab />
+                : tab === 'config' ? <ConfigTab />
+                  : tab === 'marketing' ? <MarketingTab />
                   : <UsersTab onPick={setDetailUid} />}
       </main>
     </div>
@@ -613,6 +784,14 @@ export function Admin({ user }) {
 }
 
 const ADMIN_CSS = `
+.adm-cfgcard{border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+.adm-cfgrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.adm-cfgrow label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.adm-cfgrow input,.adm-cfgrow textarea{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:inherit}
+.adm-cfgrow textarea{flex:1;min-width:220px;resize:vertical}
+.adm-cfglang{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);width:20px;flex:none}
+.adm-cfginline{font-size:13px !important;color:inherit !important}
+.adm-cfgtools{margin-left:auto;display:flex;gap:4px}
 .adm-wrap{max-width:1720px;margin:0 auto;padding:20px 32px;color:var(--text-primary);font-family:var(--font-body)}
 @media (max-width:768px){.adm-wrap{padding:12px}}
 .adm-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px}

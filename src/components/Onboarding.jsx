@@ -21,7 +21,9 @@ const KEY = 'drape_onboarding_dismissed_v2';
 // (the activation path — same as the + sheet's OOTD row: one photo fills the
 // first calendar day and the analyzed pieces flow into the closet); steps
 // without one just advance.
-const BAKED_STEPS = [
+// Exported for the /admin Config editor, which prefills its onboarding form
+// from these when no remote override exists.
+export const BAKED_STEPS = [
   { icon: 'checkroom', title: 'onboardSlide1Title', body: 'onboardSlide1Body' },
   { icon: 'auto_awesome', title: 'onboardTryonTitle', body: 'onboardTryonBody' },
   {
