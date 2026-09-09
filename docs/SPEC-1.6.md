@@ -4,9 +4,12 @@ Owner call (2026-09-08): build complete, not staged MVPs. This file is the
 single source of truth for the 1.6 scope; PROGRESS.md tracks execution.
 
 **Versioning decision:** this is **1.6.0** (not 2.0 — 2.0 is a repositioning
-event, save it). **1.5.1 ships FIRST, unchanged, now** — it is finished,
-carries the API-36 fix Play is enforcing, and nothing in 1.6 may re-block it.
-1.6.0 = versionCode 20 / iOS build 16 when it goes native.
+event, save it). ~~1.5.1 ships first~~ **REVERSED (owner, 2026-09-08): 1.5.1
+is SKIPPED** — versionCode 19 / build 15 were never submitted; the whole
+1.5.1 payload (onboarding v4, remote copy layer, fits balance, native
+sign_up, API-36 target) rides 1.6.0 instead. Accepted risk: Play's API-36
+update block stays until 1.6.0 submits, so the 1.6 core build moves fast.
+1.6.0 = versionCode 20 / iOS build 16 (bumped in repo 2026-09-08).
 
 The four features share one spine: every user action (register, try on,
 rate, wear) feeds a persistent **style profile**, and the **stylist** reads
@@ -123,12 +126,14 @@ the fix is on OUR surfaces, which AI search reads:
 
 ## Rollout order (dependencies, not stages)
 
-1. **1.5.1 store submission — before anything else touches native.**
-2. Server + web core: C (feedback) → B (profile) → D (stylist callable +
-   page) → A web share target + /import. All hosting/functions deploys.
-3. Native 1.6.0: Android intent-filter + iOS Share Extension + new tab in
-   native nav → versionCode 20 / build 16 → stores.
-4. E rides along (copy + docs).
+1. Server + web core: C (feedback ✓ 9/8) → B (profile) → D (stylist
+   callable + page) → A web share target + /import. All hosting/functions
+   deploys.
+2. Native 1.6.0 (carries the skipped 1.5.1 payload too): Android
+   intent-filter + iOS Share Extension + stylist entry in native nav →
+   versionCode 20 / build 16 → stores. This submission also clears Play's
+   API-36 block.
+3. E rides along (copy + docs).
 
 ## Analytics
 

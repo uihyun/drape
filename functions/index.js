@@ -159,6 +159,10 @@ const messageFns = require('./messages.js');
 exports.onMessageCreated = messageFns.onMessageCreated;
 exports.cleanupOldThreads = messageFns.cleanupOldThreads;
 
+// ── Stylist (SPEC-1.6: style profile + persona recommendations) ─────────
+const stylistFns = require('./stylist.js');
+exports.styleRecommend = stylistFns.styleRecommend;
+
 // ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
 const adminFns = require('./admin.js');
 exports.adminOverview      = adminFns.adminOverview;

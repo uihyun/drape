@@ -15,8 +15,9 @@ Conventions:
 
 Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
 analyze → register), per-user style profile summary, stylist personas with
-free-capped recommendations, try-on taste feedback. 1.5.1 ships first and is
-not blocked by any of this.
+free-capped recommendations, try-on taste feedback. Owner decision same day:
+**1.5.1 is skipped** — its entire payload (below) ships inside this build,
+which will be versionCode 20 / iOS build 16 and clears Play's API-36 block.
 
 - **Try-on taste feedback (👍👎)** — first 1.6 vertical, live on web
   2026-09-08. GenerationDetail action row gains a thumbs pair:
@@ -27,7 +28,7 @@ not blocked by any of this.
   preference labels on the try-on training corpus (brief §8). GA event
   `tryon_feedback` {value}. Locale keys `feedbackGood`/`feedbackBad` ×3.
 
-## 1.5.1 — native build (versionCode 19 / iOS build 15)
+## 1.5.1 — SKIPPED (folded into 1.6.0; versionCode 19 / build 15 never submitted)
 
 Try-on discovery + server-editable copy. The 2026-08 funnel review found the
 biggest leak is that users never learn try-on exists (64% of signups create

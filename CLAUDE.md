@@ -6,7 +6,7 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 
 - `src/services/` — all data layer. Pages talk to services, never directly to Firestore. Adding a new server-touching call? Put it in a service first.
 - `src/services/taxonomy.js` is the single source of truth for the closet tag vocab. `functions/taxonomy.js` must mirror it character-for-character; the auto-tag prompt enforces enums against the server copy.
-- `functions/items.js`, `functions/tryon.js` are the only Gemini-touching call sites. Keep new model usage there — don't sprinkle `GoogleGenerativeAI` instantiation across modules.
+- `functions/items.js`, `functions/tryon.js`, `functions/stylist.js` are the only Gemini-touching call sites (stylist added 2026-09-08, SPEC-1.6 — text-only flash, no image models there). Keep new model usage in these three — don't sprinkle `GoogleGenerativeAI` instantiation across modules.
 - `functions/index.js` is exclusively wiring + helpers (auth, credits, rate limit). Real work belongs in a sibling module.
 
 ## Invariants

@@ -65,6 +65,7 @@ const BoardDetail = page(() => import('./pages/BoardDetail.jsx'), 'BoardDetail')
 // editor is /boards/:boardId/edit (matches /boards/new).
 const AnalyzePhoto = page(() => import('./pages/AnalyzePhoto.jsx'), 'AnalyzePhoto');
 const TryOn = page(() => import('./pages/TryOn.jsx'), 'TryOn');
+const Stylist = page(() => import('./pages/Stylist.jsx'), 'Stylist');
 const GenerationDetail = page(() => import('./pages/GenerationDetail.jsx'), 'GenerationDetail');
 const Feed = page(() => import('./pages/Feed.jsx'), 'Feed');
 const Marketplace = page(() => import('./pages/Marketplace.jsx'), 'Marketplace');
@@ -423,6 +424,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/s/:outfitId" element={<OutfitShare user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/tryon" element={<TryOn user={user} onSignIn={handleSignIn} />} />
+          <Route path="/stylist" element={<Stylist user={user} onSignIn={handleSignIn} />} />
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
           <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />

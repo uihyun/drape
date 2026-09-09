@@ -258,6 +258,10 @@ export function TryOn({ user, onSignIn }) {
       <div className="tryon-entry-head">
         {fitsChip('tryon-fits-top')}
         <h1 className="page-h1">{t('tryOnPick')}</h1>
+        {/* Stylist entry — recs are free and exist to feed this page. */}
+        <Link to="/stylist" className="tryon-stylist-link">
+          <Sparkles size={14} strokeWidth={1.8} /> {t('stylistTitle')}
+        </Link>
       </div>
 
       {/* ── Reference: identity refs OR custom one-shot photo ─────── */}

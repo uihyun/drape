@@ -6631,3 +6631,25 @@ input[type="search"]::-webkit-search-decoration {
   background: var(--surface);
   color: var(--text-primary);
 }
+
+/* ── Stylist (SPEC-1.6 §D) ─────────────────────────────────────────── */
+.stylist-personas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+.stylist-persona { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); cursor: pointer; font: inherit; color: inherit; }
+.stylist-persona.on { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+.stylist-avatar { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.05rem; }
+.stylist-persona strong { font-size: 0.82rem; }
+.stylist-tag { font-size: 0.66rem; color: var(--text-muted); text-align: center; line-height: 1.2; }
+.stylist-askrow { display: flex; gap: 8px; margin: 10px 0 4px; }
+.stylist-askrow input { flex: 1; font: inherit; font-size: 0.9rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; }
+.stylist-askrow .btn { white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.stylist-outfit { border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin: 14px 0; }
+.stylist-outfit h3 { margin: 0 0 10px; font-size: 1rem; }
+.stylist-items { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.stylist-item { position: relative; width: 84px; height: 104px; flex: none; border-radius: 10px; overflow: hidden; background: var(--surface-elevated, #f4f2ec); cursor: pointer; }
+.stylist-item img { width: 100%; height: 100%; object-fit: contain; }
+.stylist-item-ph { width: 100%; height: 100%; }
+.stylist-wish { position: absolute; top: 4px; left: 4px; font-size: 0.58rem; padding: 2px 6px; border-radius: 8px; background: rgba(20,19,18,0.75); color: #fff; }
+.stylist-why { font-size: 0.86rem; margin: 10px 0; line-height: 1.45; }
+.stylist-rate { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-size: 0.86rem; color: var(--text-muted); }
+@media (max-width: 420px) { .stylist-personas { grid-template-columns: repeat(2, 1fr); } }
+.tryon-stylist-link { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; color: inherit; text-decoration: none; }
