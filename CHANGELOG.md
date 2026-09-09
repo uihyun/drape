@@ -19,6 +19,25 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which will be versionCode 20 / iOS build 16 and clears Play's API-36 block.
 
+- **Stylist v1 (§B+§D core) — live on web 2026-09-08.** New
+  `functions/stylist.js` (third sanctioned Gemini call site; text-only
+  gemini-3.5-flash): `styleRecommend` callable builds 2–3 outfits from the
+  user's own closet through a persona lens (Noa/Remy/Sol/Juno — illustrated,
+  explicitly-AI; no photoreal faces). Server maintains
+  `users/{uid}/private/styleProfile` — a ≤2k-char taste summary refreshed
+  incrementally (≤2×/day) from closet, try-on feedback, and looks; stated
+  prefs (future Settings editor) outrank inferred. Closed-world validation
+  drops hallucinated item ids (sanitizeTags discipline); ≤1 wishlist item
+  per outfit. Free recs capped 10/day (fitDayKey pattern; out_of_recs),
+  try-on from a rec charges fits as always. Recs stored in `stylistRecs`
+  (owner-rated up/down, closed enum in rules). New `/stylist` page (persona
+  picker + ask box + outfit cards with real thumbnails + [try this look]) +
+  entry pill on the try-on page. GA: stylist_recommend / stylist_tryon /
+  stylist_feedback. Locale +18 keys ×3. Live-verified against a 94-item
+  closet (3 valid outfits, Korean persona voice, counter 9/10).
+- **Version realigned to 1.6.0** in package.json / build.gradle
+  (versionCode 20) / pbxproj (build 16) — versionCode 19/build 15 retired
+  unshipped with the 1.5.1 skip.
 - **Try-on taste feedback (👍👎)** — first 1.6 vertical, live on web
   2026-09-08. GenerationDetail action row gains a thumbs pair:
   `feedback: 'up'|'down'` + `feedbackAt` on the Generation doc
