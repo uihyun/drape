@@ -487,6 +487,8 @@ export const ja = {
   fitsBalanceLabel: '試着',
   fitsBalanceValue: '本日残り {left}/{max}回',
   fitsLeftToday: '本日の試着 残り{left}/{max}回',
+  feedbackGood: 'このルックが好き',
+  feedbackBad: '好みじゃない',
   onboardTryonTitle: '自分の姿で試着',
   onboardTryonBody: 'フィードのルックもクローゼットのアイテムも、「試着する」をタップすれば自分の写真にそのまま着せられます — 顔も体型もあなたのまま。毎日5回無料。',
   hintTryonCalendar: 'カレンダーのルックはいつでも試着し直せます — 日付を開いて「試着する」をタップ。',

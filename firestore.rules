@@ -236,7 +236,10 @@ service cloud.firestore {
       allow update: if request.auth != null
         && resource.data.userId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['liked', 'likedAt']);
+            .hasOnly(['liked', 'likedAt', 'feedback', 'feedbackAt'])
+        // Taste feedback is a closed enum; absent/removed = cleared.
+        && (!('feedback' in request.resource.data)
+            || request.resource.data.feedback in ['up', 'down']);
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
 

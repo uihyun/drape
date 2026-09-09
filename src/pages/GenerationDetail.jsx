@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
-import { RefreshCw, Trash2 } from 'lucide-react';
-import { db } from '../firebase.js';
+import { RefreshCw, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { db, analytics, logEvent } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { STUCK_TRYON_MS, tryonCreatedMs, effectiveTryonStatus } from '../utils/tryonStatus.js';
@@ -330,6 +330,30 @@ export function GenerationDetail({ user }) {
               {regenerating ? t('regenerating') : t('regenerate')}
             </button>
             <div className="outfit-action-row">
+              {/* Taste feedback — feeds the style profile + training labels
+                  (SPEC-1.6 §C). Tap toggles; picking one clears the other. */}
+              {['up', 'down'].map((v) => {
+                const active = gen.feedback === v;
+                const Icon = v === 'up' ? ThumbsUp : ThumbsDown;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    className="outfit-action-icon"
+                    aria-pressed={active}
+                    aria-label={t(v === 'up' ? 'feedbackGood' : 'feedbackBad')}
+                    title={t(v === 'up' ? 'feedbackGood' : 'feedbackBad')}
+                    style={active ? { color: 'var(--accent, #141312)', background: 'var(--surface-elevated, #f1efe9)' } : undefined}
+                    onClick={() => {
+                      const next = active ? null : v;
+                      GenerationService.setFeedback(gen.id, next).catch(() => {});
+                      if (next) logEvent(analytics, 'tryon_feedback', { value: next });
+                    }}
+                  >
+                    <Icon size={17} strokeWidth={1.7} />
+                  </button>
+                );
+              })}
               <button
                 type="button"
                 className="outfit-action-icon outfit-action-danger"

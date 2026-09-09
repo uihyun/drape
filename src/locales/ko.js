@@ -485,6 +485,8 @@ export const ko = {
   fitsBalanceLabel: '트라이온',
   fitsBalanceValue: '오늘 {left}/{max}회 남음',
   fitsLeftToday: '오늘 트라이온 {left}/{max}회 남음',
+  feedbackGood: '이 룩 마음에 들어요',
+  feedbackBad: '내 스타일 아니에요',
   onboardTryonTitle: '입어보고 정하세요',
   onboardTryonBody: '피드의 look도 옷장 아이템도 ‘입어보기’ 한 번이면 내 사진에 그대로 입혀져요 — 얼굴도 몸도 진짜 나. 매일 5번 무료예요.',
   hintTryonCalendar: '캘린더의 look은 언제든 다시 입어볼 수 있어요 — 날짜를 열고 ‘입어보기’를 눌러보세요.',

@@ -11,6 +11,22 @@ Conventions:
 
 ---
 
+## 1.6.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md)
+
+Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
+analyze → register), per-user style profile summary, stylist personas with
+free-capped recommendations, try-on taste feedback. 1.5.1 ships first and is
+not blocked by any of this.
+
+- **Try-on taste feedback (👍👎)** — first 1.6 vertical, live on web
+  2026-09-08. GenerationDetail action row gains a thumbs pair:
+  `feedback: 'up'|'down'` + `feedbackAt` on the Generation doc
+  (`GenerationService.setFeedback`; rules allowlist extended with a closed
+  enum check — distinct from the `liked` bookmark). Picking one clears the
+  other; tap again clears. Feeds the upcoming style profile and doubles as
+  preference labels on the try-on training corpus (brief §8). GA event
+  `tryon_feedback` {value}. Locale keys `feedbackGood`/`feedbackBad` ×3.
+
 ## 1.5.1 — native build (versionCode 19 / iOS build 15)
 
 Try-on discovery + server-editable copy. The 2026-08 funnel review found the

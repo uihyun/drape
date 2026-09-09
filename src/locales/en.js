@@ -485,6 +485,8 @@ export const en = {
   fitsBalanceLabel: 'Try-ons',
   fitsBalanceValue: '{left}/{max} left today',
   fitsLeftToday: '{left}/{max} try-ons left today',
+  feedbackGood: 'Love this look',
+  feedbackBad: 'Not my style',
   onboardTryonTitle: 'See it on you',
   onboardTryonBody: 'Open any look or closet item and tap “Try this on” — drape puts it on your actual photo, your face and body preserved. 5 free try-ons every day.',
   hintTryonCalendar: 'Every look on this calendar can be tried on again — open a day and tap “Try this on”.',

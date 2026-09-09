@@ -26,6 +26,7 @@ import {
   serverTimestamp,
   updateDoc,
   deleteDoc,
+  deleteField,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { ref as storageRef, uploadBytes, deleteObject } from 'firebase/storage';
@@ -104,6 +105,18 @@ async function toggleLike(generationId, liked) {
 }
 
 /**
+ * Taste feedback on a try-on result: 'up' | 'down' | null (clear).
+ * Distinct from `liked` (bookmark): this feeds the style profile and doubles
+ * as a preference label on the Generation training corpus (SPEC-1.6 §C).
+ */
+async function setFeedback(generationId, value) {
+  await updateDoc(doc(db, GENERATIONS, generationId), {
+    feedback: value === 'up' || value === 'down' ? value : deleteField(),
+    feedbackAt: serverTimestamp(),
+  });
+}
+
+/**
  * Live subscription to the user's generations. Used by TryOnHistory so a
  * just-kicked-off run pops in as a 'pending' card without a page refresh
  * and flips to 'ready' / 'failed' when the Cloud Function updates it.
@@ -168,6 +181,7 @@ export const GenerationService = {
   analyzeGeneration,
   getGeneration,
   toggleLike,
+  setFeedback,
   listMyGenerations,
   subscribeMyGenerations,
   deleteGeneration,
