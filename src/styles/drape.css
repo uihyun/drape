@@ -6653,3 +6653,26 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-rate { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-size: 0.86rem; color: var(--text-muted); }
 @media (max-width: 420px) { .stylist-personas { grid-template-columns: repeat(2, 1fr); } }
 .tryon-stylist-link { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; color: inherit; text-decoration: none; }
+
+/* Stylist 2×2 quadrant chooser (1.6) */
+.stylist-choose-title { font-size: 0.95rem; color: var(--text-muted); margin: 6px 0 10px; }
+.stylist-quad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stylist-quad-cell { position: relative; border: none; padding: 0; border-radius: 18px; overflow: hidden; cursor: pointer; aspect-ratio: 3/4; background: var(--surface-elevated, #f1efe9); }
+.stylist-quad-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s ease; }
+.stylist-quad-cell:active img { transform: scale(1.04); }
+.stylist-quad-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; background: linear-gradient(transparent, rgba(20,19,18,0.72)); color: #fff; text-align: left; }
+.stylist-quad-label strong { font-size: 1.05rem; }
+.stylist-quad-label em { font-style: normal; font-size: 0.72rem; opacity: 0.85; }
+.stylist-chosen { display: flex; align-items: center; gap: 12px; width: 100%; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 10px 14px; margin: 6px 0 10px; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+.stylist-chosen-img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.stylist-chosen-meta { display: flex; flex-direction: column; }
+.stylist-chosen-meta strong { font-size: 0.95rem; }
+.stylist-chosen-meta em { font-style: normal; font-size: 0.74rem; color: var(--text-muted); }
+.stylist-chosen-change { margin-left: auto; font-size: 0.76rem; color: var(--text-muted); text-decoration: underline; }
+
+/* Coachmark speech bubble (feature discovery, 1.6) */
+.coachmark { position: relative; display: flex; align-items: center; gap: 4px; margin: 2px 14px 8px; }
+.coachmark-stylist { justify-content: flex-end; }
+.coachmark-arrow { position: absolute; top: -6px; right: 108px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text); border-radius: 2px; }
+.coachmark-body { border: none; background: var(--text); color: var(--surface, #fff); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; max-width: 260px; }
+.coachmark-x { border: none; background: var(--text); color: var(--surface, #fff); border-radius: 10px; padding: 6px; cursor: pointer; display: flex; }

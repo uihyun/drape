@@ -6,6 +6,7 @@ import { db, analytics, logEvent } from '../firebase.js';
 import { GenerationService } from '../services/generation-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { STUCK_TRYON_MS, tryonCreatedMs, effectiveTryonStatus } from '../utils/tryonStatus.js';
+import { recordReadyTryon, maybeAskForReview } from '../services/rate-service.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { Comments } from '../components/Comments.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
@@ -96,6 +97,16 @@ export function GenerationDetail({ user }) {
       .catch(() => { if (!cancelled) setSourceOutfit(null); });
     return () => { cancelled = true; };
   }, [gen?.outfitRefId]);
+
+  // Rating nudge: viewing a READY result is the earned-delight moment.
+  // recordReadyTryon dedupes by gen id; maybeAskForReview enforces the
+  // 3-try-on minimum + 90-day cooldown + native-only, so this is safe to
+  // fire on every ready view.
+  useEffect(() => {
+    if (!gen?.id || effectiveTryonStatus(gen) !== 'ready') return;
+    const n = recordReadyTryon(gen.id);
+    maybeAskForReview({ readyTryons: n });
+  }, [gen?.id, gen?.status]);
 
   // If we're watching a pending try-on, schedule a re-render at the stuck
   // threshold so it flips to the retry UI without needing a doc update.

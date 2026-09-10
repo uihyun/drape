@@ -19,6 +19,25 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which will be versionCode 20 / iOS build 16 and clears Play's API-36 block.
 
+- **Firestore offline persistence enabled** (2026-09-09) — root cause of
+  "the OOTD/calendar list re-stacks on every visit": no local cache meant
+  every page mount waited on a server round-trip (worse on native
+  long-polling). `persistentLocalCache` + multi-tab manager in firebase.js;
+  lists now paint instantly from IndexedDB and reconcile live. Image-side
+  caching was already correct (immutable cache-control on all uploads).
+- **Stylist v2 UI** — full-bleed 2×2 persona chooser with generated
+  illustrated portraits (`public/stylists/*.webp`, Gemini-generated
+  editorial-illustration set; explicitly non-photoreal per house rule);
+  chosen stylist collapses to a compact header (tap to switch). Entry
+  points for mobile: Sparkles icon button in the profile top bar + a
+  one-time speech-bubble coachmark pointing at it (`stylistHint`, locale
+  ×3) for users who onboarded before 1.6. Locale +3 keys ×3.
+- **In-app review nudge (native, rides 1.6.0)** —
+  @capacitor-community/in-app-review@7: after the 3rd distinct READY
+  try-on result viewed on a device, request the OS review sheet (90-day
+  local cooldown; iOS/Android only; OS rate limits apply on top). Trigger
+  lives on the result page — the earned-delight moment, never a failure
+  screen.
 - **Stylist v1 (§B+§D core) — live on web 2026-09-08.** New
   `functions/stylist.js` (third sanctioned Gemini call site; text-only
   gemini-3.5-flash): `styleRecommend` callable builds 2–3 outfits from the

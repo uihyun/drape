@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon, MapPin, MessageSquare } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Sparkles, X } from 'lucide-react';
+import { hintSeen, markHintSeen } from '../services/homePref.js';
 import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
@@ -159,6 +160,9 @@ export function Profile({ user, authReady, onSignIn }) {
       <header className="profile-topbar">
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
+          <Link to="/stylist" className="icon-btn" aria-label={t('stylistTitle')}>
+            <Sparkles size={20} strokeWidth={1.6} />
+          </Link>
           <InboxIconLink user={user} t={t} />
           <NotifIconLink user={user} t={t} />
           <Link to="/settings" className="icon-btn" aria-label={t('settings')}>
@@ -166,6 +170,9 @@ export function Profile({ user, authReady, onSignIn }) {
           </Link>
         </div>
       </header>
+      {/* One-time coachmark pointing at the new stylist button — feature
+          discovery for users who finished onboarding before 1.6. */}
+      <StylistCoachmark t={t} />
 
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
@@ -252,6 +259,27 @@ export function Profile({ user, authReady, onSignIn }) {
         kind={followSheet}
         onClose={() => setFollowSheet(null)}
       />
+    </div>
+  );
+}
+
+// Speech-bubble coachmark under the topbar, arrow pointing up at the new
+// stylist icon. One-time (localStorage hint gate) — the announcement path
+// for users who onboarded before the stylist existed. Tapping it goes there.
+function StylistCoachmark({ t }) {
+  const [show, setShow] = useState(() => !hintSeen('hint_stylist_profile'));
+  const navigate = useNavigate();
+  if (!show) return null;
+  const dismiss = () => { markHintSeen('hint_stylist_profile'); setShow(false); };
+  return (
+    <div className="coachmark coachmark-stylist" role="status">
+      <span className="coachmark-arrow" aria-hidden="true" />
+      <button type="button" className="coachmark-body" onClick={() => { dismiss(); navigate('/stylist'); }}>
+        {t('stylistHint')}
+      </button>
+      <button type="button" className="coachmark-x" aria-label={t('close')} onClick={dismiss}>
+        <X size={14} strokeWidth={1.9} />
+      </button>
     </div>
   );
 }

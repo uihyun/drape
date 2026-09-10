@@ -15,6 +15,7 @@ export function Stylist({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const [persona, setPersona] = useState(getChosenPersona());
+  const [choosing, setChoosing] = useState(false);
   const [ask, setAsk] = useState('');
   const [busy, setBusy] = useState(false);
   const [rec, setRec] = useState(null);      // { recId, outfits, remaining }
@@ -78,24 +79,41 @@ export function Stylist({ user, onSignIn }) {
     <div className="page stylist-page">
       <h1 className="page-h1">{t('stylistTitle')} <span className="muted" style={{ fontSize: '0.6em', fontWeight: 400 }}>{t('stylistAiNote')}</span></h1>
 
-      {/* Persona picker — always visible so switching lenses is one tap. */}
-      <div className="stylist-personas">
-        {STYLIST_PERSONAS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className={`stylist-persona${persona === p.id ? ' on' : ''}`}
-            onClick={() => pick(p.id)}
-            aria-pressed={persona === p.id}
-          >
-            <span className="stylist-avatar" style={{ background: p.color }}>{p.name[0]}</span>
-            <strong>{p.name}</strong>
-            <span className="stylist-tag">{t(p.tagKey)}</span>
-          </button>
-        ))}
-      </div>
+      {/* No stylist picked (or changing): full-bleed 2×2 quadrant chooser —
+          the four characters ARE the screen. Otherwise a compact header
+          with the chosen face; tapping it reopens the chooser. */}
+      {(!persona || choosing) ? (
+        <>
+          <p className="stylist-choose-title">{t('stylistChoose')}</p>
+          <div className="stylist-quad">
+            {STYLIST_PERSONAS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className="stylist-quad-cell"
+                onClick={() => { pick(p.id); setChoosing(false); }}
+              >
+                <img src={p.img} alt={p.name} loading="lazy" />
+                <span className="stylist-quad-label">
+                  <strong>{p.name}</strong>
+                  <em>{t(p.tagKey)}</em>
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <button type="button" className="stylist-chosen" onClick={() => setChoosing(true)}>
+          <img src={personaMeta?.img} alt="" className="stylist-chosen-img" />
+          <span className="stylist-chosen-meta">
+            <strong>{personaMeta?.name}</strong>
+            <em>{t(personaMeta?.tagKey)}</em>
+          </span>
+          <span className="stylist-chosen-change">{t('stylistChange')}</span>
+        </button>
+      )}
 
-      {persona && (
+      {persona && !choosing && (
         <div className="stylist-askrow">
           <input
             value={ask}

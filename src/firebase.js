@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAnalytics, logEvent as _firebaseLogEvent, setUserId as _firebaseSetUserId, setUserProperties as _firebaseSetUserProperties } from 'firebase/analytics';
 import { getAuth, initializeAuth, indexedDBLocalPersistence, getRedirectResult } from 'firebase/auth';
-import { initializeFirestore, getFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 import { isNativeApp } from './services/platform-service.js';
@@ -112,12 +112,16 @@ export const auth = isNativeApp()
 
 // Force long-polling on native — WebChannel transport struggles inside the
 // WKWebView. Auto-detect on web.
-export const db = isNativeApp()
-  ? initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-      useFetchStreams: false,
-    })
-  : getFirestore(app);
+//
+// persistentLocalCache (added 2026-09-09): without it every page mount waits
+// on a server round-trip before lists paint — the "calendar/OOTD list
+// re-stacks on every visit" complaint. With IndexedDB persistence, snapshot
+// listeners emit the cached result instantly and reconcile from the server
+// after. Multi-tab manager so a second web tab doesn't kill persistence.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  ...(isNativeApp() ? { experimentalForceLongPolling: true, useFetchStreams: false } : {}),
+});
 
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
