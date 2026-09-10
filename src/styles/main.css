@@ -3113,7 +3113,7 @@ body.is-native {
 }
 
 .lang-dropdown-item:hover {
-  background: var(--surface-hover);
+  background: var(--surface-elevated);
 }
 
 .lang-dropdown-item.active {
@@ -5320,7 +5320,7 @@ body.is-native {
 }
 
 .modal-close:hover {
-  background: var(--surface-2);
+  background: var(--surface-elevated);
   color: var(--text-primary);
 }
 

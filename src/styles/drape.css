@@ -6673,7 +6673,7 @@ input[type="search"]::-webkit-search-decoration {
 
 /* Coachmark speech bubble (feature discovery, 1.6). FLOATS over content
    (absolute in .profile) — it must never take layout space; a transparent
-   var(--text) bug once left a ghost gap here, hence the explicit tokens. */
+   undefined-token bug once left a ghost gap here, hence the explicit tokens. */
 .coachmark { position: absolute; top: calc(var(--safe-top, 0px) + 48px); right: 8px; z-index: 80; display: flex; align-items: flex-start; gap: 4px; max-width: 300px; filter: drop-shadow(0 6px 16px rgba(20, 19, 18, 0.22)); }
 .coachmark-arrow { position: absolute; top: -5px; right: 146px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text-primary); border-radius: 2px; }
 .coachmark-body { border: none; background: var(--text-primary); color: var(--surface); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; }

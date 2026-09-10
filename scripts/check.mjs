@@ -97,6 +97,33 @@ function checkLocaleParity() {
 // ── 3. Native identity consistency ─────────────────────────────────────
 // Ensure no voda/archelier leftovers in the parts that define app identity,
 // and that bundle id is consistent across iOS + Android + capacitor config.
+// Undefined CSS custom properties render as *nothing* — a var(--typo) with
+// no fallback makes an element invisible while it still occupies layout
+// (the 2026-09-10 coachmark ghost-gap bug). Every var(--x) used in src CSS
+// or inline JSX styles must be defined in a stylesheet or carry a fallback.
+function checkCssVars() {
+  const cssFiles = execSync(`find ${ROOT}/src -name '*.css'`, { encoding: 'utf8' }).trim().split('\n');
+  const defined = new Set(['safe-top', 'safe-bottom']); // env()-backed
+  const srcFiles = execSync(`find ${ROOT}/src \\( -name '*.css' -o -name '*.jsx' -o -name '*.js' \\)`, { encoding: 'utf8' }).trim().split('\n');
+  for (const f of cssFiles) {
+    for (const m of readFileSync(f, 'utf8').matchAll(/--([a-z0-9-]+)\s*:/g)) defined.add(m[1]);
+  }
+  // Custom props set from JSX inline styles (style={{ '--i': n }}) count too.
+  for (const f of srcFiles) {
+    for (const m of readFileSync(f, 'utf8').matchAll(/['"]--([a-z0-9-]+)['"]\s*:/g)) defined.add(m[1]);
+  }
+  const bad = [];
+  for (const f of srcFiles) {
+    const body = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''); // ignore comments
+    for (const m of body.matchAll(/var\(--([a-z0-9-]+)\s*([,)])/g)) {
+      if (m[2] === ',') continue; // has a fallback — safe even if undefined
+      if (!defined.has(m[1])) bad.push(`${rel(f)} → --${m[1]}`);
+    }
+  }
+  if (bad.length) record('css vars defined', 'FAIL', [...new Set(bad)].slice(0, 6).join(' | '));
+  else record('css vars defined', 'PASS', `${defined.size} tokens`);
+}
+
 function checkNativeIdentity() {
   const want = 'com.uihyun.drape';
   const checks = [
@@ -191,6 +218,7 @@ function checkNoTempFiles() {
 console.log(`\n🔎 drape full check${FAST ? ' (fast)' : ''}\n`);
 checkNamedImports();
 checkLocaleParity();
+checkCssVars();
 checkNativeIdentity();
 checkFirebaseConfig();
 checkNoTempFiles();
