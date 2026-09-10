@@ -503,7 +503,7 @@ export const en = {
   stylistWishlistBadge: 'saved',
   stylistRateAsk: 'How were these picks?',
   stylistClosetTooSmall: 'Add at least 3 items to your closet first — your stylist works with what you own.',
-  stylistPaidNote: 'Free picks used — next pick costs 1 try-on credit (you have {fits}).',
+  stylistPaidNote: 'Free picks used — the next set (still 2–3 looks) costs 1 try-on credit. You have {fits}.',
   stylistNoFits: 'Out of free picks and try-on credits for today — invite a friend for bonus credits, or come back tomorrow.',
   onboardStylistTitle: 'Meet your stylist',
   onboardStylistBody: 'Pick a personal AI stylist — free outfit ideas from your own closet, then see each look on you with one tap.',
