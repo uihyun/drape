@@ -97,16 +97,8 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
     });
   }, [user, monthStart, monthEnd]);
 
-  if (!user || user.isAnonymous) {
-    return (
-      <div className="empty-state">
-        <h2>{t('calendarSignInTitle')}</h2>
-        <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
-      </div>
-    );
-  }
-
   // Grid: pad leading blanks so the first cell aligns to the right weekday.
+  // (Hook stays ABOVE the sign-in early return — React #310 otherwise.)
   const firstWeekday = new Date(year, month0, 1).getDay(); // 0..6 (Sun)
   const cells = useMemo(() => {
     const arr = [];
@@ -115,6 +107,15 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
     while (arr.length % 7 !== 0) arr.push(null);
     return arr;
   }, [firstWeekday, days]);
+
+  if (!user || user.isAnonymous) {
+    return (
+      <div className="empty-state">
+        <h2>{t('calendarSignInTitle')}</h2>
+        <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
+      </div>
+    );
+  }
 
   const monthLabel = cursor.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
 

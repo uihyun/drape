@@ -216,9 +216,22 @@ function checkNoTempFiles() {
 
 // ── run all ────────────────────────────────────────────────────────────
 console.log(`\n🔎 drape full check${FAST ? ' (fast)' : ''}\n`);
+// Rules-of-hooks lint: catches hooks-after-early-return (React #310 — a
+// build-passing runtime crash we shipped 2026-09-10). Errors only.
+function checkHooksLint() {
+  try {
+    sh('npx eslint src --quiet');
+    record('rules-of-hooks lint', 'PASS');
+  } catch (e) {
+    const out = (e.stdout || '') + (e.stderr || '');
+    record('rules-of-hooks lint', 'FAIL', out.split('\n').filter((l) => l.includes('error')).slice(0, 4).join(' | ') || 'eslint failed');
+  }
+}
+
 checkNamedImports();
 checkLocaleParity();
 checkCssVars();
+checkHooksLint();
 checkNativeIdentity();
 checkFirebaseConfig();
 checkNoTempFiles();

@@ -100,18 +100,8 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     return ItemService.subscribeMyCloset(user.uid, setItems);
   }, [user]);
 
-  if (!user || user.isAnonymous) {
-    return (
-      <div className={embedded ? '' : 'page'}>
-        {!embedded && <h1 className="page-h1">{t('boards')}</h1>}
-        <div className="empty-state empty-state-card">
-          <p>{t('boardSignInBody')}</p>
-          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
-        </div>
-      </div>
-    );
-  }
-
+  // Everything below stays ABOVE the sign-in early return — hooks after a
+  // conditional return crash with React #310 when auth state flips.
   const rawList = tab === 'saved' ? saved : mine;
   let list = rawList;
   if (list && tab === 'mine' && filterCount > 0) {
@@ -134,6 +124,18 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     return columns;
   }, [list, cols]);
   const listIds = useMemo(() => (list || []).map((x) => x.id), [list]);
+
+  if (!user || user.isAnonymous) {
+    return (
+      <div className={embedded ? '' : 'page'}>
+        {!embedded && <h1 className="page-h1">{t('boards')}</h1>}
+        <div className="empty-state empty-state-card">
+          <p>{t('boardSignInBody')}</p>
+          <button className="btn btn-primary" onClick={onSignIn}>{t('signIn')}</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={embedded ? '' : 'page'}>
