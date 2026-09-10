@@ -5478,6 +5478,7 @@ input[type="search"]::-webkit-search-decoration {
 
 /* ── Profile shell (Lekondo) ───────────────────────────────────────── */
 .profile {
+  position: relative; /* anchors the floating stylist coachmark */
   max-width: 640px;
   margin: 0 auto;
   /* Profile is the topmost surface on /profile — no MobileHeader above
@@ -6635,7 +6636,7 @@ input[type="search"]::-webkit-search-decoration {
 /* ── Stylist (SPEC-1.6 §D) ─────────────────────────────────────────── */
 .stylist-personas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
 .stylist-persona { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); cursor: pointer; font: inherit; color: inherit; }
-.stylist-persona.on { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+.stylist-persona.on { border-color: var(--text-primary); box-shadow: 0 0 0 1px var(--text-primary); }
 .stylist-avatar { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.05rem; }
 .stylist-persona strong { font-size: 0.82rem; }
 .stylist-tag { font-size: 0.66rem; color: var(--text-muted); text-align: center; line-height: 1.2; }
@@ -6670,12 +6671,13 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-chosen-meta em { font-style: normal; font-size: 0.74rem; color: var(--text-muted); }
 .stylist-chosen-change { margin-left: auto; font-size: 0.76rem; color: var(--text-muted); text-decoration: underline; }
 
-/* Coachmark speech bubble (feature discovery, 1.6) */
-.coachmark { position: relative; display: flex; align-items: center; gap: 4px; margin: 2px 14px 8px; }
-.coachmark-stylist { justify-content: flex-end; }
-.coachmark-arrow { position: absolute; top: -6px; right: 108px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text); border-radius: 2px; }
-.coachmark-body { border: none; background: var(--text); color: var(--surface, #fff); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; max-width: 260px; }
-.coachmark-x { border: none; background: var(--text); color: var(--surface, #fff); border-radius: 10px; padding: 6px; cursor: pointer; display: flex; }
+/* Coachmark speech bubble (feature discovery, 1.6). FLOATS over content
+   (absolute in .profile) — it must never take layout space; a transparent
+   var(--text) bug once left a ghost gap here, hence the explicit tokens. */
+.coachmark { position: absolute; top: calc(var(--safe-top, 0px) + 48px); right: 8px; z-index: 80; display: flex; align-items: flex-start; gap: 4px; max-width: 300px; filter: drop-shadow(0 6px 16px rgba(20, 19, 18, 0.22)); }
+.coachmark-arrow { position: absolute; top: -5px; right: 146px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text-primary); border-radius: 2px; }
+.coachmark-body { border: none; background: var(--text-primary); color: var(--surface); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; }
+.coachmark-x { border: none; background: var(--text-primary); color: var(--surface); border-radius: 10px; padding: 6px; cursor: pointer; display: flex; flex: none; }
 .icon-btn-pulse { position: relative; }
-.icon-btn-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--text); animation: stylist-pulse 1.6s ease-out infinite; pointer-events: none; }
+.icon-btn-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--text-primary); animation: stylist-pulse 1.6s ease-out infinite; pointer-events: none; }
 @keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }
