@@ -52,6 +52,20 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
   const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
+  // Stylist feature-discovery (1.6): bubble + pulse until dismissed. MUST
+  // live up here with the other hooks — Profile has early returns below,
+  // and a hook after a conditional return is React error #310.
+  const [stylistHintOn, setStylistHintOn] = useState(() => {
+    try {
+      return !hintSeen('hint_stylist_profile')
+        && localStorage.getItem('drape_onboarding_dismissed_v2') === '1';
+    } catch { return false; }
+  });
+  const dismissStylistHint = () => {
+    if (!stylistHintOn) return;
+    markHintSeen('hint_stylist_profile');
+    setStylistHintOn(false);
+  };
   // Owned-closet count. Seeded from a per-user cache so it renders instantly
   // (like the stored followerCount) instead of flashing 0 → n on every open.
   const [itemCount, setItemCount] = useState(() => {
@@ -154,19 +168,6 @@ export function Profile({ user, authReady, onSignIn }) {
   // back to the auth provider's avatar (Google profile pic etc) so a
   // fresh account shows an empty avatar and gets nudged to upload.
   const photoURL = profile?.photoURL || null;
-
-  // Stylist feature-discovery state (1.6): bubble + pulse until dismissed.
-  const [stylistHintOn, setStylistHintOn] = useState(() => {
-    try {
-      return !hintSeen('hint_stylist_profile')
-        && localStorage.getItem('drape_onboarding_dismissed_v2') === '1';
-    } catch { return false; }
-  });
-  const dismissStylistHint = () => {
-    if (!stylistHintOn) return;
-    markHintSeen('hint_stylist_profile');
-    setStylistHintOn(false);
-  };
 
   return (
     <div className="profile">
