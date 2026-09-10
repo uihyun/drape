@@ -503,7 +503,7 @@ export const ko = {
   stylistWishlistBadge: '찜',
   stylistRateAsk: '이번 추천 어땠어요?',
   stylistClosetTooSmall: '옷장에 아이템을 3개 이상 먼저 등록해주세요 — 스타일리스트는 내 옷으로 코디해요.',
-  stylistPaidNote: '무료 추천 소진 — 다음 추천도 똑같이 코디 2~3개를 받고, 크레딧 1개만 차감돼요 (보유 {fits}개).',
+  stylistPaidNote: '무료 추천 소진 — 다음 추천은 크레딧 1개가 차감돼요 (보유 {fits}개).',
   stylistNoFits: '오늘 무료 추천과 트라이온 크레딧을 모두 썼어요 — 친구를 초대하면 보너스 크레딧을 받아요. 내일 다시 채워져요.',
   onboardStylistTitle: '나만의 스타일리스트',
   onboardStylistBody: 'AI 스타일리스트를 골라보세요 — 내 옷장으로 무료 코디 추천을 받고, 탭 한 번으로 내 모습에 입혀볼 수 있어요.',

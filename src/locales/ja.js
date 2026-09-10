@@ -505,7 +505,7 @@ export const ja = {
   stylistWishlistBadge: '保存',
   stylistRateAsk: '今回の提案はどうでしたか？',
   stylistClosetTooSmall: 'まずクローゼットにアイテムを3点以上登録してください — スタイリストは手持ちの服でコーディネートします。',
-  stylistPaidNote: '無料提案は終了 — 次回も同じく2〜3コーデの提案で、クレジット1回分だけ消費します（残り{fits}回）。',
+  stylistPaidNote: '無料提案は終了 — 次回の提案はクレジット1回分を消費します（残り{fits}回）。',
   stylistNoFits: '本日の無料提案と試着クレジットを使い切りました — 友達を招待するとボーナスがもらえます。明日また回復します。',
   onboardStylistTitle: 'あなた専属のスタイリスト',
   onboardStylistBody: 'AIスタイリストを選んでください — クローゼットから無料でコーデ提案、ワンタップで自分の姿に試着できます。',
