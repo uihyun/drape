@@ -176,12 +176,11 @@ export function Stylist({ user, onSignIn }) {
               <button
                 key={v}
                 type="button"
-                className="outfit-action-icon"
+                className={`outfit-action-icon${rated === v ? ' thumb-on' : ''}`}
                 aria-pressed={rated === v}
-                style={rated === v ? { color: 'var(--accent, #141312)', background: 'var(--surface-elevated, #f1efe9)' } : undefined}
                 onClick={() => rate(v)}
               >
-                <Icon size={16} strokeWidth={1.7} />
+                <Icon size={16} strokeWidth={rated === v ? 2.2 : 1.7} />
               </button>
             );
           })}

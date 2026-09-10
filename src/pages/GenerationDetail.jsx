@@ -350,18 +350,17 @@ export function GenerationDetail({ user }) {
                   <button
                     key={v}
                     type="button"
-                    className="outfit-action-icon"
+                    className={`outfit-action-icon${active ? ' thumb-on' : ''}`}
                     aria-pressed={active}
                     aria-label={t(v === 'up' ? 'feedbackGood' : 'feedbackBad')}
                     title={t(v === 'up' ? 'feedbackGood' : 'feedbackBad')}
-                    style={active ? { color: 'var(--accent, #141312)', background: 'var(--surface-elevated, #f1efe9)' } : undefined}
                     onClick={() => {
                       const next = active ? null : v;
                       GenerationService.setFeedback(gen.id, next).catch(() => {});
                       if (next) logEvent(analytics, 'tryon_feedback', { value: next });
                     }}
                   >
-                    <Icon size={17} strokeWidth={1.7} />
+                    <Icon size={17} strokeWidth={active ? 2.2 : 1.7} />
                   </button>
                 );
               })}

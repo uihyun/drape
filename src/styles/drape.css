@@ -6681,3 +6681,5 @@ input[type="search"]::-webkit-search-decoration {
 .icon-btn-pulse { position: relative; }
 .icon-btn-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--text-primary); animation: stylist-pulse 1.6s ease-out infinite; pointer-events: none; }
 @keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }
+/* Selected thumbs state — filled ink, unmistakable (owner feedback 9/11). */
+.thumb-on, .thumb-on:hover { background: var(--text-primary) !important; border-color: var(--text-primary) !important; color: var(--surface) !important; }
