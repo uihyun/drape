@@ -11,13 +11,13 @@ Conventions:
 
 ---
 
-## 1.6.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md)
+## 2.0.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0, renumbered 2026-09-11 — owner call: this release IS the repositioning, and store-facing 2.0 signals it)
 
 Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
 analyze → register), per-user style profile summary, stylist personas with
 free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
-which will be versionCode 20 / iOS build 16 and clears Play's API-36 block.
+which ships as 2.0.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
 - **Stylist economics locked (owner, 2026-09-10): 3 free recs/day, then
   1 fit each — one wallet.** `reserveRecOrFit` txn takes a free slot or
