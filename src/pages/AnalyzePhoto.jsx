@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
+import { takePendingImport } from '../services/share-import.js';
 import { PieceRow } from '../components/PieceRow.jsx';
 import { CameraService } from '../services/camera.js';
 import { isNativeApp } from '../services/platform-service.js';
@@ -105,6 +106,18 @@ export function AnalyzePhoto({ user, onSignIn }) {
       setCloset(list.filter(i => i.status === 'ready' && !i.isArchived)));
   }, [user]);
 
+  // Share-import handoff (SPEC-1.6 §A): /import parks the fetched image and
+  // navigates here with ?shared=1 — consume it as if the user picked the
+  // file. Ref indirection because addFiles is defined below the sign-in
+  // early return (hooks themselves must stay above it — React #310).
+  const addFilesRef = useRef(null);
+  useEffect(() => {
+    if (!user || user.isAnonymous) return;
+    if (search.get('shared') !== '1') return;
+    const entry = takePendingImport();
+    if (entry?.blob) addFilesRef.current?.([entry.blob], 'upload');
+  }, [user?.uid, search]);   // eslint-disable-line react-hooks/exhaustive-deps
+
   // Mirror result state into the module cache so a remount (back nav)
   // restores exactly what was on screen. Object URLs are deliberately NOT
   // revoked on unmount — they must stay valid for the cached previews;
@@ -125,6 +138,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
     );
   }
 
+  // Keep the ref current for the share-import effect above.
   const addFiles = (filesLike, source = 'upload') => {
     const incoming = Array.from(filesLike || []).filter(Boolean);
     if (incoming.length === 0) return;
@@ -148,6 +162,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
     }));
     setBatches(prev => [...prev, ...newBatches]);
   };
+  addFilesRef.current = addFiles;
 
   const removeBatch = (idx) => {
     setLimitNotice(false); // dropping a photo frees capacity

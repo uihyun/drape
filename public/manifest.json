@@ -70,5 +70,14 @@
       "description": "Log today's outfit",
       "url": "/calendar?today=1"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/import",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

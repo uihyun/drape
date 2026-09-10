@@ -19,6 +19,19 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.0.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Share-to-drape, web half (§A) — live 2026-09-11.** manifest
+  `share_target` (GET): sharing a link from any app into drape (installed
+  PWA / Android) lands on the new `/import` route → `importFromUrl`
+  callable fetches the page server-side, extracts og:image/twitter:image
+  (or takes the URL if it IS an image), shrinks to ≤1600px JPEG, and the
+  client drops the image straight into the existing analyze→register flow
+  (AnalyzePhoto gains a shared-blob handoff; detected pieces save as
+  wishlist, "I own this" flips). SSRF discipline live-verified: https-only,
+  DNS-resolved private/link-local ranges blocked, every redirect hop
+  re-checked, size/time caps (Uniqlo product page → image+title OK;
+  169.254.169.254 → blocked_host; http → https_only). GA: import_shared /
+  import_image_ready. Locale +4 keys ×3. Native intents (Android
+  ACTION_SEND, iOS Share Extension) ride the 2.0.0 builds next.
 - **Stylist economics locked (owner, 2026-09-10): 3 free recs/day, then
   1 fit each — one wallet.** `reserveRecOrFit` txn takes a free slot or
   charges a fit via the shared fits reserve; model failure/empty result

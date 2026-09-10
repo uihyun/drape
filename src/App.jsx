@@ -66,6 +66,7 @@ const BoardDetail = page(() => import('./pages/BoardDetail.jsx'), 'BoardDetail')
 const AnalyzePhoto = page(() => import('./pages/AnalyzePhoto.jsx'), 'AnalyzePhoto');
 const TryOn = page(() => import('./pages/TryOn.jsx'), 'TryOn');
 const Stylist = page(() => import('./pages/Stylist.jsx'), 'Stylist');
+const Import = page(() => import('./pages/Import.jsx'), 'Import');
 const GenerationDetail = page(() => import('./pages/GenerationDetail.jsx'), 'GenerationDetail');
 const Feed = page(() => import('./pages/Feed.jsx'), 'Feed');
 const Marketplace = page(() => import('./pages/Marketplace.jsx'), 'Marketplace');
@@ -437,6 +438,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/ootd/:outfitId" element={<OotdRedirect />} />
 
           <Route path="/analyze" element={<AnalyzePhoto user={user} onSignIn={handleSignIn} />} />
+          <Route path="/import" element={<Import user={user} onSignIn={handleSignIn} />} />
 
           <Route path="/boards/new" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />
           <Route path="/boards/:boardId/edit" element={<BoardEditor user={user} onSignIn={handleSignIn} />} />

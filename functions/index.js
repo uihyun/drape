@@ -163,6 +163,10 @@ exports.cleanupOldThreads = messageFns.cleanupOldThreads;
 const stylistFns = require('./stylist.js');
 exports.styleRecommend = stylistFns.styleRecommend;
 
+// ── Share-import (SPEC-1.6 §A: shared URL → og:image → analyze flow) ────
+const importFns = require('./import.js');
+exports.importFromUrl = importFns.importFromUrl;
+
 // ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
 const adminFns = require('./admin.js');
 exports.adminOverview      = adminFns.adminOverview;
