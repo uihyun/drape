@@ -19,6 +19,19 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which will be versionCode 20 / iOS build 16 and clears Play's API-36 block.
 
+- **Stylist economics locked (owner, 2026-09-10): 3 free recs/day, then
+  1 fit each — one wallet.** `reserveRecOrFit` txn takes a free slot or
+  charges a fit via the shared fits reserve; model failure/empty result
+  refunds the paid fit (same contract as try-on). Response + `stylistRecs`
+  doc carry `charged`. Client shows a LIVE quota chip from the first visit
+  (`useStyleRecs` reads the server counters; was only visible after the
+  first request), switching to "next pick costs 1 credit (you have N)" when
+  free runs out; out_of_fits path gets its own message. Recs render in the
+  user's language (en/ko/ja) — server prompt enforces it.
+- **Stylist discovery, deduped**: onboarding gains a step-3 stylist slide
+  (BAKED_STEPS + onboardStylist* ×3) for new users; the profile coachmark +
+  pulsing ✨ button now show ONLY for users who dismissed onboarding before
+  1.6 (finishing onboarding marks the hint seen, so nobody gets both).
 - **Firestore offline persistence enabled** (2026-09-09) — root cause of
   "the OOTD/calendar list re-stacks on every visit": no local cache meant
   every page mount waited on a server round-trip (worse on native
