@@ -54,3 +54,27 @@ export function useFits(user) {
 }
 
 export const FITS_PER_DAY = DAILY_FITS;
+
+const DAILY_RECS = 3; // mirrors REC_DAILY in functions/stylist.js; past this a rec charges one fit
+
+// Live free-recommendation balance (stylist). Same shape/contract as
+// useFits: reads the server-written counters for display; the server
+// enforces the real gate in styleRecommend.
+export function useStyleRecs(user) {
+  const [state, setState] = useState({ remaining: DAILY_RECS, loaded: false });
+  useEffect(() => {
+    const uid = user?.uid || auth.currentUser?.uid;
+    if (!user || user.isAnonymous || !uid) {
+      setState({ remaining: DAILY_RECS, loaded: false });
+      return;
+    }
+    return onSnapshot(doc(db, 'users', uid), (snap) => {
+      const u = snap.exists() ? snap.data() : {};
+      const usedToday = u.styleRecDayKey === todayKey() ? (u.styleRecUsed || 0) : 0;
+      setState({ remaining: Math.max(0, DAILY_RECS - usedToday), loaded: true });
+    }, () => setState((s) => ({ ...s, loaded: true })));
+  }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+  return state;
+}
+
+export const RECS_PER_DAY = DAILY_RECS;

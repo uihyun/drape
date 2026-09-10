@@ -6676,3 +6676,6 @@ input[type="search"]::-webkit-search-decoration {
 .coachmark-arrow { position: absolute; top: -6px; right: 108px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text); border-radius: 2px; }
 .coachmark-body { border: none; background: var(--text); color: var(--surface, #fff); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; max-width: 260px; }
 .coachmark-x { border: none; background: var(--text); color: var(--surface, #fff); border-radius: 10px; padding: 6px; cursor: pointer; display: flex; }
+.icon-btn-pulse { position: relative; }
+.icon-btn-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--text); animation: stylist-pulse 1.6s ease-out infinite; pointer-events: none; }
+@keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }

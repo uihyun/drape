@@ -4,6 +4,7 @@ import { Sparkles, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
+import { useStyleRecs, RECS_PER_DAY, useFits } from '../hooks/useFits.js';
 import {
   StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona,
 } from '../services/stylist-service.js';
@@ -22,6 +23,8 @@ export function Stylist({ user, onSignIn }) {
   const [rated, setRated] = useState(null);  // 'up' | 'down' | null
   const [err, setErr] = useState('');
   const [closet, setCloset] = useState(null); // id → item (thumbnails)
+  const recs = useStyleRecs(user); // live free-quota chip (server-enforced)
+  const fits = useFits(user);      // shown once free recs are spent (1 rec = 1 fit)
 
   useEffect(() => {
     if (!user) return undefined;
@@ -57,7 +60,7 @@ export function Stylist({ user, onSignIn }) {
       logEvent(analytics, 'stylist_recommend', { persona });
     } catch (e) {
       const code = e?.code || '';
-      if (code.includes('resource-exhausted')) setErr(t('stylistOutOfRecs'));
+      if (code.includes('resource-exhausted')) setErr(t('stylistNoFits'));
       else if (code.includes('failed-precondition')) setErr(t('stylistClosetTooSmall'));
       else setErr(t('stylistError'));
     } finally {
@@ -128,8 +131,12 @@ export function Stylist({ user, onSignIn }) {
           </button>
         </div>
       )}
-      {rec?.remaining != null && (
-        <p className="muted" style={{ fontSize: '0.8rem' }}>{t('stylistRecsLeft', { left: rec.remaining })}</p>
+      {persona && !choosing && recs.loaded && (
+        <p className="muted" style={{ fontSize: '0.8rem' }}>
+          {recs.remaining > 0
+            ? t('stylistRecsLeft', { left: recs.remaining, max: RECS_PER_DAY })
+            : t('stylistPaidNote', { fits: fits.total })}
+        </p>
       )}
       {err && <div className="empty-state"><p>{err}</p></div>}
 

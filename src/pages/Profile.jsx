@@ -155,12 +155,30 @@ export function Profile({ user, authReady, onSignIn }) {
   // fresh account shows an empty avatar and gets nudged to upload.
   const photoURL = profile?.photoURL || null;
 
+  // Stylist feature-discovery state (1.6): bubble + pulse until dismissed.
+  const [stylistHintOn, setStylistHintOn] = useState(() => {
+    try {
+      return !hintSeen('hint_stylist_profile')
+        && localStorage.getItem('drape_onboarding_dismissed_v2') === '1';
+    } catch { return false; }
+  });
+  const dismissStylistHint = () => {
+    if (!stylistHintOn) return;
+    markHintSeen('hint_stylist_profile');
+    setStylistHintOn(false);
+  };
+
   return (
     <div className="profile">
       <header className="profile-topbar">
         <span className="profile-handle">{handle}</span>
         <div className="profile-topbar-actions">
-          <Link to="/stylist" className="icon-btn" aria-label={t('stylistTitle')}>
+          <Link
+            to="/stylist"
+            className={`icon-btn${stylistHintOn ? ' icon-btn-pulse' : ''}`}
+            aria-label={t('stylistTitle')}
+            onClick={dismissStylistHint}
+          >
             <Sparkles size={20} strokeWidth={1.6} />
           </Link>
           <InboxIconLink user={user} t={t} />
@@ -170,9 +188,10 @@ export function Profile({ user, authReady, onSignIn }) {
           </Link>
         </div>
       </header>
-      {/* One-time coachmark pointing at the new stylist button — feature
-          discovery for users who finished onboarding before 1.6. */}
-      <StylistCoachmark t={t} />
+      {/* One-time "new feature" bubble + pulsing button, only for users who
+          finished onboarding BEFORE the stylist existed (new signups learn
+          it inside onboarding step 3 — no double announcement). */}
+      {stylistHintOn && <StylistCoachmark t={t} onDone={dismissStylistHint} />}
 
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
@@ -264,20 +283,17 @@ export function Profile({ user, authReady, onSignIn }) {
 }
 
 // Speech-bubble coachmark under the topbar, arrow pointing up at the new
-// stylist icon. One-time (localStorage hint gate) — the announcement path
-// for users who onboarded before the stylist existed. Tapping it goes there.
-function StylistCoachmark({ t }) {
-  const [show, setShow] = useState(() => !hintSeen('hint_stylist_profile'));
+// stylist icon (which pulses while this shows). Controlled by Profile so
+// the bubble and the button highlight clear together. Tapping goes there.
+function StylistCoachmark({ t, onDone }) {
   const navigate = useNavigate();
-  if (!show) return null;
-  const dismiss = () => { markHintSeen('hint_stylist_profile'); setShow(false); };
   return (
     <div className="coachmark coachmark-stylist" role="status">
       <span className="coachmark-arrow" aria-hidden="true" />
-      <button type="button" className="coachmark-body" onClick={() => { dismiss(); navigate('/stylist'); }}>
+      <button type="button" className="coachmark-body" onClick={() => { onDone(); navigate('/stylist'); }}>
         {t('stylistHint')}
       </button>
-      <button type="button" className="coachmark-x" aria-label={t('close')} onClick={dismiss}>
+      <button type="button" className="coachmark-x" aria-label={t('close')} onClick={onDone}>
         <X size={14} strokeWidth={1.9} />
       </button>
     </div>

@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { getRemoteOnboardingSteps } from '../services/remote-copy.js';
+import { markHintSeen } from '../services/homePref.js';
 
 const KEY = 'drape_onboarding_dismissed_v2';
 
@@ -26,6 +27,7 @@ const KEY = 'drape_onboarding_dismissed_v2';
 export const BAKED_STEPS = [
   { icon: 'checkroom', title: 'onboardSlide1Title', body: 'onboardSlide1Body' },
   { icon: 'auto_awesome', title: 'onboardTryonTitle', body: 'onboardTryonBody' },
+  { icon: 'auto_fix_high', title: 'onboardStylistTitle', body: 'onboardStylistBody' },
   {
     icon: 'photo_camera',
     title: 'onboardActionTitle',
@@ -42,6 +44,11 @@ function isDismissed() {
 
 function dismiss() {
   try { localStorage.setItem(KEY, '1'); } catch { /* ignore */ }
+  // Onboarding covers the stylist (step 3), so anyone finishing it doesn't
+  // also need the profile coachmark — mark that hint seen to avoid the
+  // double announcement. Existing users (already dismissed before 1.6)
+  // never re-enter here, so THEY still get the coachmark.
+  markHintSeen('hint_stylist_profile');
 }
 
 export function Onboarding({ user, forceShow = false, onClose }) {

@@ -12,11 +12,14 @@ const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { reserveFit, refundFit } = require('./fits.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const MODEL = 'gemini-3.5-flash';
 
-const REC_DAILY = 10;           // free recommendations per user-local day
+const REC_DAILY = 3;            // free recommendations per user-local day; after
+                                // that each rec charges ONE fit (same wallet as
+                                // try-on — no second refill economy, owner 9/10)
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
 const MAX_ITEMS = 150;          // inventory digest cap fed to the model
 
@@ -143,8 +146,11 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   return doc;
 }
 
-// ── Recommendation cap (free, daily) ────────────────────────────────────
-async function reserveRec(uid) {
+// ── Recommendation quota: 3 free/day, then one FIT per rec ─────────────
+// One wallet, not two: past the free allowance a rec spends the same fit a
+// try-on would (throws 'out_of_fits' when both are dry — same signal the
+// client already knows). Free-slot write and fit charge share a transaction.
+async function reserveRecOrFit(uid) {
   const userRef = db().collection('users').doc(uid);
   const profRef = db().collection('profiles').doc(uid);
   return db().runTransaction(async (txn) => {
@@ -153,9 +159,14 @@ async function reserveRec(uid) {
     const tz = (profSnap.exists && profSnap.data().timezone) || 'America/New_York';
     const today = dayKey(tz);
     const used = u.styleRecDayKey === today ? (u.styleRecUsed || 0) : 0;
-    if (used >= REC_DAILY) throw new HttpsError('resource-exhausted', 'out_of_recs');
-    txn.set(userRef, { styleRecDayKey: today, styleRecUsed: used + 1 }, { merge: true });
-    return REC_DAILY - used - 1;
+    if (used < REC_DAILY) {
+      txn.set(userRef, { styleRecDayKey: today, styleRecUsed: used + 1 }, { merge: true });
+      return { charged: 'free', freeRemaining: REC_DAILY - used - 1 };
+    }
+    // reserveFit does its own reads — fine here because this branch hasn't
+    // written yet (Firestore txns forbid reads after writes).
+    const fitType = await reserveFit(txn, uid); // 'daily' | 'bonus' | throws out_of_fits
+    return { charged: fitType, freeRemaining: 0 };
   });
 }
 
@@ -178,9 +189,15 @@ exports.styleRecommend = onCall(
       throw new HttpsError('failed-precondition', 'closet_too_small');
     }
 
-    const remaining = await reserveRec(uid);
+    const { charged, freeRemaining } = await reserveRecOrFit(uid);
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
-    const profile = await ensureStyleProfile(uid, genAI);
+    let profile;
+    try {
+      profile = await ensureStyleProfile(uid, genAI);
+    } catch (e) {
+      refundFit(uid, charged); // no-op for 'free'
+      throw e;
+    }
 
     const model = genAI.getGenerativeModel({
       model: MODEL,
@@ -205,6 +222,7 @@ exports.styleRecommend = onCall(
       const res = await model.generateContent(prompt);
       parsed = JSON.parse(res.response.text());
     } catch (e) {
+      refundFit(uid, charged); // paid rec that produced nothing → give it back
       throw new HttpsError('internal', 'STYLIST_FAILED', e?.message);
     }
 
@@ -228,7 +246,10 @@ exports.styleRecommend = onCall(
       })
       .filter((o) => o.itemIds.length >= 2)
       .slice(0, 3);
-    if (!outfits.length) throw new HttpsError('internal', 'STYLIST_EMPTY');
+    if (!outfits.length) {
+      refundFit(uid, charged);
+      throw new HttpsError('internal', 'STYLIST_EMPTY');
+    }
 
     const recRef = await db().collection('stylistRecs').add({
       userId: uid,
@@ -236,9 +257,10 @@ exports.styleRecommend = onCall(
       ask: ask || null,
       lang,
       outfits,
+      charged,
       profileRev: profile?.rev || 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    return { recId: recRef.id, persona: personaKey, outfits, remaining };
+    return { recId: recRef.id, persona: personaKey, outfits, remaining: freeRemaining, charged };
   },
 );
