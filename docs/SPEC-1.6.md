@@ -1,4 +1,4 @@
-# drape 2.0.0 — "your stylist" (spec, locked 2026-09-08; renumbered 1.6.0→2.0.0 on 2026-09-11, file name kept for link stability)
+# drape 2.1.0 — "your stylist" (spec, locked 2026-09-08; renumbered 1.6.0→2.0.0→2.1.0, file name kept for link stability)
 
 Owner call (2026-09-08): build complete, not staged MVPs. This file is the
 single source of truth for the 2.0 scope; PROGRESS.md tracks execution.

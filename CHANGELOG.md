@@ -11,13 +11,13 @@ Conventions:
 
 ---
 
-## 2.0.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0, renumbered 2026-09-11 — owner call: this release IS the repositioning, and store-facing 2.0 signals it)
+## 2.1.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
 Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
 analyze → register), per-user style profile summary, stylist personas with
 free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
-which ships as 2.0.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
+which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
 - **Settings → "My style" (§B stated prefs) — live 2026-09-11.** New
   settings card: liked styles (taxonomy chips), colors to avoid (swatch

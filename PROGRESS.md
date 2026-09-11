@@ -2,17 +2,17 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-11 (store = 1.5.0; repo = 2.0.0 "your stylist", web/server all live)
+## Snapshot — 2026-09-11 (store = 1.5.0; repo = 2.1.0 "your stylist", web/server all live)
 
 **Store reality:** production is still **1.5.0** (versionCode 17 / iOS build
 14, shipped 7/x). 1.5.1 (vc19/b15) was built in-repo but SKIPPED — never
 submitted; its whole payload rides 2.0.0. **Play is enforcing target API 36
-since Aug 31: no Android update can ship until the 2.0.0 AAB (already
+since Aug 31: no Android update can ship until the 2.1.0 AAB (already
 API 36) is uploaded — this is the standing fire.**
 
-**Repo = 2.0.0** (versionCode 20 / iOS build 16, all three version spots set).
+**Repo = 2.1.0** (versionCode 20 / iOS build 16, all three version spots set; 2.x = repositioning, .1 by owner taste — no unshipped 2.0 exists publicly).
 Everything below is LIVE on web/functions; native users get it all at once
-with the 2.0.0 builds:
+with the 2.1.0 builds:
 
 - **Stylist** (SPEC-1.6 §B/§D): 4 illustrated personas (2×2 chooser,
   `/stylist`), style-profile summary (`users/{uid}/private/styleProfile`,
@@ -38,7 +38,7 @@ with the 2.0.0 builds:
 - **SEO/AEO**: FAQPage JSON-LD, llms.txt, IndexNow submitted (Bing had zero
   pages indexed; GSC verified via DNS). docs/SEO.md tracks.
 
-**Left for 2.0.0 ship:** Android ACTION_SEND intent → /import, iOS Share
+**Left for 2.1.0 ship:** Android ACTION_SEND intent → /import, iOS Share
 Extension (pbxproj target), TryOnHistory card 👍👎, store metadata/ASO
 (subtitle/keywords/screenshots per App Store Browse surge), release notes
 EN/KO/JA — then owner builds & submits both stores. Post-ship: watch
