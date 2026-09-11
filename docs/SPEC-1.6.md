@@ -9,7 +9,7 @@ rec rating lives on `stylistRecs.feedback`, whole-batch) · ✅ B profile +
 Settings "My style" (9/11; stated prefs also injected fresh per rec) ·
 ✅ A web half (share_target GET + /import + importFromUrl, 9/11) ·
 ⏳ remaining: A native (Android ACTION_SEND, iOS Share Extension),
-TryOnHistory card 👍👎, store metadata/release notes → 2.0.0 submission.
+TryOnHistory card 👍👎, store metadata/release notes → 2.1.0 submission.
 
 **Versioning decision:** this is **1.6.0** (not 2.0 — 2.0 is a repositioning
 event, save it). ~~1.5.1 ships first~~ **REVERSED (owner, 2026-09-08): 1.5.1
