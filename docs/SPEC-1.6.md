@@ -1,7 +1,15 @@
 # drape 2.0.0 — "your stylist" (spec, locked 2026-09-08; renumbered 1.6.0→2.0.0 on 2026-09-11, file name kept for link stability)
 
 Owner call (2026-09-08): build complete, not staged MVPs. This file is the
-single source of truth for the 1.6 scope; PROGRESS.md tracks execution.
+single source of truth for the 2.0 scope; PROGRESS.md tracks execution.
+
+**STATUS 2026-09-11:** ✅ C feedback (9/8) · ✅ D stylist v1+v2 UI (9/8–9/10;
+economics changed to 3 free/day then 1 fit — supersedes §D's "10/day free";
+rec rating lives on `stylistRecs.feedback`, whole-batch) · ✅ B profile +
+Settings "My style" (9/11; stated prefs also injected fresh per rec) ·
+✅ A web half (share_target GET + /import + importFromUrl, 9/11) ·
+⏳ remaining: A native (Android ACTION_SEND, iOS Share Extension),
+TryOnHistory card 👍👎, store metadata/release notes → 2.0.0 submission.
 
 **Versioning decision:** this is **1.6.0** (not 2.0 — 2.0 is a repositioning
 event, save it). ~~1.5.1 ships first~~ **REVERSED (owner, 2026-09-08): 1.5.1
