@@ -184,7 +184,14 @@ exports.styleRecommend = onCall(
     const ask = typeof request.data?.ask === 'string' ? request.data.ask.slice(0, 200) : '';
     const lang = ['en', 'ko', 'ja'].includes(request.data?.lang) ? request.data.lang : 'en';
 
-    const inventory = await loadInventory(uid);
+    // Stated prefs are read FRESH each call (not just via the profile
+    // summary, which refreshes at most 2×/day) — an edit in Settings must
+    // change the very next recommendation.
+    const [inventory, profDoc] = await Promise.all([
+      loadInventory(uid),
+      db().collection('profiles').doc(uid).get(),
+    ]);
+    const stated = (profDoc.exists && profDoc.data().stylePrefs) || null;
     if (inventory.filter((i) => i.kind === 'owned').length < 3) {
       throw new HttpsError('failed-precondition', 'closet_too_small');
     }
@@ -212,6 +219,7 @@ exports.styleRecommend = onCall(
       `- "title" and "why" in ${langName}. "why" is one sentence tied to THIS user's taste (use the profile), in your voice.`,
       'Return JSON: {"outfits":[{"title":string,"itemIds":string[],"why":string,"confidence":number 0-1}]}',
       profile?.summary ? `USER STYLE PROFILE:\n${profile.summary}` : '',
+      stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
       profile?.avoidList?.length ? `AVOID: ${profile.avoidList.join(', ')}` : '',
       ask ? `USER REQUEST: ${ask}` : 'USER REQUEST: (none — style for a normal day this season)',
       `CLOSET: ${JSON.stringify(inventory).slice(0, 8000)}`,

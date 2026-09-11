@@ -6683,3 +6683,9 @@ input[type="search"]::-webkit-search-decoration {
 @keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }
 /* Selected thumbs state — filled ink, unmistakable (owner feedback 9/11). */
 .thumb-on, .thumb-on:hover { background: var(--text-primary) !important; border-color: var(--text-primary) !important; color: var(--surface) !important; }
+/* My style (Settings, SPEC-1.6 §B) */
+.mystyle-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+.mystyle-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; border: 1px solid rgba(0,0,0,0.12); vertical-align: 0; }
+.mystyle-note { width: 100%; font: inherit; font-size: 0.88rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; resize: vertical; margin: 8px 0 12px; }
+.mystyle-actions { display: flex; justify-content: flex-end; }
+.mystyle-actions .btn { display: flex; align-items: center; gap: 6px; }

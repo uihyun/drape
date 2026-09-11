@@ -14,6 +14,7 @@ import { LocationInput } from '../components/LocationInput.jsx';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { getHomePref, setHomePref } from '../services/homePref.js';
+import { STYLES, COLORS, COLOR_HEX } from '../services/taxonomy.js';
 
 // One Settings page (Lekondo tone). Sections, ordered by frequency of use:
 // 1. Profile — handle (one-time claim), displayName, bio, instagram, location
@@ -49,6 +50,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
       <IdentitySection user={user} t={t} />
       <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
+      <MyStyleSection profile={profile} t={t} />
       <AccountSection
         user={user}
         profile={profile}
@@ -137,6 +139,88 @@ function DisplaySection({ profile, t }) {
         </button>
       </div>
       <p className="settings-hint">{t('calendarShowBgHint')}</p>
+    </section>
+  );
+}
+
+// "My style" (SPEC-1.6 §B): stated preferences the stylist must obey —
+// they outrank everything it infers from the closet/try-on history, and an
+// edit here changes the very next recommendation (server reads them fresh).
+function MyStyleSection({ profile, t }) {
+  const server = profile?.stylePrefs || {};
+  // null = untouched (mirror server); an array/string = local edit pending.
+  const [liked, setLiked] = useState(null);
+  const [avoid, setAvoid] = useState(null);
+  const [note, setNote] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const likedV = liked ?? server.likedStyles ?? [];
+  const avoidV = avoid ?? server.avoidColors ?? [];
+  const noteV = note ?? server.note ?? '';
+  const dirty = liked != null || avoid != null || note != null;
+  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await ProfileService.updateStylePrefs({ likedStyles: likedV, avoidColors: avoidV, note: noteV.trim() });
+      setLiked(null); setAvoid(null); setNote(null);
+      setSavedFlash(true); setTimeout(() => setSavedFlash(false), 2000);
+    } catch (e) {
+      console.warn('stylePrefs save failed:', e?.message);
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <section className="settings-card">
+      <h2 className="settings-h2">{t('myStyleTitle')}</h2>
+      <p className="settings-hint">{t('myStyleHint')}</p>
+
+      <span className="settings-row-label">{t('myStyleLiked')}</span>
+      <div className="mystyle-chips">
+        {STYLES.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`chip-pill${likedV.includes(s) ? ' active' : ''}`}
+            onClick={() => setLiked(toggle(likedV, s))}
+          >
+            {t(`taxonomy.styles.${s}`)}
+          </button>
+        ))}
+      </div>
+
+      <span className="settings-row-label">{t('myStyleAvoid')}</span>
+      <div className="mystyle-chips">
+        {COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`chip-pill${avoidV.includes(c) ? ' active' : ''}`}
+            onClick={() => setAvoid(toggle(avoidV, c))}
+          >
+            <span className="mystyle-dot" style={{ background: COLOR_HEX[c] || '#ccc' }} aria-hidden="true" />
+            {t(`taxonomy.colors.${c}`)}
+          </button>
+        ))}
+      </div>
+
+      <span className="settings-row-label">{t('myStyleNote')}</span>
+      <textarea
+        className="mystyle-note"
+        rows={2}
+        maxLength={500}
+        value={noteV}
+        placeholder={t('myStyleNotePlaceholder')}
+        onChange={(e) => setNote(e.target.value)}
+      />
+
+      <div className="mystyle-actions">
+        <button type="button" className="btn btn-primary" onClick={save} disabled={!dirty || saving}>
+          {saving ? <Loader2 size={14} className="spin" /> : null}
+          {savedFlash ? t('saved') : t('save')}
+        </button>
+      </div>
     </section>
   );
 }

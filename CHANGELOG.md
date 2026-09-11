@@ -19,6 +19,14 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.0.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Settings → "My style" (§B stated prefs) — live 2026-09-11.** New
+  settings card: liked styles (taxonomy chips), colors to avoid (swatch
+  chips), free-text note (≤500 chars). Saves through `updateProfile`
+  (`stylePrefs`, server-validated against the closed vocab; null clears).
+  `styleRecommend` now reads stated prefs FRESH on every call and injects
+  them as authoritative — an edit changes the very next recommendation,
+  no 12-h profile-summary lag. Live-verified: minimal/classic + avoid
+  yellow/orange prefs produced restrained neutral looks. Locale +6 ×3.
 - **Share-to-drape, web half (§A) — live 2026-09-11.** manifest
   `share_target` (GET): sharing a link from any app into drape (installed
   PWA / Android) lands on the new `/import` route → `importFromUrl`

@@ -152,6 +152,12 @@ export const ProfileService = {
     return authedFetch(UPDATE_FN_URL, { calendarShowBackground: !!showBackground });
   },
 
+  // Stated style preferences (SPEC-1.6 §B) — { likedStyles[], avoidColors[],
+  // note } or null to clear. Server validates against the closed taxonomy.
+  async updateStylePrefs(prefs) {
+    return authedFetch(UPDATE_FN_URL, { stylePrefs: prefs });
+  },
+
   // Reminder targeting captured on login: IANA timezone + UI language, so the
   // scheduled reminder fires at the user's local evening in their language.
   async syncReminderContext(timezone, lang) {

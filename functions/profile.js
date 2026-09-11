@@ -218,6 +218,27 @@ exports.updateProfile = onRequest(async (req, res) => {
             update.calendarShowBackground = data.calendarShowBackground;
             result.calendarShowBackground = data.calendarShowBackground;
         }
+        // Stated style preferences (SPEC-1.6 §B). The stylist treats these
+        // as authoritative over inferred taste, so keep them clean: closed
+        // taxonomy vocab for styles/colors, short free-text note.
+        if (data.stylePrefs !== undefined) {
+            const sp = data.stylePrefs;
+            if (sp === null) {
+                update.stylePrefs = admin.firestore.FieldValue.delete();
+                result.stylePrefs = null;
+            } else if (sp && typeof sp === 'object') {
+                const { STYLES, COLORS } = require('./taxonomy.js');
+                const clean = {
+                    likedStyles: (Array.isArray(sp.likedStyles) ? sp.likedStyles : [])
+                        .filter((s) => STYLES.includes(s)).slice(0, 8),
+                    avoidColors: (Array.isArray(sp.avoidColors) ? sp.avoidColors : [])
+                        .filter((c) => COLORS.includes(c)).slice(0, 8),
+                    note: typeof sp.note === 'string' ? sp.note.slice(0, 500) : '',
+                };
+                update.stylePrefs = clean;
+                result.stylePrefs = clean;
+            }
+        }
         // Reminder targeting: the user's IANA timezone + language, captured on
         // login, so the scheduled reminder sends at their local evening in their
         // language. Plus an opt-out. (Stored server-side; admin set bypasses rules.)
