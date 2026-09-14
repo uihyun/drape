@@ -1,29 +1,28 @@
-# DrapeShare — iOS Share Extension (one-time Xcode setup)
+# DrapeShare — iOS Share Extension
 
-The Swift/plist here are ready; the TARGET must be added in Xcode's GUI
-(hand-editing project.pbxproj for a new target is fragile — 2 minutes of
-clicking is the reliable path).
+**The target is ALREADY WIRED into project.pbxproj (2026-09-14, hand-added
+and verified: `xcodebuild -list` shows both targets; App scheme simulator
+build succeeds with DrapeShare.appex embedded in PlugIns/).** No Xcode setup
+steps needed — just open the workspace and archive as usual.
 
-1. Xcode → open `ios/App/App.xcworkspace`.
-2. File → New → Target… → iOS → **Share Extension** → Product Name:
-   `DrapeShare`, Language: Swift, Embed in Application: App → Finish.
-   ("Activate scheme?" → Cancel is fine.)
-3. In the new `DrapeShare` group Xcode created:
-   - DELETE the generated `ShareViewController.swift`, and add THIS folder's
-     `ShareViewController.swift` to the DrapeShare target instead
-     (right-click group → Add Files…, check "DrapeShare" target only).
-   - Replace the generated Info.plist's `NSExtension` block with the one in
-     THIS folder's `Info.plist` (or point the target's Info.plist setting at
-     this file). Key part: activation rule = 1 web URL or text.
-   - The generated `MainInterface.storyboard` can stay as-is (the controller
-     dismisses itself immediately).
-4. Target settings (DrapeShare):
-   - Bundle Identifier: `com.uihyun.drape.share`
-   - iOS Deployment Target: match the App target.
-   - Signing: same team as App.
-5. Build & run the App scheme on a device → Safari에서 아무 상품 페이지 →
-   공유 → drape → 앱이 열리며 /import → 분석 화면으로 이어지면 성공.
+What it does: v1 handles LINK/TEXT shares — grabs the shared URL and hands
+it to the host app via `drape://import?...` (scheme registered in the main
+app's Info.plist; appUrlOpen routes it to /import). No App Group needed.
+Image shares are a v2 item (they'd need an App Group container).
 
-No App Group needed (v1 hands off links via the `drape://` URL scheme —
-already registered in the main app's Info.plist). Image shares are a v2
-item; they'd need an App Group container.
+Files:
+- `ShareViewController.swift` — programmatic (NSExtensionPrincipalClass, no
+  storyboard); tries `extensionContext.open` then the responder-chain
+  fallback, always calls completeRequest.
+- `Info.plist` — activation rule: 1 web URL or text.
+
+Target settings live in project.pbxproj: bundle id `com.uihyun.drape.share`,
+automatic signing (team WG75TG59NJ), versions pinned to the app's
+(MARKETING_VERSION 2.1.0 / CURRENT_PROJECT_VERSION 16 — bump alongside the
+app's three version spots).
+
+First device build: Xcode will auto-provision the new bundle id — if it
+asks, just let automatic signing register it.
+
+Smoke test on device: Safari에서 상품 페이지 → 공유 → drape → 앱이 열리며
+/import → 분석 화면. (공유 시트에 drape가 안 보이면 '더 보기'에서 활성화.)
