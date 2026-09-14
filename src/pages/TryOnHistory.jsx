@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, SlidersHorizontal, X } from 'lucide-react';
+import { Sparkles, SlidersHorizontal, X, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { GenerationService } from '../services/generation-service.js';
 import { ItemService } from '../services/item-service.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
@@ -146,6 +146,31 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
                     >
                       <X size={14} strokeWidth={2.4} />
                     </button>
+                  )}
+                  {/* Taste feedback on the card (SPEC-1.6 §C) — same field
+                      the detail page writes; picking one clears the other. */}
+                  {status === 'ready' && (
+                    <div className="tryon-history-thumbs">
+                      {['up', 'down'].map((v) => {
+                        const active = g.feedback === v;
+                        const Icon = v === 'up' ? ThumbsUp : ThumbsDown;
+                        return (
+                          <button
+                            key={v}
+                            type="button"
+                            className={`tryon-history-thumb${active ? ' thumb-on' : ''}`}
+                            aria-pressed={active}
+                            aria-label={t(v === 'up' ? 'feedbackGood' : 'feedbackBad')}
+                            onClick={(e) => {
+                              e.preventDefault(); e.stopPropagation();
+                              GenerationService.setFeedback(g.id, active ? null : v).catch(() => {});
+                            }}
+                          >
+                            <Icon size={13} strokeWidth={active ? 2.3 : 1.8} />
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               </Link>

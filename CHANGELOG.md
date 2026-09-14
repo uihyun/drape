@@ -19,6 +19,18 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Share-to-drape, native halves (§A) — in repo 2026-09-14, ship with
+  2.1.0.** Android: ACTION_SEND intent-filters (image/* + text/plain) +
+  MainActivity.handleShare — shared images copy into cache (25MB cap) and
+  open /import?file=… through the Capacitor file bridge; links/text pass as
+  query params. iOS: `drape://` URL scheme registered + appUrlOpen handles
+  custom-scheme routes (host-as-path + query preserved); DrapeShare share
+  extension prepared (links/text v1, no App Group needed) with a 2-minute
+  Xcode target-add guide in ios/App/DrapeShare/README.md — owner adds the
+  target when building 2.1.0. Import page now handles native file shares.
+- **TryOnHistory card 👍👎** — the same Generation.feedback pair, on-card
+  (ready cards only, bottom-right), so rating doesn't require opening each
+  result.
 - **Settings → "My style" (§B stated prefs) — live 2026-09-11.** New
   settings card: liked styles (taxonomy chips), colors to avoid (swatch
   chips), free-text note (≤500 chars). Saves through `updateProfile`

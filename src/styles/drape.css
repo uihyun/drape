@@ -6689,3 +6689,6 @@ input[type="search"]::-webkit-search-decoration {
 .mystyle-note { width: 100%; font: inherit; font-size: 0.88rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; resize: vertical; margin: 8px 0 12px; }
 .mystyle-actions { display: flex; justify-content: flex-end; }
 .mystyle-actions .btn { display: flex; align-items: center; gap: 6px; }
+/* Try-on history card thumbs (SPEC-1.6 §C) */
+.tryon-history-thumbs { position: absolute; bottom: 6px; right: 6px; display: flex; gap: 4px; }
+.tryon-history-thumb { border: 1px solid var(--border); background: rgba(255,255,255,0.92); color: var(--text-secondary); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }

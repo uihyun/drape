@@ -20,20 +20,39 @@ export function Import({ user, onSignIn }) {
     if (!user || user.isAnonymous) return;
     if (ran.current) return;
     ran.current = true;
-    const url = extractSharedUrl({
-      url: search.get('url'),
-      text: search.get('text'),
-      title: search.get('title'),
-    });
-    if (!url) { setState('no_url'); return; }
-    logEvent(analytics, 'import_shared', { source: 'web', kind: 'url' });
-    fetchImportImage(url)
-      .then((entry) => {
+    const source = search.get('src') || 'web';
+    (async () => {
+      // Native image share (Android MainActivity copies the shared image
+      // into cache and passes its path; the WebView reads it back through
+      // Capacitor's file bridge).
+      const nativeFile = search.get('file');
+      if (nativeFile) {
+        logEvent(analytics, 'import_shared', { source, kind: 'image' });
+        try {
+          const { Capacitor } = await import('@capacitor/core');
+          const res = await fetch(Capacitor.convertFileSrc(nativeFile));
+          const blob = await res.blob();
+          if (!blob.size) throw new Error('empty');
+          setPendingImport({ blob, sourceUrl: null, title: search.get('title') || '' });
+          navigate('/analyze?shared=1', { replace: true });
+        } catch { setState('failed'); }
+        return;
+      }
+      // Link/text share (web share_target GET, or native text shares).
+      const url = extractSharedUrl({
+        url: search.get('url'),
+        text: search.get('text'),
+        title: search.get('title'),
+      });
+      if (!url) { setState('no_url'); return; }
+      logEvent(analytics, 'import_shared', { source, kind: 'url' });
+      try {
+        const entry = await fetchImportImage(url);
         setPendingImport(entry);
-        logEvent(analytics, 'import_image_ready', { source: 'web' });
+        logEvent(analytics, 'import_image_ready', { source });
         navigate('/analyze?shared=1', { replace: true });
-      })
-      .catch(() => setState('failed'));
+      } catch { setState('failed'); }
+    })();
   }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user || user.isAnonymous) {

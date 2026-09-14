@@ -334,8 +334,15 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
       const { App: CapApp } = await import('@capacitor/app');
       const handle = await CapApp.addListener('appUrlOpen', ({ url }) => {
         try {
-          const path = new URL(url).pathname;
-          if (path && path !== '/') navigate(path);
+          const u = new URL(url);
+          if (u.protocol === 'drape:') {
+            // Custom scheme (drape://import?url=…) — the "path" parses as
+            // host. Used by the iOS share extension handoff.
+            const route = '/' + (u.host || u.pathname.replace(/^\/+/, ''));
+            if (route !== '/') navigate(route + (u.search || ''));
+            return;
+          }
+          if (u.pathname && u.pathname !== '/') navigate(u.pathname + (u.search || ''));
         } catch { /* ignore malformed deep link */ }
       });
       cleanup = () => handle.remove();

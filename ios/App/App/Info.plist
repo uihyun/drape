@@ -69,6 +69,14 @@
 				<string>com.googleusercontent.apps.284753548556-rn6fseb761bmqnnu2jf6v9q07dokeqeb</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.uihyun.drape.share</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>drape</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
