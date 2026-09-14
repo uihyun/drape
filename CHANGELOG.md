@@ -112,6 +112,44 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   preference labels on the try-on training corpus (brief §8). GA event
   `tryon_feedback` {value}. Locale keys `feedbackGood`/`feedbackBad` ×3.
 
+### 2.1.0 store submission kit (prepared 2026-09-14)
+
+**Release notes — EN (App Store / Play):**
+> Meet your stylist. Pick one of four AI stylists and get free outfit ideas
+> built from your own closet — then see any look on your own body with one
+> tap. Share a product page from any app straight into drape to check if it
+> suits you before you buy. Plus: a new onboarding, instant-loading lists,
+> and plenty of polish.
+
+**KO:**
+> 나만의 스타일리스트가 생겼어요. 4명의 AI 스타일리스트 중 하나를 고르면 내
+> 옷장으로 무료 코디를 제안하고, 탭 한 번으로 내 모습에 입혀볼 수 있어요.
+> 쇼핑 앱에서 상품 페이지를 drape로 공유하면 사기 전에 어울리는지 확인할 수
+> 있어요. 새 온보딩, 즉시 뜨는 리스트 등 전반적인 개선 포함.
+
+**JA:**
+> あなた専属のスタイリストが登場。4人のAIスタイリストから選ぶと、クローゼット
+> から無料でコーデを提案。ワンタップで自分の姿に試着できます。ショップの商品
+> ページをdrapeに共有すれば、買う前に似合うか確認できます。新しいオンボー
+> ディングや高速化などの改善も。
+
+**ASO (owner applies in the consoles):**
+- iOS subtitle (30 chars): `Closet, stylist & try-on` (current title
+  `drape: closet & try-on` stays).
+- iOS keyword field (100 chars, no spaces after commas):
+  `digital closet,virtual try on,outfit planner,ootd,wardrobe,stylist,capsule,fitting,fashion ai,lookbook`
+- Play short description (80): `Your closet, your AI stylist — and try every
+  look on your own body first.`
+- Screenshots: first 3 = try-on result → stylist recommendation card →
+  share-import flow (App Store Browse is surging, the product page is the
+  bottleneck — 노출→설치 전환이 지표).
+- Both consoles: paste the release notes above per locale.
+
+**Owner build checklist:** ① Xcode: add DrapeShare target once
+(ios/App/DrapeShare/README.md, ~2 min) → archive build 16 → submit.
+② Android Studio: AAB versionCode 20 → upload (this clears the API-36
+block). ③ After approval: watch /admin acquisition + stylist GA events.
+
 ## 1.5.1 — SKIPPED (folded into 1.6.0; versionCode 19 / build 15 never submitted)
 
 Try-on discovery + server-editable copy. The 2026-08 funnel review found the
