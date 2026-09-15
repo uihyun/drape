@@ -29,6 +29,12 @@ export const AdminService = {
     return data;
   },
 
+  // Feature-adoption events (trends / stylist / import) for the range.
+  async gaFeatures({ from, to }) {
+    const { data } = await call('adminScreenEngagement')({ from, to, kind: 'features' });
+    return data.rows;
+  },
+
   // Trends: force a recompute / curate picks (hide, unhide, set cover).
   async recomputeTrends() {
     const { data } = await call('adminRecomputeTrends')({});

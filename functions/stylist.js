@@ -188,11 +188,26 @@ exports.styleRecommend = onCall(
     // Stated prefs are read FRESH each call (not just via the profile
     // summary, which refreshes at most 2×/day) — an edit in Settings must
     // change the very next recommendation.
-    const [inventory, profDoc] = await Promise.all([
+    const [inventory, profDoc, recentGens] = await Promise.all([
       loadInventory(uid),
       db().collection('profiles').doc(uid).get(),
+      // Thumbs are read FRESH here, not just through the 12-hour profile
+      // summary: a 👎 must change the very next recommendation, or rating
+      // feels like it does nothing (owner, 2026-09-16).
+      db().collection('generations').where('userId', '==', uid)
+        .orderBy('createdAt', 'desc').limit(30).get(),
     ]);
     const stated = (profDoc.exists && profDoc.data().stylePrefs) || null;
+    const loved = [];
+    const disliked = [];
+    recentGens.forEach((d) => {
+      const g = d.data();
+      const verdict = g.feedback || (g.liked ? 'up' : null);
+      if (!verdict) return;
+      const ids = (Array.isArray(g.itemIds) ? g.itemIds : []).slice(0, 4);
+      if (!ids.length) return;
+      (verdict === 'up' ? loved : disliked).push(ids);
+    });
     if (inventory.filter((i) => i.kind === 'owned').length < 3) {
       throw new HttpsError('failed-precondition', 'closet_too_small');
     }
@@ -221,6 +236,8 @@ exports.styleRecommend = onCall(
       'Return JSON: {"outfits":[{"title":string,"itemIds":string[],"why":string,"confidence":number 0-1}]}',
       profile?.summary ? `USER STYLE PROFILE:\n${profile.summary}` : '',
       stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      loved.length ? `THEY RATED THESE COMBINATIONS 👍 (item ids — lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
+      disliked.length ? `THEY RATED THESE 👎 (do NOT repeat these combinations or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
       profile?.avoidList?.length ? `AVOID: ${profile.avoidList.join(', ')}` : '',
       ask ? `USER REQUEST: ${ask}` : 'USER REQUEST: (none — style for a normal day this season)',
       `CLOSET: ${JSON.stringify(inventory).slice(0, 8000)}`,

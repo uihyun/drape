@@ -545,6 +545,10 @@ one or more clothing pieces (on a person, hanger, or laid out). Return
 ONLY valid JSON with this exact schema:
 
 {
+  "shotType": "one of ['product', 'outfit'] — 'product' when the photo is a
+     single garment presented on its own (retail product cut-out, flat lay of
+     ONE piece, hanger shot, a shoe on white); 'outfit' when a person is
+     wearing a look, or several distinct pieces appear together",
   "style":  "short 5-8 word style label (e.g. 'amekaji streetwear', 'minimal monochrome', 'y2k retro')",
   "mood":   "1-3 word vibe descriptor (e.g. 'relaxed weekend', 'sharp & polished', 'experimental layering')",
   "notes":  "2-4 sentence editorial reading of the look — what anchors it, how the pieces interact, the silhouette and proportions, what makes it feel cohesive (or deliberately not). Specific and observational, not generic.",
@@ -1012,7 +1016,16 @@ exports.detectItems = onCall(
             .map(s => s.slice(0, 160))
         : [];
 
+      // A shared shopping-page cut of ONE garment should register as one
+      // item, not run through a multi-piece picker — the client branches on
+      // this (SPEC-1.6 §A fast path). Trust the flag only when the detector
+      // also found a single piece; a mislabel then still degrades to the
+      // normal list instead of dropping pieces on the floor.
+      const shotType = (parsed.shotType === 'product' && items.length === 1)
+        ? 'product' : 'outfit';
+
       return {
+        shotType,
         style: typeof parsed.style === 'string' ? parsed.style.slice(0, 120) : '',
         mood:  typeof parsed.mood  === 'string' ? parsed.mood.slice(0, 80)   : '',
         notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, 800) : '',

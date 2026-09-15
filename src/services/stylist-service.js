@@ -4,7 +4,10 @@
 // feedback field the rules allow. Persona choice is a device preference —
 // it's a lens, not data, so localStorage is enough.
 
-import { doc, updateDoc, serverTimestamp, deleteField } from 'firebase/firestore';
+import {
+  doc, updateDoc, serverTimestamp, deleteField,
+  collection, addDoc, deleteDoc, onSnapshot, orderBy, query, limit,
+} from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase.js';
 import { currentLang } from '../hooks/useLocale.jsx';
@@ -46,5 +49,35 @@ async function rateRec(recId, value) {
   });
 }
 
-export const StylistService = { recommend, rateRec };
+// ── Saved looks ───────────────────────────────────────────────────────
+// A recommendation is ephemeral (the next "Style me" replaces it), so a
+// look the user liked has to be kept somewhere they can return to: the
+// stylist's comment is half the value, and they may want to re-run the
+// try-on later against a different reference photo or background.
+function savedLooksRef(uid) {
+  return collection(db, 'users', uid, 'savedLooks');
+}
+
+async function saveLook(uid, { persona, title, why, itemIds, ask = '' }) {
+  const ref = await addDoc(savedLooksRef(uid), {
+    persona, title, why, itemIds, ask,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+async function unsaveLook(uid, lookId) {
+  await deleteDoc(doc(db, 'users', uid, 'savedLooks', lookId));
+}
+
+function subscribeSavedLooks(uid, cb, { max = 50 } = {}) {
+  if (!uid) { cb([]); return () => {}; }
+  return onSnapshot(
+    query(savedLooksRef(uid), orderBy('createdAt', 'desc'), limit(max)),
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    () => cb([]),
+  );
+}
+
+export const StylistService = { recommend, rateRec, saveLook, unsaveLook, subscribeSavedLooks };
 export default StylistService;

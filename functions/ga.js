@@ -45,12 +45,50 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
   // active users + engagement; 'funnel' = landing visitors → installs → app
   // users, daily + range totals (batched GA queries, merged server-side);
   // 'channels' = acquisition sources (first-touch) + session sources.
-  const kind = ['daily', 'funnel', 'channels'].includes(request.data?.kind) ? request.data.kind : 'screens';
+  const kind = ['daily', 'funnel', 'channels', 'features'].includes(request.data?.kind) ? request.data.kind : 'screens';
   const key = `${kind}_${from}_${to}`;
   const hit = reportCache.get(key);
   if (hit && Date.now() - hit.at < 10 * 60 * 1000) return { rows: hit.rows, cached: true };
 
   const token = await gaToken();
+
+  // Feature funnel: did the new surfaces actually get used? One query,
+  // event counts + reach, so Trends/stylist/import stop being unmeasured.
+  if (kind === 'features') {
+    const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${PROPERTY}:runReport`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: from, endDate: to }],
+        dimensions: [{ name: 'eventName' }],
+        metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
+        dimensionFilter: {
+          filter: {
+            fieldName: 'eventName',
+            inListFilter: {
+              values: [
+                'trends_view', 'trends_click',
+                'stylist_recommend', 'stylist_tryon', 'stylist_feedback', 'stylist_look_saved',
+                'import_shared', 'import_image_ready', 'import_item_saved', 'import_product_fastpath',
+                'tryon_feedback', 'out_of_fits',
+              ],
+            },
+          },
+        },
+        orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+        limit: 30,
+      }),
+    });
+    const json = await res.json();
+    if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
+    const rows = (json.rows || []).map((r) => ({
+      event: r.dimensionValues[0].value,
+      count: +r.metricValues[0].value,
+      users: +r.metricValues[1].value,
+    }));
+    reportCache.set(key, { at: Date.now(), rows });
+    return { rows, cached: false };
+  }
 
   if (kind === 'channels') {
     const range = [{ startDate: from, endDate: to }];

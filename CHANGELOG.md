@@ -34,6 +34,41 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Stylist: saved looks.** A recommendation used to vanish on the next
+  "Style me" — the stylist's comment is half its value, so looks are now
+  keepable: a Save button on each recommended outfit writes to
+  `users/{uid}/savedLooks`, and the stylist page lists them below with the
+  persona, the original ask, the item thumbnails, the comment, and a
+  "Try this on again" button (useful precisely because a re-run can use a
+  different reference photo or background). Rules: owner-only subcollection.
+  GA `stylist_look_saved`.
+- **Import splits product shots from outfit photos.** `detectItems` now
+  returns a `shotType` ('product' | 'outfit', only trusted as 'product' when
+  exactly one piece was found), and a shared shopping-page cut registers
+  that single item immediately and lands in the closet instead of opening a
+  multi-piece picker for a photo with one piece in it. Outfit photos keep
+  the review screen. GA `import_product_fastpath`.
+- **Thumbs now change the NEXT recommendation.** Feedback previously only
+  reached the stylist through the 12-hour profile summary, so rating felt
+  inert. `styleRecommend` reads the last 30 try-ons fresh on every call and
+  passes the 👍 / 👎 combinations into the prompt explicitly. Added one-line
+  guidance on the stylist page (what the picks are based on + a link to
+  "My style") and tightened the My-style hint to say it takes effect on the
+  next pick.
+- **Trends is measured.** New GA events `trends_view` (with issue week, look
+  count, whether a cover exists) and `trends_click` (cover / look / market),
+  plus stylist and import events, all surfaced in a new **Feature adoption**
+  card in /admin → Overview (`adminScreenEngagement kind:'features'`), grouped
+  so each surface reads as a funnel.
+- **Week semantics settled.** An issue published Monday now reports the week
+  that just ENDED (Mon–Sun), for every number and every look — previously a
+  rolling 7-day window drifted daily and put "this week" on data that was
+  partly last week's. The doc carries `coversFrom`/`coversTo`, the masthead
+  reads "The week in drape" (no false tense), the section is "Looks of the
+  week", and the colophon spells it out: "Issue of September 14 · covering
+  September 7–September 13 · out every Monday". Also fixed a crash the
+  change exposed: some outfit docs store `createdAt` as an ISO string, so
+  every window comparison now goes through a normalizing helper.
 - **Spec-gap sweep + doc refresh (2026-09-16).** Audited SPEC-1.6 against
   the code: imported pieces now persist where they came from (the shared
   page's URL lands in the existing top-level `shopUrl` on every piece saved

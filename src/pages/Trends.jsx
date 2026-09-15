@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase.js';
+import { analytics, db, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { COLOR_HEX } from '../services/taxonomy.js';
 
@@ -29,6 +29,17 @@ export function Trends() {
   // moves (desktop browsers otherwise park a permanent grey bar under every
   // carousel). The track height is constant — only the thumb fades in — so
   // nothing shifts. Must stay above this component's early returns.
+  // One view event per load with the shape of the issue, so we can tell a
+  // thin week from a rich one when reading engagement.
+  useEffect(() => {
+    if (!data) return;
+    logEvent(analytics, 'trends_view', {
+      issue_week: data.issueWeek || '',
+      looks: (data.looks || []).length,
+      has_cover: !!data.cover,
+    });
+  }, [data?.issueWeek, data?.looks?.length]);   // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!data) return undefined;
     const rows = Array.from(document.querySelectorAll('.tmag-scroll'));
@@ -137,7 +148,12 @@ export function Trends() {
           <p className="tmag-kicker">{t('trendsLooks')}</p>
           <div className="tmag-looks tmag-scroll">
             {looks.map((o) => (
-              <Link to={`/o/${o.id}`} key={o.id} className="tmag-look">
+              <Link
+                to={`/o/${o.id}`}
+                key={o.id}
+                className="tmag-look"
+                onClick={() => logEvent(analytics, 'trends_click', { target: 'look', style: o.style || '' })}
+              >
                 <img src={o.img} alt="" loading="lazy" />
                 {o.style && <span className="tmag-pill">{label('styles', o.style)}</span>}
               </Link>
@@ -199,7 +215,12 @@ export function Trends() {
           <p className="tmag-kicker">{t('trendsMarket')}</p>
           <div className="tmag-strip tmag-scroll">
             {data.market.map((m) => (
-              <Link to={`/i/${m.id}`} key={m.id} className="tmag-strip-item">
+              <Link
+                to={`/i/${m.id}`}
+                key={m.id}
+                className="tmag-strip-item"
+                onClick={() => logEvent(analytics, 'trends_click', { target: 'market' })}
+              >
                 <img src={m.img} alt="" loading="lazy" />
               </Link>
             ))}
@@ -212,7 +233,11 @@ export function Trends() {
           instead of looking like content that randomly shuffled. */}
       {data.issueWeek && (
         <footer className="tmag-colophon">
-          {t('trendsIssue', { date: issueDate(data.issueWeek, lang) })}
+          {t('trendsIssue', {
+            date: issueDate(data.issueWeek, lang),
+            from: issueDate(data.coversFrom, lang),
+            to: issueDate(data.coversTo, lang),
+          })}
         </footer>
       )}
     </div>

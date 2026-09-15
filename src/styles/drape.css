@@ -6783,3 +6783,16 @@ input[type="search"]::-webkit-search-decoration {
 .tmag-scroll::-webkit-scrollbar-track { background: transparent; }
 .tmag-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.25s ease; }
 .tmag-scroll.is-scrolling::-webkit-scrollbar-thumb { background: rgba(20, 19, 18, 0.22); }
+/* Stylist: saved looks */
+.stylist-cardacts { display: flex; gap: 8px; flex-wrap: wrap; }
+.stylist-cardacts .btn { display: inline-flex; align-items: center; gap: 6px; }
+.btn.is-saved { border-color: var(--text-primary); color: var(--text-primary); }
+.stylist-saved { margin: 26px 0 8px; }
+.stylist-savedcard { border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+.stylist-savedcard header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.stylist-savedcard header img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; }
+.stylist-savedcard header strong { display: block; font-size: 0.95rem; letter-spacing: -0.01em; }
+.stylist-savedcard header span { font-size: 0.7rem; color: var(--text-muted); }
+.stylist-savedrm { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; }
+.stylist-guide { font-size: 0.72rem; color: var(--text-muted); margin: 8px 0 2px; line-height: 1.5; }
+.stylist-guide a { color: var(--text-secondary); }

@@ -376,6 +376,15 @@ service cloud.firestore {
 
     // Stylist recommendations (SPEC-1.6 §D): server-created; the owner may
     // only rate them — same closed-enum pattern as generation feedback.
+    // Looks the user saved off a stylist recommendation. Their own list,
+    // their own writes — the payload is a copy of what the server already
+    // handed them, so there is nothing to forge here.
+    match /users/{userId}/savedLooks/{lookId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
     match /stylistRecs/{recId} {
       allow read: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create, delete: if false;

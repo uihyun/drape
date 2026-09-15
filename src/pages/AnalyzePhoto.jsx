@@ -225,6 +225,29 @@ export function AnalyzePhoto({ user, onSignIn }) {
           blob,
           mime: blob.type || 'image/jpeg',
         });
+        // Product cut (one garment, no look to read) → register it straight
+        // away and go to the closet. Sharing a shop page should not open a
+        // "which of these pieces?" picker for a photo with one piece in it
+        // (SPEC-1.6 §A fast path). Outfit photos keep the review screen.
+        if (data.shotType === 'product' && (data.items || []).length === 1) {
+          const blobForSave = batches[idx].blob;
+          setBatches(prev => prev.map((x, i) => i === idx ? { ...x, status: 'done' } : x));
+          try {
+            await ItemService.createFromDetected({
+              blob: blobForSave,
+              detected: data.items[0],
+              sourceLabel: data.style || '',
+              shopUrl: importedSourceRef.current,
+              owned,
+            });
+            if (importedSourceRef.current) logEvent(analytics, 'import_item_saved', { owned, fast: true });
+            logEvent(analytics, 'import_product_fastpath', {});
+            cache.batches = [];
+            setBatches([]);
+            navigate(owned ? '/profile/closet' : '/profile/closet?cv=wishlist');
+            return;
+          } catch { /* fall through to the normal review screen */ }
+        }
         setBatches(prev => prev.map((x, i) => i === idx
           ? { ...x, status: 'done', style: data.style || '', notes: data.notes || '', items: data.items || [],
               palette: data.palette || [], mood: data.mood || '' }

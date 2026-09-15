@@ -47,27 +47,46 @@ async function realUidSet() {
 const LOOKS_MAX = 10;
 const LOOKS_FLOOR = 6;
 
+// createdAt is a Timestamp on everything the app writes, but older/imported
+// docs carry ISO strings — normalize before any window comparison.
+function msOf(v) {
+  if (!v) return 0;
+  if (typeof v.toMillis === 'function') return v.toMillis();
+  if (typeof v.seconds === 'number') return v.seconds * 1000;
+  const t = new Date(v).getTime();
+  return Number.isFinite(t) ? t : 0;
+}
+
 const top = (map, n) => Object.entries(map)
   .sort((a, b) => b[1] - a[1]).slice(0, n)
   .map(([key, count]) => ({ key, count }));
 
 async function computeTrends() {
   const real = await realUidSet();
-  const weekAgo = admin.firestore.Timestamp.fromMillis(Date.now() - 7 * 864e5);
+  // An issue published Monday reports the week that just ENDED (Mon–Sun),
+  // the way a weekly magazine does — so every number and every look in one
+  // issue comes from the same closed window and stops moving once it ships
+  // (owner, 2026-09-16). Rolling 7-day windows made the page drift daily and
+  // put "this week" on data that was partly last week's.
+  const issueMonday = new Date(`${weekKey(new Date().toISOString().slice(0, 10))}T00:00:00Z`);
+  const windowEndMs = issueMonday.getTime();                 // exclusive
+  const windowStartMs = windowEndMs - 7 * 864e5;             // inclusive
+  const priorStartMs = windowEndMs - 14 * 864e5;
+  const weekAgo = admin.firestore.Timestamp.fromMillis(windowStartMs);
 
   // Closet composition — real users, NUMBERS ONLY. Styles are bucketed by
   // WHEN the piece was added (this week vs the week before) so "on the rise"
   // means actual momentum, not an all-time tally.
-  const twoWeeksAgo = admin.firestore.Timestamp.fromMillis(Date.now() - 14 * 864e5);
+  const twoWeeksAgo = admin.firestore.Timestamp.fromMillis(priorStartMs);
   const cat = {}, col = {}, sty = {}, styWeek = {}, styPrev = {}, brands = {};
   let itemsTotal = 0, itemsThisWeek = 0;
   (await db().collection('items').get()).forEach((d) => {
     const x = d.data();
     if (!real.has(x.userId) || x.isArchived) return;
     itemsTotal++;
-    const ms = x.createdAt ? x.createdAt.toMillis() : 0;
-    const isThisWeek = ms >= weekAgo.toMillis();
-    const isPrevWeek = ms >= twoWeeksAgo.toMillis() && ms < weekAgo.toMillis();
+    const ms = msOf(x.createdAt);
+    const isThisWeek = ms >= windowStartMs && ms < windowEndMs;
+    const isPrevWeek = ms >= priorStartMs && ms < windowStartMs;
     if (isThisWeek) itemsThisWeek++;
     const t = x.tags || {};
     if (t.category) cat[t.category] = (cat[t.category] || 0) + 1;
@@ -102,7 +121,8 @@ async function computeTrends() {
     const g = d.data();
     if (!real.has(g.userId)) return;
     tryonsTotal++;
-    if (g.createdAt && g.createdAt.toMillis() >= weekAgo.toMillis()) tryonsThisWeek++;
+    const gms = msOf(g.createdAt);
+    if (gms >= windowStartMs && gms < windowEndMs) tryonsThisWeek++;
     const ids = Array.isArray(g.itemIds) ? g.itemIds : [];
     ids.forEach((id) => itemIdsToResolve.add(id));
     genRows.push(ids);
@@ -149,7 +169,7 @@ async function computeTrends() {
       img,
       style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
       userId: x.userId,
-      createdMs: x.createdAt ? x.createdAt.toMillis() : 0,
+      createdMs: msOf(x.createdAt),
       seed: !real.has(x.userId),
       hidden: hidden.has(d.id),
     });
@@ -164,7 +184,7 @@ async function computeTrends() {
     const perUser = {};
     const picked = [];
     [...poolMap.values()]
-      .filter((p) => !p.hidden && p.createdMs >= weekAgo.toMillis())
+      .filter((p) => !p.hidden && p.createdMs >= windowStartMs && p.createdMs < windowEndMs)
       .sort((a, b) => b.createdMs - a.createdMs)
       .forEach((p) => {
         if (picked.length >= LOOKS_MAX) return;
@@ -262,6 +282,8 @@ async function computeTrends() {
     cover,
     coverId,
     issueWeek: thisWeek,
+    coversFrom: new Date(windowStartMs).toISOString().slice(0, 10),
+    coversTo: new Date(windowEndMs - 864e5).toISOString().slice(0, 10),
     market,
     regions: top(regions, 5),
   };

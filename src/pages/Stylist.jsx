@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Sparkles, ThumbsUp, ThumbsDown, Loader2, Bookmark, X } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
@@ -24,6 +24,8 @@ export function Stylist({ user, onSignIn }) {
   const [err, setErr] = useState('');
   const [closet, setCloset] = useState(null); // id → item (thumbnails)
   const recs = useStyleRecs(user); // live free-quota chip (server-enforced)
+  const [saved, setSaved] = useState([]);        // looks kept from past recs
+  const [savedKeys, setSavedKeys] = useState({}); // rec-outfit index → saved doc id
   const fits = useFits(user);      // shown once free recs are spent (1 rec = 1 fit)
 
   useEffect(() => {
@@ -31,6 +33,13 @@ export function Stylist({ user, onSignIn }) {
     return ItemService.subscribeMyCloset(user.uid, (list) => {
       setCloset(Object.fromEntries(list.map((i) => [i.id, i])));
     });
+  }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A recommendation is replaced by the next "Style me", so anything the
+  // user wants to keep lives in their own savedLooks list.
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setSaved([]); return undefined; }
+    return StylistService.subscribeSavedLooks(user.uid, setSaved);
   }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const personaMeta = useMemo(
@@ -53,7 +62,7 @@ export function Stylist({ user, onSignIn }) {
   const pick = (id) => { setChosenPersona(id); setPersona(id); };
 
   const run = async () => {
-    setBusy(true); setErr(''); setRec(null); setRated(null);
+    setBusy(true); setErr(''); setRec(null); setRated(null); setSavedKeys({});
     try {
       const data = await StylistService.recommend({ persona, ask });
       setRec(data);
@@ -74,6 +83,27 @@ export function Stylist({ user, onSignIn }) {
     setRated(next);
     StylistService.rateRec(rec.recId, next).catch(() => {});
     if (next) logEvent(analytics, 'stylist_feedback', { value: next });
+  };
+
+  const toggleSave = async (o, i) => {
+    const existing = savedKeys[i];
+    try {
+      if (existing) {
+        await StylistService.unsaveLook(user.uid, existing);
+        setSavedKeys((m) => { const n = { ...m }; delete n[i]; return n; });
+      } else {
+        const id = await StylistService.saveLook(user.uid, {
+          persona, title: o.title, why: o.why, itemIds: o.itemIds, ask: ask || '',
+        });
+        setSavedKeys((m) => ({ ...m, [i]: id }));
+        logEvent(analytics, 'stylist_look_saved', { persona });
+      }
+    } catch (e) { console.warn('save look failed', e?.message); }
+  };
+
+  const tryOnLook = (itemIds, source) => {
+    logEvent(analytics, 'stylist_tryon', { persona, source });
+    navigate(`/tryon?items=${itemIds.filter((id) => closet?.[id]).join(',')}`);
   };
 
   const thumbOf = (id) => closet?.[id]?.croppedUrl || closet?.[id]?.originalUrl || null;
@@ -131,6 +161,11 @@ export function Stylist({ user, onSignIn }) {
           </button>
         </div>
       )}
+      {persona && !choosing && (
+        <p className="stylist-guide">
+          {t('stylistGuide')} <Link to="/settings">{t('stylistGuideLink')}</Link>
+        </p>
+      )}
       {persona && !choosing && recs.loaded && (
         <p className="muted" style={{ fontSize: '0.8rem' }}>
           {recs.remaining > 0
@@ -154,18 +189,71 @@ export function Stylist({ user, onSignIn }) {
             ))}
           </div>
           <p className="stylist-why">“{o.why}” <span className="muted">— {personaMeta?.name}</span></p>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => {
-              logEvent(analytics, 'stylist_tryon', { persona });
-              navigate(`/tryon?items=${o.itemIds.filter((id) => closet?.[id]).join(',')}`);
-            }}
-          >
-            {t('stylistTryAll')}
-          </button>
+          <div className="stylist-cardacts">
+            <button type="button" className="btn btn-primary" onClick={() => tryOnLook(o.itemIds, 'rec')}>
+              {t('stylistTryAll')}
+            </button>
+            <button
+              type="button"
+              className={`btn btn-secondary${savedKeys[i] ? ' is-saved' : ''}`}
+              onClick={() => toggleSave(o, i)}
+            >
+              <Bookmark size={15} strokeWidth={1.8} fill={savedKeys[i] ? 'currentColor' : 'none'} />
+              {t(savedKeys[i] ? 'stylistSaved' : 'stylistSave')}
+            </button>
+          </div>
         </section>
       ))}
+
+      {/* Saved looks — the stylist's picks the user kept. The comment is
+          half the value, so it's stored and replayed with the look; try-on
+          can be re-run later against a different reference photo. */}
+      {saved.length > 0 && (
+        <section className="stylist-saved">
+          <p className="tmag-kicker">{t('stylistSavedTitle')}</p>
+          {saved.map((l) => {
+            const p = STYLIST_PERSONAS.find((x) => x.id === l.persona) || STYLIST_PERSONAS[0];
+            const live = (l.itemIds || []).filter((id) => closet?.[id]);
+            return (
+              <article className="stylist-savedcard" key={l.id}>
+                <header>
+                  <img src={p.img} alt="" />
+                  <div>
+                    <strong>{l.title}</strong>
+                    <span>{p.name}{l.ask ? ` · ${l.ask}` : ''}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="stylist-savedrm"
+                    aria-label={t('delete')}
+                    onClick={() => StylistService.unsaveLook(user.uid, l.id).catch(() => {})}
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                </header>
+                <div className="stylist-items">
+                  {(l.itemIds || []).map((id) => (
+                    <div className="stylist-item" key={id} onClick={() => closet?.[id] && navigate(`/i/${id}`)}>
+                      {thumbOf(id)
+                        ? <img src={thumbOf(id)} alt="" loading="lazy" />
+                        : <div className="stylist-item-ph" />}
+                    </div>
+                  ))}
+                </div>
+                {l.why && <p className="stylist-why">“{l.why}”</p>}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={live.length < 2}
+                  onClick={() => tryOnLook(l.itemIds, 'saved')}
+                >
+                  {t(live.length < 2 ? 'stylistSavedGone' : 'stylistTryAgain')}
+                </button>
+              </article>
+            );
+          })}
+        </section>
+      )}
 
       {rec && (
         <div className="stylist-rate">

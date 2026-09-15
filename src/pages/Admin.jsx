@@ -115,6 +115,49 @@ const CAL_PRESETS = [['this week', 'thisWeek'], ['last week', 'lastWeek'], ['thi
 // ── GA screen engagement (where users spend time) ──────────────────────
 const fmtDur = (s) => (s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.round((s % 3600) / 60)}m` : s >= 60 ? `${Math.round(s / 60)}m` : `${s}s`);
 
+// Did the 2.1 surfaces get used? Raw GA event counts for the range, grouped
+// so a funnel reads top-to-bottom (viewed → acted → converted).
+const FEATURE_GROUPS = [
+  ['Trends', ['trends_view', 'trends_click']],
+  ['Stylist', ['stylist_recommend', 'stylist_tryon', 'stylist_look_saved', 'stylist_feedback']],
+  ['Import', ['import_shared', 'import_image_ready', 'import_item_saved', 'import_product_fastpath']],
+  ['Try-on signals', ['tryon_feedback', 'out_of_fits']],
+];
+
+function FeaturesCard({ from, to }) {
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    if (!from || !to) return;
+    setErr('');
+    AdminService.gaFeatures({ from, to }).then(setRows).catch((e) => setErr(e.message || 'GA query failed'));
+  }, [from, to]);
+  const byEvent = Object.fromEntries((rows || []).map((r) => [r.event, r]));
+  return (
+    <>
+      <h3 className="adm-h3">Feature adoption <span className="adm-muted">(GA events, {from} → {to})</span></h3>
+      {err && <div className="adm-err">{err}</div>}
+      {rows && (
+        <div className="adm-tablewrap" style={{ marginBottom: 16 }}>
+          <table className="adm-table">
+            <thead><tr><th>surface</th><th>event</th><th>count</th><th>users</th></tr></thead>
+            <tbody>
+              {FEATURE_GROUPS.map(([label, events]) => events.map((ev, i) => (
+                <tr key={ev}>
+                  <td>{i === 0 ? label : ''}</td>
+                  <td className="adm-muted">{ev}</td>
+                  <td>{fmt(byEvent[ev]?.count ?? 0)}</td>
+                  <td>{fmt(byEvent[ev]?.users ?? 0)}</td>
+                </tr>
+              )))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
 function ScreensCard({ from, to }) {
   const [rows, setRows] = useState(null);
   const [err, setErr] = useState('');
@@ -354,6 +397,8 @@ function Overview() {
           )}
         </>
       )}
+
+      <FeaturesCard from={range.from} to={range.to} />
 
       <ScreensCard from={range.from} to={range.to} />
 
