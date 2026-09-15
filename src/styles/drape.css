@@ -5745,9 +5745,15 @@ input[type="search"]::-webkit-search-decoration {
 .profile-tab {
   background: none;
   border: none;
-  padding: 0.85rem 0.25rem;
+  padding: 0.8rem 0.25rem;
   font-family: inherit;
-  font-size: 0.9rem;
+  /* Section rail, not primary navigation — smaller than body text so the
+     row reads as a divider between the identity header and the content.
+     Sentence case on purpose: the uppercase kicker treatment on Trends is
+     an editorial label, and uppercase only exists in English, so KO/JA
+     would silently drop the styling and the three locales would diverge. */
+  font-size: 0.78rem;
+  letter-spacing: -0.005em;
   color: var(--text-muted);
   cursor: pointer;
   position: relative;
@@ -5758,6 +5764,7 @@ input[type="search"]::-webkit-search-decoration {
 .profile-tab.active {
   color: var(--text-primary);
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .profile-tab.active::after {
   content: '';

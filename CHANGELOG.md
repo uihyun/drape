@@ -34,6 +34,12 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Profile tabs are smaller (0.9 → 0.78rem).** The section rail was
+  carrying body-text weight and competing with the identity header. Kept in
+  sentence case rather than adopting the Trends uppercase-kicker grammar:
+  those kickers label editorial sections, not navigation, and uppercase
+  exists only in English — KO/JA would silently drop the treatment and the
+  three locales would look like different designs.
 - **No back arrow on /trends.** The route was missing from MobileHeader's
   HIDE_ON list, so the tab's top-level screen rendered a back button that
   pointed nowhere the user had come from — /feed never did. Verified:
