@@ -6750,3 +6750,8 @@ input[type="search"]::-webkit-search-decoration {
 /* footer */
 .tmag-foot { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--border); margin: 0 1.1rem; padding-top: 12px; font-size: 0.62rem; color: var(--text-muted); }
 .tmag-foot-mark { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-size: 0.95rem; color: var(--text-primary); }
+/* Admin trends curation cells */
+.adm-trendpick { position: relative; }
+.adm-trendpick.is-hidden img { opacity: 0.25; filter: grayscale(1); }
+.adm-trendpick-acts { position: absolute; bottom: 4px; left: 4px; right: 4px; display: flex; gap: 4px; justify-content: center; }
+.adm-trendpick-acts .adm-btn { font-size: 10px; padding: 3px 7px; }

@@ -171,6 +171,7 @@ exports.importFromUrl = importFns.importFromUrl;
 const trendsFns = require('./trends.js');
 exports.dailyTrends = trendsFns.dailyTrends;
 exports.adminRecomputeTrends = trendsFns.adminRecomputeTrends;
+exports.adminCurateTrends = trendsFns.adminCurateTrends;
 
 // ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
 const adminFns = require('./admin.js');

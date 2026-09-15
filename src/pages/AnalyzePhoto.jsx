@@ -147,7 +147,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
     // detect every piece in; "Snap several" = up to MAX_PHOTOS shots. Lock to
     // whichever was used first this session (cleared by reset/empty).
     if (owned && !inputMode) setInputMode(source);
-    const cap = owned && source === 'upload' ? 1 : MAX_PHOTOS;
+    const cap = owned && source === 'upload' ? 1 : MAX_PHOTOS; // 'uploadMulti'/'snap' → MAX
     const room = cap - batches.length;
     if (room <= 0) { setLimitNotice(true); return; }
     const accepted = incoming.slice(0, room);
@@ -325,10 +325,15 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // Mutually-exclusive owned modes: upload = one photo (lock after it's staged
   // or once snap is in use); snap = up to MAX_PHOTOS (lock once upload is used).
   const uploadDisabled = owned
-    ? (inputMode === 'snap' || batches.length >= 1)
+    ? ((inputMode && inputMode !== 'upload') || batches.length >= 1)
     : batches.length >= MAX_PHOTOS;
   const snapDisabled = owned
-    ? (inputMode === 'upload' || batches.length >= MAX_PHOTOS)
+    ? ((inputMode && inputMode !== 'snap') || batches.length >= MAX_PHOTOS)
+    : batches.length >= MAX_PHOTOS;
+  // "Upload several": pick up to MAX existing photos at once — each photo
+  // becomes its own detect→register batch (owner request 2026-09-16).
+  const multiDisabled = owned
+    ? ((inputMode && inputMode !== 'uploadMulti') || batches.length >= MAX_PHOTOS)
     : batches.length >= MAX_PHOTOS;
 
   return (
@@ -416,6 +421,26 @@ export function AnalyzePhoto({ user, onSignIn }) {
               </button>
               {owned && canBurst && <span className="analyze-input-hint">{t('analyzeSnapHint')}</span>}
             </div>
+            {owned && (
+              <div className="analyze-input-choice">
+                <button
+                  type="button"
+                  className="btn btn-secondary analyze-input-btn"
+                  disabled={multiDisabled}
+                  onClick={async () => {
+                    try {
+                      const blobs = await CameraService.pickManyFromLibrary(MAX_PHOTOS - batches.length);
+                      if (blobs?.length) addFiles(blobs, 'uploadMulti');
+                    } catch (err) {
+                      setError(err.message);
+                    }
+                  }}
+                >
+                  <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadSeveral')}
+                </button>
+                <span className="analyze-input-hint">{t('analyzeMultiHint', { max: MAX_PHOTOS })}</span>
+              </div>
+            )}
           </div>
 
           {batches.length > 0 && (

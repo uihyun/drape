@@ -5,17 +5,22 @@ import { isNativeApp } from './platform-service.js';
 // (iOS WKWebView won't fire `change` on a detached input). `capture` forces
 // the rear camera; omit it to open the file/photo picker. Resolves a Blob,
 // or null if the user cancels (so callers never await forever).
-function webFilePick({ capture = false } = {}) {
+function webFilePick({ capture = false, multiple = false } = {}) {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     if (capture) input.capture = 'environment';
+    if (multiple) input.multiple = true;
     input.style.position = 'fixed';
     input.style.left = '-9999px';
     const cleanup = () => { try { input.remove(); } catch { /* ignore */ } };
-    input.onchange = () => { const f = input.files?.[0] || null; cleanup(); resolve(f); };
-    input.oncancel = () => { cleanup(); resolve(null); };
+    input.onchange = () => {
+      const files = Array.from(input.files || []);
+      cleanup();
+      resolve(multiple ? files : (files[0] || null));
+    };
+    input.oncancel = () => { cleanup(); resolve(multiple ? [] : null); };
     document.body.appendChild(input);
     input.click();
   });
@@ -68,6 +73,31 @@ export const CameraService = {
       }
     }
     return webFilePick({ capture: false });
+  },
+
+  // Pick SEVERAL existing photos in one go (bulk item registration).
+  // Native: Capacitor Camera.pickImages (the OS multi-select sheet);
+  // web/WebView fallback: <input multiple>. Returns Blob[] (empty on cancel).
+  async pickManyFromLibrary(limit = 8) {
+    if (isNativeApp()) {
+      try {
+        const { Camera } = await import('@capacitor/camera');
+        const { photos } = await Camera.pickImages({ quality: 90, limit });
+        const blobs = [];
+        for (const p of photos || []) {
+          const src = p.webPath || (p.path ? window.Capacitor?.convertFileSrc?.(p.path) : null);
+          if (!src) continue;
+          const res = await fetch(src);
+          blobs.push(await res.blob());
+        }
+        return blobs.slice(0, limit);
+      } catch (e) {
+        if (/cancel/i.test(e?.message || '')) return [];
+        // fall through to the web picker on any plugin hiccup
+      }
+    }
+    const files = await webFilePick({ capture: false, multiple: true });
+    return (files || []).slice(0, limit);
   },
 
   // Image compression settings

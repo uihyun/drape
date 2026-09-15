@@ -632,6 +632,79 @@ function PublicGallery({ title, items, to }) {
 const CFG_LANGS = [['en', L_EN], ['ko', L_KO], ['ja', L_JA]];
 const emptyLangs = () => ({ en: '', ko: '', ja: '' });
 
+// Trends curation — the human hand on what /trends shows: hide bad picks
+// (they never return on recompute), pin the cover. Pool = picksAll from the
+// public trends doc (already-public looks only, so nothing sensitive here).
+function TrendsCuration() {
+  const [data, setData] = useState(null);
+  const [busy, setBusy] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = async () => {
+    try {
+      const { getDoc, doc } = await import('firebase/firestore');
+      const { db } = await import('../firebase.js');
+      const s = await getDoc(doc(db, 'trends', 'current'));
+      setData(s.exists() ? s.data() : null);
+    } catch (e) { setErr(e.message || 'failed'); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const act = async (payload, key) => {
+    setBusy(key); setErr('');
+    try { await AdminService.curateTrends(payload); await load(); }
+    catch (e) { setErr(e.message || 'failed'); }
+    finally { setBusy(''); }
+  };
+
+  if (!data) return null;
+  const pool = data.picksAll || [];
+  return (
+    <>
+      <h3 className="adm-h3">Trends curation <span className="adm-muted">(hide bad picks · pin the cover — survives recomputes)</span></h3>
+      {err && <div className="adm-err">{err}</div>}
+      <div className="adm-gallery">
+        {pool.map((p) => {
+          const isCover = data.coverId === p.id;
+          return (
+            <div key={p.id} className={`adm-gcell adm-trendpick${p.hidden ? ' is-hidden' : ''}`}>
+              <img src={p.img} alt="" loading="lazy" />
+              <div className="adm-trendpick-acts">
+                <button
+                  className="adm-btn"
+                  disabled={busy === p.id}
+                  onClick={() => act(p.hidden ? { unhide: p.id } : { hide: p.id }, p.id)}
+                >
+                  {p.hidden ? 'unhide' : 'hide'}
+                </button>
+                {!p.hidden && (
+                  <button
+                    className="adm-btn"
+                    disabled={busy === p.id || isCover}
+                    onClick={() => act({ coverId: p.id }, p.id)}
+                  >
+                    {isCover ? 'cover ✓' : 'cover'}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="adm-cfgrow" style={{ margin: '10px 0 18px' }}>
+        <button className="adm-btn" disabled={busy === 'recompute'} onClick={() => act({}, 'recompute')}>
+          recompute trends now
+        </button>
+        {data.coverId && (
+          <button className="adm-btn" disabled={!!busy} onClick={() => act({ coverId: null }, 'cover-clear')}>
+            clear cover pin
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
 function ConfigTab() {
   const [copyDoc, setCopyDoc] = useState(null);
   const [err, setErr] = useState('');
@@ -785,7 +858,9 @@ function ConfigTab() {
         <button className="adm-btn" disabled={busy} onClick={() => saveSteps(false)}>save onboarding</button>
         <button className="adm-btn" disabled={busy} onClick={() => saveSteps(true)}>reset to app defaults</button>
       </div>
-      <p className="adm-muted">Empty ko/ja fields fall back to en at runtime. Native apps pick these up from build 1.5.1; web is immediate (next session).</p>
+      <p className="adm-muted">Empty ko/ja fields fall back to en at runtime. Native apps pick these up from the next store build; web is immediate (next session).</p>
+
+      <TrendsCuration />
     </>
   );
 }

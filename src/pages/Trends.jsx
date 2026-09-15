@@ -4,8 +4,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { COLOR_HEX } from '../services/taxonomy.js';
-import { STYLIST_PERSONAS } from '../services/stylist-service.js';
-import { cityDisplay } from '../data/cities.js';
 
 // Trends as a weekly fashion issue, not a dashboard (owner, 2026-09-15:
 // "절대 대시보드처럼 보이면 안 돼"). Editorial grammar borrowed from the
@@ -14,7 +12,7 @@ import { cityDisplay } from '../data/cities.js';
 // numbers from everyone, images only from public surfaces
 // (functions/trends.js).
 export function Trends() {
-  const { t, lang } = useLocale();
+  const { t } = useLocale();
   const [data, setData] = useState(undefined);
 
   useEffect(() => {
@@ -33,12 +31,9 @@ export function Trends() {
     );
   }
 
-  const personaOf = (id) => STYLIST_PERSONAS.find((p) => p.id === id) || STYLIST_PERSONAS[0];
   const label = (ns, key) => t(`taxonomy.${ns}.${key}`) || key;
   const topStyle = data.topStyles?.[0];
   const [coverPick, ...gridPicks] = data.picks || [];
-  const regionsLine = (data.regions || [])
-    .map((r) => cityDisplay(r.key, lang) || r.key).slice(0, 3).join(' · ');
 
   return (
     <div className="tmag">
@@ -61,7 +56,6 @@ export function Trends() {
               items: data.stats?.itemsThisWeek ?? 0,
               tryons: data.stats?.tryonsThisWeek ?? 0,
             })}
-            {regionsLine ? ` · ${regionsLine}` : ''}
           </p>
         </div>
       </header>
@@ -71,19 +65,13 @@ export function Trends() {
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsTopStyles')}</p>
           <div className="tmag-cards">
-            {data.topStyles.slice(0, 5).map((s, i) => {
-              const p = personaOf(s.persona);
-              return (
-                <div className="tmag-stylecard" key={s.key}>
-                  <span className="tmag-stylecard-no">{String(i + 1).padStart(2, '0')}</span>
-                  <strong>{label('styles', s.key)}</strong>
-                  <span className="tmag-stylecard-count">{s.count}</span>
-                  <span className="tmag-stylecard-by">
-                    <img src={p.img} alt="" /> {p.name} <em>AI</em>
-                  </span>
-                </div>
-              );
-            })}
+            {data.topStyles.slice(0, 5).map((s, i) => (
+              <div className="tmag-stylecard" key={s.key}>
+                <span className="tmag-stylecard-no">{String(i + 1).padStart(2, '0')}</span>
+                <strong>{label('styles', s.key)}</strong>
+                <span className="tmag-stylecard-count">{s.count}</span>
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -150,7 +138,6 @@ export function Trends() {
 
       <footer className="tmag-foot">
         <span className="tmag-foot-mark">drape</span>
-        <span>{t('trendsPersonaNote')}</span>
       </footer>
     </div>
   );

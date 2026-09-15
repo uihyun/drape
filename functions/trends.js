@@ -92,22 +92,36 @@ async function computeTrends() {
   }));
 
   // Community picks — ONLY outfits the owner made public, real users, with
-  // a visual. Newest first; the doc stores just what the card needs.
-  const picks = [];
+  // a visual. Owner curation (trends/curation: hidden[], coverId — written
+  // by adminCurateTrends) survives every recompute: hidden picks drop out
+  // of the public list, the chosen cover moves to slot 0. picksAll keeps
+  // the full pool (hidden flagged) for the admin curation UI — all of it
+  // is already-public content, so the world-readable doc leaks nothing.
+  const curSnap = await db().collection('trends').doc('curation').get();
+  const curation = curSnap.exists ? curSnap.data() : {};
+  const hidden = new Set(Array.isArray(curation.hidden) ? curation.hidden : []);
+  const coverId = curation.coverId || null;
+
+  const picksAll = [];
   const pubSnap = await db().collection('outfits')
     .where('isPublic', '==', true).orderBy('createdAt', 'desc').limit(60).get();
   pubSnap.forEach((d) => {
-    if (picks.length >= 12) return;
+    if (picksAll.length >= 24) return;
     const x = d.data();
     if (!real.has(x.userId)) return;
     const img = x.photoCutUrl || x.photoUrl || null;
     if (!img) return;
-    picks.push({
+    picksAll.push({
       id: d.id,
       img,
       style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
+      hidden: hidden.has(d.id),
     });
   });
+  let picks = picksAll.filter((p) => !p.hidden).map(({ hidden: _h, ...rest }) => rest);
+  const coverIdx = picks.findIndex((p) => p.id === coverId);
+  if (coverIdx > 0) picks = [picks[coverIdx], ...picks.filter((_, i) => i !== coverIdx)];
+  picks = picks.slice(0, 12);
 
   // Marketplace row — listings are public by definition.
   const market = [];
@@ -139,6 +153,8 @@ async function computeTrends() {
     topStyles,
     triedOnCategories: top(triedCat, 6),
     picks,
+    picksAll,
+    coverId,
     market,
     regions: top(regions, 5),
   };
@@ -149,6 +165,29 @@ async function computeTrends() {
 exports.dailyTrends = onSchedule(
   { schedule: 'every day 04:30', timeZone: 'Etc/UTC', timeoutSeconds: 300, memory: '512MiB' },
   async () => { await computeTrends(); },
+);
+
+// Owner curation: hide/unhide picks, pin a cover. Persists in
+// trends/curation and takes effect immediately (recompute inline).
+exports.adminCurateTrends = onCall(
+  { cors: true, timeoutSeconds: 300, memory: '512MiB' },
+  async (request) => {
+    const { assertAdmin } = require('./admin.js');
+    assertAdmin(request);
+    const ref = db().collection('trends').doc('curation');
+    const snap = await ref.get();
+    const cur = snap.exists ? snap.data() : {};
+    const hidden = new Set(Array.isArray(cur.hidden) ? cur.hidden : []);
+    const { hide, unhide, coverId } = request.data || {};
+    if (typeof hide === 'string') hidden.add(hide);
+    if (typeof unhide === 'string') hidden.delete(unhide);
+    const next = { hidden: [...hidden].slice(0, 200) };
+    if (coverId !== undefined) next.coverId = coverId || null;
+    else if (cur.coverId) next.coverId = cur.coverId;
+    await ref.set(next);
+    const doc = await computeTrends();
+    return { ok: true, picks: doc.picks.length, coverId: next.coverId || null };
+  },
 );
 
 // Manual recompute from /admin (and for the first backfill).

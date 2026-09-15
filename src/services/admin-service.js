@@ -29,6 +29,16 @@ export const AdminService = {
     return data;
   },
 
+  // Trends: force a recompute / curate picks (hide, unhide, set cover).
+  async recomputeTrends() {
+    const { data } = await call('adminRecomputeTrends')({});
+    return data;
+  },
+  async curateTrends(payload) {
+    const { data } = await call('adminCurateTrends')(payload);
+    return data;
+  },
+
   // Items ranked by how many try-ons reference them.
   async topTryons(limit = 30) {
     const { data } = await call('adminTopTryons')({ limit });
