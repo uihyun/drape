@@ -167,6 +167,11 @@ exports.styleRecommend = stylistFns.styleRecommend;
 const importFns = require('./import.js');
 exports.importFromUrl = importFns.importFromUrl;
 
+// ── Trends (feed replacement while the community is small) ──────────────
+const trendsFns = require('./trends.js');
+exports.dailyTrends = trendsFns.dailyTrends;
+exports.adminRecomputeTrends = trendsFns.adminRecomputeTrends;
+
 // ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
 const adminFns = require('./admin.js');
 exports.adminOverview      = adminFns.adminOverview;

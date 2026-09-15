@@ -15,7 +15,7 @@ import { NoticeBanner } from './components/NoticeBanner.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
 import { JsSplash } from './components/JsSplash.jsx';
 import { warmUp } from './services/warmup.js';
-import { initAppConfig } from './services/appConfig.js';
+import { initAppConfig, getFeedMode } from './services/appConfig.js';
 
 // Route pages are lazy-loaded so the cold-start bundle is just the shell +
 // Firebase + the first screen's chunk, not all ~25 pages parsed up front (that
@@ -69,6 +69,7 @@ const Stylist = page(() => import('./pages/Stylist.jsx'), 'Stylist');
 const Import = page(() => import('./pages/Import.jsx'), 'Import');
 const GenerationDetail = page(() => import('./pages/GenerationDetail.jsx'), 'GenerationDetail');
 const Feed = page(() => import('./pages/Feed.jsx'), 'Feed');
+const Trends = page(() => import('./pages/Trends.jsx'), 'Trends');
 const Marketplace = page(() => import('./pages/Marketplace.jsx'), 'Marketplace');
 const Inbox = page(() => import('./pages/Inbox.jsx'), 'Inbox');
 const Notifications = page(() => import('./pages/Notifications.jsx'), 'Notifications');
@@ -435,7 +436,12 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/stylist" element={<Stylist user={user} onSignIn={handleSignIn} />} />
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
-          <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
+          {/* feedMode 'trends' (default) parks the social feed behind the
+              trends board — resurrect by setting config/app.feedMode='feed',
+              no release needed. Feed code stays alive for that day. */}
+          <Route path="/feed" element={getFeedMode() === 'feed'
+            ? <Feed user={user} onSignIn={handleSignIn} />
+            : <Trends />} />
           <Route path="/market" element={<Marketplace />} />
           <Route path="/messages" element={<Inbox user={user} />} />
           <Route path="/notifications" element={<Notifications user={user} onSignIn={handleSignIn} />} />

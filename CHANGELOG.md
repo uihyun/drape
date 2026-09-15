@@ -19,6 +19,24 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Feed → Trends (owner pivot 2026-09-15).** The social feed is parked
+  (community too small to look alive) behind `config/app.feedMode` —
+  'trends' (baked default) renders the new Trends board at /feed; flipping
+  the doc to 'feed' resurrects the old feed with NO release. Feed code
+  untouched. New `functions/trends.js`: daily cron + admin recompute
+  aggregates REAL users' closets/try-ons into world-readable
+  `trends/current` under a strict privacy contract — private closet data
+  becomes NUMBERS ONLY (style/color/category counts); images come solely
+  from surfaces owners made public (public looks → "Community picks",
+  marketplace listings). Sections: weekly stats line, styles leaderboard
+  fronted by the AI stylist personas (labeled AI — the honest alternative
+  to fake-influencer seeds), colors, most-tried-on categories, community
+  picks, marketplace strip, regions (city labels). Tab icon/label swaps to
+  Trends by mode. OOTD "publish to feed" copy reworded to "make public —
+  can be featured in Trends" (the curation-consent guidance) ×3 locales.
+  First compute live: 2,033 items (220 this week), styles casual/minimal/
+  sporty, 4 community picks. New composite index outfits(isPublic,
+  createdAt); trends read rules. Locale +13 ×3.
 - **Share-to-drape, native halves (§A) — in repo 2026-09-14, ship with
   2.1.0.** Android: ACTION_SEND intent-filters (image/* + text/plain) +
   MainActivity.handleShare — shared images copy into cache (25MB cap) and

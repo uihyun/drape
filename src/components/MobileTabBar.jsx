@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Compass, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
+import { Compass, TrendingUp, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
+import { getFeedMode } from '../services/appConfig.js';
 import { AddItemSheet } from './AddItemSheet.jsx';
 import { ProfileService } from '../services/profile-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -75,12 +76,16 @@ export function MobileTabBar({ user, onSignIn }) {
         <Link
           to="/feed"
           className={`floating-nav-btn${onHome ? ' active' : ''}`}
-          aria-label={t('navFeed')}
+          aria-label={getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
         >
           <span className="floating-nav-icon">
-            <Compass size={22} strokeWidth={1.6} />
+            {getFeedMode() === 'feed'
+              ? <Compass size={22} strokeWidth={1.6} />
+              : <TrendingUp size={22} strokeWidth={1.6} />}
           </span>
-          <span className="floating-nav-label">{t('navFeed')}</span>
+          <span className="floating-nav-label">
+            {getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
+          </span>
         </Link>
 
         <button

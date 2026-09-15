@@ -10,7 +10,10 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 
-const DEFAULTS = { feedTtlMs: 60 * 1000 };               // 1 minute
+// feedMode (2026-09-15): 'trends' hides the social feed behind the trends
+// board while the community is small; flipping config/app.feedMode to
+// 'feed' resurrects the old feed WITHOUT a release. Baked default: trends.
+const DEFAULTS = { feedTtlMs: 60 * 1000, feedMode: 'trends' };
 const BOUNDS   = { feedTtlMs: [5 * 1000, 60 * 60 * 1000] }; // clamp 5s … 60min
 
 let current = { ...DEFAULTS };
@@ -33,6 +36,7 @@ export async function initAppConfig() {
       const d = snap.data() || {};
       current = {
         feedTtlMs: sane(d.feedTtlMs, BOUNDS.feedTtlMs, DEFAULTS.feedTtlMs),
+        feedMode: d.feedMode === 'feed' ? 'feed' : 'trends',
       };
     }
   } catch (e) {
@@ -42,4 +46,8 @@ export async function initAppConfig() {
 
 export function getFeedTtlMs() {
   return current.feedTtlMs;
+}
+
+export function getFeedMode() {
+  return current.feedMode;
 }

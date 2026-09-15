@@ -7,6 +7,12 @@ service cloud.firestore {
     // client can apply them; writable only from the Firebase console / Admin
     // SDK (never from a client). Clients clamp + default every value, so a bad
     // entry can't break a deployed app.
+    // World-readable trends rollup (functions/trends.js). Contains ONLY
+    // aggregate numbers + images from already-public surfaces.
+    match /trends/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
     match /config/{doc} {
       allow read: if true;
       allow write: if false;
