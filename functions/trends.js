@@ -41,6 +41,12 @@ async function realUidSet() {
   return real;
 }
 
+// One cap for the weekly slate, shared by the auto-pick and the manual
+// admin list (they used to disagree: 8 vs 12). Floor applies only when the
+// week is thin, so the section is never a lonely two-card row.
+const LOOKS_MAX = 10;
+const LOOKS_FLOOR = 6;
+
 const top = (map, n) => Object.entries(map)
   .sort((a, b) => b[1] - a[1]).slice(0, n)
   .map(([key, count]) => ({ key, count }));
@@ -114,6 +120,12 @@ async function computeTrends() {
   }));
 
   // ── This week's looks ─────────────────────────────────────────────
+  // Settled rules (owner, 2026-09-16): ISO week = MONDAY start (the cron at
+  // 04:30 UTC lands 00:30 ET Monday, so the new issue includes the weekend's
+  // posts and greets the week's outfit planning); slate capped at LOOKS_MAX
+  // for both the auto-pick and the manual admin list; the masthead photo is
+  // excluded from the row below while the slate is small (Trends.jsx).
+  //
   // AUTO by default, on a weekly cadence: when the ISO week rolls over (or
   // the slate is empty) the section re-picks itself from THIS WEEK's public
   // outfits and persists the choice, so the page rotates on its own every
@@ -155,7 +167,7 @@ async function computeTrends() {
       .filter((p) => !p.hidden && p.createdMs >= weekAgo.toMillis())
       .sort((a, b) => b.createdMs - a.createdMs)
       .forEach((p) => {
-        if (picked.length >= 8) return;
+        if (picked.length >= LOOKS_MAX) return;
         perUser[p.userId] = (perUser[p.userId] || 0) + 1;
         if (perUser[p.userId] > 2) return;
         picked.push(p.id);
@@ -165,7 +177,7 @@ async function computeTrends() {
       [...poolMap.values()]
         .filter((p) => !p.hidden && !picked.includes(p.id))
         .sort((a, b) => b.createdMs - a.createdMs)
-        .forEach((p) => { if (picked.length < 6) picked.push(p.id); });
+        .forEach((p) => { if (picked.length < LOOKS_FLOOR) picked.push(p.id); });
     }
     featuredIds = picked;
     await db().collection('trends').doc('curation')
@@ -289,7 +301,7 @@ exports.adminCurateTrends = onCall(
     const { weekKey: wk } = require('./admin-helpers.js');
     const next = {
       hidden: [...hidden].slice(0, 200),
-      featured: featured.slice(0, 12),
+      featured: featured.slice(0, LOOKS_MAX),
       // A human edit owns the CURRENT week; next Monday auto-rotates again.
       issueWeek: wk(new Date().toISOString().slice(0, 10)),
     };

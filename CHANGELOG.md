@@ -34,6 +34,14 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends weekly rules settled (owner, 2026-09-16):** issue boundary stays
+  **Monday** (the 04:30 UTC cron lands 00:30 ET Monday, so a new issue
+  carries the weekend's posts into the week people plan outfits); the slate
+  cap is now a single `LOOKS_MAX = 10` shared by the auto-pick and the manual
+  admin list (they disagreed at 8 vs 12), with `LOOKS_FLOOR = 6` only on a
+  thin week; the masthead photo stays excluded from the row below while the
+  slate is small. Rules documented in trends.js and CLAUDE.md so the next
+  session doesn't re-litigate them.
 - **Trends masthead rotates per visit.** The cover was fixed for a whole
   week (and then, briefly, pinned to the single headline-style match) — a
   page that never moves reads as dead. It now draws from THIS WEEK's looks
