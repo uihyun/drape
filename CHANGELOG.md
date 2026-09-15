@@ -34,6 +34,12 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Carousel scrollbars only while scrolling.** The looks / palette /
+  marketplace rows parked a permanent grey bar under themselves on desktop
+  browsers even at rest. The track height is now constant with a transparent
+  thumb that fades in for 700ms of scroll activity (`.tmag-scroll` +
+  `is-scrolling`), so the bar appears only on movement and nothing shifts.
+  Verified live: 2 rows wired, class toggles on scroll.
 - **Trends colophon.** A single small line closes the page: "Issue of
   September 14 · new looks every Monday" (localized, issue date derived from
   the stored `issueWeek`). Publishing the cadence turns the weekly rotation

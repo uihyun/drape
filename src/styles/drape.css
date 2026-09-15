@@ -6761,3 +6761,10 @@ input[type="search"]::-webkit-search-decoration {
 .adm-trendpick-seed { position: absolute; top: 4px; left: 4px; font-size: 9px; padding: 2px 5px; border-radius: 6px; background: rgba(20,19,18,0.7); color: #fff; letter-spacing: 0.06em; }
 .adm-btn.on { background: var(--text-primary); color: var(--surface); border-color: var(--text-primary); }
 .tmag-colophon { margin: 4px 1.1rem 0; padding-top: 14px; border-top: 1px solid var(--border); font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); text-align: center; }
+/* Carousel scrollbars: invisible at rest, thumb fades in while scrolling.
+   Track height is constant so showing the thumb never shifts layout. */
+.tmag-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.tmag-scroll::-webkit-scrollbar { height: 4px; }
+.tmag-scroll::-webkit-scrollbar-track { background: transparent; }
+.tmag-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.25s ease; }
+.tmag-scroll.is-scrolling::-webkit-scrollbar-thumb { background: rgba(20, 19, 18, 0.22); }

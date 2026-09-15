@@ -25,6 +25,27 @@ export function Trends() {
       .catch(() => setData(null));
   }, []);
 
+  // Horizontal rows keep their scrollbar invisible until the row actually
+  // moves (desktop browsers otherwise park a permanent grey bar under every
+  // carousel). The track height is constant — only the thumb fades in — so
+  // nothing shifts. Must stay above this component's early returns.
+  useEffect(() => {
+    if (!data) return undefined;
+    const rows = Array.from(document.querySelectorAll('.tmag-scroll'));
+    const timers = new Map();
+    const onScroll = (e) => {
+      const el = e.currentTarget;
+      el.classList.add('is-scrolling');
+      clearTimeout(timers.get(el));
+      timers.set(el, setTimeout(() => el.classList.remove('is-scrolling'), 700));
+    };
+    rows.forEach((el) => el.addEventListener('scroll', onScroll, { passive: true }));
+    return () => {
+      rows.forEach((el) => el.removeEventListener('scroll', onScroll));
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [data]);
+
   if (data === undefined) return <div className="loading"><div className="spinner" /></div>;
   if (!data) {
     return (
@@ -114,7 +135,7 @@ export function Trends() {
       {looks.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsLooks')}</p>
-          <div className="tmag-looks">
+          <div className="tmag-looks tmag-scroll">
             {looks.map((o) => (
               <Link to={`/o/${o.id}`} key={o.id} className="tmag-look">
                 <img src={o.img} alt="" loading="lazy" />
@@ -130,7 +151,7 @@ export function Trends() {
       {data.topColors?.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsTopColors')}</p>
-          <div className="tmag-palette">
+          <div className="tmag-palette tmag-scroll">
             {data.topColors.slice(0, 6).map((c) => (
               <div className="tmag-swatch" key={c.key}>
                 <i style={{ background: COLOR_HEX[c.key] || '#ccc' }} />
@@ -176,7 +197,7 @@ export function Trends() {
       {data.market?.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsMarket')}</p>
-          <div className="tmag-strip">
+          <div className="tmag-strip tmag-scroll">
             {data.market.map((m) => (
               <Link to={`/i/${m.id}`} key={m.id} className="tmag-strip-item">
                 <img src={m.img} alt="" loading="lazy" />
