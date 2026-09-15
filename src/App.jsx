@@ -436,12 +436,11 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/stylist" element={<Stylist user={user} onSignIn={handleSignIn} />} />
           <Route path="/tryon/:generationId" element={<GenerationDetail user={user} />} />
 
-          {/* feedMode 'trends' (default) parks the social feed behind the
-              trends board — resurrect by setting config/app.feedMode='feed',
-              no release needed. Feed code stays alive for that day. */}
-          <Route path="/feed" element={getFeedMode() === 'feed'
-            ? <Feed user={user} onSignIn={handleSignIn} />
-            : <Trends />} />
+          {/* The feed stays reachable at its URL forever — feedMode only
+              decides which of the two the TAB points at (owner call 9/15:
+              hide feed from UI while the community is small, don't kill it). */}
+          <Route path="/feed" element={<Feed user={user} onSignIn={handleSignIn} />} />
+          <Route path="/trends" element={<Trends />} />
           <Route path="/market" element={<Marketplace />} />
           <Route path="/messages" element={<Inbox user={user} />} />
           <Route path="/notifications" element={<Notifications user={user} onSignIn={handleSignIn} />} />

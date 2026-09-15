@@ -42,7 +42,7 @@ export function MobileTabBar({ user, onSignIn }) {
   const { sheetStyle: createSheetStyle, handleProps: createHandleProps } = useSheetDrag(() => setSheetOpen(false));
 
   const isLoggedIn = user && !user.isAnonymous;
-  const onHome = location.pathname === '/' || location.pathname.startsWith('/feed');
+  const onHome = location.pathname === '/' || location.pathname.startsWith('/feed') || location.pathname.startsWith('/trends');
   const onProfile = location.pathname.startsWith('/profile') || location.pathname.startsWith('/u/');
 
   // Live drape profile photo — same source the profile header uses, so the
@@ -74,7 +74,7 @@ export function MobileTabBar({ user, onSignIn }) {
     <>
       <nav className="floating-nav" aria-label="primary">
         <Link
-          to="/feed"
+          to={getFeedMode() === 'feed' ? '/feed' : '/trends'}
           className={`floating-nav-btn${onHome ? ' active' : ''}`}
           aria-label={getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
         >

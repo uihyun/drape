@@ -19,6 +19,17 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Trends v2 — editorial redesign (same day).** Owner verdict on v1: "a
+  dashboard, unusable." Rebuilt as a weekly fashion issue in the brand's own
+  grammar: Bodoni-italic masthead headline driven by the #1 style ("Casual
+  is having a moment."), letterspaced kickers, hairline-ruled ranked list
+  with persona bylines (avatar + name + AI chip), oversized palette dots,
+  collage community picks (full-bleed cover + 2-up grid, italic overlay
+  tags), one inverted espresso-ink band for most-tried-on categories, drape
+  serif footer. No cards, no borders, no bar charts. Route correction from
+  the same review: /feed keeps the ORIGINAL feed forever (URL-reachable,
+  just hidden from UI), Trends lives at /trends, and the tab points at one
+  or the other via config/app.feedMode.
 - **Feed → Trends (owner pivot 2026-09-15).** The social feed is parked
   (community too small to look alive) behind `config/app.feedMode` —
   'trends' (baked default) renders the new Trends board at /feed; flipping
