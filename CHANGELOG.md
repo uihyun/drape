@@ -34,11 +34,12 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
-- **Trends cover matches the app's radius language.** Every other image
-  surface (look detail, look cards, marketplace thumbs) is rounded; the
-  masthead was the lone square element. It now bleeds from the top — where
-  the device's own screen rounding frames it — and closes with a 20px radius
-  at the bottom, so it unifies without flattening into just another card.
+- **Trends cover stays square (reverted same day).** Briefly rounded its
+  bottom corners for consistency, then reverted on the owner's read: the
+  rounded-corner rule governs CARDS — discrete objects floating on a page —
+  while the cover is the page, full-bleed like a magazine cover plate. Its
+  bottom gradient makes the hard edge against the white body read as
+  intentional. Rule recorded in the CSS so it isn't re-litigated.
 - **Profile tabs are smaller (0.9 → 0.78rem).** The section rail was
   carrying body-text weight and competing with the identity header. Kept in
   sentence case rather than adopting the Trends uppercase-kicker grammar:
