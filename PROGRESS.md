@@ -2,51 +2,41 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-11 (store = 1.5.0; repo = 2.1.0 "your stylist", web/server all live)
+## Snapshot — 2026-09-16 (store = 1.5.0; repo = 2.1.0, feature-complete, UNSUBMITTED)
 
-**Store reality:** production is still **1.5.0** (versionCode 17 / iOS build
-14, shipped 7/x). 1.5.1 (vc19/b15) was built in-repo but SKIPPED — never
-submitted; its whole payload rides 2.0.0. **Play is enforcing target API 36
-since Aug 31: no Android update can ship until the 2.1.0 AAB (already
-API 36) is uploaded — this is the standing fire.**
+**The one blocker that matters:** production is still **1.5.0** (vc17 / iOS
+build 14). Everything below has been live on web/functions for weeks but no
+app user has seen any of it. Play has enforced target API 36 since Aug 31,
+so **no Android update can ship until the 2.1.0 AAB goes up** — the repo is
+already API 36, versionCode 20 / iOS build 16, with the submission kit
+(release notes EN/KO/JA + ASO metadata + build checklist) in CHANGELOG.md.
 
-**Repo = 2.1.0** (versionCode 20 / iOS build 16, all three version spots set; 2.x = repositioning, .1 by owner taste — no unshipped 2.0 exists publicly).
-Everything below is LIVE on web/functions; native users get it all at once
-with the 2.1.0 builds:
+**Shipped since the last snapshot** (all live on web):
+- **Trends** replaced the feed in the tab bar (feed itself untouched at
+  /feed, `config/app.feedMode` flips the tab back). Editorial weekly issue:
+  full-bleed cover rotating per visit, styles ranked by real week-over-week
+  momentum, most-owned brands, palette, "This week's looks" (auto-picked
+  Monday, ≤LOOKS_MAX, ≤2 per closet), tried-on categories, colophon dated by
+  `issueWeek`. Aggregates exclude seed accounts; images come only from
+  public surfaces. Admin can feature/cover/hide for the current week.
+- **Stylist** (SPEC-1.6 §D) + style profile + Settings "My style".
+- **Share-to-drape** on all three entry points; imported pieces now carry
+  their source URL (`shopUrl`) and fire `import_item_saved`.
+- **Server-configurable AI models** (`config/models`, /admin → Config).
+- Closet sorting, bulk "Upload several", in-app review nudge, Firestore
+  offline persistence, icon-only bottom nav.
+- Admin: persona-sunset gauge, trends curation, config/models editors,
+  acquisition channels, 30-day default window.
 
-- **Stylist** (SPEC-1.6 §B/§D): 4 illustrated personas (2×2 chooser,
-  `/stylist`), style-profile summary (`users/{uid}/private/styleProfile`,
-  incremental, ≤2×/day), Settings "My style" stated prefs (read fresh every
-  rec — authoritative), 3 free recs/day then 1 fit each (single wallet,
-  refund on failure), try-on 👍👎 feedback (Generation.feedback — doubles as
-  training labels), profile ✨ entry + coachmark (pre-2.0 users only; new
-  users get onboarding step 3).
-- **Share-to-drape, web half** (§A): manifest share_target → `/import` →
-  `importFromUrl` (SSRF-guarded og:image fetch) → existing analyze→register
-  flow (wishlist by default). Native intents NOT built yet.
-- **1.5.1 payload**: onboarding v4 (try-on + stylist steps), remote copy
-  layer (`config/copy`: strings + onboardingSteps + notice banner), fits
-  balance UI, out_of_fits GA, native sign_up GA.
-- **Admin**: persona-sunset panel (taper ≥8/wk×2, sunset ≥20/wk×4 real
-  public outfits), 30-day default window (all-time from adminStats
-  snapshot), acquisition-channels tables, Config tab (notice + onboarding
-  editor via adminGet/SetConfig).
-- **Infra**: Firestore offline persistence (the "lists reload every visit"
-  fix), in-app review nudge (3rd ready try-on, 90-day cooldown, native-only),
-  check gates grown to: named-imports, locale parity ×3, CSS-var audit,
-  rules-of-hooks eslint, native identity, build, 45 tests.
-- **SEO/AEO**: FAQPage JSON-LD, llms.txt, IndexNow submitted (Bing had zero
-  pages indexed; GSC verified via DNS). docs/SEO.md tracks.
+**Known gaps (decided, not forgotten)** — see docs/SPEC-1.6.md "deviations":
+stylist rec → "save as outfit" button; single-garment import fast path;
+style-profile refresh is a 12h lazy TTL rather than event-driven; Trends has
+no interaction analytics beyond the automatic screen_view; the "this week"
+stats line is a rolling 7-day window while the looks slate is calendar-weekly.
 
-**Left for 2.1.0 ship:** Android ACTION_SEND intent → /import, iOS Share
-Extension (pbxproj target), TryOnHistory card 👍👎, store metadata/ASO
-(subtitle/keywords/screenshots per App Store Browse surge), release notes
-EN/KO/JA — then owner builds & submits both stores. Post-ship: watch
-rec→try-on conversion (target ≥25%), country funnel, persona-sunset panel.
-
-Strategy docs: docs/SPEC-1.6.md (2.0 scope), docs/COMPETITOR-lekondo.md
-(rival watch + direction), docs/SEO.md, resources/marketing/README.md
-(US-first, reels-only, creator open call).
+**Next:** owner builds and submits 2.1.0 (Xcode: DrapeShare target already
+wired; Android Studio: vc20 AAB clears the API-36 block), then measure
+stylist rec→try-on conversion and Trends engagement.
 
 ---
 

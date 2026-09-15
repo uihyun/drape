@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
+import { analytics, logEvent } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
@@ -46,7 +47,7 @@ async function bulkAddOwnedInBackground(photos) {
       const data = await ItemService.analyzePhoto({ blob, mime: blob.type || 'image/jpeg' });
       for (const piece of (data.items || [])) {
         try {
-          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', owned: true });
+          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', shopUrl: importedSourceRef.current, owned: true });
         } catch { /* one failed create = one missing card; the rest still land */ }
       }
     } catch { /* detection failure on one photo shouldn't abort the others */ }
@@ -111,11 +112,18 @@ export function AnalyzePhoto({ user, onSignIn }) {
   // file. Ref indirection because addFiles is defined below the sign-in
   // early return (hooks themselves must stay above it — React #310).
   const addFilesRef = useRef(null);
+  const importedSourceRef = useRef('');
   useEffect(() => {
     if (!user || user.isAnonymous) return;
     if (search.get('shared') !== '1') return;
     const entry = takePendingImport();
-    if (entry?.blob) addFilesRef.current?.([entry.blob], 'upload');
+    if (entry?.blob) {
+      // Keep where the photo came from — saved onto every piece detected in
+      // it (SPEC-1.6 §A: the future "buy it" link, and a taste signal about
+      // where the user shops).
+      importedSourceRef.current = entry.sourceUrl || '';
+      addFilesRef.current?.([entry.blob], 'upload');
+    }
   }, [user?.uid, search]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mirror result state into the module cache so a remount (back nav)
@@ -240,9 +248,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
         blob: batch.blob,
         detected,
         sourceLabel: batch.style || '',
+        shopUrl: importedSourceRef.current,
         owned,
       });
       setSavedKeys(prev => new Set(prev).add(key));
+      if (importedSourceRef.current) logEvent(analytics, 'import_item_saved', { owned });
     } catch (e) {
       setError(e.message || 'save_failed');
       throw e; // let the caller (PieceRow) know not to mark the row saved
@@ -268,9 +278,11 @@ export function AnalyzePhoto({ user, onSignIn }) {
             blob: batch.blob,
             detected: batch.items[itemIdx],
             sourceLabel: batch.style || '',
+            shopUrl: importedSourceRef.current,
             owned,
           });
           setSavedKeys(prev => new Set(prev).add(key));
+          if (importedSourceRef.current) logEvent(analytics, 'import_item_saved', { owned });
         } catch (e) {
           setError(e.message || 'save_failed');
         }

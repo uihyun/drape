@@ -34,6 +34,13 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Spec-gap sweep + doc refresh (2026-09-16).** Audited SPEC-1.6 against
+  the code: imported pieces now persist where they came from (the shared
+  page's URL lands in the existing top-level `shopUrl` on every piece saved
+  from that photo) and fire `import_item_saved`, closing the last §A item.
+  PROGRESS.md snapshot, the spec's status block (now listing deliberate
+  deviations instead of a stale checklist) and the competitor doc's
+  direction list were rewritten to match reality.
 - **Trends cover stays square (reverted same day).** Briefly rounded its
   bottom corners for consistency, then reverted on the owner's read: the
   rounded-corner rule governs CARDS — discrete objects floating on a page —

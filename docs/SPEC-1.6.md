@@ -3,13 +3,33 @@
 Owner call (2026-09-08): build complete, not staged MVPs. This file is the
 single source of truth for the 2.0 scope; PROGRESS.md tracks execution.
 
-**STATUS 2026-09-11:** ✅ C feedback (9/8) · ✅ D stylist v1+v2 UI (9/8–9/10;
-economics changed to 3 free/day then 1 fit — supersedes §D's "10/day free";
-rec rating lives on `stylistRecs.feedback`, whole-batch) · ✅ B profile +
-Settings "My style" (9/11; stated prefs also injected fresh per rec) ·
-✅ A web half (share_target GET + /import + importFromUrl, 9/11) ·
-⏳ remaining: A native (Android ACTION_SEND, iOS Share Extension),
-TryOnHistory card 👍👎, store metadata/release notes → 2.1.0 submission.
+**STATUS 2026-09-16 — scope complete, not yet submitted.**
+✅ A share-import (web share_target + `/import` + SSRF-guarded
+`importFromUrl`; Android ACTION_SEND; iOS DrapeShare extension wired into
+project.pbxproj and building) · ✅ B style profile + Settings "My style"
+(stated prefs read fresh per rec) · ✅ C try-on 👍👎 (result page + history
+cards) · ✅ D stylist (4 illustrated personas, `/stylist`, 3 free recs/day
+then 1 fit, closed-world item validation) · ✅ E "iPhone-only" fix (JSON-LD,
+llms.txt, crawlable FAQ naming both stores).
+
+**Deliberate deviations from the spec above** (the spec text is left as
+written so the drift is visible):
+- §D economics: shipped as 3 free/day then 1 fit — NOT "free, capped 10/day".
+  One wallet was the owner's call (2026-09-10).
+- §B refresh: shipped as a lazy 12-hour TTL inside `styleRecommend`, not an
+  event-driven job + nightly cron. Consequence: a 👍👎 can take up to 12h to
+  reach the summary (stated prefs bypass this — they're read fresh).
+- §D "save as outfit" button on a recommendation: NOT built.
+- §A single-garment fast path (product shot → prefilled AddItem, skipping
+  the picker): NOT built; every import goes through the detect list.
+- §A `sourceUrl`: shipped 2026-09-16 as the existing `shopUrl` field on every
+  piece saved from a shared photo, plus an `import_item_saved` GA event.
+
+**Not in the original spec, shipped alongside:** Trends (feed replacement,
+weekly self-rotating issue), server-configurable AI model ids
+(`config/models`), closet sorting, bulk "Upload several", in-app review
+nudge, Firestore offline persistence, admin panels (persona sunset, trends
+curation, config + models editors, acquisition channels).
 
 **Versioning decision:** this is **1.6.0** (not 2.0 — 2.0 is a repositioning
 event, save it). ~~1.5.1 ships first~~ **REVERSED (owner, 2026-09-08): 1.5.1
