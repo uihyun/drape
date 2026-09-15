@@ -525,6 +525,7 @@ export const en = {
   trendsKicker: 'This week in drape',
   trendsHeadline: '{style} is having a moment.',
   trendsDataline: '{items} new pieces · {tryons} try-ons',
+  trendsIssue: 'Issue of {date} · new looks every Monday',
   trendsLooks: "This week's looks",
   trendsLooksNote: 'Picked by drape from looks shared publicly in the app.',
   trendsBrands: 'Most-owned brands',

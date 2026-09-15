@@ -527,6 +527,7 @@ export const ja = {
   trendsKicker: 'This week in drape',
   trendsHeadline: '今週のムードは{style}。',
   trendsDataline: '新着アイテム{items}点 · 試着{tryons}回',
+  trendsIssue: '{date}号 · 毎週月曜更新',
   trendsLooks: '今週のルック',
   trendsLooksNote: 'アプリで公開されたルックからdrapeが選びました。',
   trendsBrands: '所有が多いブランド',

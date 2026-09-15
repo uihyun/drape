@@ -525,6 +525,7 @@ export const ko = {
   trendsKicker: 'This week in drape',
   trendsHeadline: '이번 주의 무드, {style}.',
   trendsDataline: '새 아이템 {items}개 · 트라이온 {tryons}회',
+  trendsIssue: '{date} 호 · 매주 월요일 업데이트',
   trendsLooks: '이번 주의 룩',
   trendsLooksNote: '앱에 공개된 룩 중에서 drape가 골랐어요.',
   trendsBrands: '많이 가진 브랜드',

@@ -16,7 +16,7 @@ const VISIT_SEED = Math.random();
 // numbers from everyone, images only from public surfaces
 // (functions/trends.js).
 export function Trends() {
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
   const [data, setData] = useState(undefined);
 
   useEffect(() => {
@@ -186,8 +186,27 @@ export function Trends() {
         </section>
       )}
 
+      {/* Colophon — the publication cadence. Makes the weekly rotation read
+          as an editorial rhythm (and gives a reason to come back Monday)
+          instead of looking like content that randomly shuffled. */}
+      {data.issueWeek && (
+        <footer className="tmag-colophon">
+          {t('trendsIssue', { date: issueDate(data.issueWeek, lang) })}
+        </footer>
+      )}
     </div>
   );
+}
+
+// "2026-09-14" → a short, localized issue date ("September 14" / "9월 14일").
+function issueDate(weekKey, lang) {
+  try {
+    const [y, m, d] = weekKey.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(
+      lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : 'en-US',
+      { month: 'long', day: 'numeric' },
+    );
+  } catch { return weekKey; }
 }
 
 export default Trends;

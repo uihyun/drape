@@ -34,6 +34,11 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends colophon.** A single small line closes the page: "Issue of
+  September 14 · new looks every Monday" (localized, issue date derived from
+  the stored `issueWeek`). Publishing the cadence turns the weekly rotation
+  into an editorial rhythm — a reason to come back Monday — instead of
+  content that appears to shuffle at random.
 - **Trends weekly rules settled (owner, 2026-09-16):** issue boundary stays
   **Monday** (the 04:30 UTC cron lands 00:30 ET Monday, so a new issue
   carries the weekend's posts into the week people plan outfits); the slate
