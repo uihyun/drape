@@ -19,6 +19,17 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Trends v5 — real momentum + brands (2026-09-16).** "Styles on the rise"
+  is now literally true: items are bucketed by WHEN they were added, styles
+  rank by this week's additions (falling back to the all-time tally until a
+  week has ≥10 tagged additions), and each card carries a trend verdict
+  (new / up / flat / down) computed against the previous week. The masthead
+  headline names a style that is actually RISING, not merely #1 — on launch
+  day casual led the table while falling (53 this week vs 82 prior), so the
+  old copy was lying. New **Most-owned brands** section: brand strings from
+  the vision tagger, case/space-folded (SHEIN + Shein → one row), two-column
+  ranked list — live values Nike 26 / Shein 22 / Adidas 15. Imageless hero
+  tightened to a compact ink block. Locale +4 ×3.
 - **Trends v4 + bulk-add polish (owner review 2026-09-16).** Trends: the
   imagery source flipped to the ORIGINAL photo (cutouts are calendar assets
   and rendered as floating ghosts in the grid); community picks + photo hero

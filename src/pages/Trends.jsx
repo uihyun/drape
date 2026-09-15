@@ -32,7 +32,10 @@ export function Trends() {
   }
 
   const label = (ns, key) => t(`taxonomy.${ns}.${key}`) || key;
-  const topStyle = data.topStyles?.[0];
+  // The headline must name a style that is actually RISING — the #1 row can
+  // be falling (it was, on launch day: casual 53 this week vs 82 last).
+  const styles = data.topStyles || [];
+  const topStyle = styles.find((x) => x.trend === 'up' || x.trend === 'new') || styles[0];
   // Picks (and the photo hero) stay hidden until the public pool is real —
   // a three-image "community" section reads as emptiness, not curation
   // (owner call 2026-09-16). Returns automatically as content grows.
@@ -73,8 +76,14 @@ export function Trends() {
             {data.topStyles.slice(0, 5).map((s, i) => (
               <div className="tmag-stylecard" key={s.key}>
                 <span className="tmag-stylecard-no">{String(i + 1).padStart(2, '0')}</span>
+                {s.trend === 'new' && <span className="tmag-flag">{t('trendsNew')}</span>}
+                {s.trend === 'up' && <span className="tmag-flag">↑</span>}
                 <strong>{label('styles', s.key)}</strong>
-                <span className="tmag-stylecard-count">{s.count}</span>
+                <span className="tmag-stylecard-count">
+                  {data.basis === 'week'
+                    ? t('trendsAddedThisWeek', { n: s.week })
+                    : t('trendsInClosets', { n: s.total ?? s.count })}
+                </span>
               </div>
             ))}
           </div>
@@ -94,6 +103,22 @@ export function Trends() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Brands — what people actually own, folded by name. */}
+      {data.topBrands?.length > 0 && (
+        <section className="tmag-section">
+          <p className="tmag-kicker">{t('trendsBrands')}</p>
+          <ol className="tmag-brands">
+            {data.topBrands.map((b, i) => (
+              <li key={b.key}>
+                <span className="tmag-brands-no">{String(i + 1).padStart(2, '0')}</span>
+                <span className="tmag-brands-name">{b.key}</span>
+                <span className="tmag-brands-count">{b.count}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

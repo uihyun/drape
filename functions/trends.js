@@ -49,18 +49,40 @@ async function computeTrends() {
   const real = await realUidSet();
   const weekAgo = admin.firestore.Timestamp.fromMillis(Date.now() - 7 * 864e5);
 
-  // Closet composition — real users, NUMBERS ONLY.
-  const cat = {}, col = {}, sty = {};
+  // Closet composition — real users, NUMBERS ONLY. Styles are bucketed by
+  // WHEN the piece was added (this week vs the week before) so "on the rise"
+  // means actual momentum, not an all-time tally.
+  const twoWeeksAgo = admin.firestore.Timestamp.fromMillis(Date.now() - 14 * 864e5);
+  const cat = {}, col = {}, sty = {}, styWeek = {}, styPrev = {}, brands = {};
   let itemsTotal = 0, itemsThisWeek = 0;
   (await db().collection('items').get()).forEach((d) => {
     const x = d.data();
     if (!real.has(x.userId) || x.isArchived) return;
     itemsTotal++;
-    if (x.createdAt && x.createdAt.toMillis() >= weekAgo.toMillis()) itemsThisWeek++;
+    const ms = x.createdAt ? x.createdAt.toMillis() : 0;
+    const isThisWeek = ms >= weekAgo.toMillis();
+    const isPrevWeek = ms >= twoWeeksAgo.toMillis() && ms < weekAgo.toMillis();
+    if (isThisWeek) itemsThisWeek++;
     const t = x.tags || {};
     if (t.category) cat[t.category] = (cat[t.category] || 0) + 1;
     (Array.isArray(t.colors) ? t.colors.slice(0, 2) : []).forEach((c) => { col[c] = (col[c] || 0) + 1; });
-    (Array.isArray(t.styles) ? t.styles.slice(0, 2) : []).forEach((s) => { sty[s] = (sty[s] || 0) + 1; });
+    (Array.isArray(t.styles) ? t.styles.slice(0, 2) : []).forEach((st) => {
+      sty[st] = (sty[st] || 0) + 1;
+      if (isThisWeek) styWeek[st] = (styWeek[st] || 0) + 1;
+      else if (isPrevWeek) styPrev[st] = (styPrev[st] || 0) + 1;
+    });
+    // Brand names are free text from the vision tagger — fold case/spacing
+    // so "SHEIN" and "Shein" are one row.
+    const rawBrand = typeof x.brand === 'string' ? x.brand : (typeof t.brand === 'string' ? t.brand : '');
+    const b = rawBrand.trim().replace(/\s+/g, ' ');
+    if (b && b.length <= 40) {
+      const key = b.toLowerCase();
+      const cur = brands[key] || { label: b, count: 0 };
+      cur.count += 1;
+      // Prefer the prettiest casing seen (Title Case over SHOUTING).
+      if (b !== b.toUpperCase() && cur.label === cur.label.toUpperCase()) cur.label = b;
+      brands[key] = cur;
+    }
   });
 
   // Try-on activity — real users, category-level counts (no images).
@@ -145,7 +167,22 @@ async function computeTrends() {
     regions[String(x.location)] = (regions[String(x.location)] || 0) + 1;
   });
 
-  const topStyles = top(sty, 6).map((s) => ({ ...s, persona: STYLE_PERSONA[s.key] || 'juno' }));
+  // Rank by this week's additions when there's enough signal, else fall back
+  // to the all-time tally (a brand-new week shouldn't blank the section).
+  const weekTotal = Object.values(styWeek).reduce((a, b) => a + b, 0);
+  const basis = weekTotal >= 10 ? styWeek : sty;
+  const topStyles = top(basis, 6).map((s) => {
+    const week = styWeek[s.key] || 0;
+    const prev = styPrev[s.key] || 0;
+    let trend = 'flat';
+    if (prev === 0 && week > 0) trend = 'new';
+    else if (week > prev * 1.2) trend = 'up';
+    else if (week * 1.2 < prev) trend = 'down';
+    return { key: s.key, count: s.count, week, prev, trend, total: sty[s.key] || 0 };
+  });
+  const topBrands = Object.values(brands)
+    .sort((a, b) => b.count - a.count).slice(0, 8)
+    .map((b) => ({ key: b.label, count: b.count }));
 
   const doc = {
     computedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -153,6 +190,8 @@ async function computeTrends() {
     topCategories: top(cat, 6),
     topColors: top(col, 8),
     topStyles,
+    topBrands,
+    basis: weekTotal >= 10 ? 'week' : 'alltime',
     triedOnCategories: top(triedCat, 6),
     picks,
     picksAll,
