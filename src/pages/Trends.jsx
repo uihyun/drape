@@ -33,7 +33,12 @@ export function Trends() {
 
   const label = (ns, key) => t(`taxonomy.${ns}.${key}`) || key;
   const topStyle = data.topStyles?.[0];
-  const [coverPick, ...gridPicks] = data.picks || [];
+  // Picks (and the photo hero) stay hidden until the public pool is real —
+  // a three-image "community" section reads as emptiness, not curation
+  // (owner call 2026-09-16). Returns automatically as content grows.
+  const MIN_PICKS = 6;
+  const showPicks = (data.picks || []).length >= MIN_PICKS;
+  const [coverPick, ...gridPicks] = showPicks ? data.picks : [];
 
   return (
     <div className="tmag">
@@ -93,12 +98,16 @@ export function Trends() {
       )}
 
       {/* Community picks — 2-up grid with pill tags (cover already used). */}
-      {gridPicks.length > 0 && (
+      {showPicks && gridPicks.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsCommunityPicks')}</p>
           <div className="tmag-grid">
-            {gridPicks.map((o) => (
-              <Link to={`/o/${o.id}`} key={o.id} className="tmag-cell">
+            {gridPicks.map((o, i) => (
+              <Link
+                to={`/o/${o.id}`}
+                key={o.id}
+                className={`tmag-cell${i === gridPicks.length - 1 && gridPicks.length % 2 === 1 ? ' tmag-cell--wide' : ''}`}
+              >
                 <img src={o.img} alt="" loading="lazy" />
                 {o.style && <span className="tmag-pill">{label('styles', o.style)}</span>}
               </Link>
@@ -136,9 +145,6 @@ export function Trends() {
         </section>
       )}
 
-      <footer className="tmag-foot">
-        <span className="tmag-foot-mark">drape</span>
-      </footer>
     </div>
   );
 }

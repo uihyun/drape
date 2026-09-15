@@ -382,7 +382,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
             <div className="analyze-input-choice">
               <button
                 type="button"
-                className="btn btn-primary analyze-input-btn"
+                className="btn btn-secondary analyze-input-btn"
                 disabled={uploadDisabled}
                 onClick={async () => {
                   try {
@@ -397,6 +397,26 @@ export function AnalyzePhoto({ user, onSignIn }) {
               </button>
               {owned && <span className="analyze-input-hint">{t('analyzeUploadHint')}</span>}
             </div>
+            {owned && (
+              <div className="analyze-input-choice">
+                <button
+                  type="button"
+                  className="btn btn-secondary analyze-input-btn"
+                  disabled={multiDisabled}
+                  onClick={async () => {
+                    try {
+                      const blobs = await CameraService.pickManyFromLibrary(MAX_PHOTOS - batches.length);
+                      if (blobs?.length) addFiles(blobs, 'uploadMulti');
+                    } catch (err) {
+                      setError(err.message);
+                    }
+                  }}
+                >
+                  <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadSeveral')}
+                </button>
+                <span className="analyze-input-hint">{t('analyzeMultiHint', { max: MAX_PHOTOS })}</span>
+              </div>
+            )}
             <div className="analyze-input-choice">
               <button
                 type="button"
@@ -421,26 +441,6 @@ export function AnalyzePhoto({ user, onSignIn }) {
               </button>
               {owned && canBurst && <span className="analyze-input-hint">{t('analyzeSnapHint')}</span>}
             </div>
-            {owned && (
-              <div className="analyze-input-choice">
-                <button
-                  type="button"
-                  className="btn btn-secondary analyze-input-btn"
-                  disabled={multiDisabled}
-                  onClick={async () => {
-                    try {
-                      const blobs = await CameraService.pickManyFromLibrary(MAX_PHOTOS - batches.length);
-                      if (blobs?.length) addFiles(blobs, 'uploadMulti');
-                    } catch (err) {
-                      setError(err.message);
-                    }
-                  }}
-                >
-                  <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadSeveral')}
-                </button>
-                <span className="analyze-input-hint">{t('analyzeMultiHint', { max: MAX_PHOTOS })}</span>
-              </div>
-            )}
           </div>
 
           {batches.length > 0 && (

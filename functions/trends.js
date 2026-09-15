@@ -109,7 +109,9 @@ async function computeTrends() {
     if (picksAll.length >= 24) return;
     const x = d.data();
     if (!real.has(x.userId)) return;
-    const img = x.photoCutUrl || x.photoUrl || null;
+    // Original photo first — cutouts are calendar assets and look like
+    // floating ghosts in an editorial grid.
+    const img = x.photoUrl || x.photoCutUrl || null;
     if (!img) return;
     picksAll.push({
       id: d.id,

@@ -19,6 +19,18 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Trends v4 + bulk-add polish (owner review 2026-09-16).** Trends: the
+  imagery source flipped to the ORIGINAL photo (cutouts are calendar assets
+  and rendered as floating ghosts in the grid); community picks + photo hero
+  now stay hidden until the public pool reaches 6 (a 3-image "community"
+  reads as emptiness — returns automatically as content grows), so the page
+  currently opens on the ink masthead; footer wordmark removed (mobile-only
+  product, it was web-page furniture); pills smaller with blur; odd pick
+  counts get a wide closing cell; style cards taller with the numeral as a
+  small top-left marker and the name anchored bottom; bigger palette dots;
+  calmer dark-module type. Bulk add: three equal-weight buttons (the lone
+  green primary implied a "right" answer) and the two upload modes sit
+  together, camera last.
 - **Trends refinements (owner review 2026-09-16):** AI persona chips
   removed from style cards (the stylist is its own feature — trends stays
   clean data), regions section dropped (too few users to be meaningful),
