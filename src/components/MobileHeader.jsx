@@ -10,6 +10,9 @@ const HIDE_ON = [
   /^\/$/,
   /^\/profile(\/.*)?$/,
   /^\/feed$/,
+  // Trends is the tab's top-level screen (same standing as /feed) — a back
+  // arrow there points nowhere the user came from.
+  /^\/trends$/,
   /^\/welcome$/,
   // ItemDetail and OutfitShare are full-screen viewers with their own
   // close button.

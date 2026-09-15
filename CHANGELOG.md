@@ -34,6 +34,10 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **No back arrow on /trends.** The route was missing from MobileHeader's
+  HIDE_ON list, so the tab's top-level screen rendered a back button that
+  pointed nowhere the user had come from — /feed never did. Verified:
+  trends and feed hidden, deeper routes unchanged.
 - **Bottom nav: icons only, closet is a garment.** The "Trends" / "Closet"
   labels are gone (three glyphs on a floating bar don't need naming; the
   aria-labels stay for screen readers) and the closet button now shows a
