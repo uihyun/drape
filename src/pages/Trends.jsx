@@ -5,6 +5,10 @@ import { db } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { COLOR_HEX } from '../services/taxonomy.js';
 
+// One roll per page load — the masthead photo rotates between visits while
+// staying stable during a single view (module scope, so re-renders reuse it).
+const VISIT_SEED = Math.random();
+
 // Trends as a weekly fashion issue, not a dashboard (owner, 2026-09-15:
 // "절대 대시보드처럼 보이면 안 돼"). Editorial grammar borrowed from the
 // brand itself — Bodoni italic display, letterspaced kickers, hairline
@@ -36,10 +40,26 @@ export function Trends() {
   // be falling (it was, on launch day: casual 53 this week vs 82 last).
   const styles = data.topStyles || [];
   const topStyle = styles.find((x) => x.trend === 'up' || x.trend === 'new') || styles[0];
-  // Looks are editorially curated (admin picks the ids) — nothing
-  // auto-promotes, so no volume gate is needed. Cover is its own pin.
-  const looks = data.looks || [];
-  const coverPick = data.cover || null;
+  const allLooks = data.looks || [];
+  // The cover rotates through this week's looks on every visit — a masthead
+  // that never moves reads as a dead page. An explicit admin pin (data.cover
+  // with coverId set) wins; otherwise prefer a look whose style matches the
+  // headline, falling back to the whole slate. The chosen one is pulled out
+  // of the row below so the same photo never appears twice.
+  const headlineKey = topStyle?.key;
+  const coverPick = (() => {
+    if (data.coverId && data.cover) return data.cover;   // admin pin wins
+    if (!allLooks.length) return data.cover || null;
+    // Rotate across ALL of this week's looks — style-matching the headline
+    // sounded tidy but with one matching look it pinned the masthead to a
+    // single photo. The hero carries its own style caption instead, so a
+    // casual cover under a "Classic is rising" headline reads as a photo
+    // credit, not a contradiction. VISIT_SEED is fixed per page load
+    // (module scope) — stable during a view, different on the next visit.
+    // No hook here on purpose: this sits below the page's early returns.
+    return allLooks[Math.floor(VISIT_SEED * allLooks.length)];
+  })();
+  const looks = allLooks.filter((l) => l.id !== coverPick?.id);
 
   return (
     <div className="tmag">
@@ -62,6 +82,7 @@ export function Trends() {
               items: data.stats?.itemsThisWeek ?? 0,
               tryons: data.stats?.tryonsThisWeek ?? 0,
             })}
+            {coverPick?.style ? ` · ${label('styles', coverPick.style)}` : ''}
           </p>
         </div>
       </header>

@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends masthead rotates per visit.** The cover was fixed for a whole
+  week (and then, briefly, pinned to the single headline-style match) — a
+  page that never moves reads as dead. It now draws from THIS WEEK's looks
+  on every page load (module-scope seed: stable during a view, different on
+  the next), is removed from the row below so no photo shows twice, and
+  carries its own style as a caption on the dataline so a casual cover under
+  a "Classic is rising" headline reads as a photo credit rather than a
+  contradiction. An admin cover pin still overrides. Verified across four
+  fresh loads: three different covers, row count 7 → 6.
 - **Trends: weekly auto-issue (owner, 2026-09-16).** "This week's looks"
   now curates ITSELF: when the ISO week rolls over (or the slate is empty)
   computeTrends re-picks from this week's public looks — newest first, max 2
