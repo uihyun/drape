@@ -19,6 +19,21 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **AI models are server-configurable (2026-09-16).** Every production
+  Gemini id moved out of code constants into Firestore `config/models`,
+  read through the new `functions/model-config.js` (5-minute cache, strict
+  `^[a-z0-9][a-z0-9.\-]{2,63}$` id pattern, imageSize limited to 1K/2K/4K,
+  and a fallback to the baked-in defaults on a missing/denied/malformed
+  doc — the same never-break contract as config/copy). Wired through
+  items.js (vision + crop model/size), tryon.js (try-on model/size),
+  stylist.js and translate.js. New **AI models** card in /admin → Config
+  edits them with per-field placeholders showing the defaults and a
+  "reset to defaults" that deletes the doc. Validation lives server-side,
+  so a typo is rejected at save time instead of breaking generation:
+  live-verified (`DROP TABLE users` → INVALID_ARGUMENT, `8K` → rejected,
+  valid save → stored, reset → doc removed) and a real styleRecommend call
+  still returned 3 outfits afterwards. Changing a model now reaches
+  production in ≤5 minutes with no deploy and no client release.
 - **Trends v6 — "This week's looks" + layout rules (owner, 2026-09-16).**
   New curated outfit section: the pool is every PUBLIC outfit with a photo
   (seed closets included — they're already browsable profiles in the app),

@@ -632,6 +632,73 @@ function PublicGallery({ title, items, to }) {
 const CFG_LANGS = [['en', L_EN], ['ko', L_KO], ['ja', L_JA]];
 const emptyLangs = () => ({ en: '', ko: '', ja: '' });
 
+// AI model ids — editable without a functions deploy (config/models,
+// read by functions/model-config.js with a 5-min cache + strict validation).
+function ModelsCard() {
+  const [vals, setVals] = useState(null);
+  const [defs, setDefs] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = () => AdminService.getConfig()
+    .then(({ models, modelDefaults }) => { setVals(models || {}); setDefs(modelDefaults || {}); })
+    .catch((e) => setErr(e.message || 'failed'));
+  useEffect(() => { load(); }, []);
+
+  const save = (payload, note) => {
+    setBusy(true); setErr(''); setMsg('');
+    AdminService.setConfig({ models: payload })
+      .then(() => { setMsg(note); load(); })
+      .catch((e) => setErr(e.message || 'failed'))
+      .finally(() => setBusy(false));
+  };
+
+  if (!vals) return null;
+  const FIELDS = [
+    ['vision', 'text/vision (tagging, OOTD, stylist, translate)'],
+    ['imageCrop', 'item cutout'],
+    ['imageTryon', 'try-on render'],
+  ];
+  const SIZES = [['imageCropSize', 'cutout size'], ['imageTryonSize', 'try-on size']];
+  return (
+    <>
+      <h3 className="adm-h3">AI models <span className="adm-muted">(live in ≤5 min, no deploy — blank = built-in default)</span></h3>
+      {err && <div className="adm-err">{err}</div>}
+      {msg && <div className="adm-muted" style={{ marginBottom: 8 }}>✓ {msg}</div>}
+      <div className="adm-cfgcard">
+        {FIELDS.map(([k, label]) => (
+          <div className="adm-cfgrow" key={k}>
+            <span className="adm-cfglang" style={{ width: 'auto', minWidth: 210 }}>{label}</span>
+            <input
+              value={vals[k] ?? ''}
+              placeholder={defs[k] || ''}
+              onChange={(e) => setVals({ ...vals, [k]: e.target.value })}
+              style={{ flex: 1, minWidth: 220 }}
+            />
+          </div>
+        ))}
+        {SIZES.map(([k, label]) => (
+          <div className="adm-cfgrow" key={k}>
+            <span className="adm-cfglang" style={{ width: 'auto', minWidth: 210 }}>{label}</span>
+            {['1K', '2K', '4K'].map((sz) => (
+              <button
+                key={sz}
+                className={`adm-btn${(vals[k] || defs[k]) === sz ? ' on' : ''}`}
+                onClick={() => setVals({ ...vals, [k]: sz })}
+              >{sz}</button>
+            ))}
+          </div>
+        ))}
+        <div className="adm-cfgrow">
+          <button className="adm-btn" disabled={busy} onClick={() => save(vals, 'models saved')}>save models</button>
+          <button className="adm-btn" disabled={busy} onClick={() => save(null, 'reverted to built-in defaults')}>reset to defaults</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // Trends curation — the human hand on what /trends shows: hide bad picks
 // (they never return on recompute), pin the cover. Pool = picksAll from the
 // public trends doc (already-public looks only, so nothing sensitive here).
@@ -869,6 +936,8 @@ function ConfigTab() {
         <button className="adm-btn" disabled={busy} onClick={() => saveSteps(true)}>reset to app defaults</button>
       </div>
       <p className="adm-muted">Empty ko/ja fields fall back to en at runtime. Native apps pick these up from the next store build; web is immediate (next session).</p>
+
+      <ModelsCard />
 
       <TrendsCuration />
     </>

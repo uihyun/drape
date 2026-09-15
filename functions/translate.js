@@ -15,7 +15,8 @@ const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
-const VISION = 'gemini-3.5-flash';
+const { getModels } = require('./model-config.js');
+const VISION = 'gemini-3.5-flash';   // default; overridable via config/models
 const LANG_NAMES = { en: 'English', ko: 'Korean', ja: 'Japanese' };
 
 // Which Firestore collection each surface translates, and the free-text shape
@@ -85,7 +86,7 @@ exports.translateContent = onCall(
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genai.getGenerativeModel({
-      model: VISION,
+      model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
     const prompt = `Translate the string VALUES in this JSON to ${LANG_NAMES[target]}.

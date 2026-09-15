@@ -44,7 +44,8 @@ const geminiApiKey = defineSecret('GEMINI_API_KEY');
 // anyway, so 2K would just be downscaled away; 1K is ~$0.08/img and faster. NOT a
 // user-facing tier selector — single fixed model (modelTier ignored). The item
 // CROP uses Flash-Lite in items.js.
-const IMAGE_TRYON = 'gemini-3.1-flash-image';
+const { getModels } = require('./model-config.js');
+const IMAGE_TRYON = 'gemini-3.1-flash-image';   // default; overridable via config/models
 
 function bucketUrl(bucket, path) {
   return `https://storage.googleapis.com/${bucket}/${path}`;
@@ -473,7 +474,8 @@ exports.virtualTryOn = onCall(
 
     // Single fixed model — NOT a user-facing tier selector. `modelTier` may
     // still arrive from older clients; ignore it.
-    const modelId = IMAGE_TRYON;
+    const MODELS = await getModels();   // server-tunable (config/models)
+    const modelId = MODELS.imageTryon;
     const n = variants ?? 1;
 
     // ── Pre-write the generation doc EARLY ─────────────────────────────
@@ -655,7 +657,7 @@ exports.virtualTryOn = onCall(
       const res = await aiImg.models.generateContent({
         model: modelId,
         contents: parts,
-        config: { safetySettings, imageConfig: { imageSize: '1K' } },
+        config: { safetySettings, imageConfig: { imageSize: MODELS.imageTryonSize } },
       });
       if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
       const img = extractImage(res);

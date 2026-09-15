@@ -543,17 +543,51 @@ function validNotice(v) {
 exports.adminGetConfig = onCall(opts, async (request) => {
   assertAdmin(request);
   const db = admin.firestore();
-  const [copy, app] = await Promise.all([
+  const { MODEL_DEFAULTS } = require('./model-config.js');
+  const [copy, app, models] = await Promise.all([
     db.collection('config').doc('copy').get(),
     db.collection('config').doc('app').get(),
+    db.collection('config').doc('models').get(),
   ]);
-  return { copy: copy.exists ? copy.data() : {}, app: app.exists ? app.data() : {} };
+  return {
+    copy: copy.exists ? copy.data() : {},
+    app: app.exists ? app.data() : {},
+    models: models.exists ? models.data() : {},
+    modelDefaults: MODEL_DEFAULTS,
+  };
 });
 
 // Partial update: only the fields present in request.data.copy are touched.
 // Pass null to remove a field (fall back to baked-in behavior).
 exports.adminSetConfig = onCall(opts, async (request) => {
   assertAdmin(request);
+
+  // AI model ids (config/models) — separate doc, same never-break contract:
+  // anything invalid is rejected here so a typo can't reach production.
+  if (request.data?.models !== undefined) {
+    const { MODEL_RE, MODEL_SIZES, MODEL_DEFAULTS } = require('./model-config.js');
+    const m = request.data.models;
+    if (m === null) {
+      await admin.firestore().collection('config').doc('models').delete();
+      return { ok: true, models: MODEL_DEFAULTS };
+    }
+    if (typeof m !== 'object') throw new HttpsError('invalid-argument', 'models object required');
+    const clean = {};
+    for (const key of ['vision', 'imageCrop', 'imageTryon']) {
+      if (m[key] === undefined || m[key] === '') continue;
+      const v = String(m[key]).trim();
+      if (!MODEL_RE.test(v)) throw new HttpsError('invalid-argument', `bad model id: ${key}`);
+      clean[key] = v;
+    }
+    for (const key of ['imageCropSize', 'imageTryonSize']) {
+      if (m[key] === undefined || m[key] === '') continue;
+      if (!MODEL_SIZES.includes(m[key])) throw new HttpsError('invalid-argument', `bad size: ${key}`);
+      clean[key] = m[key];
+    }
+    await admin.firestore().collection('config').doc('models').set(clean);
+    return { ok: true, models: clean };
+  }
+
   const copy = request.data?.copy;
   if (!copy || typeof copy !== 'object') throw new HttpsError('invalid-argument', 'copy object required');
 

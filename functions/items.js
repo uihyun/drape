@@ -32,6 +32,9 @@ const geminiApiKey = defineSecret('GEMINI_API_KEY');
 // @1K matches/beats Pro 3 for catalog crops at ~72% lower cost + ~3x faster, with
 // no silhouette mangling (the old pants→shorts failure was an older Flash). See
 // docs/COST.md. Try-on stays Pro (tryon.js) — identity preservation needs it.
+// Model ids are server-tunable (Firestore config/models, see
+// model-config.js) — these names remain as the documented defaults.
+const { getModels } = require('./model-config.js');
 const IMAGE_CROP  = 'gemini-3.1-flash-lite-image';
 const VISION      = 'gemini-3.5-flash';   // tagging / analysis / OOTD (GA); moderation moved to Cloud Vision SafeSearch
 
@@ -337,6 +340,7 @@ exports.processItem = onCall(
 
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
+    const MODELS = await getModels();   // server-tunable ids (config/models)
 
     // ── Crop ───────────────────────────────────────────────────────────
     // gemini-3.1-flash-lite-image @1K. The prompt carries explicit hard
@@ -415,12 +419,12 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
     // ample for phone thumbnails/detail (2K is invisible on-device) and halves
     // both cost and stored size.
     const cropPromise = aiImg.models.generateContent({
-      model: IMAGE_CROP,
+      model: MODELS.imageCrop,
       contents: [
         { inlineData: { data: originalB64, mimeType: mime } },
         { text: cropPrompt + focusClause },
       ],
-      config: { imageConfig: { imageSize: '1K' } },
+      config: { imageConfig: { imageSize: MODELS.imageCropSize } },
     }).then(response => {
       const u = response?.usageMetadata;
       if (u) console.info('crop image tokens:', u.candidatesTokenCount, 'total:', u.totalTokenCount);
@@ -438,7 +442,7 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
     let tagPromise = Promise.resolve(null);
     if (!focus) {
       const visionModel = genai.getGenerativeModel({
-        model: VISION,
+        model: MODELS.vision,
         generationConfig: { responseMimeType: 'application/json' },
       });
       tagPromise = visionModel.generateContent([
@@ -720,7 +724,7 @@ exports.analyzeOotd = onCall(
 
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genAI.getGenerativeModel({
-      model: VISION,
+      model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
 
@@ -804,7 +808,7 @@ exports.analyzeGeneration = onCall(
 
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genAI.getGenerativeModel({
-      model: VISION,
+      model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
 
@@ -987,7 +991,7 @@ exports.detectItems = onCall(
     }
 
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
-    const model = genAI.getGenerativeModel({ model: VISION });
+    const model = genAI.getGenerativeModel({ model: (await getModels()).vision });
 
     try {
       const res = await model.generateContent([

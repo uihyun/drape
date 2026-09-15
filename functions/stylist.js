@@ -15,7 +15,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { reserveFit, refundFit } = require('./fits.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
-const MODEL = 'gemini-3.5-flash';
+const { getModels } = require('./model-config.js');
+const MODEL = 'gemini-3.5-flash';   // default; overridable via config/models
 
 const REC_DAILY = 3;            // free recommendations per user-local day; after
                                 // that each rec charges ONE fit (same wallet as
@@ -111,7 +112,7 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   const stated = (profSnap.exists && profSnap.data().stylePrefs) || null;
 
   const model = genAI.getGenerativeModel({
-    model: MODEL,
+    model: (await getModels()).vision,
     generationConfig: { responseMimeType: 'application/json' },
   });
   const prompt = [
@@ -207,7 +208,7 @@ exports.styleRecommend = onCall(
     }
 
     const model = genAI.getGenerativeModel({
-      model: MODEL,
+      model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
     const langName = { en: 'English', ko: 'Korean', ja: 'Japanese' }[lang];
