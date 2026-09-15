@@ -6712,7 +6712,10 @@ input[type="search"]::-webkit-search-decoration {
 .tmag-kicker { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px; }
 .tmag-section { margin: 0 0 26px; padding: 0 1.1rem; }
 /* hero — full-bleed cover with overlaid masthead */
-.tmag-hero { position: relative; margin: 0 0 22px; min-height: 62vh; display: flex; align-items: flex-end; overflow: hidden; background: var(--surface-elevated); }
+/* The cover bleeds from the top (the device's own screen rounding frames
+   it) and closes with the app's card radius at the bottom, so it matches
+   every other image surface without giving up a magazine cover's weight. */
+.tmag-hero { position: relative; margin: 0 0 22px; min-height: 62vh; display: flex; align-items: flex-end; overflow: hidden; background: var(--surface-elevated); border-radius: 0 0 20px 20px; }
 .tmag-hero--ink { background: #141312; min-height: 0; }
 .tmag-hero--ink .tmag-hero-text { padding-top: calc(var(--safe-top, 0px) + 3.2rem); padding-bottom: 2.2rem; }
 .tmag-hero--ink .tmag-headline { font-size: clamp(2.1rem, 9vw, 2.9rem); }
