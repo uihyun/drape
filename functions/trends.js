@@ -13,7 +13,7 @@
 const admin = require('firebase-admin');
 const { onCall } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { classify } = require('./admin-helpers.js');
+const { classify, weekKey } = require('./admin-helpers.js');
 
 function db() { return admin.firestore(); }
 
@@ -113,17 +113,17 @@ async function computeTrends() {
     if (c) triedCat[c] = (triedCat[c] || 0) + 1;
   }));
 
-  // ── This week's looks (editorial) ──────────────────────────────────
-  // Pool = every PUBLIC outfit with a photo, seed closets included (they
-  // already exist as browsable profiles in the app). Nothing auto-promotes:
-  // only ids the owner explicitly features in trends/curation.featured[]
-  // render, in that order. `hidden` kills a look from the pool for good.
-  // Still images-from-public-surfaces only — the privacy contract stands.
+  // ── This week's looks ─────────────────────────────────────────────
+  // AUTO by default, on a weekly cadence: when the ISO week rolls over (or
+  // the slate is empty) the section re-picks itself from THIS WEEK's public
+  // outfits and persists the choice, so the page rotates on its own every
+  // Monday instead of freezing on whatever a human last clicked. Admin
+  // feature/hide still works — it just owns the current week and is
+  // replaced by the next auto issue. No content is ever hardcoded here.
   const curSnap = await db().collection('trends').doc('curation').get();
   const curation = curSnap.exists ? curSnap.data() : {};
   const hidden = new Set(Array.isArray(curation.hidden) ? curation.hidden : []);
-  const featuredIds = Array.isArray(curation.featured) ? curation.featured : [];
-  const coverId = curation.coverId || null;
+  const thisWeek = weekKey(new Date().toISOString().slice(0, 10));
 
   const poolMap = new Map();
   const pubSnap = await db().collection('outfits')
@@ -136,34 +136,50 @@ async function computeTrends() {
       id: d.id,
       img,
       style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
+      userId: x.userId,
+      createdMs: x.createdAt ? x.createdAt.toMillis() : 0,
       seed: !real.has(x.userId),
       hidden: hidden.has(d.id),
-      featured: featuredIds.includes(d.id),
     });
   });
-  // Featured ids may point at older outfits outside the recent window.
-  for (const id of featuredIds) {
-    if (poolMap.has(id)) continue;
-    const d = await db().collection('outfits').doc(id).get();
-    if (!d.exists) continue;
-    const x = d.data();
-    if (x.isPublic !== true) continue;
-    const img = x.photoUrl || x.photoCutUrl || null;
-    if (!img) continue;
-    poolMap.set(id, {
-      id, img,
-      style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
-      seed: !real.has(x.userId), hidden: hidden.has(id), featured: true,
-    });
+
+  let featuredIds = Array.isArray(curation.featured) ? curation.featured : [];
+  const staleIssue = curation.issueWeek !== thisWeek;
+  const liveFeatured = featuredIds.filter((id) => poolMap.get(id) && !poolMap.get(id).hidden);
+  if (staleIssue || liveFeatured.length === 0) {
+    // Auto-pick: this week's public looks, newest first, at most 2 per
+    // closet so one prolific poster can't take the whole slate.
+    const perUser = {};
+    const picked = [];
+    [...poolMap.values()]
+      .filter((p) => !p.hidden && p.createdMs >= weekAgo.toMillis())
+      .sort((a, b) => b.createdMs - a.createdMs)
+      .forEach((p) => {
+        if (picked.length >= 8) return;
+        perUser[p.userId] = (perUser[p.userId] || 0) + 1;
+        if (perUser[p.userId] > 2) return;
+        picked.push(p.id);
+      });
+    // Thin week → widen to the most recent public looks regardless of date.
+    if (picked.length < 4) {
+      [...poolMap.values()]
+        .filter((p) => !p.hidden && !picked.includes(p.id))
+        .sort((a, b) => b.createdMs - a.createdMs)
+        .forEach((p) => { if (picked.length < 6) picked.push(p.id); });
+    }
+    featuredIds = picked;
+    await db().collection('trends').doc('curation')
+      .set({ featured: featuredIds, issueWeek: thisWeek, coverId: null,
+             hidden: [...hidden] }, { merge: true });
   }
-  const looksPool = [...poolMap.values()];
+
+  const looksPool = [...poolMap.values()].map((p) => ({
+    ...p, featured: featuredIds.includes(p.id),
+  }));
   const looks = featuredIds
     .map((id) => poolMap.get(id))
     .filter((l) => l && !l.hidden)
-    .map(({ hidden: _h, featured: _f, seed: _s, ...rest }) => rest);
-  const cover = (coverId && poolMap.get(coverId) && !poolMap.get(coverId).hidden)
-    ? { id: coverId, img: poolMap.get(coverId).img, style: poolMap.get(coverId).style }
-    : null;
+    .map((l) => ({ id: l.id, img: l.img, style: l.style }));
 
   // Marketplace row — listings are public by definition.
   const market = [];
@@ -198,6 +214,24 @@ async function computeTrends() {
     else if (week * 1.2 < prev) trend = 'down';
     return { key: s.key, count: s.count, week, prev, trend, total: sty[s.key] || 0 };
   });
+  // Cover: an explicit pin wins; otherwise the best illustration of the
+  // headline — a featured look with that style, then ANY public look with
+  // it, then simply the first featured look. Auto-issues clear the pin.
+  const coverId = curation.issueWeek === thisWeek ? (curation.coverId || null) : null;
+  const asCover = (id) => {
+    const p = poolMap.get(id);
+    return p && !p.hidden ? { id, img: p.img, style: p.style } : null;
+  };
+  const headlineStyle = (topStyles.find((x) => x.trend === 'up' || x.trend === 'new') || topStyles[0])?.key;
+  let cover = coverId ? asCover(coverId) : null;
+  if (!cover) {
+    const inFeatured = featuredIds.find((id) => poolMap.get(id)?.style === headlineStyle && !poolMap.get(id)?.hidden);
+    const inPool = [...poolMap.values()]
+      .filter((p) => !p.hidden && p.style === headlineStyle)
+      .sort((a, b) => b.createdMs - a.createdMs)[0]?.id;
+    cover = asCover(inFeatured || inPool || featuredIds.find((id) => !poolMap.get(id)?.hidden));
+  }
+
   const topBrands = Object.values(brands)
     .sort((a, b) => b.count - a.count).slice(0, 8)
     .map((b) => ({ key: b.label, count: b.count }));
@@ -215,6 +249,7 @@ async function computeTrends() {
     looksPool,
     cover,
     coverId,
+    issueWeek: thisWeek,
     market,
     regions: top(regions, 5),
   };
@@ -239,12 +274,25 @@ exports.adminCurateTrends = onCall(
     const cur = snap.exists ? snap.data() : {};
     const hidden = new Set(Array.isArray(cur.hidden) ? cur.hidden : []);
     const featured = Array.isArray(cur.featured) ? [...cur.featured] : [];
-    const { hide, unhide, feature, unfeature, coverId } = request.data || {};
+    const { hide, unhide, feature, unfeature, coverId, reshuffle } = request.data || {};
+    // "New issue": drop the slate so computeTrends re-picks this week's
+    // looks from scratch (the same thing next Monday does automatically).
+    if (reshuffle) {
+      await ref.set({ featured: [], issueWeek: null, coverId: null, hidden: [...hidden] });
+      const fresh = await computeTrends();
+      return { ok: true, looks: fresh.looks.length, coverId: fresh.cover?.id || null };
+    }
     if (typeof hide === 'string') { hidden.add(hide); const i = featured.indexOf(hide); if (i >= 0) featured.splice(i, 1); }
     if (typeof unhide === 'string') hidden.delete(unhide);
     if (typeof feature === 'string' && !featured.includes(feature)) featured.push(feature);
     if (typeof unfeature === 'string') { const i = featured.indexOf(unfeature); if (i >= 0) featured.splice(i, 1); }
-    const next = { hidden: [...hidden].slice(0, 200), featured: featured.slice(0, 12) };
+    const { weekKey: wk } = require('./admin-helpers.js');
+    const next = {
+      hidden: [...hidden].slice(0, 200),
+      featured: featured.slice(0, 12),
+      // A human edit owns the CURRENT week; next Monday auto-rotates again.
+      issueWeek: wk(new Date().toISOString().slice(0, 10)),
+    };
     if (coverId !== undefined) next.coverId = coverId || null;
     else if (cur.coverId) next.coverId = cur.coverId;
     await ref.set(next);

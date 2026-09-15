@@ -34,6 +34,19 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends: weekly auto-issue (owner, 2026-09-16).** "This week's looks"
+  now curates ITSELF: when the ISO week rolls over (or the slate is empty)
+  computeTrends re-picks from this week's public looks — newest first, max 2
+  per closet so one prolific poster can't take the slate, widening to recent
+  public looks on a thin week — and persists the pick with an `issueWeek`
+  stamp. The daily cron therefore rotates the page every Monday with nobody
+  touching it. Admin feature/cover/hide still works but owns only the
+  CURRENT week; a new "new issue (re-pick looks)" button forces a reshuffle,
+  and one "refresh stats now" press fills everything. Cover selection widened
+  beyond the featured slate to any public look matching the headline style,
+  which closes the Classic-headline-over-a-preppy-photo mismatch (verified:
+  headline `classic` → cover `classic`). All manual hides/pins were cleared —
+  no hardcoded exclusions; watermark handling belongs to the seed pipeline.
 - **Trends v6 — "This week's looks" + layout rules (owner, 2026-09-16).**
   New curated outfit section: the pool is every PUBLIC outfit with a photo
   (seed closets included — they're already browsable profiles in the app),

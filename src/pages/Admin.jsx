@@ -728,7 +728,7 @@ function TrendsCuration() {
   const pool = data.looksPool || [];
   return (
     <>
-      <h3 className="adm-h3">Trends curation <span className="adm-muted">(feature = shows in "This week's looks" · cover = hero · hide = gone for good. Seed closets included; nothing auto-promotes.)</span></h3>
+      <h3 className="adm-h3">Trends curation <span className="adm-muted">(auto-rotates every Monday from this week's public looks. Feature/cover/hide overrides THIS week only; next issue re-picks itself.)</span></h3>
       {err && <div className="adm-err">{err}</div>}
       <div className="adm-gallery">
         {pool.map((p) => {
@@ -770,7 +770,10 @@ function TrendsCuration() {
       </div>
       <div className="adm-cfgrow" style={{ margin: '10px 0 18px' }}>
         <button className="adm-btn" disabled={busy === 'recompute'} onClick={() => act({}, 'recompute')}>
-          recompute trends now
+          refresh stats now
+        </button>
+        <button className="adm-btn" disabled={busy === 'reshuffle'} onClick={() => act({ reshuffle: true }, 'reshuffle')}>
+          new issue (re-pick looks)
         </button>
         {data.coverId && (
           <button className="adm-btn" disabled={!!busy} onClick={() => act({ coverId: null }, 'cover-clear')}>
