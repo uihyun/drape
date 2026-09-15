@@ -117,7 +117,12 @@ export function lookMatches(look, filters, closetById = {}) {
 // `extras` (optional) lets a surface add non-taxonomy chip sections after
 // the shared dims — e.g. closet's For-sale + Owned/Wishlist. Each:
 //   { key, labelKey, options: [{ value, labelKey }] }
-export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, resultCount, extras = [] }) {
+export function LookFilterSheet({
+  filters, onToggle, onClear, onClose, count, resultCount, extras = [],
+  // Optional single-select sort section (Closet uses it; try-on history
+  // doesn't). sortOptions: [{ value, labelKey }].
+  sortValue, onSortChange, sortOptions = [],
+}) {
   const { t } = useLocale();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
@@ -130,6 +135,23 @@ export function LookFilterSheet({ filters, onToggle, onClear, onClose, count, re
         <h3 className="create-sheet-title" {...handleProps} style={{ cursor: 'grab', touchAction: 'none' }}>{t('detailedFilter')}</h3>
 
         <div className="detail-filter-body">
+          {sortOptions.length > 0 && (
+            <div className="detail-filter-dim">
+              <span className="detail-filter-dim-label">{t('sortTitle')}</span>
+              <div className="detail-filter-chips">
+                {sortOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`chip-pill${sortValue === opt.value ? ' active' : ''}`}
+                    onClick={() => onSortChange?.(opt.value)}
+                  >
+                    {t(opt.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {FILTER_DIMS.map(dim => (
             <div key={dim.key}>
               <div className="detail-filter-dim">
