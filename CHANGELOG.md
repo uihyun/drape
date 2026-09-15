@@ -19,6 +19,18 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Trends v6 — "This week's looks" + layout rules (owner, 2026-09-16).**
+  New curated outfit section: the pool is every PUBLIC outfit with a photo
+  (seed closets included — they're already browsable profiles in the app),
+  but **nothing auto-promotes**: only ids the owner features in
+  `trends/curation.featured[]` render, in that order, and the hero cover is
+  its own pin. Admin Config gallery gains feature / cover / hide per look
+  with a `seed` badge and a green outline on featured ones; the old
+  auto-picked "Community picks" (and its ≥6 gate) is retired. Layout rule
+  settled with the owner: **horizontal cards only where the content is
+  imagery** (looks, marketplace) — every ranking is a vertical list now, so
+  all five styles are visible at once instead of 2.5 in a carousel. Looks
+  sit directly under the style ranking. Locale: +2, −2.
 - **Trends v5 — real momentum + brands (2026-09-16).** "Styles on the rise"
   is now literally true: items are bucketed by WHEN they were added, styles
   rank by this week's additions (falling back to the all-time tally until a

@@ -658,25 +658,28 @@ function TrendsCuration() {
   };
 
   if (!data) return null;
-  const pool = data.picksAll || [];
+  const pool = data.looksPool || [];
   return (
     <>
-      <h3 className="adm-h3">Trends curation <span className="adm-muted">(hide bad picks · pin the cover — survives recomputes)</span></h3>
+      <h3 className="adm-h3">Trends curation <span className="adm-muted">(feature = shows in "This week's looks" · cover = hero · hide = gone for good. Seed closets included; nothing auto-promotes.)</span></h3>
       {err && <div className="adm-err">{err}</div>}
       <div className="adm-gallery">
         {pool.map((p) => {
           const isCover = data.coverId === p.id;
           return (
-            <div key={p.id} className={`adm-gcell adm-trendpick${p.hidden ? ' is-hidden' : ''}`}>
+            <div key={p.id} className={`adm-gcell adm-trendpick${p.hidden ? ' is-hidden' : ''}${p.featured ? ' is-featured' : ''}`}>
               <img src={p.img} alt="" loading="lazy" />
+              {p.seed && <span className="adm-trendpick-seed">seed</span>}
               <div className="adm-trendpick-acts">
-                <button
-                  className="adm-btn"
-                  disabled={busy === p.id}
-                  onClick={() => act(p.hidden ? { unhide: p.id } : { hide: p.id }, p.id)}
-                >
-                  {p.hidden ? 'unhide' : 'hide'}
-                </button>
+                {!p.hidden && (
+                  <button
+                    className="adm-btn"
+                    disabled={busy === p.id}
+                    onClick={() => act(p.featured ? { unfeature: p.id } : { feature: p.id }, p.id)}
+                  >
+                    {p.featured ? 'featured ✓' : 'feature'}
+                  </button>
+                )}
                 {!p.hidden && (
                   <button
                     className="adm-btn"
@@ -686,6 +689,13 @@ function TrendsCuration() {
                     {isCover ? 'cover ✓' : 'cover'}
                   </button>
                 )}
+                <button
+                  className="adm-btn"
+                  disabled={busy === p.id}
+                  onClick={() => act(p.hidden ? { unhide: p.id } : { hide: p.id }, p.id)}
+                >
+                  {p.hidden ? 'unhide' : 'hide'}
+                </button>
               </div>
             </div>
           );

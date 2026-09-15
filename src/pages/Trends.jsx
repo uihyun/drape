@@ -36,12 +36,10 @@ export function Trends() {
   // be falling (it was, on launch day: casual 53 this week vs 82 last).
   const styles = data.topStyles || [];
   const topStyle = styles.find((x) => x.trend === 'up' || x.trend === 'new') || styles[0];
-  // Picks (and the photo hero) stay hidden until the public pool is real —
-  // a three-image "community" section reads as emptiness, not curation
-  // (owner call 2026-09-16). Returns automatically as content grows.
-  const MIN_PICKS = 6;
-  const showPicks = (data.picks || []).length >= MIN_PICKS;
-  const [coverPick, ...gridPicks] = showPicks ? data.picks : [];
+  // Looks are editorially curated (admin picks the ids) — nothing
+  // auto-promotes, so no volume gate is needed. Cover is its own pin.
+  const looks = data.looks || [];
+  const coverPick = data.cover || null;
 
   return (
     <div className="tmag">
@@ -72,21 +70,38 @@ export function Trends() {
       {data.topStyles?.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsTopStyles')}</p>
-          <div className="tmag-cards">
-            {data.topStyles.slice(0, 5).map((s, i) => (
-              <div className="tmag-stylecard" key={s.key}>
-                <span className="tmag-stylecard-no">{String(i + 1).padStart(2, '0')}</span>
-                {s.trend === 'new' && <span className="tmag-flag">{t('trendsNew')}</span>}
-                {s.trend === 'up' && <span className="tmag-flag">↑</span>}
-                <strong>{label('styles', s.key)}</strong>
-                <span className="tmag-stylecard-count">
+          <ol className="tmag-rank">
+            {data.topStyles.slice(0, 5).map((st, i) => (
+              <li key={st.key}>
+                <span className="tmag-rank-no">{String(i + 1).padStart(2, '0')}</span>
+                <span className="tmag-rank-name">{label('styles', st.key)}</span>
+                {st.trend === 'new' && <span className="tmag-flag">{t('trendsNew')}</span>}
+                {st.trend === 'up' && <span className="tmag-flag">↑</span>}
+                <span className="tmag-rank-count">
                   {data.basis === 'week'
-                    ? t('trendsAddedThisWeek', { n: s.week })
-                    : t('trendsInClosets', { n: s.total ?? s.count })}
+                    ? t('trendsAddedThisWeek', { n: st.week })
+                    : t('trendsInClosets', { n: st.total ?? st.count })}
                 </span>
-              </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {/* This week's looks — curated outfit cards, horizontal by design
+          (image browsing; the ranked sections stay vertical). */}
+      {looks.length > 0 && (
+        <section className="tmag-section">
+          <p className="tmag-kicker">{t('trendsLooks')}</p>
+          <div className="tmag-looks">
+            {looks.map((o) => (
+              <Link to={`/o/${o.id}`} key={o.id} className="tmag-look">
+                <img src={o.img} alt="" loading="lazy" />
+                {o.style && <span className="tmag-pill">{label('styles', o.style)}</span>}
+              </Link>
             ))}
           </div>
+          <p className="tmag-note">{t('trendsLooksNote')}</p>
         </section>
       )}
 
@@ -119,26 +134,6 @@ export function Trends() {
               </li>
             ))}
           </ol>
-        </section>
-      )}
-
-      {/* Community picks — 2-up grid with pill tags (cover already used). */}
-      {showPicks && gridPicks.length > 0 && (
-        <section className="tmag-section">
-          <p className="tmag-kicker">{t('trendsCommunityPicks')}</p>
-          <div className="tmag-grid">
-            {gridPicks.map((o, i) => (
-              <Link
-                to={`/o/${o.id}`}
-                key={o.id}
-                className={`tmag-cell${i === gridPicks.length - 1 && gridPicks.length % 2 === 1 ? ' tmag-cell--wide' : ''}`}
-              >
-                <img src={o.img} alt="" loading="lazy" />
-                {o.style && <span className="tmag-pill">{label('styles', o.style)}</span>}
-              </Link>
-            ))}
-          </div>
-          <p className="tmag-note">{t('trendsCuratedNote')}</p>
         </section>
       )}
 

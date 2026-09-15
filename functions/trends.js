@@ -113,39 +113,57 @@ async function computeTrends() {
     if (c) triedCat[c] = (triedCat[c] || 0) + 1;
   }));
 
-  // Community picks — ONLY outfits the owner made public, real users, with
-  // a visual. Owner curation (trends/curation: hidden[], coverId — written
-  // by adminCurateTrends) survives every recompute: hidden picks drop out
-  // of the public list, the chosen cover moves to slot 0. picksAll keeps
-  // the full pool (hidden flagged) for the admin curation UI — all of it
-  // is already-public content, so the world-readable doc leaks nothing.
+  // ── This week's looks (editorial) ──────────────────────────────────
+  // Pool = every PUBLIC outfit with a photo, seed closets included (they
+  // already exist as browsable profiles in the app). Nothing auto-promotes:
+  // only ids the owner explicitly features in trends/curation.featured[]
+  // render, in that order. `hidden` kills a look from the pool for good.
+  // Still images-from-public-surfaces only — the privacy contract stands.
   const curSnap = await db().collection('trends').doc('curation').get();
   const curation = curSnap.exists ? curSnap.data() : {};
   const hidden = new Set(Array.isArray(curation.hidden) ? curation.hidden : []);
+  const featuredIds = Array.isArray(curation.featured) ? curation.featured : [];
   const coverId = curation.coverId || null;
 
-  const picksAll = [];
+  const poolMap = new Map();
   const pubSnap = await db().collection('outfits')
     .where('isPublic', '==', true).orderBy('createdAt', 'desc').limit(60).get();
   pubSnap.forEach((d) => {
-    if (picksAll.length >= 24) return;
     const x = d.data();
-    if (!real.has(x.userId)) return;
-    // Original photo first — cutouts are calendar assets and look like
-    // floating ghosts in an editorial grid.
     const img = x.photoUrl || x.photoCutUrl || null;
     if (!img) return;
-    picksAll.push({
+    poolMap.set(d.id, {
       id: d.id,
       img,
       style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
+      seed: !real.has(x.userId),
       hidden: hidden.has(d.id),
+      featured: featuredIds.includes(d.id),
     });
   });
-  let picks = picksAll.filter((p) => !p.hidden).map(({ hidden: _h, ...rest }) => rest);
-  const coverIdx = picks.findIndex((p) => p.id === coverId);
-  if (coverIdx > 0) picks = [picks[coverIdx], ...picks.filter((_, i) => i !== coverIdx)];
-  picks = picks.slice(0, 12);
+  // Featured ids may point at older outfits outside the recent window.
+  for (const id of featuredIds) {
+    if (poolMap.has(id)) continue;
+    const d = await db().collection('outfits').doc(id).get();
+    if (!d.exists) continue;
+    const x = d.data();
+    if (x.isPublic !== true) continue;
+    const img = x.photoUrl || x.photoCutUrl || null;
+    if (!img) continue;
+    poolMap.set(id, {
+      id, img,
+      style: Array.isArray(x.style) && x.style[0] ? x.style[0].label : null,
+      seed: !real.has(x.userId), hidden: hidden.has(id), featured: true,
+    });
+  }
+  const looksPool = [...poolMap.values()];
+  const looks = featuredIds
+    .map((id) => poolMap.get(id))
+    .filter((l) => l && !l.hidden)
+    .map(({ hidden: _h, featured: _f, seed: _s, ...rest }) => rest);
+  const cover = (coverId && poolMap.get(coverId) && !poolMap.get(coverId).hidden)
+    ? { id: coverId, img: poolMap.get(coverId).img, style: poolMap.get(coverId).style }
+    : null;
 
   // Marketplace row — listings are public by definition.
   const market = [];
@@ -193,8 +211,9 @@ async function computeTrends() {
     topBrands,
     basis: weekTotal >= 10 ? 'week' : 'alltime',
     triedOnCategories: top(triedCat, 6),
-    picks,
-    picksAll,
+    looks,
+    looksPool,
+    cover,
     coverId,
     market,
     regions: top(regions, 5),
@@ -219,15 +238,18 @@ exports.adminCurateTrends = onCall(
     const snap = await ref.get();
     const cur = snap.exists ? snap.data() : {};
     const hidden = new Set(Array.isArray(cur.hidden) ? cur.hidden : []);
-    const { hide, unhide, coverId } = request.data || {};
-    if (typeof hide === 'string') hidden.add(hide);
+    const featured = Array.isArray(cur.featured) ? [...cur.featured] : [];
+    const { hide, unhide, feature, unfeature, coverId } = request.data || {};
+    if (typeof hide === 'string') { hidden.add(hide); const i = featured.indexOf(hide); if (i >= 0) featured.splice(i, 1); }
     if (typeof unhide === 'string') hidden.delete(unhide);
-    const next = { hidden: [...hidden].slice(0, 200) };
+    if (typeof feature === 'string' && !featured.includes(feature)) featured.push(feature);
+    if (typeof unfeature === 'string') { const i = featured.indexOf(unfeature); if (i >= 0) featured.splice(i, 1); }
+    const next = { hidden: [...hidden].slice(0, 200), featured: featured.slice(0, 12) };
     if (coverId !== undefined) next.coverId = coverId || null;
     else if (cur.coverId) next.coverId = cur.coverId;
     await ref.set(next);
     const doc = await computeTrends();
-    return { ok: true, picks: doc.picks.length, coverId: next.coverId || null };
+    return { ok: true, looks: doc.looks.length, coverId: next.coverId || null };
   },
 );
 
@@ -238,6 +260,6 @@ exports.adminRecomputeTrends = onCall(
     const { assertAdmin } = require('./admin.js');
     assertAdmin(request);
     const doc = await computeTrends();
-    return { ok: true, stats: doc.stats, picks: doc.picks.length, market: doc.market.length };
+    return { ok: true, stats: doc.stats, looks: doc.looks.length, market: doc.market.length };
   },
 );

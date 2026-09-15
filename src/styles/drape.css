@@ -6714,19 +6714,6 @@ input[type="search"]::-webkit-search-decoration {
 .tmag-headline { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-weight: 500; font-size: clamp(1.8rem, 7.5vw, 2.4rem); line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.01em; text-shadow: 0 2px 22px rgba(0,0,0,0.35); }
 .tmag-dataline { font-size: 0.7rem; letter-spacing: 0.03em; margin: 0; color: rgba(255,255,255,0.82); }
 /* style cards — horizontal snap row */
-.tmag-cards { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
-.tmag-stylecard { position: relative; flex: none; width: 140px; height: 172px; border-radius: 18px; background: var(--surface-elevated); padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; scroll-snap-align: start; overflow: hidden; }
-.tmag-stylecard-no { position: absolute; top: 8px; left: 14px; font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-size: 1.05rem; color: rgba(20,19,18,0.35); line-height: 1; }
-.tmag-stylecard strong { font-size: 1.12rem; letter-spacing: -0.02em; line-height: 1.15; }
-.tmag-stylecard-count { font-size: 0.66rem; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.04em; }
-.tmag-stylecard-by { display: inline-flex; align-items: center; gap: 5px; font-size: 0.64rem; color: var(--text-secondary); margin-top: auto; }
-.tmag-stylecard-by img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-.tmag-stylecard-by em { font-style: normal; font-size: 0.52rem; border: 1px solid var(--border-hover); border-radius: 4px; padding: 0 3px; letter-spacing: 0.08em; color: var(--text-muted); }
-.tmag-stylecard:first-child { background: #141312; color: #F5F2EA; }
-.tmag-stylecard:first-child .tmag-stylecard-no { color: rgba(245,242,234,0.55); }
-.tmag-stylecard:first-child .tmag-stylecard-count { color: rgba(245,242,234,0.6); }
-.tmag-stylecard:first-child .tmag-stylecard-by { color: rgba(245,242,234,0.75); }
-.tmag-stylecard:first-child .tmag-stylecard-by em { border-color: rgba(245,242,234,0.3); color: rgba(245,242,234,0.6); }
 /* palette strip */
 .tmag-palette { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; }
 .tmag-swatch { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: none; }
@@ -6734,10 +6721,6 @@ input[type="search"]::-webkit-search-decoration {
 .tmag-swatch span { font-size: 0.66rem; }
 .tmag-swatch em { font-style: normal; font-size: 0.6rem; color: var(--text-muted); }
 /* picks grid */
-.tmag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tmag-cell { position: relative; border-radius: 14px; overflow: hidden; background: var(--surface-elevated); aspect-ratio: 3/4; }
-.tmag-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tmag-cell--wide { grid-column: 1 / -1; aspect-ratio: 16/10; }
 .tmag-pill { position: absolute; left: 8px; bottom: 8px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.88); color: var(--text-primary); backdrop-filter: blur(4px); }
 .tmag-note { font-size: 0.66rem; color: var(--text-muted); margin: 10px 0 0; line-height: 1.5; }
 /* dark tried-on module */
@@ -6757,9 +6740,22 @@ input[type="search"]::-webkit-search-decoration {
 .adm-trendpick-acts .adm-btn { font-size: 10px; padding: 3px 7px; }
 /* trends: momentum flag + brand list */
 .tmag-flag { position: absolute; top: 10px; right: 12px; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 999px; background: var(--text-primary); color: var(--surface); }
-.tmag-stylecard:first-child .tmag-flag { background: #F5F2EA; color: #141312; }
 .tmag-brands { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 18px; }
 .tmag-brands li { display: flex; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); break-inside: avoid; }
 .tmag-brands-no { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-size: 0.8rem; color: var(--text-muted); width: 18px; flex: none; }
 .tmag-brands-name { font-size: 0.86rem; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tmag-brands-count { margin-left: auto; font-size: 0.68rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* trends: ranked list (styles) + horizontal look cards (outfits) */
+.tmag-rank { list-style: none; margin: 0; padding: 0; }
+.tmag-rank li { display: flex; align-items: baseline; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.tmag-rank li:first-child { border-top: 1px solid var(--border); }
+.tmag-rank-no { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--text-muted); width: 26px; flex: none; }
+.tmag-rank-name { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; }
+.tmag-rank-count { margin-left: auto; font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.03em; white-space: nowrap; }
+.tmag-rank .tmag-flag { position: static; align-self: center; }
+.tmag-looks { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; margin: 0 -1.1rem; padding-left: 1.1rem; padding-right: 1.1rem; }
+.tmag-look { position: relative; flex: none; width: 168px; aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; background: var(--surface-elevated); scroll-snap-align: start; }
+.tmag-look img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.adm-trendpick.is-featured { outline: 2px solid var(--accent); outline-offset: -2px; }
+.adm-trendpick-seed { position: absolute; top: 4px; left: 4px; font-size: 9px; padding: 2px 5px; border-radius: 6px; background: rgba(20,19,18,0.7); color: #fff; letter-spacing: 0.06em; }
