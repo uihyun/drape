@@ -19,6 +19,13 @@ free-capped recommendations, try-on taste feedback. Owner decision same day:
 **1.5.1 is skipped** — its entire payload (below) ships inside this build,
 which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 block.
 
+- **Trends v3 — image-first (same day, after owner review of v2 +
+  lekondo App Store screenshot recon).** Photography leads now: full-bleed
+  hero (top community pick with the serif headline overlaid on a gradient),
+  horizontal style cards with ghost serif numerals (#1 card inverted to
+  ink), compact palette dots, 2-up picks grid with white pill tags, the
+  tried-on block as a rounded dark module, serif footer. Lekondo grammar
+  (photo-led, rounded modules, micro-labels, one dark block) + drape serif.
 - **Trends v2 — editorial redesign (same day).** Owner verdict on v1: "a
   dashboard, unusable." Rebuilt as a weekly fashion issue in the brand's own
   grammar: Bodoni-italic masthead headline driven by the #1 style ("Casual

@@ -42,46 +42,53 @@ export function Trends() {
 
   return (
     <div className="tmag">
-      {/* Masthead — the week as a cover story. */}
-      <header className="tmag-masthead">
-        <p className="tmag-kicker">{t('trendsKicker')}</p>
-        {topStyle && (
-          <h1 className="tmag-headline">
-            {t('trendsHeadline', { style: label('styles', topStyle.key) })}
-          </h1>
+      {/* Hero — the week's cover: top public look, headline overlaid. */}
+      <header className={`tmag-hero${coverPick ? '' : ' tmag-hero--ink'}`}>
+        {coverPick && (
+          <Link to={`/o/${coverPick.id}`} className="tmag-hero-img">
+            <img src={coverPick.img} alt="" />
+          </Link>
         )}
-        <p className="tmag-dataline">
-          {t('trendsDataline', {
-            items: data.stats?.itemsThisWeek ?? 0,
-            tryons: data.stats?.tryonsThisWeek ?? 0,
-          })}
-          {regionsLine ? ` · ${regionsLine}` : ''}
-        </p>
+        <div className="tmag-hero-text">
+          <p className="tmag-kicker tmag-kicker--hero">{t('trendsKicker')}</p>
+          {topStyle && (
+            <h1 className="tmag-headline">
+              {t('trendsHeadline', { style: label('styles', topStyle.key) })}
+            </h1>
+          )}
+          <p className="tmag-dataline">
+            {t('trendsDataline', {
+              items: data.stats?.itemsThisWeek ?? 0,
+              tryons: data.stats?.tryonsThisWeek ?? 0,
+            })}
+            {regionsLine ? ` · ${regionsLine}` : ''}
+          </p>
+        </div>
       </header>
 
-      {/* Ranked styles — table-of-contents, not bar charts. */}
+      {/* Styles — horizontal snap cards, serif numeral watermark. */}
       {data.topStyles?.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsTopStyles')}</p>
-          <ol className="tmag-rank">
+          <div className="tmag-cards">
             {data.topStyles.slice(0, 5).map((s, i) => {
               const p = personaOf(s.persona);
               return (
-                <li key={s.key}>
-                  <span className="tmag-rank-no">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="tmag-rank-name">{label('styles', s.key)}</span>
-                  <span className="tmag-rank-by">
+                <div className="tmag-stylecard" key={s.key}>
+                  <span className="tmag-stylecard-no">{String(i + 1).padStart(2, '0')}</span>
+                  <strong>{label('styles', s.key)}</strong>
+                  <span className="tmag-stylecard-count">{s.count}</span>
+                  <span className="tmag-stylecard-by">
                     <img src={p.img} alt="" /> {p.name} <em>AI</em>
                   </span>
-                  <span className="tmag-rank-count">{s.count}</span>
-                </li>
+                </div>
               );
             })}
-          </ol>
+          </div>
         </section>
       )}
 
-      {/* Palette — oversized paint dots. */}
+      {/* Palette — compact dot strip. */}
       {data.topColors?.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsTopColors')}</p>
@@ -97,31 +104,23 @@ export function Trends() {
         </section>
       )}
 
-      {/* Community picks — collage: one cover image, then a 2-up grid. */}
-      {data.picks?.length > 0 && (
+      {/* Community picks — 2-up grid with pill tags (cover already used). */}
+      {gridPicks.length > 0 && (
         <section className="tmag-section">
           <p className="tmag-kicker">{t('trendsCommunityPicks')}</p>
-          {coverPick && (
-            <Link to={`/o/${coverPick.id}`} className="tmag-cover">
-              <img src={coverPick.img} alt="" loading="lazy" />
-              {coverPick.style && <span className="tmag-cover-tag">{label('styles', coverPick.style)}</span>}
-            </Link>
-          )}
-          {gridPicks.length > 0 && (
-            <div className="tmag-grid">
-              {gridPicks.map((o) => (
-                <Link to={`/o/${o.id}`} key={o.id} className="tmag-cell">
-                  <img src={o.img} alt="" loading="lazy" />
-                  {o.style && <span className="tmag-cover-tag">{label('styles', o.style)}</span>}
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="tmag-grid">
+            {gridPicks.map((o) => (
+              <Link to={`/o/${o.id}`} key={o.id} className="tmag-cell">
+                <img src={o.img} alt="" loading="lazy" />
+                {o.style && <span className="tmag-pill">{label('styles', o.style)}</span>}
+              </Link>
+            ))}
+          </div>
           <p className="tmag-note">{t('trendsCuratedNote')}</p>
         </section>
       )}
 
-      {/* Inverted ink band — what people actually try on. */}
+      {/* Tried-on — dark module (rounded, lekondo-style block). */}
       {data.triedOnCategories?.length > 0 && (
         <section className="tmag-ink">
           <p className="tmag-kicker tmag-kicker--ink">{t('trendsTriedOn')}</p>
