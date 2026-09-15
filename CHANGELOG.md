@@ -34,6 +34,12 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Bottom nav: icons only, closet is a garment.** The "Trends" / "Closet"
+  labels are gone (three glyphs on a floating bar don't need naming; the
+  aria-labels stay for screen readers) and the closet button now shows a
+  shirt icon instead of the account avatar — the tab leads to a wardrobe,
+  not a profile. Removes the local Avatar component and its profile-photo
+  Firestore subscription (one listener fewer on every screen).
 - **Carousel scrollbars only while scrolling.** The looks / palette /
   marketplace rows parked a permanent grey bar under themselves on desktop
   browsers even at rest. The track height is now constant with a transparent

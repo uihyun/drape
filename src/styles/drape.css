@@ -1500,6 +1500,9 @@ body.is-native {
   color: var(--accent);
 }
 .floating-nav-btn.active { color: var(--accent); font-weight: 600; }
+/* Labels were removed from the bar (2026-09-16) — the three glyphs carry
+   it, and aria-label keeps screen readers whole. Kept for any surface that
+   still renders one. */
 .floating-nav-label {
   font-size: 0.7rem;
   margin-top: 0.3rem;

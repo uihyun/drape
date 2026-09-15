@@ -1,31 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Compass, TrendingUp, User, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
+import { Compass, TrendingUp, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { getFeedMode } from '../services/appConfig.js';
 import { AddItemSheet } from './AddItemSheet.jsx';
-import { ProfileService } from '../services/profile-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
-
-// Avatar source is the drape profile photo ONLY — we deliberately never
-// pull the Google/Apple account photo (that's where the stray brown "U"
-// default was coming from: user.photoURL carries the provider's generated
-// avatar). No drape photo → a neutral User glyph that nudges adding one.
-function Avatar({ src, size = 22 }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => { setFailed(false); }, [src]);
-  if (src && !failed) {
-    return (
-      <img
-        src={src}
-        alt=""
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-  return <User size={size} strokeWidth={1.6} />;
-}
 
 // Lekondo-style bottom nav: three separate white circular pills floating
 // over the content (Feed / + / Closet). Not a single bar — each button
@@ -44,15 +23,6 @@ export function MobileTabBar({ user, onSignIn }) {
   const isLoggedIn = user && !user.isAnonymous;
   const onHome = location.pathname === '/' || location.pathname.startsWith('/feed') || location.pathname.startsWith('/trends');
   const onProfile = location.pathname.startsWith('/profile') || location.pathname.startsWith('/u/');
-
-  // Live drape profile photo — same source the profile header uses, so the
-  // bottom button matches it (real photo when set, neutral default when not)
-  // instead of the provider's account avatar.
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  useEffect(() => {
-    if (!isLoggedIn) { setProfilePhoto(null); return; }
-    return ProfileService.subscribeByUid(user.uid, p => setProfilePhoto(p?.photoURL || null));
-  }, [isLoggedIn, user?.uid]);
 
   // Guests hit the shared SignInModal (same as every other gated action) —
   // bouncing to /welcome mid-flow read as a hard eject, not a prompt.
@@ -83,9 +53,6 @@ export function MobileTabBar({ user, onSignIn }) {
               ? <Compass size={22} strokeWidth={1.6} />
               : <TrendingUp size={22} strokeWidth={1.6} />}
           </span>
-          <span className="floating-nav-label">
-            {getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
-          </span>
         </Link>
 
         <button
@@ -105,9 +72,8 @@ export function MobileTabBar({ user, onSignIn }) {
           aria-label={t('navCloset')}
         >
           <span className="floating-nav-icon">
-            <Avatar src={profilePhoto} />
+            <Shirt size={22} strokeWidth={1.6} />
           </span>
-          <span className="floating-nav-label">{t('navCloset')}</span>
         </Link>
       </nav>
 
