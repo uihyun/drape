@@ -81,6 +81,22 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   const fresh = prev?.updatedAt?.toMillis && (Date.now() - prev.updatedAt.toMillis() < PROFILE_TTL_MS);
   if (fresh && !force) return prev;
 
+  // Past the TTL, only pay for a re-summary if the inputs actually moved.
+  // The TTL alone regenerated identical text for users who added nothing
+  // (owner, 2026-09-16) — a wasted model call on every stylist run.
+  if (prev && !force) {
+    const latest = await db().collection('items').where('userId', '==', uid)
+      .orderBy('createdAt', 'desc').limit(1).get();
+    const lastItemMs = latest.empty ? 0 : (latest.docs[0].data().createdAt?.toMillis?.() || 0);
+    const builtMs = prev.updatedAt?.toMillis?.() || 0;
+    if (lastItemMs && lastItemMs < builtMs) {
+      // Nothing new in the closet since the summary was written. Touch the
+      // timestamp so the check doesn't re-run on every call this TTL.
+      await ref.set({ updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      return prev;
+    }
+  }
+
   const [inventory, gensSnap, outfitsSnap, profSnap] = await Promise.all([
     loadInventory(uid),
     db().collection('generations').where('userId', '==', uid)

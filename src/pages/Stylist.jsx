@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, ThumbsUp, ThumbsDown, Loader2, Bookmark, X } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
+import { ProfileService } from '../services/profile-service.js';
+import { MyStyleEditor } from '../components/MyStyleEditor.jsx';
 import { useStyleRecs, RECS_PER_DAY, useFits } from '../hooks/useFits.js';
 import {
   StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona,
@@ -24,6 +26,8 @@ export function Stylist({ user, onSignIn }) {
   const [err, setErr] = useState('');
   const [closet, setCloset] = useState(null); // id → item (thumbnails)
   const recs = useStyleRecs(user); // live free-quota chip (server-enforced)
+  const [profile, setProfile] = useState(null);
+  const [styleOpen, setStyleOpen] = useState(false);
   const [saved, setSaved] = useState([]);        // looks kept from past recs
   const [savedKeys, setSavedKeys] = useState({}); // rec-outfit index → saved doc id
   const fits = useFits(user);      // shown once free recs are spent (1 rec = 1 fit)
@@ -33,6 +37,11 @@ export function Stylist({ user, onSignIn }) {
     return ItemService.subscribeMyCloset(user.uid, (list) => {
       setCloset(Object.fromEntries(list.map((i) => [i.id, i])));
     });
+  }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!user || user.isAnonymous) { setProfile(null); return undefined; }
+    return ProfileService.subscribeByUid(user.uid, setProfile);
   }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // A recommendation is replaced by the next "Style me", so anything the
@@ -161,11 +170,31 @@ export function Stylist({ user, onSignIn }) {
           </button>
         </div>
       )}
-      {persona && !choosing && (
-        <p className="stylist-guide">
-          {t('stylistGuide')} <Link to="/settings">{t('stylistGuideLink')}</Link>
-        </p>
-      )}
+      {/* Stated preferences live HERE, not in Settings — this is the only
+          screen where they do anything. Opens by itself the first time
+          (nothing saved yet) and collapses to a link once it's filled in. */}
+      {persona && !choosing && (() => {
+        const prefs = profile?.stylePrefs;
+        const empty = !prefs || (!(prefs.likedStyles || []).length
+          && !(prefs.avoidColors || []).length && !(prefs.note || '').trim());
+        const open = styleOpen || empty;
+        return (
+          <section className="stylist-style">
+            <button
+              type="button"
+              className="stylist-styletoggle"
+              onClick={() => setStyleOpen(!open)}
+              aria-expanded={open}
+            >
+              <span className="tmag-kicker">{t('myStyleTitle')}</span>
+              <span className="stylist-styletoggle-act">{t(open ? 'close' : 'stylistGuideLink')}</span>
+            </button>
+            {open
+              ? <MyStyleEditor profile={profile} onSaved={() => setStyleOpen(false)} />
+              : <p className="stylist-guide">{t('stylistGuide')}</p>}
+          </section>
+        );
+      })()}
       {persona && !choosing && recs.loaded && (
         <p className="muted" style={{ fontSize: '0.8rem' }}>
           {recs.remaining > 0

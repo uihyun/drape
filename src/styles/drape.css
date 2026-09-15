@@ -6693,12 +6693,6 @@ input[type="search"]::-webkit-search-decoration {
 @keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }
 /* Selected thumbs state — filled ink, unmistakable (owner feedback 9/11). */
 .thumb-on, .thumb-on:hover { background: var(--text-primary) !important; border-color: var(--text-primary) !important; color: var(--surface) !important; }
-/* My style (Settings, SPEC-1.6 §B) */
-.mystyle-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
-.mystyle-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; border: 1px solid rgba(0,0,0,0.12); vertical-align: 0; }
-.mystyle-note { width: 100%; font: inherit; font-size: 0.88rem; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; resize: vertical; margin: 8px 0 12px; }
-.mystyle-actions { display: flex; justify-content: flex-end; }
-.mystyle-actions .btn { display: flex; align-items: center; gap: 6px; }
 /* Try-on history card thumbs (SPEC-1.6 §C) */
 .tryon-history-thumbs { position: absolute; bottom: 6px; right: 6px; display: flex; gap: 4px; }
 .tryon-history-thumb { border: 1px solid var(--border); background: rgba(255,255,255,0.92); color: var(--text-secondary); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
@@ -6796,3 +6790,23 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-savedrm { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; }
 .stylist-guide { font-size: 0.72rem; color: var(--text-muted); margin: 8px 0 2px; line-height: 1.5; }
 .stylist-guide a { color: var(--text-secondary); }
+
+/* ── My style editor (stylist page) ──────────────────────────────────
+   Mobile-first: the chip rows wrap inside the page gutter, type is one
+   step down from body so 17 style chips don't read as a wall, and nothing
+   sets a min-width that could push the card past the viewport. */
+.stylist-style { border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; margin: 10px 0 14px; }
+.stylist-styletoggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.stylist-styletoggle .tmag-kicker { margin: 0; }
+.stylist-styletoggle-act { font-size: 0.7rem; color: var(--text-muted); text-decoration: underline; }
+.mystyle { margin-top: 10px; }
+.mystyle-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 12px; }
+.mystyle-label { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); margin: 12px 0 6px; }
+.mystyle-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mystyle-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font: inherit; font-size: 0.74rem; line-height: 1.2; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.mystyle-chip.on { background: var(--text-primary); border-color: var(--text-primary); color: var(--surface); }
+.mystyle-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); flex: none; }
+.mystyle-chip.on .mystyle-dot { border-color: rgba(255,255,255,0.35); }
+.mystyle-note { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 0.82rem; padding: 9px 11px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; resize: vertical; margin-top: 4px; }
+.mystyle-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.mystyle-actions .btn { display: inline-flex; align-items: center; gap: 6px; }

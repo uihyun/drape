@@ -34,6 +34,21 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **"My style" moved to the stylist page and rebuilt for mobile.** The
+  setting exists for the stylist, so living in Settings hid it from the one
+  screen where it changes anything: it now sits inline on /stylist, opens
+  BY ITSELF when nothing is saved yet (first run = pick a stylist, then say
+  what you like), and collapses to a one-line summary + "Edit my style"
+  afterwards. The old Settings section is gone. The markup was rebuilt
+  rather than moved — it was overflowing on phones (a full-width textarea
+  without border-box inside a padded card, plus body-size chips for 17
+  styles); the new chips are one type-step down, wrap inside the gutter,
+  and nothing carries a min-width.
+- **Style profile only rebuilds when something changed.** Past the 12-hour
+  TTL the summary regenerated even when the closet hadn't moved — a wasted
+  model call on every stylist run. It now compares the newest item against
+  the summary's build time and just touches the timestamp when nothing is
+  new. (Thumbs bypass this entirely since they're read fresh per rec.)
 - **Stylist: saved looks.** A recommendation used to vanish on the next
   "Style me" — the stylist's comment is half its value, so looks are now
   keepable: a Save button on each recommended outfit writes to
