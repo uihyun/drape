@@ -676,11 +676,13 @@ the second-widest reach of any tab — more than try-on's 53, within three of
 closet's 71. Few views per user is what a daily logging feature looks like when
 it is working, not a sign nobody goes there.
 
-**Play gets eight of the ten.** Play caps phone screenshots at 8 where the App
-Store allows 10; `05-hero-tryon` and `10-board` come off for that listing. That
-pair costs least — the try-on title card is followed immediately by the slide
-that makes the same point, and boards is the least-used tab. Cutting calendar
-was considered and rejected for the reason above.
+**The two stores take different counts, and the filename says so.** Play caps
+phone screenshots at 8 where the App Store allows 10, so two slides carry
+`-ios-only` in their name — a note in a README is not in the folder at upload
+time. They are the try-on title card, which is followed immediately by the slide
+that makes the same point, and boards, the least-used tab. Names still sort into
+the right sequence with them absent, so nothing is renumbered for Play. Cutting
+calendar to make room was considered and rejected for the reason above.
 
 **Board poster restored as slide 7, and the GA figure behind dropping it was
 wrong.** The stat written into the renderer and README — "4.4% of profile

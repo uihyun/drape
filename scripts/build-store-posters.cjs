@@ -84,12 +84,12 @@ const DECK = [
   { out: '04-analyze',     src: 'analyzed-photo' },
   // A title card for the payoff: the hero states the promise, the slide after
   // it shows the promise kept.
-  { out: '05-hero-tryon',  hero: 'park-bench',    cx: 0.50 },
+  { out: '05-hero-tryon',  hero: 'park-bench',    cx: 0.50, iosOnly: true },
   { out: '06-tryon',       src: 'tryon-3' },
   { out: '07-calendar',    src: 'calendar' },
   { out: '08-closet',      src: 'closet-1' },
   { out: '09-stylist',     src: 'stylist' },
-  { out: '10-board',       src: 'board' },
+  { out: '10-board',       src: 'board', iosOnly: true },
 ];
 
 // EN and JA keep their shipped lines word for word; only trends and stylist
@@ -269,7 +269,7 @@ async function roundedCard(file) {
   fs.mkdirSync(OUT, { recursive: true });
 
   console.log(`${locale} → ${OUT}`);
-  for (const { out, src, hero, cx } of DECK) {
+  for (const { out, src, hero, cx, iosOnly } of DECK) {
     let poster;
     let line;
     if (hero) {
@@ -288,7 +288,11 @@ async function roundedCard(file) {
         .png()
         .toBuffer();
     }
-    const dest = path.join(OUT, `${out}.${hero ? 'jpg' : 'png'}`);
+    // The two stores don't take the same number of screenshots — Play caps at
+    // 8, the App Store at 10 — so the filename says which slides Play skips.
+    // Names still sort into the right sequence with those two absent.
+    const name = `${out}${iosOnly ? '-ios-only' : ''}.${hero ? 'jpg' : 'png'}`;
+    const dest = path.join(OUT, name);
     await fs.promises.writeFile(dest, poster);
     console.log(`  ✓ ${path.basename(dest)}   “${line}”`);
   }

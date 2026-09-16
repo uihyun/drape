@@ -43,18 +43,24 @@ shipped Japanese deck does.
 Ten slides, four locales. Three are full-bleed look photos, seven are app
 captures in the ink-ground card treatment.
 
-| # | file | line (en) | Play |
-|---|---|---|---|
-| 1 | `01-hero-closet.jpg` | your closet, in your pocket | ✓ |
-| 2 | `02-hero-own.jpg` | wear what you already own | ✓ |
-| 3 | `03-trends.png` | what everyone's wearing | ✓ |
-| 4 | `04-analyze.png` | shop any photo | ✓ |
-| 5 | `05-hero-tryon.jpg` | try it on before it's yours | — |
-| 6 | `06-tryon.png` | see it on you, first | ✓ |
-| 7 | `07-calendar.png` | log every outfit | ✓ |
-| 8 | `08-closet.png` | your closet, digitized | ✓ |
-| 9 | `09-stylist.png` | a stylist in your closet | ✓ |
-| 10 | `10-board.png` | moodboard your style | — |
+| # | file | line (en) |
+|---|---|---|
+| 1 | `01-hero-closet.jpg` | your closet, in your pocket |
+| 2 | `02-hero-own.jpg` | wear what you already own |
+| 3 | `03-trends.png` | what everyone's wearing |
+| 4 | `04-analyze.png` | shop any photo |
+| 5 | `05-hero-tryon-ios-only.jpg` | try it on before it's yours |
+| 6 | `06-tryon.png` | see it on you, first |
+| 7 | `07-calendar.png` | log every outfit |
+| 8 | `08-closet.png` | your closet, digitized |
+| 9 | `09-stylist.png` | a stylist in your closet |
+| 10 | `10-board-ios-only.png` | moodboard your style |
+
+`-ios-only` is in the filename rather than in a note here, because a note is not
+in the folder at upload time. The two stores take different counts — Play caps
+phone screenshots at 8, the App Store at 10 — so those two slides go up on the
+App Store only. Names still sort into the right sequence with them absent, so
+there is nothing to renumber for Play.
 
 Order is the argument, not the feature list. Search results show the first three
 portrait shots before anyone taps, and the shipped 1.5.0 order spent all three
@@ -105,13 +111,14 @@ today. Reviving it means a different treatment for Korean, not another serif.
 
 ## Uploading
 
-App Store takes up to 10, so the deck goes up whole. **Play takes 8** — skip
-`05-hero-tryon` and `10-board`. That pair costs least: the try-on title card is
-followed immediately by the slide that makes the same point, and boards is the
-least-used tab. Filenames sort into the right sequence with those two absent, so
-there is nothing to renumber.
+App Store: all ten, in filename order, into the **6.9" (1290×2796)** slot —
+Apple derives the smaller sizes.
 
-Do not cut calendar to make room. It looks like a minor tab on views (263 across
-90 days) but it has the second-widest *reach* of any tab — 68 users against
-closet's 71, more than try-on's 53. It is used by nearly everyone, just not
-repeatedly, which is what a logging feature looks like when it is working.
+Play: the eight without `-ios-only` in the name, same order.
+
+Those two are the cheapest to lose. The try-on title card is followed
+immediately by the slide that makes the same point, and boards is the least-used
+tab. Calendar is not a candidate: it looks minor on views (263 across 90 days)
+but has the second-widest *reach* of any tab — 68 users against closet's 71,
+more than try-on's 53. Few views per user is what a daily logging feature looks
+like when it is working, not a sign nobody goes there.
