@@ -5,30 +5,35 @@
 // currentLang). Per-device; account-level sync can be layered on later.
 //
 //   'profile' → personal hub (closet / OOTD / try-on management)
-//   'feed'    → discovery feed (others' OOTDs, boards, marketplace)
+//   'trends'  → the weekly Trends issue
 //   null      → first run, never chosen → default to PROFILE. GA (2026-07):
-//               closet/try-on engagement dwarfs feed ~40:1, and onboarding
+//               closet/try-on engagement dwarfs discovery ~40:1, and onboarding
 //               skippers live on the default — the closet is the product.
+//
+// Legacy 'feed' migrates to 'trends' on read. The feed lost its tab in 2.1.0
+// (it stays reachable by URL), so honoring the stored value would cold-start
+// those users onto a surface with no way back into the nav.
 
 const HOME_KEY = 'drape_home';
 
 export function getHomePref() {
   try {
     const v = localStorage.getItem(HOME_KEY);
-    return v === 'profile' || v === 'feed' ? v : null;
+    if (v === 'feed') return 'trends';
+    return v === 'profile' || v === 'trends' ? v : null;
   } catch {
     return null;
   }
 }
 
 export function setHomePref(v) {
-  if (v !== 'profile' && v !== 'feed') return;
+  if (v !== 'profile' && v !== 'trends') return;
   try { localStorage.setItem(HOME_KEY, v); } catch { /* ignore */ }
 }
 
 // Route for the cold-start landing. First run (no choice yet) → profile.
 export function getHomeRoute() {
-  return getHomePref() === 'feed' ? '/feed' : '/profile';
+  return getHomePref() === 'trends' ? '/trends' : '/profile';
 }
 
 // One-time UI flags (the onboarding nudges). Same persistence idea as SwipeHint.
@@ -39,6 +44,5 @@ export function markHintSeen(key) {
   try { localStorage.setItem(key, '1'); } catch { /* ignore */ }
 }
 
-// First-run feed nudge flag (the profile-home hint was dropped — the onboarding
-// choice slide covers that now).
+// First-run nudge flag, still used by the (now URL-only) feed page.
 export const HINT_FEED_INTRO = 'drape_seen_feed_intro_v1';

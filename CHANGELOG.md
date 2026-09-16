@@ -34,6 +34,17 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Home screen: Trends or Closet, and it lives under Display now.** The
+  setting still offered *Feed*, which 2.1.0 removed from the tab bar — anyone
+  who had picked it was cold-starting onto a surface with no nav entry to leave
+  by. Stored `feed` now reads as `trends`, so those users land somewhere that
+  exists without having to know a setting changed. The control moved into the
+  Display card rather than owning a section of its own: it is one more "how the
+  app opens for me" switch, and a whole section for a single choice read as a
+  bigger decision than it is. Covered by `tests/home-pref.test.js`.
+- **Spanish reaches the SEO layer too.** The landing page still advertised
+  "Languages: English, Korean, Japanese" — the sentence AI crawlers quote
+  verbatim — and carried no `hreflang`/`og:locale` for Spanish. All three fixed.
 - **One name for the shared balance: "try-ons".** The Settings row said
   Try-ons, the invite row said try-ons, and the stylist said "try-on credit" —
   a third word for the same wallet, which reads as a separate currency the user

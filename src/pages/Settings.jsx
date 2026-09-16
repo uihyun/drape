@@ -47,7 +47,6 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
-      <HomeScreenSection t={t} />
       <DisplaySection profile={profile} t={t} />
       <AccountSection
         user={user}
@@ -67,45 +66,13 @@ export function Settings({ user, onSignIn, onSignOut }) {
 // OOTD photo with its background. Stored on the profile so it follows the
 // account and applies to visitors' view of the calendar too. Optimistic —
 // flips immediately, reverts if the server write fails.
-// Home screen — which surface drape opens on. localStorage-backed (per device)
-// so the cold-start router can read it synchronously; see services/homePref.
-// Default (unset) reads as 'profile', matching first-run behavior (the closet
-// is the cold-start default since the 1.5.0 repositioning). Button order
-// mirrors the tab bar: Feed on the left, Closet on the right.
-function HomeScreenSection({ t }) {
-  const [choice, setChoice] = useState(() => getHomePref() || 'profile');
-  const pick = (v) => { setChoice(v); setHomePref(v); };
-  return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('homeScreen')}</h2>
-      <div className="settings-segment" role="radiogroup" aria-label={t('homeScreen')}>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={choice === 'feed'}
-          className={`settings-segment-btn${choice === 'feed' ? ' on' : ''}`}
-          onClick={() => pick('feed')}
-        >
-          {t('homeScreenFeed')}
-        </button>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={choice === 'profile'}
-          className={`settings-segment-btn${choice === 'profile' ? ' on' : ''}`}
-          onClick={() => pick('profile')}
-        >
-          {t('homeScreenProfile')}
-        </button>
-      </div>
-      <p className="settings-hint">
-        {choice === 'profile' ? t('homeScreenProfileHint') : t('homeScreenFeedHint')}
-      </p>
-    </section>
-  );
-}
-
+// Home screen sits here rather than in its own card: it is one more "how the
+// app looks to me" switch, and a whole section for a single control read as a
+// bigger decision than it is. localStorage-backed (per device) so the
+// cold-start router can read it synchronously; see services/homePref.
 function DisplaySection({ profile, t }) {
+  const [home, setHome] = useState(() => getHomePref() || 'profile');
+  const pickHome = (v) => { setHome(v); setHomePref(v); };
   const serverVal = !!profile?.calendarShowBackground;
   const [pending, setPending] = useState(null);
   const showBg = pending == null ? serverVal : pending;
@@ -123,6 +90,34 @@ function DisplaySection({ profile, t }) {
   return (
     <section className="settings-card">
       <h2 className="settings-h2">{t('display')}</h2>
+
+      <div className="settings-row settings-row-stack">
+        <span className="settings-row-label">{t('homeScreen')}</span>
+        <div className="settings-segment" role="radiogroup" aria-label={t('homeScreen')}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={home === 'trends'}
+            className={`settings-segment-btn${home === 'trends' ? ' on' : ''}`}
+            onClick={() => pickHome('trends')}
+          >
+            {t('homeScreenTrends')}
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={home === 'profile'}
+            className={`settings-segment-btn${home === 'profile' ? ' on' : ''}`}
+            onClick={() => pickHome('profile')}
+          >
+            {t('homeScreenProfile')}
+          </button>
+        </div>
+      </div>
+      <p className="settings-hint">
+        {home === 'profile' ? t('homeScreenProfileHint') : t('homeScreenTrendsHint')}
+      </p>
+
       <div className="settings-row">
         <span className="settings-row-label">{t('calendarShowBg')}</span>
         <button
