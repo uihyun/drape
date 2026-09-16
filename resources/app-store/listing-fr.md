@@ -11,10 +11,11 @@ annotated — both stores reject the whole submission on overflow.
 drape : dressing & essayage
 ```
 
-**Subtitle** (≤30, currently 28):
+**Subtitle** (≤30, currently 26) — lowercase, and avoiding *dressing* /
+*essayage*, which the name already carries:
 
 ```
-Dressing, styliste, essayage
+styliste ia, tenues & ootd
 ```
 
 **Promotional text** (≤170 — editable without a new build, use it for campaigns):
@@ -85,8 +86,8 @@ recharge chaque jour.
   marques de la semaine.
 • Partagez la page d’un produit depuis n’importe quelle app vers drape pour
   voir si elle vous va avant d’acheter.
-• drape est maintenant en français, en plus de l’anglais, du coréen, du
-  japonais et de l’espagnol.
+• drape est maintenant en français et en espagnol, en plus de l’anglais, du
+  coréen et du japonais.
 • Une visite guidée qui vous montre où se trouve chaque chose, au lieu d’une
   pile de diapositives.
 • Pincez votre dressing pour changer sa taille, triez par couleur, catégorie

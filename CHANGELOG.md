@@ -626,6 +626,18 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**Subtitle stays lowercase.** The live subtitle is `plan outfits & log your
+ootd` — all lowercase, matching the brand rule set 2026-06-16 (wordmark, page
+titles, OG titles, native display names). A draft written 2026-09-14 had
+capitalised it; corrected 2026-09-16 in all five locales. The new subtitle also
+stops repeating words the NAME already carries — Apple indexes name and
+subtitle together, so `closet` and `try-on` twice was spent budget.
+
+**Category:** live is Lifestyle + Social Networking; the recommendation is to
+keep Lifestyle and move the secondary to Photo & Video. Reasoning and the
+rejected alternative are in `store-metadata.md`. Lekondo runs the same pair we
+do today, but with ~82k users the social half is true for them.
+
 Listing copy lives in `resources/app-store/listing-{en,ko,ja,es,fr}.md` — name,
 subtitle, keywords, promotional text, full description and What's New for both
 stores, per locale. Every capped field is verified against its limit (both

@@ -22,10 +22,11 @@ whole submission on overflow.
 drape: armario y prueba
 ```
 
-**Subtitle** (≤30, currently 29):
+**Subtitle** (≤30, currently 26) — lowercase, and avoiding *armario* /
+*prueba*, which the name already carries:
 
 ```
-Tu armario y prueba virtual
+estilista ia, looks y ootd
 ```
 
 **Promotional text** (≤170 — editable without a new build, use it for campaigns):
@@ -92,7 +93,7 @@ se renueva cada día.
   de la semana.
 • Comparte la página de un producto desde cualquier app a drape para ver si
   te queda antes de comprarlo.
-• drape ahora está completamente en español.
+• drape ahora está en español y en francés, además de inglés, coreano y japonés.
 • Un recorrido guiado que te muestra dónde está cada cosa, en vez de una pila
   de diapositivas.
 • Cambia el tamaño de tu armario con dos dedos, ordénalo por color, categoría

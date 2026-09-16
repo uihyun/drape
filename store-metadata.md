@@ -75,6 +75,25 @@ CONTACT
 
 ---
 
+## Categories
+
+Live today: **Lifestyle** (primary) + **Social Networking** (secondary).
+Lekondo ships the same pair — but they have ~82k users and ~356k outfit posts,
+so social is true for them; for us the feed is behind Trends, the community is
+small and DMs only start from a marketplace listing.
+
+Recommended change: keep **Lifestyle** primary, move the secondary to
+**Photo & Video**. The core loop is camera in → cut-out → a generated image of
+you, which is what Photo & Video describes, and it is a far less crowded
+ranking pool than Social Networking, where a small app cannot chart and the
+label sets an expectation the product no longer meets. Shopping was the other
+candidate and was rejected: the marketplace is real but secondary, and a
+shopper who lands on a closet organiser bounces.
+
+Category is an App Store Connect **App Information** field — changeable any
+time without a new build, and reversible. Worth trying for a release cycle and
+watching Browse impressions in /admin.
+
 ## Listing copy
 
 Lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name, subtitle,

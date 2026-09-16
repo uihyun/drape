@@ -11,10 +11,13 @@ overflow, so treat them as hard caps.
 drape: closet & try-on
 ```
 
-**Subtitle** (≤30, currently 24):
+**Subtitle** (≤30, currently 26) — all-lowercase per the brand rule, and it
+adds terms the name doesn't already carry (the name has *closet* and *try-on*;
+Apple indexes both fields together, so repeating them is wasted budget). Live
+value before 2.1.0 was `plan outfits & log your ootd`:
 
 ```
-Closet, stylist & try-on
+ai stylist, outfits & ootd
 ```
 
 **Promotional text** (≤170 — editable without a new build, use it for campaigns):
@@ -82,7 +85,7 @@ drape is free to start. Try-ons use a daily allowance that refills every day.
   this week.
 • Share a product page from any app straight into drape to check whether it
   suits you before you buy.
-• Now in Spanish, alongside English, Korean and Japanese.
+• Now in Spanish and French, alongside English, Korean and Japanese.
 • A guided walkthrough that shows you where everything is, instead of a
   stack of slides.
 • Pinch your closet to resize it, sort by colour, category or wear, and add
