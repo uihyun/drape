@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **iOS build was failing outright, not warning.** Capacitor's
+  `assertDeploymentTarget` pins every pod to its own floor of 14.0, and current
+  Xcode refuses any target below 15.0 — as an error, once per pod, so the
+  archive never started. The Podfile now raises pod targets to 15.0 after
+  Capacitor's helper runs; the platform line and the App target were already
+  15.0, so nothing changes at runtime. Verified: Release build succeeds,
+  `DrapeShare.appex` embeds, bundle reports 2.1.0 / build 16 with
+  `CFBundleLocalizations = en, ko, ja, es`. The hook lives in `post_install`
+  so `npx cap sync ios` can't quietly undo it (confirmed).
 - **Closet pinch goes to five across.** Was capped at four. At 5-up a card is
   ~62px on a phone, so the dense end tightens its gaps and drops the item name
   — that density is for scanning silhouettes, and the label is unreadable at

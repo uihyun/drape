@@ -35,4 +35,18 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # Capacitor's helper pins every pod to ITS floor of 14.0, and current Xcode
+  # rejects anything below 15.0 outright — not a warning, a build error. The
+  # Podfile platform and the App target are both already 15.0, so lifting the
+  # pods to match changes nothing at runtime; it just stops Capacitor's floor
+  # from dragging them under the toolchain's minimum. Re-applied on every
+  # `pod install`, so a `cap sync` can't quietly undo it.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+      if current > 0.0 && current < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
 end
