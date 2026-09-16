@@ -347,8 +347,9 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         </div>
       )}
       {closetHasMore && <div ref={closetSentinelRef} className="feed-sentinel" />}
-      {/* Only once the grid is big enough for density to matter. */}
-      <ClosetZoomHint itemCount={filtered.length} />
+      {/* Only once the grid is big enough for density to matter. `filtered` is
+          null until the closet subscription lands — the hint waits it out. */}
+      <ClosetZoomHint itemCount={filtered?.length ?? 0} />
     </div>
   );
 }
