@@ -13,7 +13,7 @@ Language), then take all six before moving to the next language.
 | 3 | `03-stylist.png` | Stylist, after "Style me" | A recommendation showing, with its item thumbnails — not the persona chooser |
 | 4 | `04-calendar.png` | Calendar tab | A month with several days filled; photo backgrounds off reads cleaner |
 | 5 | `05-trends.png` | Trends | Scrolled to the top so the cover photo and the headline are both visible |
-| 6 | `06-market.png` | Feed → Market | A populated grid of listings with prices |
+| 6 | `06-discover.png` | Trends → a look → its author's profile | Someone else's public closet, a full grid of their pieces |
 
 Shoot with **no notification banners**, battery not red, and the same account
 across all six so the profile chrome stays consistent.

@@ -626,6 +626,13 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**Screenshot 6 is no longer the marketplace.** The shot list still asked for a
+Market capture after the marketplace claim was cut from every description —
+shooting a screen the store copy doesn't mention, of a surface users can't
+reach. Slide 6 is now `06-discover.png`: Trends → a look → its author's public
+closet, which is the loop the descriptions actually describe. Captions rewritten
+in all five languages and re-checked against the canvas.
+
 **`store-metadata.md` keeps a LIVE baseline again.** Its "Listing copy
 (current, finalized)" section held the only record of what is actually in the
 consoles — the live EN promotional text and the live EN keyword string — and a

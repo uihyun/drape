@@ -40,7 +40,7 @@ const SLIDES = [
   { src: '03-stylist.png',  key: 'stylist' },
   { src: '04-calendar.png', key: 'calendar' },
   { src: '05-trends.png',   key: 'trends' },
-  { src: '06-market.png',   key: 'market' },
+  { src: '06-discover.png', key: 'discover' },
 ];
 
 const CAPTIONS = {
@@ -50,7 +50,7 @@ const CAPTIONS = {
     stylist:  { headline: 'YOUR OWN\nAI STYLIST',     subhead: 'Looks built from what you already own.' },
     calendar: { headline: 'YOUR YEAR\nIN OUTFITS',    subhead: 'One photo a day fills the calendar.' },
     trends:   { headline: 'WHAT PEOPLE\nARE WEARING', subhead: 'A new issue every Monday.' },
-    market:   { headline: 'SELL WHAT\nYOU DON’T WEAR', subhead: 'And find pieces from other members.' },
+    discover: { headline: 'SEE INSIDE\nREAL CLOSETS', subhead: 'Open a look, then browse whose it is.' },
   },
   es: {
     tryon:    { headline: 'PRUÉBATELO\nEN TI',         subhead: 'Tu rostro y tu cuerpo reales. En segundos.' },
@@ -58,7 +58,7 @@ const CAPTIONS = {
     stylist:  { headline: 'TU ESTILISTA\nCON IA',      subhead: 'Looks armados con lo que ya tienes.' },
     calendar: { headline: 'TU AÑO\nEN LOOKS',          subhead: 'Una foto al día llena el calendario.' },
     trends:   { headline: 'LO QUE SE\nESTÁ USANDO',    subhead: 'Una edición nueva cada lunes.' },
-    market:   { headline: 'VENDE LO QUE\nYA NO USAS',  subhead: 'Y encuentra piezas de otros miembros.' },
+    discover: { headline: 'ARMARIOS\nDE VERDAD',    subhead: 'Abre un look y mira de quién es.' },
   },
   // No uppercase in KO/JA, so the headline leans on size alone. Full-width
   // glyphs are ~1.7x a Latin cap, which is why the fit check measures ems
@@ -69,7 +69,7 @@ const CAPTIONS = {
     stylist:  { headline: '나만의\nAI 스타일리스트', subhead: '가진 옷으로만 만드는 코디.' },
     calendar: { headline: '입은 옷으로\n쌓는 1년',  subhead: '하루 한 장이면 달력이 채워져요.' },
     trends:   { headline: '지금 뜨는\n스타일',      subhead: '매주 월요일 새 이슈.' },
-    market:   { headline: '안 입는 옷은\n팔고 사고', subhead: '다른 사람 옷장에서 찾아보세요.' },
+    discover: { headline: '다른 사람\n옷장 구경',      subhead: '룩을 열면 누구 것인지 보여요.' },
   },
   ja: {
     tryon:    { headline: '自分の体で\n試着',         subhead: '本物の顔と体のまま、数秒で。' },
@@ -77,7 +77,7 @@ const CAPTIONS = {
     stylist:  { headline: 'あなた専用の\nAIスタイリスト', subhead: '手持ちの服だけで組むコーデ。' },
     calendar: { headline: '着た服で\n埋まる1年',      subhead: '一日一枚でカレンダーが埋まる。' },
     trends:   { headline: 'いま着られて\nいるもの',    subhead: '毎週月曜、新しい号。' },
-    market:   { headline: '着ない服を\n売る',         subhead: '他の人の服も見つかる。' },
+    discover: { headline: '他の人の\nクローゼット',    subhead: 'コーデを開けば持ち主が分かる。' },
   },
   fr: {
     tryon:    { headline: 'ESSAYEZ-LA\nSUR VOUS',      subhead: 'Votre vrai visage, votre vrai corps. En quelques secondes.' },
@@ -85,7 +85,7 @@ const CAPTIONS = {
     stylist:  { headline: 'VOTRE STYLISTE\nIA',          subhead: 'Des looks composés avec ce que vous avez déjà.' },
     calendar: { headline: 'VOTRE ANNÉE\nEN TENUES',      subhead: 'Une photo par jour remplit le calendrier.' },
     trends:   { headline: 'CE QUE L’ON\nPORTE',          subhead: 'Un nouveau numéro chaque lundi.' },
-    market:   { headline: 'REVENDEZ,\nDÉNICHEZ',      subhead: 'Vendez ce que vous ne mettez plus, trouvez le reste.' },
+    discover: { headline: 'DE VRAIS\nDRESSINGS',    subhead: 'Ouvrez un look, puis son dressing.' },
   },
 };
 
