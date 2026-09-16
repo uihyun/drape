@@ -182,13 +182,17 @@ characters. Tight on purpose — a long sectioned description is a different
 product's voice.
 
 **Screenshots** — the live decks were uploaded directly to ASC and were never
-committed. The `screenshots-6.7-en*` folders that used to sit in
-`resources/app-store/` were voda (interior design) assets and were deleted
-2026-09-16; they were never drape's.
+committed. `resources/app-store/posters-shipped/1.5.0-{en,ja}` is a recovery of
+them off Apple's CDN, and `posters-2.1.0-{en,ja,es,fr}` is what goes up next;
+see that folder's README for the deck and the order. No Korean deck — the KR
+storefront keeps inheriting the English set, as it already does today. The
+`screenshots-6.7-en*` folders that used to sit in `resources/app-store/` were
+voda (interior design) assets and were deleted 2026-09-16; they were never
+drape's.
 
 ## Listing copy
 
-Lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name, subtitle,
+Lives in `resources/app-store/listing-{en,ko,ja,es,fr}.md` — name, subtitle,
 keywords, promotional text, description and What's New per locale, each capped
 field checked against its limit. Kept there rather than duplicated here so the
 two can't drift; this file stays the home of the App Review notes above.
@@ -368,7 +372,7 @@ These are the archive/build gotchas archelier (../voda) hit; for drape they're a
 ## Submission gotchas to remember (from archelier's actual review)
 
 - **Screenshots:** upload to the **6.9" (1290×2796) slot** — Apple auto-derives the smaller sizes.
-  Putting a 6.9" image in the 6.5" slot errors. 3–8 shots, EN/KO/JA.
+  Putting a 6.9" image in the 6.5" slot errors. 3–8 shots.
 - **Build selection:** the build must be **"Ready to Submit" in TestFlight** (not "Processing") and
   have export compliance answered, or it won't appear in the build picker.
 - **One active submission per app**; the submission draft should show just "iOS App 1.0.0".
@@ -380,7 +384,9 @@ These are the archive/build gotchas archelier (../voda) hit; for drape they're a
 
 - [ ] **Review Notes (메모)** — paste the block above (this is the empty field in the screenshot).
 - [ ] **로그인 정보** — uncheck "로그인 필요" OR note Sign in with Apple (fields can stay empty).
-- [ ] **Screenshots** — 6.7" (and any required sizes), EN + KO + JA.
+- [ ] **Screenshots** — 6.9" (1290×2796) slot, EN + JA + ES + FR from
+      `resources/app-store/posters-2.1.0-<locale>/`. Korean is deliberately not
+      uploaded; it falls back to the English set.
 - [ ] **Support URL** = `https://drape-9e532.web.app/support.html` (standalone, live).
 - [ ] **Privacy Policy URL** = `https://drape-9e532.web.app/privacy.html` (standalone, live).
 - [ ] **App Privacy** questionnaire matches the Privacy Policy (done earlier — re-verify after marketplace/DM).

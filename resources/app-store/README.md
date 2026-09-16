@@ -20,7 +20,7 @@ repo is the original now — the renderer reads and writes here.
 
 ## Rendering
 
-    node scripts/build-store-posters.cjs en      # also ko · ja · es · fr
+    node scripts/build-store-posters.cjs en      # also ja · es · fr
 
 Reads `captures/`, writes `posters-2.1.0-<locale>/`. Both inside the repo — no
 argument needed, and it refuses to write anywhere near `posters-shipped/`.
@@ -29,24 +29,39 @@ The treatment was measured off the shipped deck and is reproduced exactly: ink
 `#141312` ground, one centred Didot-italic lowercase line with a baseline at
 y=356, a 14px pine dot at y=430, and the capture as a white rounded card at
 x=155, y=560, width 980, corner radius 40. No subhead — the single line carries
-it. CJK has no italic, so those locales use a Mincho/Myeongjo face upright,
-which is what the shipped Japanese deck does.
+it. Japanese has no italic, so it uses a Mincho upright, which is what the
+shipped Japanese deck does.
 
 ## The 2.1.0 deck
 
-Six slides. The order is the shipped one with two substitutions and one drop:
+Six slides, four locales.
 
-| # | slide | vs shipped 1.5.0 |
+| # | slide | line (en) |
 |---|---|---|
-| 1 | calendar | unchanged, same line |
-| 2 | trends | replaces `02-feed` — the feed lost its tab |
-| 3 | closet | unchanged, same line |
-| 4 | analyze | unchanged, same line |
-| 5 | tryon | unchanged, same line |
-| 6 | stylist | replaces `06-market` — the marketplace has no entry point in the shipped UI |
+| 1 | trends | what everyone's wearing |
+| 2 | analyze | shop any photo |
+| 3 | tryon | see it on you, first |
+| 4 | closet | your closet, digitized |
+| 5 | stylist | a stylist in your closet |
+| 6 | calendar | log every outfit |
 
-`07-board` drops: least-used tab across 90 days of GA (4.4% of profile views,
-8 s/user). The four unchanged slides keep their shipped headline word for word.
+Two substitutions against shipped 1.5.0: trends replaces `02-feed` (the feed
+lost its tab) and stylist replaces `06-market` (the marketplace has no entry
+point in the shipped UI). `07-board` drops — least-used tab across 90 days of
+GA (4.4% of profile views, 8 s/user). The four surviving slides keep their
+shipped headline word for word.
 
-Korean, Spanish and French have no shipped deck — the Korean storefront runs
-the English screenshots today — so those lines are new.
+The order changed, though. 1.5.0 opened calendar / feed / closet, and those are
+exactly the three portrait shots search results show before anyone taps — a
+trio that describes Lekondo as well as it describes drape. The first three now
+run the one story no competitor can tell: see someone's look, drape reads the
+outfit, it lands on your body. Closet is the foundation but not the pitch, so
+it follows; calendar closes, because a habit feature is for people already sold.
+
+**No Korean deck.** The treatment is a Bodoni italic and the Hangul counterpart
+to that is a Myeongjo, but Myeongjo at display size reads literary and dated in
+Korean, where fashion display type is overwhelmingly a modern sans. Three
+passes at the font could not make the Korean sit beside the English deck, so
+the KR storefront keeps inheriting the English set — which is what it already
+runs today. Reviving it means a different treatment for Korean, not another
+serif. Spanish and French have no shipped deck either, so those lines are new.

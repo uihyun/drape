@@ -647,6 +647,28 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Poster order is the argument, not the feature list.** Search results show
+the first three portrait shots before anyone taps, and the deck inherited
+1.5.0's order — calendar, feed, closet — which describes Lekondo exactly as
+well as it describes drape, with try-on buried at slide five. The first three
+now run the one story no competitor can tell: trends (someone's street look) →
+analyze (drape reads that outfit) → try-on (it lands on your body). Closet
+follows as the foundation, calendar closes, because a habit feature is for
+people already sold.
+
+**Trends slide uses the full-length capture.** `trends-1` was picked by file
+order, not by looking: the crouching pose hides most of the outfit and the
+sunglasses hide the face, which is a poor opener for a clothing app. `trends-3`
+is the only full-length shot, so the outfit reads at thumbnail size, and its
+street setting sets up the two slides that follow.
+
+**No Korean poster deck.** The treatment is a Bodoni italic and the Hangul
+counterpart to that is a Myeongjo — but Myeongjo at display size reads literary
+and dated in Korean, where fashion display type is overwhelmingly a modern
+sans. Three font passes could not make the Korean sit beside the English deck,
+so the KR storefront keeps inheriting the English set, which is what it already
+runs. Reviving it means a different treatment for Korean, not another serif.
+
 **Play short description put back to the shipped angle.** The live one is
 "Build your digital closet, try anything on with AI, and log your outfits" —
 three clauses, one per pillar. A rewrite had re-angled the whole thing on

@@ -7,7 +7,7 @@
  * app capture as a white rounded card. No subhead — the line carries it.
  *
  * Usage:
- *   node scripts/build-store-posters.cjs en        # also ko · ja · es · fr
+ *   node scripts/build-store-posters.cjs en        # also ja · es · fr
  *   node scripts/build-store-posters.cjs en --src <dir>
  *
  * Everything lives in the repo: captures in resources/app-store/captures/,
@@ -38,97 +38,84 @@ const DOT_FILL = '#2C4737';
 // the stylesheets as 'Brand Didone'. Using the system Didot instead put a
 // different typeface on the store than the one inside the app.
 const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
-// CJK has no italic, so the counterpart is a high-contrast Mincho/Myeongjo —
-// the closest thing to Bodoni's thick/thin in those scripts. Gowun Batang and
-// Shippori Mincho were tried first and both go spindly at poster size; these
-// two hold their contrast at 100px, which is the whole job here.
-// Fonts live in resources/fonts/ and must be installed for fontconfig to see
-// them: cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
-// The Korean statics are instanced out of NotoSerifKR[wght].ttf — fontconfig
-// resolves a named weight from a variable font inconsistently, and the failure
-// is silent: the poster just renders at Regular.
-// Weight matters more than family here: at 100px a Regular-weight Mincho goes
-// spindly next to Bodoni's thick strokes and the poster looks weak.
-// The two scripts don't land at the same weight. Zen Old Mincho's Medium
-// already carries Bodoni-like contrast; Hangul's even stroke density makes the
-// same nominal weight read lighter, so Korean is set one step up.
+// Japanese has no italic, so the counterpart to Bodoni is a high-contrast
+// Mincho. Shippori Mincho — what the shipped 1.5.0 Japanese deck used — goes
+// spindly at 100px beside Bodoni's thick strokes; Zen Old Mincho at Medium
+// holds the contrast, which is the whole job here. The font lives in
+// resources/fonts/ and must be installed for fontconfig to see it:
+// cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
 const HEAD_FAMILY_JA = 'Zen Old Mincho, Shippori Mincho, Hiragino Mincho ProN, serif';
-const HEAD_FAMILY_KO = 'Noto Serif KR, Apple SD Gothic Neo, serif';
 const HEAD_WEIGHT_JA = 500;
-const HEAD_WEIGHT_KO = 600;
 
 // ── The deck ───────────────────────────────────────────────────────────
-// Order follows the live 1.5.0 deck; `02-feed` became trends and `06-market`
-// became the stylist, because the feed lost its tab and the marketplace has no
-// entry point in the shipped app. `07-board` dropped: least-used tab in 90
-// days of GA (4.4% of profile views, 8 s/user).
+// `02-feed` became trends and `06-market` became the stylist, because the feed
+// lost its tab and the marketplace has no entry point in the shipped app.
+// `07-board` dropped: least-used tab in 90 days of GA (4.4% of profile views,
+// 8 s/user).
+//
+// Order is the argument, not the feature list. Search results show the first
+// three portrait shots before anyone taps, and the 1.5.0 order spent all three
+// on calendar + feed + closet — which describes Lekondo exactly as well as it
+// describes drape. These three instead run the one story no competitor can
+// tell: see someone's look, drape reads the outfit, it lands on your body.
+// Closet is the foundation but not the pitch, so it follows; calendar closes,
+// because a habit feature is for people already sold.
 const DECK = [
-  { out: '01-calendar', src: 'calendar' },
   // trends-3, not the other masthead captures: it's the only full-length shot,
   // so the outfit reads at thumbnail size — and it sets up the next two slides,
   // where that kind of street look gets analysed and tried on.
-  { out: '02-trends',   src: 'trends-3' },
-  { out: '03-closet',   src: 'closet-1' },
-  { out: '04-analyze',  src: 'analyzed-photo' },
-  { out: '05-tryon',    src: 'tryon-3' },
-  { out: '06-stylist',  src: 'stylist' },
+  { out: '01-trends',   src: 'trends-3' },
+  { out: '02-analyze',  src: 'analyzed-photo' },
+  { out: '03-tryon',    src: 'tryon-3' },
+  { out: '04-closet',   src: 'closet-1' },
+  { out: '05-stylist',  src: 'stylist' },
+  { out: '06-calendar', src: 'calendar' },
 ];
 
 // EN and JA keep their shipped lines word for word; only trends and stylist
-// are new in JA, because only those two slides changed. KO has no shipped deck,
-// so all six are written fresh.
+// are new in JA, because only those two slides changed.
 //
-// Register matters as much as meaning. The shipped English lines are crisp
-// product statements — "log every outfit", "your closet, digitized" — not
-// chat. An earlier pass wrote the Korean as conversational questions
-// ("오늘 뭐 입지?"), which reads like a chatbot next to a Bodoni italic. These
-// are short editorial phrases, the register Korean and Japanese fashion press
-// actually uses.
+// No Korean deck on purpose. The treatment is a Bodoni italic, and the Hangul
+// counterpart to that is a Myeongjo — but Myeongjo at display size reads
+// literary and dated in Korean, where fashion display type is overwhelmingly a
+// modern sans. Three passes at the font could not make the Korean sit beside
+// the English deck, so the KR storefront inherits the English set rather than
+// shipping a weaker one. Reviving it means changing the treatment for Korean,
+// not picking another serif.
 const LINES = {
   en: {
-    '01-calendar': 'log every outfit',
-    '02-trends':   'what everyone’s wearing',
-    '03-closet':   'your closet, digitized',
-    '04-analyze':  'shop any photo',
-    '05-tryon':    'see it on you, first',
-    '06-stylist':  'a stylist in your closet',
-  },
-  ko: {
-    '01-calendar': '매일의 기록',
-    '02-trends':   '이번 주의 스타일',
-    '03-closet':   '손안의 옷장',
-    '04-analyze':  '사진 속 그 옷',
-    '05-tryon':    '내 몸으로 먼저',
-    '06-stylist':  '내 옷장의 스타일리스트',
+    '01-trends': 'what everyone’s wearing',
+    '02-analyze': 'shop any photo',
+    '03-tryon': 'see it on you, first',
+    '04-closet': 'your closet, digitized',
+    '05-stylist': 'a stylist in your closet',
+    '06-calendar': 'log every outfit',
   },
   ja: {
-    '01-calendar': '毎日のコーデを記録',
-    '02-trends':   '今週のスタイル',
-    '03-closet':   'クローゼットをデジタルに',
-    '04-analyze':  '気になる服を見つける',
-    '05-tryon':    'まず、自分で試着',
-    '06-stylist':  'クローゼット専属スタイリスト',
+    '01-trends': '今週のスタイル',
+    '02-analyze': '気になる服を見つける',
+    '03-tryon': 'まず、自分で試着',
+    '04-closet': 'クローゼットをデジタルに',
+    '05-stylist': 'クローゼット専属スタイリスト',
+    '06-calendar': '毎日のコーデを記録',
   },
   es: {
-    '01-calendar': 'anota cada look',
-    '02-trends':   'lo que se lleva ahora',
-    '03-closet':   'tu armario, en digital',
-    '04-analyze':  'compra desde una foto',
-    '05-tryon':    'pruébatelo antes',
-    '06-stylist':  'un estilista en tu armario',
+    '01-trends': 'lo que se lleva ahora',
+    '02-analyze': 'compra desde una foto',
+    '03-tryon': 'pruébatelo antes',
+    '04-closet': 'tu armario, en digital',
+    '05-stylist': 'un estilista en tu armario',
+    '06-calendar': 'anota cada look',
   },
   fr: {
-    '01-calendar': 'notez chaque tenue',
-    '02-trends':   'ce que l’on porte',
-    '03-closet':   'votre dressing, en numérique',
-    '04-analyze':  'achetez depuis une photo',
-    '05-tryon':    'essayez-la sur vous',
-    '06-stylist':  'un styliste dans votre dressing',
+    '01-trends': 'ce que l’on porte',
+    '02-analyze': 'achetez depuis une photo',
+    '03-tryon': 'essayez-la sur vous',
+    '04-closet': 'votre dressing, en numérique',
+    '05-stylist': 'un styliste dans votre dressing',
+    '06-calendar': 'notez chaque tenue',
   },
 };
-
-
-
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -147,17 +134,12 @@ function fitSize(line) {
   return size;
 }
 
-const hasHangul = (s) => /[가-힯]/.test(s);
-
 function posterSvg(line) {
   const size = fitSize(line);
-  const family = hasHangul(line) ? HEAD_FAMILY_KO
-    : hasCJK(line) ? HEAD_FAMILY_JA
-    : HEAD_FAMILY;
-  const style = hasCJK(line) ? '' : 'font-style="italic"';
-  const weight = hasHangul(line) ? HEAD_WEIGHT_KO
-    : hasCJK(line) ? HEAD_WEIGHT_JA
-    : 400;
+  const cjk = hasCJK(line);
+  const family = cjk ? HEAD_FAMILY_JA : HEAD_FAMILY;
+  const style = cjk ? '' : 'font-style="italic"';
+  const weight = cjk ? HEAD_WEIGHT_JA : 400;
   return `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${W}" height="${H}" fill="${GROUND}"/>
