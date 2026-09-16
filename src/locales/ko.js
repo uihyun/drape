@@ -512,6 +512,8 @@ export const ko = {
   stylistSave: '저장',
   stylistSaved: '저장됨',
   stylistSavedTitle: '저장한 룩',
+  stylistSavedMore: '더 보기',
+  stylistSavedOther: '다른 스타일리스트에 저장한 룩 {n}개가 있어요.',
   stylistTryAgain: '다시 입어보기',
   stylistSavedGone: '옷장에 없는 아이템이에요',
   stylistChoose: '나만의 스타일리스트를 골라주세요 — 언제든 바꿀 수 있어요.',

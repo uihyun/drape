@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Saved looks: per-stylist, paged, and tagged correctly.** The persona
+  picker now filters the archive — a stylist's page shows that stylist's
+  picks — with a one-line note when looks are parked under another persona,
+  so switching stylists never reads as "my saves vanished". The list pages
+  3 at a time behind a "Show more" button and the Firestore subscription
+  limit tracks the rendered window (a 50-look archive no longer reads 50
+  docs to show 3). The wishlist bookmark had only been added to the
+  recommendation thumbnails, so saved cards silently dropped it — same
+  glyph on both now.
 - **Stylist crash fixed (TDZ).** The warm-cache read landed below the state
   that seeds from it, so every stylist mount threw "Cannot access 'warm'
   before initialization" and the page went blank. Declaration moved above

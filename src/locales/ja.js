@@ -514,6 +514,8 @@ export const ja = {
   stylistSave: '保存',
   stylistSaved: '保存済み',
   stylistSavedTitle: '保存したルック',
+  stylistSavedMore: 'もっと見る',
+  stylistSavedOther: '他のスタイリストに保存したルックが{n}件あります。',
   stylistTryAgain: 'もう一度試着',
   stylistSavedGone: 'クローゼットにないアイテムです',
   stylistChoose: 'あなた専属のスタイリストを選んでください — いつでも変更できます。',

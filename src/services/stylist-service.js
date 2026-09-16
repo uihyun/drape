@@ -70,7 +70,9 @@ async function unsaveLook(uid, lookId) {
   await deleteDoc(doc(db, 'users', uid, 'savedLooks', lookId));
 }
 
-function subscribeSavedLooks(uid, cb, { max = 50 } = {}) {
+// `max` grows with the "show more" button so a user with 50 saved looks
+// only ever reads the page they're actually looking at.
+function subscribeSavedLooks(uid, cb, { max = 12 } = {}) {
   if (!uid) { cb([]); return () => {}; }
   return onSnapshot(
     query(savedLooksRef(uid), orderBy('createdAt', 'desc'), limit(max)),

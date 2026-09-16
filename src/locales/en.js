@@ -512,6 +512,8 @@ export const en = {
   stylistSave: 'Save',
   stylistSaved: 'Saved',
   stylistSavedTitle: 'Saved looks',
+  stylistSavedMore: 'Show more',
+  stylistSavedOther: '{n} more saved under your other stylists.',
   stylistTryAgain: 'Try this on again',
   stylistSavedGone: 'Pieces no longer in your closet',
   stylistChoose: 'Pick your personal stylist — you can switch anytime.',

@@ -15,6 +15,10 @@ import {
 // SPEC-1.6 §D — the stylist surface. Personas are explicitly-AI characters
 // (initial-monogram avatars, no photoreal faces). Recommendations are free
 // (server-capped/day); the try-on CTA is where fits get spent, unchanged.
+// Saved looks come in pages — a long archive shouldn't dump 50 cards under
+// the recommend button.
+const PAGE = 3;
+
 export function Stylist({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
@@ -33,6 +37,7 @@ export function Stylist({ user, onSignIn }) {
   const [profile, setProfile] = useState(null);
   const [styleOpen, setStyleOpen] = useState(false);
   const [saved, setSaved] = useState([]);        // looks kept from past recs
+  const [shown, setShown] = useState(PAGE);      // "show more" window
   const [savedKeys, setSavedKeys] = useState(warm?.savedKeys || {}); // rec-outfit index → saved doc id
   const fits = useFits(user);      // shown once free recs are spent (1 rec = 1 fit)
 
@@ -52,8 +57,9 @@ export function Stylist({ user, onSignIn }) {
   // user wants to keep lives in their own savedLooks list.
   useEffect(() => {
     if (!user || user.isAnonymous) { setSaved([]); return undefined; }
-    return StylistService.subscribeSavedLooks(user.uid, setSaved);
-  }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+    // Read one page ahead of what's rendered so "show more" is instant.
+    return StylistService.subscribeSavedLooks(user.uid, setSaved, { max: shown + PAGE });
+  }, [user?.uid, shown]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -250,10 +256,25 @@ export function Stylist({ user, onSignIn }) {
       {/* Saved looks — the stylist's picks the user kept. The comment is
           half the value, so it's stored and replayed with the look; try-on
           can be re-run later against a different reference photo. */}
-      {saved.length > 0 && (
+      {(() => {
+        // The persona picker above doubles as the filter: a stylist's page
+        // shows that stylist's picks. Looks kept under another persona stay
+        // put — a one-liner says so instead of letting them seem deleted.
+        const mine = saved.filter((l) => l.persona === persona);
+        const others = saved.length - mine.length;
+        if (!saved.length || !persona || choosing) return null;
+        if (!mine.length) {
+          return (
+            <section className="stylist-saved">
+              <p className="tmag-kicker">{t('stylistSavedTitle')}</p>
+              <p className="stylist-guide">{t('stylistSavedOther', { n: others })}</p>
+            </section>
+          );
+        }
+        return (
         <section className="stylist-saved">
           <p className="tmag-kicker">{t('stylistSavedTitle')}</p>
-          {saved.map((l) => {
+          {mine.slice(0, shown).map((l) => {
             const p = STYLIST_PERSONAS.find((x) => x.id === l.persona) || STYLIST_PERSONAS[0];
             const live = (l.itemIds || []).filter((id) => closet?.[id]);
             return (
@@ -279,6 +300,11 @@ export function Stylist({ user, onSignIn }) {
                       {thumbOf(id)
                         ? <img src={thumbOf(id)} alt="" loading="lazy" />
                         : <div className="stylist-item-ph" />}
+                      {closet?.[id]?.kind === 'wishlist' && (
+                        <span className="stylist-wish" aria-label={t('itemKindWishlist')} title={t('itemKindWishlist')}>
+                          <Bookmark size={10} strokeWidth={2.4} fill="currentColor" />
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -294,8 +320,15 @@ export function Stylist({ user, onSignIn }) {
               </article>
             );
           })}
+          {(mine.length > shown || saved.length >= shown + PAGE) && (
+            <button type="button" className="btn btn-secondary stylist-more" onClick={() => setShown(shown + PAGE)}>
+              {t('stylistSavedMore')}
+            </button>
+          )}
+          {others > 0 && <p className="stylist-guide">{t('stylistSavedOther', { n: others })}</p>}
         </section>
-      )}
+        );
+      })()}
 
       {rec && (
         <div className="stylist-rate">

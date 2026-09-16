@@ -6812,3 +6812,4 @@ input[type="search"]::-webkit-search-decoration {
 .mystyle-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
 /* wishlist marker on a stylist thumbnail — same glyph the closet uses */
 .stylist-wish { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; background: rgba(20,19,18,0.72); color: #fff; }
+.stylist-more { display: block; width: 100%; margin-top: 4px; }
