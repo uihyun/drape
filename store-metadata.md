@@ -336,77 +336,68 @@ upload the versionCode 6 `.aab`. (Same notes/copy for both stores.)
 
 ---
 
-## Pre-archive technical state — VERIFIED in repo (2026-06-04)
+## Settled — do not re-litigate these
 
-These are the archive/build gotchas archelier (../voda) hit; for drape they're already handled:
-- ✅ `ENABLE_USER_SCRIPT_SANDBOXING = NO` in project.pbxproj — Archive won't fail with the
-  CocoaPods "Sandbox: bash deny …Pods-App-frameworks.sh" error.
-- ✅ `ITSAppUsesNonExemptEncryption = false` in `ios/App/App/Info.plist` — no export-compliance
-  dialog on every upload.
-- ✅ Sign in with Apple entitlement present (`ios/App/App/App.entitlements`).
-- ✅ In-app account deletion exists (`functions/account.js` nuclear delete + `DeleteAccountModal.jsx`).
-- ✅ No IAP / no subscriptions → none of archelier's subscription-review gotchas (3.1.2(c),
-  45-char subscription description, paywall clarity) apply.
-- Version 1.0.0, build 1 (first submission — build 1 is fine; bump CURRENT_PROJECT_VERSION for any
-  resubmission, keep MARKETING_VERSION).
+Everything here is built, verified in the repo, and was accepted at the 2.1.0
+submission. Listed so a future session confirms by reading rather than by asking
+whether it exists.
 
-## ⚠️ Outstanding — verify BEFORE submitting (beyond screenshots + archive)
+| Requirement | Where it lives |
+|---|---|
+| In-app account deletion (**Guideline 5.1.1(v)**) | Settings → Delete account → `DeleteAccountModal.jsx` → `AuthService.deleteAccount()` → `functions/account.js`. Starts and completes in-app; no web hand-off. |
+| **Sign in with Apple** (Guideline 4.8, required because Google is offered) | `ios/App/App/App.entitlements`, Firebase Apple provider enabled, portal configured. Reviewer login works. |
+| Export compliance | `ITSAppUsesNonExemptEncryption = false` in `Info.plist` — HTTPS only, no dialog per upload. |
+| Archive sandboxing | `ENABLE_USER_SCRIPT_SANDBOXING = NO` in `project.pbxproj`. |
+| iOS deployment target | `ios/App/Podfile` `post_install` lifts any pod under 15.0. Capacitor pins them to 14.0 and current Xcode rejects that as an error. |
+| Push notifications | `aps-environment` entitlement; APNs auth key `L2JVATZ6W2` (team `WG75TG59NJ`) uploaded to Firebase Cloud Messaging, covers dev + prod. The `.p8` lives outside the repo at `~/Desktop/idea/drape/keys/apple_push/` — Apple will not re-issue it, keep the backup. |
+| Subscription review rules (3.1.2(c) etc.) | Not applicable — no IAP, no subscriptions. |
+| Support / Privacy URLs | `https://drape-9e532.web.app/support.html`, `.../privacy.html` — standalone, live. |
 
-1. **Apple Sign-In end-to-end** — the reviewer will likely log in with Sign in with Apple. Portal
-   setup was previously flagged outstanding. **On a real device, complete a full Apple sign-in →
-   land in the app** before submitting. (Firebase Apple provider enabled + key; native iOS uses
-   the device Apple ID.) A broken reviewer login = rejection.
-2. **Push notifications** — ✅ WIRED (2026-06-05). `aps-environment` entitlement added to
-   `App.entitlements`; APNs **auth key** `L2JVATZ6W2` (team `WG75TG59NJ`, Sandbox & Production)
-   uploaded to Firebase → Cloud Messaging → Apple app config (covers dev + prod). `PushService`
-   registers tokens to `users/{uid}/fcmTokens`; `onMessageCreated` fans out push for text + image
-   DMs. The `.p8` lives OUTSIDE the repo (`~/Desktop/idea/drape/keys/apple_push/`) — back it up,
-   Apple won't re-issue. Remaining: rebuild in Xcode (Automatic signing provisions Push on the App
-   ID) + test on a REAL device (sim can't receive push).
-3. **App Review 메모** — paste the block above into ASC → App Review Information → Notes (it was
-   empty in the screenshot). This is the #1 thing reviewers read.
-4. **Cold-start with a brand-new account** — no crash, empty feed/marketplace shows a placeholder
-   not a blank/hanging screen. Test on a real device + simulator; if universal, test **iPad
-   landscape** (archelier was reviewed on an iPad).
+**Seller name.** The App Store shows the Apple Developer account type's name:
+Individual → "Uihyun Kim", Organization → the LLC. Showing "uhz LLC" needs an
+Organization account (D-U-N-S for the LLC). No payout or tax impact while there
+is no IAP, so the clean moment to switch is **before monetizing** — doing it
+later means an app transfer and splitting that year's income across two entities.
 
-## Submission gotchas to remember (from archelier's actual review)
+## Every release — redo these
 
-- **Screenshots:** upload to the **6.9" (1290×2796) slot** — Apple auto-derives the smaller sizes.
-  Putting a 6.9" image in the 6.5" slot errors. 3–8 shots.
-- **Build selection:** the build must be **"Ready to Submit" in TestFlight** (not "Processing") and
-  have export compliance answered, or it won't appear in the build picker.
-- **One active submission per app**; the submission draft should show just "iOS App 1.0.0".
-- **Account-deletion screen recording** is only requested if 5.1.1 gets flagged on resubmission —
-  film it on a **real device** (sign in → Settings → Delete Account → confirm), host the link, and
-  paste it into the **permanent** App Review Notes so future builds aren't re-asked.
+Per-version fields and checks. Clearing them last time does not clear them now.
 
-## 2.1.0 submitted — 16 Sep 2026
+- [ ] **App Review Notes** — paste the block near the top of this file. Reviewers
+      read it first, and it resets to empty on a new version.
+- [ ] **로그인 정보** — uncheck "로그인 필요", or note Sign in with Apple.
+- [ ] **Screenshots** — App Store takes all ten from
+      `resources/app-store/posters-2.1.0-<locale>/` into the **6.9" (1290×2796)**
+      slot (it derives the smaller sizes; a 6.9" image in the 6.5" slot errors).
+      Play takes the eight without `-ios-only` in the filename.
+- [ ] **Release notes** — the App Store block and the **Play block are different
+      text**, not the same copy trimmed: Play caps at 500 characters, the App
+      Store at 4000. Both are in `resources/app-store/listing-*.md`.
+- [ ] **Build is "Ready to Submit" in TestFlight** — not "Processing" — and
+      export compliance answered, or it will not appear in the build picker.
+- [ ] **Cold start on a brand-new account** — real device and simulator. Empty
+      states must show a placeholder, never a blank or hanging screen. If the
+      app is universal, check iPad landscape too.
+- [ ] **App Privacy questionnaire** still matches the Privacy Policy.
+- [ ] Bump all three version places together: `package.json`,
+      `android/app/build.gradle` (versionName + versionCode), iOS
+      `project.pbxproj` (MARKETING_VERSION + CURRENT_PROJECT_VERSION).
 
-Both stores. iOS build 16 / MARKETING_VERSION 2.1.0; Android versionCode 20 /
-versionName 2.1.0. Listings in en · ko · ja · es · fr; poster decks in
-en · ja · es · fr (Korean inherits English, see
-`resources/app-store/README.md`). App Store got all ten slides, Play the eight
-without `-ios-only` in the filename.
+**One active submission per app.** If a draft is stuck, that is usually why.
 
-The checklist below was cleared for this submission. Re-verify it next release
-rather than assuming — Review Notes and the login toggle are per-version fields.
+**If 5.1.1 gets flagged on a resubmission** Apple asks for a screen recording of
+the deletion on a real device (sign in → Settings → Delete account → confirm).
+Host it and paste the link into the **permanent** App Review Notes, not the
+per-version field, so later builds are not asked again.
 
-## Still-to-do checklist (ASC, user-side)
+## Submission log
 
-- [x] **Review Notes (메모)** — paste the block above (this is the empty field in the screenshot).
-- [x] **로그인 정보** — uncheck "로그인 필요" OR note Sign in with Apple (fields can stay empty).
-- [x] **Screenshots** — 6.9" (1290×2796) slot, EN + JA + ES + FR from
-      `resources/app-store/posters-2.1.0-<locale>/`. Korean is deliberately not
-      uploaded; it falls back to the English set.
-- [x] **Support URL** = `https://drape-9e532.web.app/support.html` (standalone, live).
-- [x] **Privacy Policy URL** = `https://drape-9e532.web.app/privacy.html` (standalone, live).
-- [x] **App Privacy** questionnaire matches the Privacy Policy (done earlier — re-verify after marketplace/DM).
-- [x] **Export compliance** — `ITSAppUsesNonExemptEncryption = false` in Info.plist (HTTPS-only).
-- [x] **Sign in with Apple** entitlement present (Guideline 4.8 — Google is offered, so Apple is required).
-- [x] **Build** uploaded via TestFlight + export-compliance answered.
-- [x] **Developer name → "uhz LLC"** — the App Store seller name follows the Apple Developer
-      account type: Individual shows the personal legal name (Uihyun Kim), Organization shows the
-      LLC. To show "uhz LLC" you need an **Organization account** (D-U-N-S # for the LLC). No
-      payout/tax impact while there are NO in-app purchases, so it's cleanest to set the entity
-      **before monetizing**. Individual→Org later = an app transfer + splitting that year's income
-      across two tax entities. Can be changed/re-applied later, but more friction.
+**2.1.0 — submitted to both stores 16 Sep 2026.** iOS build 16 /
+MARKETING_VERSION 2.1.0; Android versionCode 20 / versionName 2.1.0. Listings in
+en · ko · ja · es · fr; poster decks in en · ja · es · fr (Korean inherits the
+English set on purpose — see `resources/app-store/README.md`). App Store got all
+ten slides, Play the eight without `-ios-only`.
+
+**1.5.0** — the version live before this one; its decks are recovered under
+`resources/app-store/posters-shipped/1.5.0-{en,ja}` and its listing text is the
+baseline recorded above.

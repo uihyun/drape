@@ -2,18 +2,23 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-16 (store = 1.5.0; repo = 2.1.0, feature-complete, UNSUBMITTED)
+## Snapshot — 2026-09-16 (2.1.0 submitted to both stores; store still serving 1.5.0)
 
-**The one blocker that matters:** production is still **1.5.0** (vc17 / iOS
-build 14). Everything below has been live on web/functions for weeks but no
-app user has seen any of it. Play has enforced target API 36 since Aug 31,
-so **no Android update can ship until the 2.1.0 AAB goes up** — the repo is
-already API 36, versionCode 20 / iOS build 16. Listing copy for all five
-locales is in `resources/app-store/listing-{en,ko,ja,es,fr}.md`, every capped
-field verified; the build checklist is in CHANGELOG under "2.1.0 store
-submission kit". The iOS archive was failing until 2026-09-16 — Capacitor pins
-pods to deployment target 14.0 and current Xcode rejects anything under 15.0,
-as errors, not warnings. The Podfile lifts them now.
+**2.1.0 went to both consoles on 16 Sep** — iOS build 16, Android versionCode 20
+— and is in review. Production still serves **1.5.0** (vc17 / iOS build 14)
+until it clears, so everything below has been live on web/functions for weeks
+and no app user has seen it yet. That also unblocks Android: Play has enforced
+target API 36 since Aug 31, and no Android update could ship at all until this
+AAB went up.
+
+The submission material is all in the repo and does not need rediscovering:
+listing copy per locale in `resources/app-store/listing-{en,ko,ja,es,fr}.md`
+(every capped field checked, and the Play release notes are a *separate* shorter
+block because Play caps at 500 where the App Store allows 4000), poster decks in
+`resources/app-store/posters-2.1.0-<locale>/` with the deck's reasoning in that
+folder's README, and the per-release checklist in `store-metadata.md` — which
+now separates **settled** requirements (account deletion, Apple Sign-In, export
+compliance, push) from the fields that genuinely reset every version.
 
 **Shipped since the last snapshot** (all live on web):
 - **Trends** replaced the feed in the tab bar (feed itself untouched at

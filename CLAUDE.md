@@ -62,6 +62,28 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   escapes; don't relax it.
 - **Server-editable copy layer** (`config/copy`): t() string overrides, onboarding steps, and the notice banner — edited in /admin → Config via `adminSetConfig` (server validates against the client parsers). Missing/malformed doc always falls back to bundled; don't break that contract.
 - **Share-import fetches stay SSRF-disciplined** (`functions/import.js`): https only, DNS-checked public IPs, every redirect hop re-validated, size/time caps. Don't loosen for a convenience case.
+- **Store assets live in `resources/app-store/`, not on the Desktop.** Captures,
+  the recovered shipped decks, the current poster decks, the look photos the
+  hero slides are cut from, and the per-locale listing copy. The renderer is
+  `scripts/build-store-posters.cjs` and that folder's README carries the deck
+  order and why each slide sits where it does. They were once outside any repo,
+  which is how they went missing. `store-metadata.md` separates **settled** App
+  Review requirements (account deletion, Apple Sign-In, export compliance, push
+  — all built, verified, accepted) from the fields that reset every version;
+  read it before asking whether something exists.
+- **The two stores do not take the same submission.** App Store: 10 screenshots,
+  4000-character release notes. Play: 8 screenshots, **500**. Poster filenames
+  carry `-ios-only` for the two Play cannot take, and each `listing-*.md` holds a
+  separate, shorter Play release-note block — never a truncation of the App Store
+  text.
+- **A stylist persona needs a signature, refusals and a voice, not just a lens.**
+  `functions/stylist.js` feeds the user's taste profile, stated preferences
+  (marked authoritative), thumbs history and avoid-list *below* the persona line,
+  and all of it is more specific — so a lens alone lets four stylists converge on
+  the same safe pick. The refusals separate them hardest (they remove options the
+  others would take) and the voice is what the user actually reads. Verify a
+  persona change by running all four against one closet before shipping; that
+  check is what caught Juno sneering at the user's clothes.
 - **Brand mark is the ivory Didot-italic `drape` wordmark on espresso ink `#141312`.** Sources in `resources/*.svg` (+ `public/wordmark.png`, `public/favicon.*`, `public/icons/*.webp`); regenerate via the sharp-based build (Didot is a macOS system font, baked into the rasters). Favicon is the single `d` monogram. After changing them, native needs `npx capacitor-assets generate && npx cap sync`.
 
 ## Stack reminders
