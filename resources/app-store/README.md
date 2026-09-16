@@ -40,37 +40,70 @@ shipped Japanese deck does.
 
 ## The 2.1.0 deck
 
-Seven slides, four locales.
+Ten slides, four locales. Three are full-bleed look photos, seven are app
+captures in the ink-ground card treatment.
 
-| # | slide | line (en) |
+| # | file | line (en) |
 |---|---|---|
-| 1 | trends | what everyone's wearing |
-| 2 | analyze | shop any photo |
-| 3 | tryon | see it on you, first |
-| 4 | closet | your closet, digitized |
-| 5 | stylist | a stylist in your closet |
-| 6 | calendar | log every outfit |
-| 7 | board | moodboard your style |
+| 1 | `01-hero-closet.jpg` | your closet, in your pocket |
+| 2 | `02-hero-own.jpg` | wear what you already own |
+| 3 | `03-trends.png` | what everyone's wearing |
+| 4 | `04-analyze.png` | shop any photo |
+| 5 | `05-hero-tryon.jpg` | try it on before it's yours |
+| 6 | `06-tryon.png` | see it on you, first |
+| 7 | `07-closet.png` | your closet, digitized |
+| 8 | `08-stylist.png` | a stylist in your closet |
+| 9 | `09-calendar.png` | log every outfit |
+| 10 | `10-board.png` | moodboard your style |
 
-Two substitutions against shipped 1.5.0: trends replaces `02-feed` (the feed
-lost its tab) and stylist replaces `06-market` (the marketplace has no entry
-point in the shipped UI). `07-board` survives, at the back: boards is the
-least-used profile tab — 198 views / 39 users across 90 days of GA, against
-closet's 1,887 / 71 — which earns it the last slot, not deletion, and slide 7
-is past everything that decides a tap. The five surviving slides keep their
-shipped headline word for word.
+Order is the argument, not the feature list. Search results show the first three
+portrait shots before anyone taps, and the shipped 1.5.0 order spent all three
+on calendar + feed + closet — a trio that describes Lekondo as well as it
+describes drape. Two heroes open and the third is a title card for the try-on
+payoff, so the preview reads look · look · trends and the product still appears
+before the tap. Putting all three heroes up front was considered and rejected:
+our heroes carry no app UI (Lekondo's hold phone mockups; ours don't), so three
+in a row would show a searcher nothing of the product.
 
-The order changed, though. 1.5.0 opened calendar / feed / closet, and those are
-exactly the three portrait shots search results show before anyone taps — a
-trio that describes Lekondo as well as it describes drape. The first three now
-run the one story no competitor can tell: see someone's look, drape reads the
-outfit, it lands on your body. Closet is the foundation but not the pitch, so
-it follows; calendar closes, because a habit feature is for people already sold.
+Closet is the foundation but not the pitch, so it follows the payoff; calendar
+and board close, because habit features are for people already sold.
+
+`07-board` survives at the back rather than being cut: boards is the least-used
+profile tab — 198 views / 39 users across 90 days of GA, against closet's
+1,887 / 71 — which earns it the last slot, not deletion.
+
+## Hero slides
+
+Sources are in `looks/`, pulled from real OOTDs in `outfits`. Three things to
+know before touching them.
+
+**`cx` is measured, not guessed.** It's the figure's centre as a fraction of
+source width, read off a tenths grid laid over the original. Centring on the
+photo puts the person off-axis; centring on the outermost limb (an extended leg,
+a bag) is worse — it shoves the body to one edge.
+
+**The photos are 1200px tall and that's the ceiling.** The app resizes on
+upload, so there is no larger original; filling 2796 means a 2.33x upscale. The
+alternative — fitting by width so nothing is cropped — leaves a third of the
+poster empty, which is worse.
+
+**They ship as JPEG.** Lossless PNG costs ~6 MB a slide for no visible gain on a
+photograph, and both stores accept JPEG screenshots. The card slides stay PNG
+and are palette-quantised; never palette a hero, it bands the sky.
+
+No wordmark slide. The store already prints the icon and the app name directly
+above the screenshots, so spending the most-seen slot restating them is waste —
+and opening on the bare brand name is the one move that would read as copying
+Lekondo rather than following the category.
 
 **No Korean deck.** The treatment is a Bodoni italic and the Hangul counterpart
 to that is a Myeongjo, but Myeongjo at display size reads literary and dated in
-Korean, where fashion display type is overwhelmingly a modern sans. Three
-passes at the font could not make the Korean sit beside the English deck, so
-the KR storefront keeps inheriting the English set — which is what it already
-runs today. Reviving it means a different treatment for Korean, not another
-serif. Spanish and French have no shipped deck either, so those lines are new.
+Korean, where fashion display type is overwhelmingly a modern sans. Three passes
+at the font could not make the Korean sit beside the English deck, so the KR
+storefront keeps inheriting the English set — which is what it already runs
+today. Reviving it means a different treatment for Korean, not another serif.
+
+## Uploading
+
+App Store takes up to 10, so the deck goes up whole. **Play takes 8** — drop
+`09-calendar` and `10-board`, the two least-used tabs in GA.

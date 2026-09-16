@@ -647,6 +647,31 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Three full-bleed look slides, and the deck grows to ten.** Real OOTDs from
+the app, filling the poster with the line laid over them — the format the
+category uses (Depop, Vinted, Grailed all open this way), which the seven card
+slides could not do. Two open the deck and the third is a title card for the
+try-on payoff. All three up front was rejected: search results show the first
+three portrait shots before anyone taps, and our heroes carry no app UI, so
+three in a row would show a searcher nothing of the product.
+
+No wordmark slide. The store already prints the icon and app name directly above
+the screenshots, so restating them in the most-seen slot is waste — and opening
+on the bare brand name is the one move that reads as copying a competitor rather
+than following the category.
+
+Three things the hero path got wrong first, all now recorded in the renderer:
+`cx` must be the figure's centre measured off a grid, not the photo's centre and
+not the outermost limb (an extended leg shoved the body to the frame edge);
+fitting by width to avoid cropping leaves a third of the poster empty, so height
+fill plus a measured horizontal window is the right trade; and hero slides ship
+as JPEG — lossless PNG cost ~6 MB a slide, and palette quantisation, which the
+card slides use happily, bands a photograph's sky.
+
+**Play gets eight of the ten.** Play caps phone screenshots at 8 where the App
+Store allows 10, so calendar and board — the two least-used tabs in GA — come
+off for that listing only.
+
 **Board poster restored as slide 7, and the GA figure behind dropping it was
 wrong.** The stat written into the renderer and README — "4.4% of profile
 views, 8 s/user" — was never queried; it was asserted. The real 90-day numbers:

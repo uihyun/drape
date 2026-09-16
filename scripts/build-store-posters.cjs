@@ -47,6 +47,17 @@ const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
 const HEAD_FAMILY_JA = 'Zen Old Mincho, Shippori Mincho, Hiragino Mincho ProN, serif';
 const HEAD_WEIGHT_JA = 500;
 
+// ── Hero slides ────────────────────────────────────────────────────────
+// A look photo filling the whole poster with the line laid over it. The photos
+// are 1200px tall, so filling 2796 means a 2.33x upscale — there is no larger
+// original, the app resizes on upload.
+const HERO_SIZE = 92;
+const HERO_BASELINE_FROM_BOTTOM = 190;
+// Ivory type needs help over a bright road; this is the lightest gradient that
+// holds it on all three photos without reading as a box.
+const HERO_SCRIM_H = 940;
+const HERO_SCRIM_MAX = 0.9;
+
 // ── The deck ───────────────────────────────────────────────────────────
 // `02-feed` became trends and `06-market` became the stylist, because the feed
 // lost its tab and the marketplace has no entry point in the shipped app.
@@ -62,21 +73,23 @@ const HEAD_WEIGHT_JA = 500;
 // Closet is the foundation but not the pitch, so it follows; calendar closes,
 // because a habit feature is for people already sold.
 const DECK = [
+  // Full-bleed looks from real OOTDs in the app. `cx` is the figure's centre as
+  // a fraction of source width, read off a tenths grid laid over the original —
+  // centring on the photo, or on the outermost limb, puts the person off-axis.
+  { out: '01-hero-closet', hero: 'street-yellow', cx: 0.48 },
+  { out: '02-hero-own',    hero: 'street-tile',   cx: 0.50 },
   // trends-3, not the other masthead captures: it's the only full-length shot,
-  // so the outfit reads at thumbnail size — and it sets up the next two slides,
-  // where that kind of street look gets analysed and tried on.
-  { out: '01-trends',   src: 'trends-3' },
-  { out: '02-analyze',  src: 'analyzed-photo' },
-  { out: '03-tryon',    src: 'tryon-3' },
-  { out: '04-closet',   src: 'closet-1' },
-  { out: '05-stylist',  src: 'stylist' },
-  { out: '06-calendar', src: 'calendar' },
-  // Shot as-is. Trimming the bottom to hide the "Publish to feed" button was
-  // tried and is geometrically impossible here: the card is 980×2124, nearly
-  // the capture's own aspect, so cutting height leaves a relatively wider image
-  // and `fit: cover` scales it up to reach the card's height — blowing the
-  // collage up and cropping both sides off. Any height trim does this.
-  { out: '07-board',    src: 'board' },
+  // so the outfit reads at thumbnail size — and it sets up the two that follow.
+  { out: '03-trends',      src: 'trends-3' },
+  { out: '04-analyze',     src: 'analyzed-photo' },
+  // A title card for the payoff: the hero states the promise, the slide after
+  // it shows the promise kept.
+  { out: '05-hero-tryon',  hero: 'park-bench',    cx: 0.50 },
+  { out: '06-tryon',       src: 'tryon-3' },
+  { out: '07-closet',      src: 'closet-1' },
+  { out: '08-stylist',     src: 'stylist' },
+  { out: '09-calendar',    src: 'calendar' },
+  { out: '10-board',       src: 'board' },
 ];
 
 // EN and JA keep their shipped lines word for word; only trends and stylist
@@ -91,40 +104,68 @@ const DECK = [
 // not picking another serif.
 const LINES = {
   en: {
-    '01-trends': 'what everyone’s wearing',
-    '02-analyze': 'shop any photo',
-    '03-tryon': 'see it on you, first',
-    '04-closet': 'your closet, digitized',
-    '05-stylist': 'a stylist in your closet',
-    '06-calendar': 'log every outfit',
-    '07-board':    'moodboard your style',
+    '03-trends': 'what everyone’s wearing',
+    '04-analyze': 'shop any photo',
+    '06-tryon': 'see it on you, first',
+    '07-closet': 'your closet, digitized',
+    '08-stylist': 'a stylist in your closet',
+    '09-calendar': 'log every outfit',
+    '10-board':    'moodboard your style',
   },
   ja: {
-    '01-trends': '今週のスタイル',
-    '02-analyze': '気になる服を見つける',
-    '03-tryon': 'まず、自分で試着',
-    '04-closet': 'クローゼットをデジタルに',
-    '05-stylist': 'クローゼット専属スタイリスト',
-    '06-calendar': '毎日のコーデを記録',
-    '07-board':    'スタイルをムードボードに',
+    '03-trends': '今週のスタイル',
+    '04-analyze': '気になる服を見つける',
+    '06-tryon': 'まず、自分で試着',
+    '07-closet': 'クローゼットをデジタルに',
+    '08-stylist': 'クローゼット専属スタイリスト',
+    '09-calendar': '毎日のコーデを記録',
+    '10-board':    'スタイルをムードボードに',
   },
   es: {
-    '01-trends': 'lo que se lleva ahora',
-    '02-analyze': 'compra desde una foto',
-    '03-tryon': 'pruébatelo antes',
-    '04-closet': 'tu armario, en digital',
-    '05-stylist': 'un estilista en tu armario',
-    '06-calendar': 'anota cada look',
-    '07-board':    'tu estilo, en un mural',
+    '03-trends': 'lo que se lleva ahora',
+    '04-analyze': 'compra desde una foto',
+    '06-tryon': 'pruébatelo antes',
+    '07-closet': 'tu armario, en digital',
+    '08-stylist': 'un estilista en tu armario',
+    '09-calendar': 'anota cada look',
+    '10-board':    'tu estilo, en un mural',
   },
   fr: {
-    '01-trends': 'ce que l’on porte',
-    '02-analyze': 'achetez depuis une photo',
-    '03-tryon': 'essayez-la sur vous',
-    '04-closet': 'votre dressing, en numérique',
-    '05-stylist': 'un styliste dans votre dressing',
-    '06-calendar': 'notez chaque tenue',
-    '07-board':    'votre style en planche',
+    '03-trends': 'ce que l’on porte',
+    '04-analyze': 'achetez depuis une photo',
+    '06-tryon': 'essayez-la sur vous',
+    '07-closet': 'votre dressing, en numérique',
+    '08-stylist': 'un styliste dans votre dressing',
+    '09-calendar': 'notez chaque tenue',
+    '10-board':    'votre style en planche',
+  },
+};
+
+// Hero copy is positioning, not features — the seven product slides already
+// carry those, and repeating one here would read as a duplicate slide. The
+// sequence is: what it is, what it does for you, why it's different. No
+// wordmark slide: the store already prints the icon and the app name directly
+// above the screenshots, so spending the most-seen slot restating them is waste.
+const HERO_LINES = {
+  en: {
+    '01-hero-closet': 'your closet, in your pocket',
+    '02-hero-own':    'wear what you already own',
+    '05-hero-tryon':  'try it on before it\u2019s yours',
+  },
+  ja: {
+    '01-hero-closet': 'クローゼットごと、ポケットに',
+    '02-hero-own':    '今ある服で、着こなす',
+    '05-hero-tryon':  '買う前に、着た姿を見る',
+  },
+  es: {
+    '01-hero-closet': 'tu armario, en el bolsillo',
+    '02-hero-own':    'viste lo que ya tienes',
+    '05-hero-tryon':  'lo ves en ti antes de comprarlo',
+  },
+  fr: {
+    '01-hero-closet': 'votre dressing, dans votre poche',
+    '02-hero-own':    'portez ce que vous avez déjà',
+    '05-hero-tryon':  'voyez-le sur vous avant d\u2019acheter',
   },
 };
 
@@ -135,12 +176,12 @@ const hasCJK = (s) => /[぀-ヿ㐀-鿿가-힯]/.test(s);
 
 // Rough advance widths so a long line can be stepped down until it fits rather
 // than running off the canvas — the failure mode is invisible until upload.
-function fitSize(line) {
+function fitSize(line, base = HEAD_SIZE) {
   const wide = [...line].filter(hasCJK).length;
   const narrow = line.length - wide;
   const emWidth = wide * 1.0 + narrow * 0.42; // Didot italic lowercase is narrow
   const maxPx = W - 150 * 2;
-  let size = HEAD_SIZE;
+  let size = base;
   while (size > 48 && emWidth * size > maxPx) size -= 2;
   return size;
 }
@@ -159,6 +200,39 @@ function posterSvg(line) {
         font-size="${size}" fill="#F4F1EA">${esc(line)}</text>
   <circle cx="${W / 2}" cy="${DOT_CY}" r="${DOT_R}" fill="${DOT_FILL}"/>
 </svg>`;
+}
+
+function heroSvg(line) {
+  const size = fitSize(line, HERO_SIZE);
+  return `
+<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0c0b0a" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0c0b0a" stop-opacity="${HERO_SCRIM_MAX / 2}"/>
+    <stop offset="1" stop-color="#0c0b0a" stop-opacity="${HERO_SCRIM_MAX}"/>
+  </linearGradient></defs>
+  <rect x="0" y="${H - HERO_SCRIM_H}" width="${W}" height="${HERO_SCRIM_H}" fill="url(#scrim)"/>
+  <text x="${W / 2}" y="${H - HERO_BASELINE_FROM_BOTTOM}" text-anchor="middle"
+        font-family="${HEAD_FAMILY}" font-style="italic"
+        font-size="${size}" fill="#F4F1EA">${esc(line)}</text>
+</svg>`;
+}
+
+// Fill by height and crop the width — the photos are 3:4 and the poster is
+// 9:19.5, so something has to give. Cropping width around `cx` keeps the figure
+// whole; filling by width instead would leave a third of the poster empty.
+async function heroPoster(file, cx, line) {
+  const m = await sharp(file).metadata();
+  const win = Math.round(m.height * (W / H));
+  const left = Math.max(0, Math.min(m.width - win, Math.round(m.width * cx - win / 2)));
+  return sharp(file)
+    .extract({ left, top: 0, width: Math.min(win, m.width), height: m.height })
+    .resize(W, H, { kernel: 'lanczos3' })
+    .composite([{ input: Buffer.from(heroSvg(line)) }])
+    // JPEG, not PNG: these are photographs, and lossless costs ~6 MB a slide
+    // for no visible gain. Both stores accept JPEG screenshots.
+    .jpeg({ quality: 92, mozjpeg: true, chromaSubsampling: '4:4:4' })
+    .toBuffer();
 }
 
 async function roundedCard(file) {
@@ -182,9 +256,11 @@ async function roundedCard(file) {
   const SRC = srcFlag > -1
     ? process.argv[srcFlag + 1].replace(/^~/, os.homedir())
     : path.join(REPO, 'resources/app-store/captures');
+  const LOOKS = path.join(REPO, 'resources/app-store/looks');
 
   const lines = LINES[locale];
-  if (!lines) throw new Error(`No copy for '${locale}'. Have: ${Object.keys(LINES).join(', ')}`);
+  const heroes = HERO_LINES[locale];
+  if (!lines || !heroes) throw new Error(`No copy for '${locale}'. Have: ${Object.keys(LINES).join(', ')}`);
   if (!fs.existsSync(SRC)) throw new Error(`Capture folder not found: ${SRC}`);
 
   // Never inside `posters-shipped/` — that holds the decks actually on the
@@ -193,17 +269,27 @@ async function roundedCard(file) {
   fs.mkdirSync(OUT, { recursive: true });
 
   console.log(`${locale} → ${OUT}`);
-  for (const { out, src } of DECK) {
-    const file = path.join(SRC, `${src}.png`);
-    if (!fs.existsSync(file)) throw new Error(`Missing capture: ${file}`);
-    const card = await roundedCard(file);
-    const poster = await sharp(Buffer.from(posterSvg(lines[out])))
-      .composite([{ input: card, left: CARD_X, top: CARD_Y }])
-      .extract({ left: 0, top: 0, width: W, height: H })
-      .png()
-      .toBuffer();
-    const dest = path.join(OUT, `${out}.png`);
+  for (const { out, src, hero, cx } of DECK) {
+    let poster;
+    let line;
+    if (hero) {
+      line = heroes[out];
+      const file = path.join(LOOKS, `${hero}.jpg`);
+      if (!fs.existsSync(file)) throw new Error(`Missing look: ${file}`);
+      poster = await heroPoster(file, cx, line);
+    } else {
+      line = lines[out];
+      const file = path.join(SRC, `${src}.png`);
+      if (!fs.existsSync(file)) throw new Error(`Missing capture: ${file}`);
+      const card = await roundedCard(file);
+      poster = await sharp(Buffer.from(posterSvg(line)))
+        .composite([{ input: card, left: CARD_X, top: CARD_Y }])
+        .extract({ left: 0, top: 0, width: W, height: H })
+        .png()
+        .toBuffer();
+    }
+    const dest = path.join(OUT, `${out}.${hero ? 'jpg' : 'png'}`);
     await fs.promises.writeFile(dest, poster);
-    console.log(`  ✓ ${out}.png   “${lines[out]}”`);
+    console.log(`  ✓ ${path.basename(dest)}   “${line}”`);
   }
 })();
