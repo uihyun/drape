@@ -36,47 +36,36 @@ garde-robe,mode,style,penderie,vêtements,capsule,lookbook,tendances,essayage vi
 **Description** (≤4000):
 
 ```
-drape, c’est là où vit votre garde-robe.
+Toute votre garde-robe, enfin au même endroit.
 
-Ajoutez deux ou trois photos de vous, puis voyez n’importe quelle pièce sur
-votre propre corps avant de la porter ou de l’acheter. Photographiez ce que
-vous avez : drape détoure chaque pièce, la tague et la range — le dressing est
-le vôtre, pas un catalogue.
+Ajoutez deux ou trois photos de vous et essayez n'importe quelle pièce sur votre propre corps avant de l'acheter. Photographiez ce que vous possédez : drape détoure chaque pièce, l'étiquette et la range.
 
-ESSAYEZ SUR VOUS
-• Ajoutez deux ou trois photos de vous en pied, puis essayez n’importe quelle pièce.
-• C’est votre vrai visage et votre vrai corps : le résultat vous ressemble,
-  pas à un mannequin.
-• 5 essayages gratuits par jour. Invitez un ami et vous en recevez 10 chacun.
+ESSAYEZ AVANT DE PORTER
+• N'importe quelle pièce, sur votre propre photo. C'est votre visage et votre silhouette, donc on voit tout de suite si ça vous va.
+• 5 essayages gratuits par jour. Invitez quelqu'un et vous en gagnez 10 chacun.
 
-VOTRE DRESSING NUMÉRIQUE
-• Une photo par pièce : nous retirons le fond et taguons catégorie, couleur,
-  saison et style automatiquement.
-• Pressé ? Envoyez la photo d’une tenue complète et nous détectons chaque pièce.
-• Cherchez et filtrez par tag, marque ou couleur. Pincez la grille pour en
-  voir plus d’un coup, ou moins et en plus grand.
+VOTRE DRESSING, EN NUMÉRIQUE
+• Une photo par pièce, c'est tout. Catégorie, couleur, saison et style s'ajoutent seuls.
+• Pressé ? Envoyez la photo d'une tenue entière et nous y retrouvons chaque pièce.
+• Cherchez par tag, marque ou couleur. Pincez la grille pour en voir davantage, ou moins et en plus grand.
 
 VOTRE STYLISTE IA
-• Choisissez un styliste personnel : il compose des tenues avec votre dressing.
-• Dites-lui les styles que vous aimez et les couleurs à éviter — vos
-  préférences passent avant toute supposition.
-• Gardez les looks qui vous plaisent et réessayez-les quand vous voulez.
+• Des idées de tenues composées uniquement avec ce que vous avez déjà. Rien à acheter.
+• Dites-lui les styles que vous aimez et les couleurs à éviter : ce que vous dites prime sur ce qu'il devine.
+• Gardez les tenues qui vous plaisent et réessayez-les quand vous voulez.
 
-CALENDRIER OOTD
-• Une photo enregistre votre journée ; le calendrier se remplit tout seul.
-• Voyez ce que vous portez vraiment, et les pièces que vous avez oubliées.
+UNE PHOTO PAR JOUR
+• Une photo suffit à noter la journée, et le calendrier se remplit tout seul.
+• Vous verrez ce que vous portez vraiment, et ce que vous avez oublié.
 
 TENDANCES
-• Un nouveau numéro chaque lundi : les styles, couleurs et marques qui montent,
-  tirés de ce que les membres portent réellement.
+• Un nouveau numéro chaque lundi : les styles, couleurs et marques qui montent, tirés de ce que les membres portent réellement.
 
-PARCOUREZ D’AUTRES DRESSINGS
-• Ouvrez un look dans Tendances pour voir à qui il est, puis parcourez tout
-  son dressing public.
-• Essayez ses pièces sur vous et gardez les looks qui vous plaisent.
+ALLEZ VOIR D'AUTRES DRESSINGS
+• Ouvrez une tenue dans Tendances, voyez à qui elle est, puis parcourez tout son dressing.
+• Essayez ses pièces sur vous et gardez celles qui vous plaisent.
 
-drape est gratuit au départ. Les essayages utilisent un quota quotidien qui se
-recharge chaque jour.
+drape est gratuit au départ. Les essayages utilisent un quota qui se recharge chaque jour.
 ```
 
 **What's New** (≤4000) — 2.1.0:

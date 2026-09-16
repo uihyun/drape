@@ -626,6 +626,16 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**Descriptions rewritten natively, and unwrapped.** They had been hard-wrapped
+at ~76 characters for the markdown file — the stores reflow the text
+themselves, so those breaks land mid-sentence on a phone. Each paragraph and
+bullet is one line now. More importantly, KO/JA/ES/FR had been written by
+tracking the English sentence-for-sentence, which a native reader spots
+immediately ("drape는 내 옷이 사는 곳입니다" is a literal rendering of an English
+metaphor, not something a Korean copywriter would write). Each locale now opens
+on its own line and carries its own rhythm. A script-mixing check caught Hangul
+that had leaked into the Japanese copy (`毎日5回무료`).
+
 **Screenshot 6 is no longer the marketplace.** The shot list still asked for a
 Market capture after the marketplace claim was cut from every description —
 shooting a screen the store copy doesn't mention, of a surface users can't
