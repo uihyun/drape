@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## 2.1.0 — in progress ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
+## 2.1.0 — submitted ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
 **Submitted to both stores 16 Sep 2026.** iOS build 16, Android versionCode 20.
 
