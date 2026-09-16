@@ -626,6 +626,17 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**`store-metadata.md` keeps a LIVE baseline again.** Its "Listing copy
+(current, finalized)" section held the only record of what is actually in the
+consoles — the live EN promotional text and the live EN keyword string — and a
+2026-09-16 edit replaced it with a pointer to the new per-locale files, which
+destroyed the baseline. Restored from git and relabelled so it can't be mistaken
+for a draft. It also now records what was NEVER here: the KO/JA description and
+keyword strings were entered directly in App Store Connect and no copy was
+kept, and the live screenshot decks were uploaded straight to ASC. Without a
+baseline, every proposed change is a blind swap — which is exactly what the
+first keyword draft was.
+
 **The marketplace is described but not reachable.** `/market` has a route and
 nothing in the UI links to it; the Market tab lives inside `/feed`, which lost
 its nav entry in 2.1.0 and now only appears from three empty-state CTAs (empty

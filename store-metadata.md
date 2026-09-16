@@ -94,6 +94,36 @@ Category is an App Store Connect **App Information** field — changeable any
 time without a new build, and reversible. Worth trying for a release cycle and
 watching Browse impressions in /admin.
 
+## Currently LIVE in the consoles — baseline, do not delete
+
+The only record of what is actually live. Everything else (KO/JA listing text,
+the real screenshots) exists ONLY in App Store Connect and has never been in
+this repo. Read this before proposing any change, so a swap can be weighed
+against what it replaces.
+
+**Promotional text, EN (170)**
+> Build your digital closet, try anything on yourself with AI, and log every
+> outfit. Your wardrobe, finally in one place.
+
+**Subtitle, EN (30)** — `plan outfits & log your ootd` (all lowercase, per the
+brand rule).
+
+**Keywords, EN (100)**
+> wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsule,virtual fitting
+
+**Description, EN** — never captured here; it lives in ASC. Lead was "drape is
+where your wardrobe lives." with six bullets (closet / try-on / OOTD calendar /
+outfits & boards / lookbook feed / marketplace).
+
+**KO / JA description + keywords** — NOT in this repo. They were entered
+directly in ASC and no copy was kept. Before changing either, open the console
+and paste the live strings in here first.
+
+**Screenshots** — the live decks were uploaded directly to ASC and were never
+committed. The `screenshots-6.7-en*` folders that used to sit in
+`resources/app-store/` were voda (interior design) assets and were deleted
+2026-09-16; they were never drape's.
+
 ## Listing copy
 
 Lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name, subtitle,
