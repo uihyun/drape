@@ -4757,6 +4757,36 @@ input[type="search"]::-webkit-search-decoration {
   cursor: pointer;
 }
 .add-item-bulk:hover, .add-sheet-bulk:hover { background: var(--surface, #f0f0ee); }
+
+/* Bulk view inside the add-item sheet. A horizontal strip rather than a grid:
+   the sheet is short, and picked photos are a queue to confirm, not a gallery
+   to browse. */
+.add-sheet-back {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0; border: none; background: none; cursor: pointer;
+  color: var(--text-primary, inherit);
+}
+.add-sheet-back .create-sheet-title { margin: 0; }
+.add-sheet-strip {
+  display: flex; gap: 8px;
+  margin: 0.5rem 0 0.85rem;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.add-sheet-strip-item {
+  position: relative; flex: 0 0 auto;
+  width: 88px; height: 112px;
+  border-radius: 10px; overflow: hidden;
+  background: var(--surface-elevated, #f7f7f5);
+}
+.add-sheet-strip-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.add-sheet-strip-item .add-sheet-photo-rm { width: 22px; height: 22px; top: 4px; right: 4px; }
+.add-sheet-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem; line-height: 1.5;
+  color: var(--text-muted, #888);
+}
 .add-item-bulk-text, .add-sheet-bulk-text {
   display: flex;
   flex-direction: column;

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Image as ImageIcon, Camera as CameraIcon, Plus, Sparkles, RefreshCw, X, Bookmark, Check, ChevronRight } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
+import { bulkAddOwned } from '../services/bulk-add.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { CameraCaptureModal } from '../components/CameraCaptureModal.jsx';
 import { takePendingImport } from '../services/share-import.js';
@@ -35,28 +36,6 @@ const analyzeCaches = { owned: makeAnalyzeCache(), wishlist: makeAnalyzeCache() 
 // photo fans out to a vision call + a crop+tag call per detected piece on a
 // shared Gemini key, so an unbounded batch is a real overload/rate-limit risk.
 const MAX_PHOTOS = 8;
-
-// Owned "several pieces" bulk-add runs entirely in the background so the user
-// drops straight into the closet instead of waiting behind a spinner. Detect
-// each photo, then create every detected piece — items stream in as Processing
-// cards via the live closet subscription. Fire-and-forget (not awaited), so it
-// keeps running after AnalyzePhoto unmounts on navigate.
-// `shopUrl` is passed in, not read from the component: this runs after
-// AnalyzePhoto unmounts, so it cannot reach the component's refs. It used to
-// reference importedSourceRef directly — a ReferenceError swallowed by the
-// per-piece catch below, which made every bulk add silently produce nothing.
-async function bulkAddOwnedInBackground(photos, shopUrl = '') {
-  for (const blob of photos) {
-    try {
-      const data = await ItemService.analyzePhoto({ blob, mime: blob.type || 'image/jpeg' });
-      for (const piece of (data.items || [])) {
-        try {
-          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', shopUrl, owned: true });
-        } catch { /* one failed create = one missing card; the rest still land */ }
-      }
-    } catch { /* detection failure on one photo shouldn't abort the others */ }
-  }
-}
 
 // Pick readable ink for a palette swatch background (same as OutfitDetail,
 // so the analyze result palette renders identically to the saved detail).
@@ -216,7 +195,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       cache.savedBatchIds = new Map();
       setBatches([]);
       navigate('/profile/closet');
-      bulkAddOwnedInBackground(photos, importedSourceRef.current);
+      bulkAddOwned(photos, { shopUrl: importedSourceRef.current });
       return;
     }
 

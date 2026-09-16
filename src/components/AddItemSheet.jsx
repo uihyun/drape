@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Image as ImageIcon, Camera as CameraIcon, X, Layers, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Image as ImageIcon, Camera as CameraIcon, X, Layers, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { ItemService } from '../services/item-service.js';
 import { CameraService } from '../services/camera.js';
 import { CameraCaptureModal } from './CameraCaptureModal.jsx';
+import { bulkAddOwned } from '../services/bulk-add.js';
 import { isNativeApp } from '../services/platform-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -12,9 +13,17 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // straight to where it's sold). Mirrors OotdSheet so the create menu feels
 // consistent; the heavy flows (try-on, analyze, builders) stay full pages.
 // Naming/tagging is still auto-filled server-side after upload.
+const BULK_MAX = 8;
+
 export function AddItemSheet({ open, user, onClose, onSaved }) {
   const { t } = useLocale();
+  const navigate = useNavigate();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
+  // 'single' | 'bulk' — bulk swaps this sheet's body rather than navigating.
+  // Sending a one-tap action to a full page lost the user's place for what is
+  // still just "pick photos, confirm".
+  const [mode, setMode] = useState('single');
+  const [bulk, setBulk] = useState([]); // { blob, previewUrl }
   const [blob, setBlob] = useState(null);
   const [preview, setPreview] = useState(null);
   const [url, setUrl] = useState('');
@@ -25,7 +34,12 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
   useEffect(() => {
     if (!open) return;
     setBlob(null); setPreview(null); setUrl(''); setError(null);
+    setMode('single'); setBulk([]);
   }, [open]);
+
+  // Object URLs for the bulk strip are created per pick and revoked together
+  // when the sheet closes — the strip is small and short-lived.
+  useEffect(() => () => bulk.forEach(b => URL.revokeObjectURL(b.previewUrl)), [bulk]);
 
   useEffect(() => {
     if (!blob) return;
@@ -65,6 +79,55 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
     setCameraOpen(true);
   };
 
+  const addBulkPhotos = (files) => {
+    const room = BULK_MAX - bulk.length;
+    if (room <= 0) return;
+    const accepted = Array.from(files || []).filter(Boolean).slice(0, room);
+    if (!accepted.length) return;
+    setError(null);
+    setBulk(prev => [...prev, ...accepted.map(b => ({ blob: b, previewUrl: URL.createObjectURL(b) }))]);
+  };
+
+  const handleBulkUpload = async () => {
+    try {
+      addBulkPhotos(await CameraService.pickManyFromLibrary(BULK_MAX - bulk.length));
+    } catch (e) {
+      setError(e?.message || 'upload_failed');
+    }
+  };
+
+  const handleBulkSnap = async () => {
+    if (isNativeApp()) {
+      try {
+        const b = await CameraService.takePhoto();
+        if (b) addBulkPhotos([b]);
+      } catch (e) {
+        setError(e?.message || 'camera_failed');
+      }
+      return;
+    }
+    setCameraOpen(true);
+  };
+
+  const removeBulk = (i) => setBulk(prev => {
+    const copy = [...prev];
+    const [gone] = copy.splice(i, 1);
+    if (gone) URL.revokeObjectURL(gone.previewUrl);
+    return copy;
+  });
+
+  // Detection runs after we leave: the closet fills in with Processing cards,
+  // which beats holding the sheet open behind a spinner for N photos.
+  const confirmBulk = () => {
+    if (!bulk.length) return;
+    const photos = bulk.map(b => b.blob);
+    const link = url.trim();
+    setBulk([]);
+    onClose?.();
+    navigate('/profile/closet');
+    bulkAddOwned(photos, { shopUrl: link ? normalizeUrl(link) : '' });
+  };
+
   const save = async () => {
     if (!blob || saving) return;
     setSaving(true);
@@ -94,41 +157,93 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
           <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
             <X size={18} />
           </button>
-          <h3 className="create-sheet-title">{t('createAddItem')}</h3>
-
-          {preview ? (
-            <div className="add-sheet-photo">
-              <img src={preview} alt="" />
-              <button
-                type="button"
-                className="add-sheet-photo-rm"
-                onClick={() => { setBlob(null); setPreview(null); }}
-                aria-label={t('remove')}
-              >
-                <X size={16} strokeWidth={2} />
-              </button>
-            </div>
+          {mode === 'bulk' ? (
+            <button
+              type="button"
+              className="add-sheet-back"
+              onClick={() => setMode('single')}
+              aria-label={t('back')}
+            >
+              <ChevronLeft size={16} strokeWidth={1.9} />
+              <span className="create-sheet-title">{t('addItemBulkTitle')}</span>
+            </button>
           ) : (
-            <div className="add-sheet-pickers">
-              <button type="button" className="btn btn-primary" onClick={handleUpload}>
-                <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
-                <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
-              </button>
-            </div>
+            <h3 className="create-sheet-title">{t('createAddItem')}</h3>
           )}
 
-          {/* Several garments in one photo → the bulk path (analyze pipeline
-              in owned mode). Only offered before a single photo is staged. */}
-          {!preview && (
-            <Link to="/analyze?owned=1" className="add-sheet-bulk" onClick={onClose}>
-              <Layers size={16} strokeWidth={1.7} />
-              <span className="add-sheet-bulk-text">
-                <strong>{t('addItemBulkTitle')}</strong>
-              </span>
-              <ChevronRight size={16} strokeWidth={1.7} />
-            </Link>
+          {mode === 'bulk' ? (
+            <>
+              {bulk.length > 0 && (
+                <div className="add-sheet-strip" role="list">
+                  {bulk.map((b, i) => (
+                    <div className="add-sheet-strip-item" role="listitem" key={b.previewUrl}>
+                      <img src={b.previewUrl} alt="" />
+                      <button
+                        type="button"
+                        className="add-sheet-photo-rm"
+                        onClick={() => removeBulk(i)}
+                        aria-label={t('remove')}
+                      >
+                        <X size={14} strokeWidth={2} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {bulk.length < BULK_MAX && (
+                <div className="add-sheet-pickers">
+                  <button type="button" className="btn btn-primary" onClick={handleBulkUpload}>
+                    <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhotos')}
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={handleBulkSnap}>
+                    <CameraIcon size={16} strokeWidth={1.6} /> {t('burstCapture')}
+                  </button>
+                </div>
+              )}
+              <p className="add-sheet-hint">
+                {bulk.length
+                  ? t('analyzeMultiHint', { max: BULK_MAX })
+                  : t('analyzeUploadHint2', { max: BULK_MAX })}
+              </p>
+            </>
+          ) : (
+            <>
+              {preview ? (
+                <div className="add-sheet-photo">
+                  <img src={preview} alt="" />
+                  <button
+                    type="button"
+                    className="add-sheet-photo-rm"
+                    onClick={() => { setBlob(null); setPreview(null); }}
+                    aria-label={t('remove')}
+                  >
+                    <X size={16} strokeWidth={2} />
+                  </button>
+                </div>
+              ) : (
+                <div className="add-sheet-pickers">
+                  <button type="button" className="btn btn-primary" onClick={handleUpload}>
+                    <ImageIcon size={16} strokeWidth={1.6} /> {t('uploadPhoto')}
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={handleTakePhoto}>
+                    <CameraIcon size={16} strokeWidth={1.6} /> {t('takePhoto')}
+                  </button>
+                </div>
+              )}
+
+              {/* Several garments in one photo → the bulk view, in this same
+                  sheet. Only offered before a single photo is staged. */}
+              {!preview && (
+                <button type="button" className="add-sheet-bulk" onClick={() => setMode('bulk')}>
+                  <Layers size={16} strokeWidth={1.7} />
+                  <span className="add-sheet-bulk-text">
+                    <strong>{t('addItemBulkTitle')}</strong>
+                  </span>
+                  <ChevronRight size={16} strokeWidth={1.7} />
+                </button>
+              )}
+            </>
           )}
 
           <label className="add-sheet-label">{t('tagShopUrl')}</label>
@@ -145,21 +260,35 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
 
           {error && <p className="settings-error" style={{ margin: '0.5rem 0' }}>{error}</p>}
 
-          <button
-            type="button"
-            className="btn btn-primary add-sheet-cta"
-            onClick={save}
-            disabled={!blob || saving}
-          >
-            {saving ? t('saving') : t('save')}
-          </button>
+          {mode === 'bulk' ? (
+            <button
+              type="button"
+              className="btn btn-primary add-sheet-cta"
+              onClick={confirmBulk}
+              disabled={!bulk.length}
+            >
+              {bulk.length ? t('detailedFilterApply', { n: bulk.length }) : t('bulkAddRun')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-primary add-sheet-cta"
+              onClick={save}
+              disabled={!blob || saving}
+            >
+              {saving ? t('saving') : t('save')}
+            </button>
+          )}
         </div>
       </div>
       {cameraOpen && (
         <CameraCaptureModal
           open
           onClose={() => setCameraOpen(false)}
-          onCapture={(b) => { setCameraOpen(false); pick(b); }}
+          onCapture={(b) => {
+            setCameraOpen(false);
+            if (mode === 'bulk') addBulkPhotos([b]); else pick(b);
+          }}
         />
       )}
     </>
