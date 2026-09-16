@@ -199,7 +199,7 @@ exports.styleRecommend = onCall(
     const personaKey = PERSONAS[request.data?.persona] ? request.data.persona : 'noa';
     const persona = PERSONAS[personaKey];
     const ask = typeof request.data?.ask === 'string' ? request.data.ask.slice(0, 200) : '';
-    const lang = ['en', 'ko', 'ja'].includes(request.data?.lang) ? request.data.lang : 'en';
+    const lang = ['en', 'ko', 'ja', 'es'].includes(request.data?.lang) ? request.data.lang : 'en';
 
     // Stated prefs are read FRESH each call (not just via the profile
     // summary, which refreshes at most 2×/day) — an edit in Settings must

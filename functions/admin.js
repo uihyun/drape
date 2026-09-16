@@ -483,7 +483,7 @@ exports.adminErrors = onCall(opts, async (request) => {
 // are the only write path besides the console. Validation mirrors the
 // client's sane* parsers (src/services/remote-copy.js) so /admin can't
 // publish a doc a deployed client would silently reject.
-const CFG_LANGS = ['en', 'ko', 'ja'];
+const CFG_LANGS = ['en', 'ko', 'ja', 'es'];
 
 function validStrings(v) {
   if (!v || typeof v !== 'object') return null;

@@ -34,6 +34,21 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Spanish (es) — full fourth locale.** All 615 keys, plus the privacy/terms
+  documents and the static support/privacy/terms pages. Neutral Latin-American
+  Spanish (tú, never vosotros): the audience is Mexico and US Hispanic users,
+  not Spain — "armario" over the Mexico-only "clóset", "prueba/probar" for
+  try-on. Registered everywhere a language has to exist, not just the locale
+  file: the pickers, the server-side free-text prompts (item names, OOTD
+  analysis, stylist copy, push notifications), the admin copy-override tab, the
+  translate-this-post target list, `Trends` date formatting (es-MX), and iOS
+  `CFBundleLocalizations` — without that last one the App Store lists the app
+  as English-only no matter what the listing says. `npm run check` now enforces
+  key parity across all four locales.
+- **Spanish store listing copy** in `resources/app-store/listing-es.md` —
+  subtitle, keywords, promotional text, descriptions and What's New for both
+  stores, every field verified against its character cap, with the owner
+  checklist for App Store Connect and Play Console.
 - **"Why do I keep getting similar looks?" — answered where it's true.** A
   closet under 15 items can't support genuinely different outfits, so the
   stylist reuses pieces and the feature reads as stuck. A muted line now

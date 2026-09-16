@@ -9,19 +9,20 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const PUB = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
-const LANGS = ['en', 'ko', 'ja'];
-const LBL = { en: 'EN', ko: 'KO', ja: 'JA' };
+const LANGS = ['en', 'ko', 'ja', 'es'];
+const LBL = { en: 'EN', ko: 'KO', ja: 'JA', es: 'ES' };
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const T = {
-  support: { en: 'Support', ko: '고객지원', ja: 'サポート' },
-  privacy: { en: 'Privacy Policy', ko: '개인정보 처리방침', ja: 'プライバシーポリシー' },
-  terms: { en: 'Terms of Service', ko: '이용약관', ja: '利用規約' },
-  eff: { en: 'Effective', ko: '시행일', ja: '施行日' },
+  support: { en: 'Support', ko: '고객지원', ja: 'サポート', es: 'Soporte' },
+  privacy: { en: 'Privacy Policy', ko: '개인정보 처리방침', ja: 'プライバシーポリシー', es: 'Política de privacidad' },
+  terms: { en: 'Terms of Service', ko: '이용약관', ja: '利用規約', es: 'Términos del servicio' },
+  eff: { en: 'Effective', ko: '시행일', ja: '施行日', es: 'Vigente desde' },
 };
 const SUPPORT_BODY = {
   en: `<p class="lead">Need a hand?</p><p>We're happy to help. Email us at <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> and we'll get back to you as soon as we can.</p><p style="margin-top:14px">For how we handle your data, see the <a href="/privacy.html">Privacy Policy</a> and <a href="/terms.html">Terms of Service</a>.</p>`,
   ko: `<p class="lead">도움이 필요하신가요?</p><p>무엇이든 도와드릴게요. <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> 으로 문의 주시면 최대한 빨리 답변드립니다.</p><p style="margin-top:14px">데이터 처리 방식은 <a href="/privacy.html">개인정보 처리방침</a>과 <a href="/terms.html">이용약관</a>을 참고하세요.</p>`,
   ja: `<p class="lead">お困りですか？</p><p>喜んでサポートします。<a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> までご連絡ください。できる限り早くお返事します。</p><p style="margin-top:14px">データの取り扱いについては<a href="/privacy.html">プライバシーポリシー</a>と<a href="/terms.html">利用規約</a>をご覧ください。</p>`,
+  es: `<p class="lead">¿Necesitas ayuda?</p><p>Con gusto te apoyamos. Escríbenos a <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> y te respondemos lo antes posible.</p><p style="margin-top:14px">Para saber cómo manejamos tus datos, consulta la <a href="/privacy.html">Política de privacidad</a> y los <a href="/terms.html">Términos del servicio</a>.</p>`,
 };
 
 const sectionsHtml = (arr) => arr.map((s) => `${s.h ? `<h2>${esc(s.h)}</h2>` : ''}<p>${esc(s.p)}</p>`).join('\n');

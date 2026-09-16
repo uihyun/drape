@@ -248,7 +248,7 @@ exports.updateProfile = onRequest(async (req, res) => {
             // last-active heartbeat so reminders skip currently-active users.
             update.lastActiveAt = admin.firestore.FieldValue.serverTimestamp();
         }
-        if (data.lang === 'en' || data.lang === 'ko' || data.lang === 'ja') {
+        if (data.lang === 'en' || data.lang === 'ko' || data.lang === 'ja' || data.lang === 'es') {
             update.lang = data.lang;
         }
         if (typeof data.remindersOptOut === 'boolean') {

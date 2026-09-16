@@ -6,7 +6,7 @@
 // Designed to catch the classes of bug we've actually hit:
 //   - missing named imports that build-but-crash-at-runtime (IMG_CACHE,
 //     useSearchParams) — Vite build doesn't catch these
-//   - locale drift between en / ko / ja
+//   - locale drift between en / ko / ja / es
 //   - native (iOS/Android) identity / config inconsistency
 //   - broken unit tests / broken production build
 //
@@ -75,7 +75,7 @@ function checkNamedImports() {
 
 // ── 2. Locale parity ───────────────────────────────────────────────────
 function checkLocaleParity() {
-  const langs = ['en', 'ko', 'ja'];
+  const langs = ['en', 'ko', 'ja', 'es'];
   const keysByLang = {};
   for (const l of langs) {
     const src = readFileSync(`${ROOT}/src/locales/${l}.js`, 'utf8');
@@ -84,14 +84,14 @@ function checkLocaleParity() {
   }
   const base = keysByLang.en;
   const problems = [];
-  for (const l of ['ko', 'ja']) {
+  for (const l of ['ko', 'ja', 'es']) {
     const missing = [...base].filter(k => !keysByLang[l].has(k));
     const extra = [...keysByLang[l]].filter(k => !base.has(k));
     if (missing.length) problems.push(`${l} missing: ${missing.slice(0, 8).join(',')}${missing.length > 8 ? '…' : ''}`);
     if (extra.length) problems.push(`${l} extra: ${extra.slice(0, 8).join(',')}${extra.length > 8 ? '…' : ''}`);
   }
   if (problems.length) record('locale parity', 'FAIL', problems.join(' | '));
-  else record('locale parity', 'PASS', `${base.size} keys × en/ko/ja`);
+  else record('locale parity', 'PASS', `${base.size} keys × en/ko/ja/es`);
 }
 
 // ── 3. Native identity consistency ─────────────────────────────────────

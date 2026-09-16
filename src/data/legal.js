@@ -1,7 +1,7 @@
 // Privacy Policy + Terms of Service content, kept out of the locale files
 // (which are flat string maps) because these are long structured documents.
 // Each entry is an array of sections { h, p } rendered by Privacy/Terms.jsx.
-// Keep all three languages in sync — same sections, same order.
+// Keep all four languages in sync — same sections, same order.
 //
 // Effective date is shown verbatim; bump it whenever the substance changes.
 export const LEGAL_EFFECTIVE = '2026-06-28';
@@ -47,6 +47,19 @@ export const PRIVACY = {
     { h: '変更', p: `本ポリシーは変更される場合があり、重要な変更は新しい発効日で示されます。変更後も利用を続けた場合、改訂後のポリシーに同意したものとみなされます。` },
     { h: 'お問い合わせ', p: `プライバシーに関するお問い合わせ：${LEGAL_CONTACT}` },
   ],
+  es: [
+    { p: `Esta Política de privacidad explica qué información recopila drape («nosotros», «la app»), cómo la usamos y qué opciones tienes. Al usar drape aceptas las prácticas descritas aquí.` },
+    { h: 'Información que proporcionas', p: `Datos de cuenta de tu proveedor de inicio de sesión (Apple o Google): tu nombre, correo electrónico y foto de perfil. Fotos que subes: prendas, fotos de looks y OOTD, y las fotos de referencia de identidad (rostro/cuerpo) que se usan para la prueba virtual. Cualquier texto que agregues: nombres de prendas, notas, descripciones, comentarios y publicaciones del mercado.` },
+    { h: 'Cómo se usan tus datos', p: `Tus fotos se procesan para construir tu armario (recorte automático de fondo y etiquetado) y para generar imágenes de prueba virtual. Este procesamiento usa modelos de IA de terceros de Google (Gemini). Tu armario, tus fotos de identidad y tus registros de OOTD son privados de tu cuenta de forma predeterminada. El contenido se vuelve visible para otras personas solo cuando eliges publicarlo en el feed, publicar un tablero o poner una prenda en venta.` },
+    { h: 'Fotos de identidad (rostro/cuerpo)', p: `Las fotos de referencia que agregas para las pruebas se usan únicamente para conservar tu imagen en los resultados generados. Se almacenan de forma privada, nunca se muestran en el feed público y no se usan para entrenar ningún modelo. Puedes eliminarlas en cualquier momento desde Ajustes.` },
+    { h: 'Almacenamiento y procesamiento', p: `Los datos se almacenan en Google Firebase (Authentication, Firestore, Cloud Storage) y se procesan en Google Cloud. Las imágenes se entregan por conexiones cifradas. Conservamos tus datos mientras exista tu cuenta.` },
+    { h: 'Analítica', p: `Usamos Google Firebase Analytics para entender cómo se usa la app —por ejemplo, qué pantallas se ven y cómo funcionan las funciones— y así mejorar drape. Son datos de uso y de dispositivo ligados a un identificador generado por la app; no incluyen tu armario ni tus fotos de identidad. Puedes limitarlo desde los ajustes de privacidad de tu dispositivo.` },
+    { h: 'Compartir', p: `No vendemos tus datos personales. El contenido que publicas (looks públicos, tableros, publicaciones del mercado, comentarios, tu nombre de usuario y tu foto de perfil) es visible para otras personas usuarias. Compartimos datos con proveedores de infraestructura (Google Firebase / Google Cloud y la API de Gemini) estrictamente para operar la app.` },
+    { h: 'Tus opciones', p: `Puedes editar o eliminar prendas, looks, tableros y fotos de identidad en cualquier momento. Puedes eliminar tu cuenta completa, lo que borra tu contenido. Los recordatorios se pueden desactivar en Ajustes, y las notificaciones push en los ajustes de tu dispositivo.` },
+    { h: 'Menores', p: `drape no está dirigida a menores de 13 años (o la edad mínima exigida en tu país). No recopilamos datos de ellos a sabiendas.` },
+    { h: 'Cambios', p: `Podemos actualizar esta política; los cambios importantes se reflejarán con una nueva fecha de vigencia. Seguir usando la app después de una actualización significa que aceptas la política revisada.` },
+    { h: 'Contacto', p: `Dudas sobre privacidad: ${LEGAL_CONTACT}` },
+  ],
 };
 
 export const TERMS = {
@@ -91,5 +104,19 @@ export const TERMS = {
     { h: '解約', p: `ユーザーはいつでも drape の利用を停止し、アカウントを削除できます。当社は本規約違反の場合、アクセスを停止・終了することがあります。` },
     { h: '変更', p: `本規約は変更される場合があり、重要な変更は新しい発効日で示されます。変更後も利用を続けた場合、改訂後の規約に同意したものとみなされます。` },
     { h: 'お問い合わせ', p: `本規約に関するお問い合わせ：${LEGAL_CONTACT}` },
+  ],
+  es: [
+    { p: `Estos Términos rigen tu uso de drape. Al usar la app los aceptas.` },
+    { h: 'El servicio', p: `drape te permite armar un armario digital, generar imágenes de prueba virtual con IA, planear y compartir looks, y comprar o vender prendas en un mercado. Con el tiempo podemos agregar, cambiar o quitar funciones.` },
+    { h: 'Tu cuenta', p: `Eres responsable de la actividad en tu cuenta y del contenido que subes. Proporciona información precisa y mantén seguro tu inicio de sesión.` },
+    { h: 'Tu contenido', p: `Conservas la propiedad de las fotos y los textos que subes. Al publicar contenido de forma pública (feed, tableros, mercado), otorgas a otras personas usuarias la posibilidad de verlo dentro de la app. Eres responsable de tener el derecho de subir lo que publicas.` },
+    { h: 'Uso aceptable', p: `No subas contenido ilegal, que infrinja derechos, que incite al odio, sexualmente explícito, ni que muestre a otras personas sin su consentimiento. No abuses de las funciones de IA, no intentes interrumpir el servicio ni extraer datos de forma automatizada. Podemos eliminar contenido o suspender cuentas que incumplan estas reglas.` },
+    { h: 'Imágenes generadas por IA', p: `Los resultados de prueba virtual y de análisis los producen modelos de IA de terceros y pueden ser imprecisos o poco realistas. Se ofrecen «tal cual» para uso personal de estilismo y no deben tomarse como una representación fiel de ningún producto ni persona.` },
+    { h: 'Mercado', p: `Las publicaciones, los precios y las transacciones son entre compradores y vendedores. drape no es parte de ninguna venta y no se responsabiliza del estado, la legalidad ni la entrega de las prendas publicadas. Quien vende debe tener derecho a vender lo que publica.` },
+    { h: 'Créditos y compras', p: `Algunas funciones (como los créditos de generación) pueden requerir compras dentro de la app. Las compras las gestionan la App Store o Google Play y están sujetas a sus términos. Los créditos no tienen valor en efectivo y no son reembolsables, salvo cuando la ley lo exija.` },
+    { h: 'Exención y responsabilidad', p: `El servicio se ofrece «tal cual», sin garantías. En la medida en que lo permita la ley, no somos responsables de daños indirectos o derivados del uso de la app.` },
+    { h: 'Terminación', p: `Puedes dejar de usar drape y eliminar tu cuenta en cualquier momento. Podemos suspender o terminar el acceso por incumplir estos Términos.` },
+    { h: 'Cambios', p: `Podemos actualizar estos Términos; los cambios importantes se reflejarán con una nueva fecha de vigencia. Seguir usando la app significa que aceptas los Términos actualizados.` },
+    { h: 'Contacto', p: `Dudas sobre estos Términos: ${LEGAL_CONTACT}` },
   ],
 };

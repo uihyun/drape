@@ -34,7 +34,7 @@ const PUSH_COPY = {
     ja: '画像が不適切と判断され、ルックの公開が取り消されました。',
   },
 };
-const LANGS = new Set(['en', 'ko', 'ja']);
+const LANGS = new Set(['en', 'ko', 'ja', 'es']);
 
 async function recipientLang(uid) {
   try {

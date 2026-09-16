@@ -2,9 +2,10 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { en } from '../locales/en.js';
 import { ko } from '../locales/ko.js';
 import { ja } from '../locales/ja.js';
+import { es } from '../locales/es.js';
 import { initRemoteCopy, onRemoteCopy, getCopyOverride } from '../services/remote-copy.js';
 
-const LOCALES = { en, ko, ja };
+const LOCALES = { en, ko, ja, es };
 const SUPPORTED = Object.keys(LOCALES);
 const STORAGE_KEY = 'drape_locale';
 
@@ -76,4 +77,4 @@ export function useLocale() {
 }
 
 export const SUPPORTED_LANGS = SUPPORTED;
-export const LANG_LABELS = { en: 'English', ko: '한국어', ja: '日本語' };
+export const LANG_LABELS = { en: 'English', ko: '한국어', ja: '日本語', es: 'Español' };

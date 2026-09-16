@@ -13,6 +13,7 @@
 		<string>en</string>
 		<string>ko</string>
 		<string>ja</string>
+		<string>es</string>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>

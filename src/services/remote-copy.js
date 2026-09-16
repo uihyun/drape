@@ -21,7 +21,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 
-const LANGS = ['en', 'ko', 'ja'];
+const LANGS = ['en', 'ko', 'ja', 'es'];
 
 let strings = {};           // validated { lang: { key: string } }
 let onboardingSteps = null; // validated array, or null = use baked-in steps

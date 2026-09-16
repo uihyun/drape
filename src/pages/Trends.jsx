@@ -245,11 +245,13 @@ export function Trends() {
 }
 
 // "2026-09-14" → a short, localized issue date ("September 14" / "9월 14일").
+// es-MX over es-ES: the Spanish audience is Mexico / US Hispanic.
+const BCP47 = { ko: 'ko-KR', ja: 'ja-JP', es: 'es-MX', en: 'en-US' };
 function issueDate(weekKey, lang) {
   try {
     const [y, m, d] = weekKey.split('-').map(Number);
     return new Date(y, m - 1, d).toLocaleDateString(
-      lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : 'en-US',
+      BCP47[lang] || 'en-US',
       { month: 'long', day: 'numeric' },
     );
   } catch { return weekKey; }
