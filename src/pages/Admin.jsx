@@ -15,6 +15,7 @@ import { en as L_EN } from '../locales/en.js';
 import { ko as L_KO } from '../locales/ko.js';
 import { ja as L_JA } from '../locales/ja.js';
 import { es as L_ES } from '../locales/es.js';
+import { fr as L_FR } from '../locales/fr.js';
 import { MarketingTab } from './AdminMarketing.jsx';
 import { cityDisplay, cityCountry } from '../data/cities.js';
 
@@ -675,7 +676,7 @@ function PublicGallery({ title, items, to }) {
 // session start (remote-copy.js reads once per session). Steps are stored
 // with generated locale keys (onbA{i}…) + matching strings overrides, so the
 // client's one override mechanism serves both.
-const CFG_LANGS = [['en', L_EN], ['ko', L_KO], ['ja', L_JA], ['es', L_ES]];
+const CFG_LANGS = [['en', L_EN], ['ko', L_KO], ['ja', L_JA], ['es', L_ES], ['fr', L_FR]];
 const emptyLangs = () => ({ en: '', ko: '', ja: '' });
 
 // AI model ids — editable without a functions deploy (config/models,

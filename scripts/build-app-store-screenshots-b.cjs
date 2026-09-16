@@ -79,6 +79,14 @@ const CAPTIONS = {
     trends:   { headline: 'いま着られて\nいるもの',    subhead: '毎週月曜、新しい号。' },
     market:   { headline: '着ない服を\n売る',         subhead: '他の人の服も見つかる。' },
   },
+  fr: {
+    tryon:    { headline: 'ESSAYEZ-LA\nSUR VOUS',      subhead: 'Votre vrai visage, votre vrai corps. En quelques secondes.' },
+    closet:   { headline: 'VOTRE DRESSING,\nNUMÉRIQUE', subhead: 'Une photo par pièce. Le tag se fait tout seul.' },
+    stylist:  { headline: 'VOTRE STYLISTE\nIA',          subhead: 'Des looks composés avec ce que vous avez déjà.' },
+    calendar: { headline: 'VOTRE ANNÉE\nEN TENUES',      subhead: 'Une photo par jour remplit le calendrier.' },
+    trends:   { headline: 'CE QUE L’ON\nPORTE',          subhead: 'Un nouveau numéro chaque lundi.' },
+    market:   { headline: 'REVENDEZ,\nDÉNICHEZ',      subhead: 'Vendez ce que vous ne mettez plus, trouvez le reste.' },
+  },
 };
 
 // Fit check in ems, not characters: a full-width CJK glyph is ~1 em where a

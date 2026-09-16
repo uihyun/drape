@@ -228,7 +228,7 @@ export function searchCities(query, { limit = 10 } = {}) {
   const scored = [];
   for (const c of CITIES) {
     let best = Infinity;
-    for (const lang of ['en', 'ko', 'ja', 'es']) {
+    for (const lang of ['en', 'ko', 'ja', 'es', 'fr']) {
       const n = c.names[lang]?.toLowerCase();
       if (!n) continue;
       const idx = n.indexOf(q);

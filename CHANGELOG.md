@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **French (fr) — fifth locale.** France French, vouvoiement throughout, same
+  scope as Spanish: all 629 keys, the privacy/terms documents, the static
+  support/privacy/terms pages, the server-side generation prompts, `hreflang` +
+  `og:locale`, iOS `CFBundleLocalizations`, store listing copy and screenshot
+  captions. `translate.js` was updated too — without it the translate-this-post
+  toggle would have quietly served English to French readers. Added for
+  portfolio consistency with voda rather than on demand: GA puts French at 0.2%
+  of engagement time and 74 s/user, the second-weakest of any language, and
+  Japanese is the standing proof that a translation doesn't create demand.
 - **One Spanish, not a national variant.** The taxonomy had drifted Mexican —
   *playera*, *chamarra*, *tenis*, *lentes de sol*, *brasier* — which reads as
   foreign in Spain while the point of the locale is that everyone can use it.

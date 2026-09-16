@@ -3,9 +3,10 @@ import { en } from '../locales/en.js';
 import { ko } from '../locales/ko.js';
 import { ja } from '../locales/ja.js';
 import { es } from '../locales/es.js';
+import { fr } from '../locales/fr.js';
 import { initRemoteCopy, onRemoteCopy, getCopyOverride } from '../services/remote-copy.js';
 
-const LOCALES = { en, ko, ja, es };
+const LOCALES = { en, ko, ja, es, fr };
 const SUPPORTED = Object.keys(LOCALES);
 const STORAGE_KEY = 'drape_locale';
 
@@ -77,4 +78,4 @@ export function useLocale() {
 }
 
 export const SUPPORTED_LANGS = SUPPORTED;
-export const LANG_LABELS = { en: 'English', ko: '한국어', ja: '日本語', es: 'Español' };
+export const LANG_LABELS = { en: 'English', ko: '한국어', ja: '日本語', es: 'Español', fr: 'Français' };

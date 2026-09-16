@@ -25,13 +25,20 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 - **Trends is self-running.** `functions/trends.js` re-picks "This week's looks" whenever the ISO week (Monday) rolls over, the daily 04:30 UTC cron refreshes the stats, and the masthead photo rotates per page load from that slate (excluded from the row below). Admin feature/cover/hide overrides the CURRENT week only. `LOOKS_MAX` caps both the auto-pick and the manual list — keep them on that one constant, and never hardcode content exclusions (watermarks etc. belong to the seed pipeline).
 - **AI model ids are server config, not constants.** `functions/model-config.js` reads `config/models` (5-min cache, strict id/size validation, falls back to baked defaults on anything malformed) and every Gemini call site resolves through `getModels()`. Switching or rolling back a model is an /admin → Config edit — never a functions deploy. Keep new call sites on `getModels()`; the constants in items/tryon/stylist are documentation of the defaults only.
 - **Stylist economics: 3 free recs/day, then 1 fit per rec — ONE wallet.** `reserveRecOrFit` in `functions/stylist.js` shares the fits reserve/refund with try-on; never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
-- **Four locales: en / ko / ja / es.** Spanish is neutral Latin-American (tú, no
-  vosotros) — the audience is Mexico + US Hispanic, not Spain. Adding a language
-  is not just a locale file: `useLocale` (LOCALES + LANG_LABELS), `Landing`
-  (LANG_FLAG), `remote-copy`, `cities`, `Trends` (BCP47), `Admin` (CFG_LANGS),
-  `functions/{admin,notifications,stylist,profile,items,translate}.js`,
-  `scripts/{check,build-web-pages}.mjs`, `legal.js`, and iOS
-  `CFBundleLocalizations`. `npm run check` enforces key parity across all four.
+- **Five locales: en / ko / ja / es / fr.** Spanish is ONE neutral Spanish for
+  every market (`tú`, never `vosotros`; vocabulary a reader in Madrid, Mexico
+  City or Buenos Aires all recognises) — not a national variant, and not split
+  into es-ES/es-419. French is France French, vouvoiement throughout. Adding a
+  language is not just a locale file: `useLocale` (LOCALES + LANG_LABELS),
+  `Landing` (LANG_FLAG), `remote-copy`, `cities`, `Trends` (BCP47), `Admin`
+  (CFG_LANGS), `functions/{admin,notifications,stylist,profile,items,translate}.js`,
+  `scripts/{check,build-web-pages}.mjs`, `legal.js`, `index.html`
+  (hreflang + og:locale + the crawlable "Languages:" line), iOS
+  `CFBundleLocalizations`, and the screenshot captions in
+  `build-app-store-screenshots-b.cjs`. Miss `translate.js` and the
+  translate-this-post toggle silently falls back to English for that language;
+  miss `CFBundleLocalizations` and the App Store lists the app as English-only.
+  `npm run check` enforces key parity across all five.
 - **Home screen follows the closet, unless the user said otherwise.**
   `getHomeRoute(uid)` in `services/homePref.js`: an explicit pref wins; with
   none, an empty closet lands on `/trends` and a stocked one on `/profile`
