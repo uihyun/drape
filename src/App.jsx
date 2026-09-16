@@ -4,7 +4,7 @@ import { auth, analytics, logEvent, setUserId, setUserProp, logScreen } from './
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
-import { getHomeRoute, getHomePref } from './services/homePref.js';
+import { getHomeRoute, getHomePref, closetHasItems, noteStartedOnTrends } from './services/homePref.js';
 import { ProfileService } from './services/profile-service.js';
 import { useLocale, currentLang } from './hooks/useLocale.jsx';
 
@@ -394,7 +394,21 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // people most lost about where things live are the ones already inside.
   useEffect(() => {
     if (!isLoggedIn || noChrome) return;
-    if (tourPending()) setTourOn(true);
+    // `?tour=1` replays it on demand — for checking the walkthrough without
+    // wiping app storage, and the hook a "replay the tour" Settings row needs.
+    // Held in sessionStorage because signing in bounces through the home route
+    // and drops the query string before the tour would ever mount.
+    let forced = false;
+    try {
+      if (new URLSearchParams(window.location.search).get('tour') === '1') {
+        sessionStorage.setItem('drape_tour_force', '1');
+      }
+      forced = sessionStorage.getItem('drape_tour_force') === '1';
+    } catch { /* storage blocked — fall back to the one-time flag */ }
+    if (forced || tourPending()) setTourOn(true);
+    // Remember that this account's first landing was Trends — that's the only
+    // group the later "open on your closet instead?" question makes sense for.
+    if (!getHomePref() && !closetHasItems(user?.uid)) noteStartedOnTrends();
   }, [isLoggedIn, noChrome]);
 
   const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? getHomeRoute(user?.uid) : '/welcome');

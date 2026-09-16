@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Two-finger pinch on a grid container changes the column count between
 // `min` and `max`, around the grid's `def` default. We track the live
@@ -22,7 +22,14 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
     return Number.isFinite(n) && n >= min && n <= max ? n : def;
   });
 
-  const ref = useRef(null);
+  // Callback ref, not a plain object ref: the grid is conditionally rendered
+  // (loading / grouped views), so on a cold open the node doesn't exist when a
+  // mount-time effect would run — and a `[key, min, max]` effect never re-runs
+  // to catch it. That left the listeners attached to nothing and the gesture
+  // silently dead for the whole session.
+  const nodeRef = useRef(null);
+  const [node, setNode] = useState(null);
+  const ref = useCallback((el) => { nodeRef.current = el; setNode(el); }, []);
   const stateRef = useRef(null);
   // Mirror cols into a ref so the touch handlers read the latest value
   // without re-attaching on every change.
@@ -30,8 +37,8 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
   useEffect(() => { colsRef.current = cols; }, [cols]);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const el = node;
+    if (!el) return undefined;
 
     const dist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
 
@@ -86,7 +93,7 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
       el.removeEventListener('gesturechange', onGesture);
       el.removeEventListener('gestureend', onGesture);
     };
-  }, [key, min, max]);
+  }, [node, key, min, max]);
 
   const applyCols = (n) => {
     const next = Math.min(max, Math.max(min, Math.round(n)));
@@ -96,7 +103,7 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
     try { window.localStorage?.setItem(key, String(next)); } catch { /* quota / private mode */ }
   };
 
-  return { cols, setCols: applyCols, ref };
+  return { cols, setCols: applyCols, ref, nodeRef };
 }
 
 export default usePinchColumns;

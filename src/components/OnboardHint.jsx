@@ -8,17 +8,14 @@ import { hintSeen, markHintSeen } from '../services/homePref.js';
 //   text     — the message
 //   ctaLabel — optional action button label
 //   onCta    — called after the CTA (fires after onClose)
-//   altLabel — optional SECOND button, replacing the X. Use when the hint asks
-//              a real question: an X would leave the answer ambiguous, and
-//              "no reply" is not a preference we should record either way.
-//   onAlt    — called after the alternative (fires after onClose)
 //   onClose  — called whenever the hint closes; use to persist a side effect
-export function OnboardHint({ storageKey, text, ctaLabel, onCta, altLabel, onAlt, onClose }) {
+// A question with two real answers belongs in HintDialog, not here — this row
+// collapses once it has to hold a sentence and two buttons on a phone.
+export function OnboardHint({ storageKey, text, ctaLabel, onCta, onClose }) {
   const [show, setShow] = useState(() => !hintSeen(storageKey));
   if (!show) return null;
   const dismiss = () => { markHintSeen(storageKey); setShow(false); onClose?.(); };
   const cta = () => { dismiss(); onCta?.(); };
-  const alt = () => { dismiss(); onAlt?.(); };
   return (
     <div className="onboard-hint" role="status">
       <p className="onboard-hint-text">{text}</p>
@@ -26,13 +23,9 @@ export function OnboardHint({ storageKey, text, ctaLabel, onCta, altLabel, onAlt
         {ctaLabel && (
           <button type="button" className="onboard-hint-cta" onClick={cta}>{ctaLabel}</button>
         )}
-        {altLabel ? (
-          <button type="button" className="onboard-hint-alt" onClick={alt}>{altLabel}</button>
-        ) : (
-          <button type="button" className="onboard-hint-x" aria-label="dismiss" onClick={dismiss}>
-            <X size={16} strokeWidth={1.9} />
-          </button>
-        )}
+        <button type="button" className="onboard-hint-x" aria-label="dismiss" onClick={dismiss}>
+          <X size={16} strokeWidth={1.9} />
+        </button>
       </div>
     </div>
   );

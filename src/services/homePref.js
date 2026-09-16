@@ -57,6 +57,18 @@ export function getHomeRoute(uid) {
 // change doesn't read as the app losing the user's place.
 export const HINT_HOME_FLIP = 'drape_seen_home_flip_v1';
 
+// Set the first time the closet-aware default actually sends someone to
+// Trends. Existing accounts already had items when this shipped, so they never
+// see Trends as a landing and must never be asked about switching off it —
+// their app already opens on the closet and the question would be nonsense.
+const STARTED_TRENDS = 'drape_home_started_trends';
+export function noteStartedOnTrends() {
+  try { localStorage.setItem(STARTED_TRENDS, '1'); } catch { /* ignore */ }
+}
+export function startedOnTrends() {
+  try { return localStorage.getItem(STARTED_TRENDS) === '1'; } catch { return false; }
+}
+
 // One-time UI flags (the onboarding nudges). Same persistence idea as SwipeHint.
 export function hintSeen(key) {
   try { return localStorage.getItem(key) === '1'; } catch { return true; }

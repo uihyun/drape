@@ -93,9 +93,11 @@ const matchesFilters = itemMatchesFilters;
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
-  const { cols, setCols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 5, def: 3 });
+  const { cols, setCols, ref: gridRef, nodeRef: gridNode } = usePinchColumns('closet', { min: 1, max: 5, def: 3 });
   // Cards glide between column counts instead of snapping to the new grid.
-  useFlipGrid(gridRef, cols);
+  useFlipGrid(gridNode, cols);
+  // Direction of the density button's walk; flips at either end of the range.
+  const [colStep, setColStep] = useState(1);
   // Seed from the splash warm-up so the grid paints instantly on first open.
   const [items, setItems] = useState(() => (user && !user.isAnonymous ? (closetWarm.get(user.uid) || null) : null));
   // Top-row view: All (grid) / Brands (alpha groups) / Usage (recency).
@@ -205,17 +207,23 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
             </button>
           ))}
         </nav>
+        <div className="closet-tools">
         {/* Density has a tap target, not just the pinch. A gesture with no
-            visible control can strand someone at a size they can't undo —
-            and on a phone the two-finger spread doesn't always register. */}
+            visible control can strand someone at a size they can't undo.
+            Ping-pongs 1→5→1 rather than wrapping: at the end of the range the
+            wrap jumped the grid from smallest to largest in one tap, which
+            reads as a glitch rather than a step. */}
         <button
           type="button"
           className="closet-search-btn closet-density-btn"
           aria-label={t('closetDensity')}
-          onClick={() => setCols(cols >= 5 ? 1 : cols + 1)}
+          onClick={() => {
+            const next = cols + colStep;
+            if (next > 5 || next < 1) { setColStep(-colStep); setCols(cols - colStep); }
+            else setCols(next);
+          }}
         >
           <LayoutGrid size={18} strokeWidth={1.7} />
-          <span className="closet-density-n">{cols}</span>
         </button>
         <button
           type="button"
@@ -226,6 +234,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           <SlidersHorizontal size={18} strokeWidth={1.7} />
           {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
         </button>
+        </div>
       </div>
 
       {/* All view: category chips as the representative quick filter

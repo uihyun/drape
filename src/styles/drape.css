@@ -6951,21 +6951,8 @@ input[type="search"]::-webkit-search-decoration {
 
 /* ── Closet pinch teach ──────────────────────────────────────────────────
    Same scrim weight as the tour so the two read as one system. */
-.zoomhint {
-  position: fixed; inset: 0; z-index: 4000;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px;
-  background: rgba(12, 11, 10, 0.72);
-}
-.zoomhint-card {
-  width: 100%; max-width: 330px;
-  padding: 22px 22px 18px;
-  border-radius: 18px;
-  background: var(--surface-elevated, #fff);
-  color: var(--text-primary, #141312);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36);
-  text-align: center;
-}
+
+
 .zoomhint-demo {
   position: relative;
   width: 132px; height: 132px;
@@ -7007,8 +6994,37 @@ input[type="search"]::-webkit-search-decoration {
   35%      { transform: scale(0.78); }
   70%      { transform: scale(1.12); }
 }
-.zoomhint-text { margin: 0 0 16px; font-size: 0.9rem; line-height: 1.55; }
-.zoomhint-cta { width: 100%; }
+
+
 @media (prefers-reduced-motion: reduce) {
   .zoomhint-arrow, .zoomhint-tiles { animation: none; }
 }
+
+/* ── Shared hint dialog (tour-weight scrim + card) ───────────────────── */
+.hintdlg {
+  position: fixed; inset: 0; z-index: 4000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(12, 11, 10, 0.72);
+}
+.hintdlg-card {
+  width: 100%; max-width: 330px;
+  padding: 22px 22px 18px;
+  border-radius: 18px;
+  background: var(--surface-elevated, #fff);
+  color: var(--text-primary, #141312);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36);
+  text-align: center;
+}
+.hintdlg-text { margin: 0 0 6px; font-size: 0.95rem; line-height: 1.5; }
+.hintdlg-note { margin: 0 0 16px; font-size: 0.78rem; line-height: 1.5; color: var(--text-muted); }
+.hintdlg-text:last-of-type { margin-bottom: 16px; }
+.hintdlg-actions { display: flex; flex-direction: column; gap: 8px; }
+/* Two answers stack rather than sit side by side: either label can be long in
+   any of the four locales, and a squeezed row is what broke the banner this
+   replaced. */
+.hintdlg-actions .btn { width: 100%; }
+
+.closet-tools { display: flex; align-items: center; gap: 6px; }
+.closet-density-btn { position: relative; }
+

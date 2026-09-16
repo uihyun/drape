@@ -34,6 +34,27 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Pinch-to-resize was dead on the first visit to the closet.** `usePinchColumns`
+  attached its touch listeners in a mount-time effect keyed on `[key, min, max]`
+  — but the grid isn't in the first render (the subscription is still in
+  flight), so `ref.current` was null and the effect never re-ran to catch the
+  node appearing. Leaving and coming back worked, because the warm cache put
+  the grid in the first render. Now a callback ref drives the attach, so the
+  listeners follow the node whenever it mounts. Verified with a harness that
+  mounts the grid late: pinch in 3→4→5, spread back 5→3→2.
+- **Density button walks 1→5→1 instead of wrapping**, and dropped its count
+  badge. Wrapping jumped the grid from smallest to largest in a single tap,
+  which reads as a glitch rather than a step. It sits next to the filter now.
+- **The home-screen question is a dialog, not an inline banner.** The banner is
+  a flex row; asked to hold a sentence and two buttons it collapsed into a
+  column of single words. Both hints now share one `HintDialog` — scrim, card,
+  stacked full-width buttons — so any locale's labels fit. Copy cut to one
+  line plus "Change it anytime in Settings."
+- **Only accounts that actually started on Trends get asked.** Anyone who
+  already owned items when this shipped has always opened on their closet, so
+  the question described a change that never happened to them. A flag is set
+  the first time the closet-aware default really sends someone to Trends, and
+  the ask requires it.
 - **The tour IS the onboarding now.** The four-slide deck is gone; nothing
   renders it. It described the app in the abstract and was forgotten by the
   time the user reached a screen — which is exactly why the stylist kept going

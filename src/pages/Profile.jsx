@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2 } from 'lucide-react';
-import { OnboardHint } from '../components/OnboardHint.jsx';
-import { getHomePref, setHomePref, HINT_HOME_FLIP } from '../services/homePref.js';
+import { HomeFlipAsk } from '../components/HomeFlipAsk.jsx';
+import { getHomePref, setHomePref, hintSeen, markHintSeen, HINT_HOME_FLIP, startedOnTrends } from '../services/homePref.js';
 import { useMessagePresence } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
@@ -229,20 +229,10 @@ export function Profile({ user, authReady, onSignIn }) {
 
       <ExpandableBio text={bio} />
 
-      {/* The closet just stopped being empty, which is the moment the landing
-          screen is worth revisiting — and the moment it would otherwise change
-          under them. Asked once, with both answers explicit: an X here would
-          record no preference while the default quietly moved them anyway. */}
-      {!user?.isAnonymous && itemCount > 0 && getHomePref() === null && (
-        <OnboardHint
-          storageKey={HINT_HOME_FLIP}
-          text={t('homeFlipAsk')}
-          ctaLabel={t('homeFlipYes')}
-          onCta={() => setHomePref('profile')}
-          altLabel={t('homeFlipNo')}
-          onAlt={() => setHomePref('trends')}
-        />
-      )}
+      {/* Asked once, only of accounts that actually started on Trends: their
+          landing is about to change under them. Both answers are buttons — an
+          X would record no preference while the default moved them anyway. */}
+      <HomeFlipAsk itemCount={itemCount} />
 
       <nav className="profile-tabs" data-tour="tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
         {TABS.map(name => (

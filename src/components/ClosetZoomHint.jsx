@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { hintSeen, markHintSeen } from '../services/homePref.js';
+import { HintDialog } from './HintDialog.jsx';
 
 export const HINT_CLOSET_ZOOM = 'drape_seen_closet_zoom_v1';
 
@@ -29,8 +30,8 @@ export function ClosetZoomHint({ itemCount, onClose }) {
   const done = () => { markHintSeen(HINT_CLOSET_ZOOM); setShow(false); onClose?.(); };
 
   return (
-    <div className="zoomhint" role="dialog" aria-modal="true">
-      <div className="zoomhint-card">
+    <HintDialog
+      visual={(
         <div className="zoomhint-demo" aria-hidden="true">
           {/* Four chevrons that travel inward, hold, then travel outward —
               one loop of the gesture in both directions. */}
@@ -38,16 +39,12 @@ export function ClosetZoomHint({ itemCount, onClose }) {
           <span className="zoomhint-arrow tr" />
           <span className="zoomhint-arrow bl" />
           <span className="zoomhint-arrow br" />
-          <span className="zoomhint-tiles">
-            <i /><i /><i /><i />
-          </span>
+          <span className="zoomhint-tiles"><i /><i /><i /><i /></span>
         </div>
-        <p className="zoomhint-text">{t('closetZoomHint')}</p>
-        <button type="button" className="btn btn-primary zoomhint-cta" onClick={done}>
-          {t('swipeHintCta')}
-        </button>
-      </div>
-    </div>
+      )}
+      text={t('closetZoomHint')}
+      actions={[{ label: t('swipeHintCta'), primary: true, onClick: done }]}
+    />
   );
 }
 

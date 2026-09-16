@@ -98,7 +98,11 @@ export function Tour({ open, onClose }) {
 
   if (!open || !step) return null;
 
-  const finish = () => { markHintSeen(TOUR_KEY); onClose?.(); };
+  const finish = () => {
+    markHintSeen(TOUR_KEY);
+    try { sessionStorage.removeItem('drape_tour_force'); } catch { /* ignore */ }
+    onClose?.();
+  };
   const next = () => { if (i + 1 >= STEPS.length) finish(); else setI(i + 1); };
 
   const pad = step.pad ?? 8;
