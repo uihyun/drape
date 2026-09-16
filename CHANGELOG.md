@@ -657,12 +657,37 @@ English fallback so a future gap degrades instead of emitting `undefined`.
 **The four stylists were converging.** Each persona was one line of "styling
 lens" at the top of a prompt that then supplies the user's taste profile, stated
 preferences (marked *authoritative*), thumbs history and avoid-list — all far
-more specific, all pulling every persona toward the same safe pick. Two changes:
-each lens now names what it REFUSES, not just what it likes (the refusal is what
-separates them, because it removes options the others would take — Remy will not
-use tailoring, Sol will not use sportswear, Juno discards anything another
-stylist could have produced), and a STAY IN CHARACTER line is restated at the
-*end* of the prompt, after the taste blocks, where it can still be heard.
+more specific, all pulling every persona toward the same safe pick. A persona now
+carries four fields doing four different jobs:
+
+- **lens** — what they reach for. What was already there.
+- **signature** — one *mechanical* rule that changes which items get picked, so
+  the outfits differ and not just the wording. Remy chooses the footwear first
+  and builds upward; Noa caps a look at three colours; Juno builds around the
+  piece the user has been ignoring.
+- **refuses** — what they will not use. This separates them harder than the
+  preferences do, because it removes options the others would take. Remy will not
+  touch tailoring, Sol will not do all-black or sportswear, Juno discards any
+  look another stylist could have produced.
+- **voice** — how `title` and `why` read. This was the real gap: the prompt said
+  *"in your voice"* and never said what the voice was, so four stylists narrated
+  identically, and the one sentence under each outfit is almost the entire
+  experience of the persona.
+
+STAY IN CHARACTER is also restated at the *end* of the prompt, after the taste
+blocks that were drowning it out.
+
+Verified by running all four against one synthetic 15-item closet: four distinct
+item selections and four distinct voices ("The coat provides a clean, sharp line"
+/ "Start at the sneakers, let the heavy denim stack" / "The soft pink wool
+catches the early light" / "I dare you to sandwich that pleated hemline between a
+grungy print and those crimson flats"). Two rounds of that probe also caught
+what shipping blind would not have: Juno was writing copy that sneered at the
+user's clothes, and every persona ran long. Juno's voice now specifies the dare
+is affectionate, and there is a blanket rule against disparaging the user, their
+body or their closet. The 18-word cap on `why` is soft — the model respects it
+most of the time and still overshoots to ~28 on the florid personas, which is
+~3 lines on a card rather than 2.
 
 **The chosen stylist introduces themselves.** The card inside the stylist page
 showed the same two-word tag as the chooser — enough to pick between four faces,
@@ -670,11 +695,14 @@ useless once you're in with one of them. It now carries a first-person line
 saying how they actually style ("I start at the shoes and build up. One loud
 thing per outfit, never two."), in all five locales.
 
-**The home-screen tiles were too faint and showed no press.** Hairline border in
-muted grey, and the dialog unmounted on click, so the chosen tile never lit —
-the second half of the same bug fixed above. Border and label go to full
-strength, and the tile holds a filled-ink selected state for 260 ms before the
-dialog closes.
+**The home-screen tiles showed no press.** The dialog unmounted on click, so the
+chosen tile never lit — the second half of the same bug fixed above. The tile now
+holds its selected state for 260 ms before the dialog closes. That state is the
+pine accent on `--accent-soft`, the exact treatment `.settings-homepick-btn`
+already uses for the stored answer, with unselected tiles left muted: the dialog
+asks the question once and Settings → Display answers it forever, so the two have
+to look like one control. A first pass used filled ink for the pressed state,
+which was legible but invented a second visual language for the same choice.
 
 **The home-screen question's buttons did nothing.** `HomeFlipAsk` gated itself
 on a render-time localStorage read and deliberately held no state — the comment

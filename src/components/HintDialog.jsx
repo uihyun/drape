@@ -16,7 +16,8 @@ export function HintDialog({ visual, text, note, actions = [] }) {
   const pick = actions.some((a) => a.Icon);
   // A tile that closes the dialog on mousedown never shows it was pressed, so
   // the tap reads as "nothing happened" even though the choice landed. Hold the
-  // chosen tile lit for a beat before handing control back to the caller.
+  // chosen tile in the accent state — the same one Settings uses for the stored
+  // answer — for a beat before handing control back to the caller.
   const [chosen, setChosen] = useState(null);
   const choose = (label, onClick) => {
     if (chosen) return;
@@ -39,7 +40,7 @@ export function HintDialog({ visual, text, note, actions = [] }) {
                 : `btn ${primary ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => (pick ? choose(label, onClick) : onClick())}
             >
-              {Icon && <Icon size={24} strokeWidth={1.7} />}
+              {Icon && <Icon size={22} strokeWidth={1.6} />}
               <span>{label}</span>
             </button>
           ))}

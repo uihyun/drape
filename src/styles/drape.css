@@ -7050,22 +7050,21 @@ input[type="search"]::-webkit-search-decoration {
    Display already renders as two icon tiles. Same shape here so answering the
    question once and changing it later look like the same control. */
 .hintdlg-actions.pick { flex-direction: row; gap: 10px; }
+/* Deliberately the same tokens as .settings-homepick-btn — this dialog asks the
+   question once and Settings → Display answers it forever, so the two must look
+   like one control. Unselected stays muted; the pine accent is the only thing
+   that says "chosen". */
 .hintdlg-pick-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 16px 10px;
-  border: 1.5px solid var(--text-secondary); border-radius: 14px;
-  background: transparent; color: var(--text-primary);
-  font-size: 0.84rem; font-weight: 500; line-height: 1;
-  cursor: pointer; transition: border-color .12s, color .12s, background .12s;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: transparent; color: var(--text-muted);
+  font-size: 0.8rem; line-height: 1;
+  cursor: pointer; transition: border-color .15s, color .15s, background .15s;
 }
+.hintdlg-pick-btn.on, .hintdlg-pick-btn.on:hover,
 .hintdlg-pick-btn:hover, .hintdlg-pick-btn:focus-visible {
-  border-color: var(--text-primary); background: var(--surface-elevated);
-}
-/* The confirmation beat. Filled ink rather than the tinted accent the closet's
-   chips use: this tile is about to disappear, so the state has to be legible in
-   the ~quarter second it exists. */
-.hintdlg-pick-btn.on, .hintdlg-pick-btn.on:hover {
-  background: var(--text-primary); border-color: var(--text-primary); color: var(--surface);
+  border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
 }
 
 .closet-tools { display: flex; align-items: center; gap: 6px; }
