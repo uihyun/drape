@@ -20,8 +20,10 @@ written so the drift is visible):
   event-driven job + nightly cron. Consequence: a 👍👎 can take up to 12h to
   reach the summary (stated prefs bypass this — they're read fresh).
 - §D "save as outfit" button on a recommendation: NOT built.
-- §A single-garment fast path (product shot → prefilled AddItem, skipping
-  the picker): NOT built; every import goes through the detect list.
+- §A single-garment fast path: **BUILT** 2026-09-15. The detector returns a
+  `shotType`; a product shot with exactly one piece registers straight away
+  and lands in the closet, skipping the review screen. Outfit photos still go
+  through the detect list.
 - §A `sourceUrl`: shipped 2026-09-16 as the existing `shopUrl` field on every
   piece saved from a shared photo, plus an `import_item_saved` GA event.
 

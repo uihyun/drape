@@ -19,24 +19,54 @@ already API 36, versionCode 20 / iOS build 16, with the submission kit
   Monday, ≤LOOKS_MAX, ≤2 per closet), tried-on categories, colophon dated by
   `issueWeek`. Aggregates exclude seed accounts; images come only from
   public surfaces. Admin can feature/cover/hide for the current week.
-- **Stylist** (SPEC-1.6 §D) + style profile + Settings "My style".
-- **Share-to-drape** on all three entry points; imported pieces now carry
-  their source URL (`shopUrl`) and fire `import_item_saved`.
+- **Stylist** (SPEC-1.6 §D) + style profile + Settings "My style". Recent
+  recommendations feed back into the prompt so a small closet stops
+  returning the same three looks.
+- **Share-to-drape** on all three entry points; a product shot with one
+  piece now registers straight to the closet (§A fast path).
+- **Spanish** as a fourth locale — app, legal documents, static web pages,
+  server-side generation prompts, SEO metadata, store listing copy.
 - **Server-configurable AI models** (`config/models`, /admin → Config).
-- Closet sorting, bulk "Upload several", in-app review nudge, Firestore
-  offline persistence, icon-only bottom nav.
+- **Guided tour** replacing the stacked onboarding popups: scrim + spotlight
+  on one real control at a time, step copy in `tour*` locale keys so it is
+  server-overridable.
+- **Closet is the default profile tab** (GA: 42.7% of profile views at
+  1,292 s/user vs the calendar's 5.8% at 15 s/user). Pinch now goes 1–5
+  columns, is taught once at 6+ items, and cards FLIP between densities.
+- **Home screen follows the closet.** New accounts open on Trends; the first
+  time a closet stops being empty the profile asks, once, whether to open
+  there instead. An explicit choice always wins.
+- Closet sorting, bulk add inside the add-item sheet, in-app review nudge,
+  Firestore offline persistence, icon-only bottom nav.
 - Admin: persona-sunset gauge, trends curation, config/models editors,
   acquisition channels, 30-day default window.
 
-**Known gaps (decided, not forgotten)** — see docs/SPEC-1.6.md "deviations":
-stylist rec → "save as outfit" button; single-garment import fast path;
-style-profile refresh is a 12h lazy TTL rather than event-driven; Trends has
-no interaction analytics beyond the automatic screen_view; the "this week"
-stats line is a rolling 7-day window while the looks slate is calendar-weekly.
+**Bugs this wave surfaced** (all fixed — worth knowing they were possible):
+- Bulk "these are my clothes" added **nothing**, silently: a background
+  function read a component ref, and the ReferenceError was swallowed by the
+  per-piece catch. Found by adding `no-undef` to the eslint gate, which also
+  caught a missing `<TrendingUp>` import that had blanked Settings.
+- `itemDrop`'s `animation-fill-mode: both` pinned `transform` on every closet
+  card forever, outranking inline styles — no card transform could ever work.
+- A stale `.profile-stats { justify-content: center }` from the deleted
+  `.profile-header` layout was still centring the stats row.
 
-**Next:** owner builds and submits 2.1.0 (Xcode: DrapeShare target already
-wired; Android Studio: vc20 AAB clears the API-36 block), then measure
-stylist rec→try-on conversion and Trends engagement.
+**Known gaps (decided, not forgotten)** — see docs/SPEC-1.6.md "deviations":
+stylist rec → "save as outfit" button; style-profile refresh is a 12h lazy
+TTL rather than event-driven; the "this week" stats line is a rolling 7-day
+window while the looks slate is calendar-weekly.
+
+**Screenshots:** the `resources/app-store/screenshots-6.7-en*` folders are
+**voda** assets (interior design) that arrived with the migration and were
+never replaced — do not upload them. The renderer is locale-aware with
+captions written for all four languages; it needs six captures per locale in
+`captures-<locale>/`. See `resources/app-store/README.md` for the shot list.
+
+**Next:** owner shoots the six screens per locale, then builds and submits
+2.1.0 (Xcode: DrapeShare target already wired; Android Studio: vc20 AAB
+clears the API-36 block). After that, measure stylist rec→try-on conversion,
+Trends engagement, and re-read the profile-tab numbers now that the calendar
+is no longer the forced default.
 
 ---
 

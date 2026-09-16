@@ -32,6 +32,27 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   `functions/{admin,notifications,stylist,profile,items,translate}.js`,
   `scripts/{check,build-web-pages}.mjs`, `legal.js`, and iOS
   `CFBundleLocalizations`. `npm run check` enforces key parity across all four.
+- **Home screen follows the closet, unless the user said otherwise.**
+  `getHomeRoute(uid)` in `services/homePref.js`: an explicit pref wins; with
+  none, an empty closet lands on `/trends` and a stocked one on `/profile`
+  (read synchronously from the `drape:itemCount:{uid}` cache). The profile asks
+  once, via `HINT_HOME_FLIP`, the first time a closet stops being empty. A
+  fixed default can't serve both ends — don't "simplify" it back to one.
+- **Onboarding is a deck then a tour, never stacked popups.** `Onboarding`
+  says what drape is; `Tour` (scrim + spotlight on one real control) says where
+  it lives. Tour steps carry `data-tour` attributes on the targets and locale
+  keys for copy, so both the flow and the words survive a restyle and are
+  server-overridable. Don't add a third simultaneous overlay.
+- **Never use `animation-fill-mode: both` on a grid card.** A filling animation
+  outranks inline styles, so it permanently pins `transform` and silently kills
+  every FLIP/transform effect on that element (cost us the closet pinch
+  animation; `itemDrop` uses `backwards`). Same trap applies to any card the
+  `useFlipGrid` hook animates.
+- **`npm run check` is the runtime-crash gate, not a linter.** It carries the
+  named-import audit, locale parity across all four languages, an undefined-CSS-var
+  scan, and eslint with `rules-of-hooks` + `no-undef` — every rule there exists
+  because that exact class of bug shipped once. Add to it when a new class
+  escapes; don't relax it.
 - **Server-editable copy layer** (`config/copy`): t() string overrides, onboarding steps, and the notice banner — edited in /admin → Config via `adminSetConfig` (server validates against the client parsers). Missing/malformed doc always falls back to bundled; don't break that contract.
 - **Share-import fetches stay SSRF-disciplined** (`functions/import.js`): https only, DNS-checked public IPs, every redirect hop re-validated, size/time caps. Don't loosen for a convenience case.
 - **Brand mark is the ivory Didot-italic `drape` wordmark on espresso ink `#141312`.** Sources in `resources/*.svg` (+ `public/wordmark.png`, `public/favicon.*`, `public/icons/*.webp`); regenerate via the sharp-based build (Didot is a macOS system font, baked into the rasters). Favicon is the single `d` monogram. After changing them, native needs `npx capacitor-assets generate && npx cap sync`.
