@@ -34,6 +34,13 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **A stylist only shows its own work.** The warm cache was keyed by user, so
+  switching from Remy to Noa left Remy's recommendation sitting under Noa's
+  name. It's now keyed per `(user, persona)`: each stylist keeps its own last
+  session, switching away hides it, and switching back restores it. The cache
+  writer also checks the recommendation's own persona before storing, since on
+  a switch both effects fire in the same pass and the old result would
+  otherwise be copied into the new stylist's slot.
 - **Stylist stops repeating itself.** With a small closet the same three
   outfits came back every time, which reads as a broken feature rather than
   a limited wardrobe. `styleRecommend` now passes the last four

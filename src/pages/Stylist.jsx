@@ -24,8 +24,9 @@ export function Stylist({ user, onSignIn }) {
   const navigate = useNavigate();
   // Read the warm cache BEFORE any state that seeds from it — a `const`
   // referenced above its declaration is a TDZ crash, not undefined.
-  const warm = user ? stylistWarm.get(user.uid) : null;
   const [persona, setPersona] = useState(getChosenPersona());
+  const warmKey = user?.uid && persona ? `${user.uid}:${persona}` : null;
+  const warm = warmKey ? stylistWarm.get(warmKey) : null;
   const [choosing, setChoosing] = useState(false);
   const [ask, setAsk] = useState(warm?.ask || '');
   const [busy, setBusy] = useState(false);
@@ -62,9 +63,22 @@ export function Stylist({ user, onSignIn }) {
   }, [user?.uid, shown]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!user?.uid) return;
-    if (rec) stylistWarm.set(user.uid, { rec, savedKeys, rated, ask });
-  }, [user?.uid, rec, savedKeys, rated, ask]);
+    if (!warmKey || !rec) return;
+    if (rec.persona !== persona) return;
+    stylistWarm.set(warmKey, { rec, savedKeys, rated, ask });
+  }, [warmKey, persona, rec, savedKeys, rated, ask]);
+
+  // Switching stylists swaps in THAT stylist's last session (or a clean
+  // slate). Without this the screen kept showing the previous persona's
+  // picks under a new face.
+  useEffect(() => {
+    if (!warmKey) return;
+    const w = stylistWarm.get(warmKey);
+    setRec(w?.rec || null);
+    setRated(w?.rated || null);
+    setSavedKeys(w?.savedKeys || {});
+    setAsk(w?.ask || '');
+  }, [warmKey]);
 
   const personaMeta = useMemo(
     () => STYLIST_PERSONAS.find((p) => p.id === persona) || null,
@@ -89,7 +103,7 @@ export function Stylist({ user, onSignIn }) {
     setBusy(true); setErr(''); setRec(null); setRated(null); setSavedKeys({});
     try {
       const data = await StylistService.recommend({ persona, ask });
-      setRec(data);
+      setRec({ ...data, persona });
       logEvent(analytics, 'stylist_recommend', { persona });
     } catch (e) {
       const code = e?.code || '';
