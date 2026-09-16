@@ -647,6 +647,24 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Play short description put back to the shipped angle.** The live one is
+"Build your digital closet, try anything on with AI, and log your outfits" —
+three clauses, one per pillar. A rewrite had re-angled the whole thing on
+"before you buy", which nothing in 2.1.0 justified. EN is verbatim again and
+the other four say the same three things natively.
+
+**CJK poster type: weight, not just family.** At 100px a Regular-weight Mincho
+goes spindly beside Bodoni's thick strokes and the poster reads weak — which is
+what Gowun Batang and Shippori Mincho were doing. Both are now set at Medium:
+Noto Serif KR for Korean, Zen Old Mincho for Japanese, each with the thick/thin
+contrast that makes them rhyme with the Latin deck rather than sit beside it.
+
+**CJK poster copy is editorial, not chat.** The shipped English lines are crisp
+product statements. An earlier pass wrote the Korean as conversational
+questions — 「오늘 뭐 입지?」 — which reads like a chatbot under a Bodoni italic.
+Korean is now short editorial phrases (「손안의 옷장」), and Japanese keeps its
+four shipped lines with only trends and stylist newly written.
+
 **Poster headlines use the app's own face, and the CJK decks got real
 typography.** The renderer had been asking for the system Didot, so the store
 showed a different typeface from the one inside the app — it now loads

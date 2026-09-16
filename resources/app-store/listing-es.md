@@ -88,7 +88,7 @@ drape: armario y prueba
 **Short description** (≤80, currently 74):
 
 ```
-Fotografía tu ropa y pruébate lo que quieras en tu cuerpo antes de comprar.
+Crea tu armario digital, pruébate lo que sea con IA y anota tus looks.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim;

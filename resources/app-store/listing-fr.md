@@ -78,7 +78,7 @@ drape : dressing & essayage
 **Short description** (≤80, currently 76):
 
 ```
-Photographiez vos vêtements et essayez tout sur vous avant d’acheter.
+Créez votre dressing numérique, essayez tout avec l’IA et notez vos tenues.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.

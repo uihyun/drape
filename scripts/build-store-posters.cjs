@@ -45,8 +45,12 @@ const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
 // read institutional next to a Bodoni italic.
 // Fonts live in resources/fonts/ and must be installed for fontconfig to see
 // them: cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
-const HEAD_FAMILY_JA = 'Shippori Mincho, Hiragino Mincho ProN, serif';
-const HEAD_FAMILY_KO = 'Gowun Batang, Apple SD Gothic Neo, serif';
+// Weight matters more than family here: at 100px a Regular-weight Mincho goes
+// spindly next to Bodoni's thick strokes and the poster looks weak. Both of
+// these are set at Medium for that reason.
+const HEAD_FAMILY_JA = 'Zen Old Mincho, Shippori Mincho, Hiragino Mincho ProN, serif';
+const HEAD_FAMILY_KO = 'Noto Serif KR, Apple SD Gothic Neo, serif';
+const HEAD_WEIGHT_CJK = 500;
 
 // ── The deck ───────────────────────────────────────────────────────────
 // Order follows the live 1.5.0 deck; `02-feed` became trends and `06-market`
@@ -62,15 +66,16 @@ const DECK = [
   { out: '06-stylist',  src: 'stylist' },
 ];
 
-// EN keeps the four shipped lines word for word — there is no reason to
-// rewrite copy that is already out there. KO and JA are NOT translations of
-// them: a headline that reads as translated is the fastest way to lose a
-// reader. They are written as the thought someone actually has while standing
-// in front of a wardrobe, in that language.
+// EN and JA keep their shipped lines word for word; only trends and stylist
+// are new in JA, because only those two slides changed. KO has no shipped deck,
+// so all six are written fresh.
 //
-// Shipped EN: log every outfit · a feed of real looks · your closet, digitized
-// · shop any photo · see it on you, first · buy & sell pre-loved · moodboard
-// your style
+// Register matters as much as meaning. The shipped English lines are crisp
+// product statements — "log every outfit", "your closet, digitized" — not
+// chat. An earlier pass wrote the Korean as conversational questions
+// ("오늘 뭐 입지?"), which reads like a chatbot next to a Bodoni italic. These
+// are short editorial phrases, the register Korean and Japanese fashion press
+// actually uses.
 const LINES = {
   en: {
     '01-calendar': 'log every outfit',
@@ -81,20 +86,20 @@ const LINES = {
     '06-stylist':  'a stylist in your closet',
   },
   ko: {
-    '01-calendar': '입은 날들이 쌓인다',
-    '02-trends':   '요즘 다들 뭐 입어?',
-    '03-closet':   '내 옷장이, 폰 안에',
-    '04-analyze':  '이 옷, 뭔지 알려줄게',
-    '05-tryon':    '나한테 어울릴까?',
-    '06-stylist':  '오늘 뭐 입지?',
+    '01-calendar': '매일의 기록',
+    '02-trends':   '이번 주의 스타일',
+    '03-closet':   '손안의 옷장',
+    '04-analyze':  '사진 속 그 옷',
+    '05-tryon':    '내 몸으로 먼저',
+    '06-stylist':  '내 옷장의 스타일리스트',
   },
   ja: {
-    '01-calendar': '着た日が、積もっていく',
-    '02-trends':   'いま、みんな何着てる',
-    '03-closet':   'クローゼットが、ポケットに',
-    '04-analyze':  'その服、見つけます',
-    '05-tryon':    '似合うかは、着てみれば',
-    '06-stylist':  '今日、何着よう',
+    '01-calendar': '毎日のコーデを記録',
+    '02-trends':   '今週のスタイル',
+    '03-closet':   'クローゼットをデジタルに',
+    '04-analyze':  '気になる服を見つける',
+    '05-tryon':    'まず、自分で試着',
+    '06-stylist':  'クローゼット専属スタイリスト',
   },
   es: {
     '01-calendar': 'anota cada look',
@@ -113,6 +118,7 @@ const LINES = {
     '06-stylist':  'un styliste dans votre dressing',
   },
 };
+
 
 
 
@@ -141,11 +147,12 @@ function posterSvg(line) {
     : hasCJK(line) ? HEAD_FAMILY_JA
     : HEAD_FAMILY;
   const style = hasCJK(line) ? '' : 'font-style="italic"';
+  const weight = hasCJK(line) ? HEAD_WEIGHT_CJK : 400;
   return `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${W}" height="${H}" fill="${GROUND}"/>
   <text x="${W / 2}" y="${HEAD_BASELINE}" text-anchor="middle"
-        font-family="${family}" ${style}
+        font-family="${family}" ${style} font-weight="${weight}"
         font-size="${size}" fill="#F4F1EA">${esc(line)}</text>
   <circle cx="${W / 2}" cy="${DOT_CY}" r="${DOT_R}" fill="${DOT_FILL}"/>
 </svg>`;
