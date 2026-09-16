@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 // Scrim + centred card, the shape used for anything that needs the screen's
 // full attention once: teaching a gesture, or asking a question with two real
 // answers. Inline banners can't do the latter — a row that has to hold a
@@ -12,6 +14,15 @@
 // locales, and a squeezed row is what broke the banner this replaced.
 export function HintDialog({ visual, text, note, actions = [] }) {
   const pick = actions.some((a) => a.Icon);
+  // A tile that closes the dialog on mousedown never shows it was pressed, so
+  // the tap reads as "nothing happened" even though the choice landed. Hold the
+  // chosen tile lit for a beat before handing control back to the caller.
+  const [chosen, setChosen] = useState(null);
+  const choose = (label, onClick) => {
+    if (chosen) return;
+    setChosen(label);
+    setTimeout(onClick, 260);
+  };
   return (
     <div className="hintdlg" role="dialog" aria-modal="true">
       <div className="hintdlg-card">
@@ -23,10 +34,12 @@ export function HintDialog({ visual, text, note, actions = [] }) {
             <button
               key={label}
               type="button"
-              className={pick ? 'hintdlg-pick-btn' : `btn ${primary ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={onClick}
+              className={pick
+                ? `hintdlg-pick-btn${chosen === label ? ' on' : ''}`
+                : `btn ${primary ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => (pick ? choose(label, onClick) : onClick())}
             >
-              {Icon && <Icon size={22} strokeWidth={1.6} />}
+              {Icon && <Icon size={24} strokeWidth={1.7} />}
               <span>{label}</span>
             </button>
           ))}

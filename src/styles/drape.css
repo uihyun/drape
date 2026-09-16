@@ -6746,12 +6746,14 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-quad-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; background: linear-gradient(transparent, rgba(20,19,18,0.72)); color: #fff; text-align: left; }
 .stylist-quad-label strong { font-size: 1.05rem; }
 .stylist-quad-label em { font-style: normal; font-size: 0.72rem; opacity: 0.85; }
-.stylist-chosen { display: flex; align-items: center; gap: 12px; width: 100%; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 10px 14px; margin: 6px 0 10px; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+.stylist-chosen { display: flex; flex-direction: column; gap: 8px; width: 100%; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 10px 14px; margin: 6px 0 10px; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+.stylist-chosen-top { display: flex; align-items: center; gap: 12px; }
 .stylist-chosen-img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
 .stylist-chosen-meta { display: flex; flex-direction: column; }
 .stylist-chosen-meta strong { font-size: 0.95rem; }
 .stylist-chosen-meta em { font-style: normal; font-size: 0.74rem; color: var(--text-muted); }
 .stylist-chosen-change { margin-left: auto; font-size: 0.76rem; color: var(--text-muted); text-decoration: underline; }
+.stylist-chosen-bio { font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
 
 /* Coachmark speech bubble (feature discovery, 1.6). FLOATS over content
    (absolute in .profile) — it must never take layout space; a transparent
@@ -7049,16 +7051,21 @@ input[type="search"]::-webkit-search-decoration {
    question once and changing it later look like the same control. */
 .hintdlg-actions.pick { flex-direction: row; gap: 10px; }
 .hintdlg-pick-btn {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px;
-  padding: 14px 10px;
-  border: 1px solid var(--border); border-radius: 14px;
-  background: transparent; color: var(--text-secondary);
-  font-size: 0.78rem; line-height: 1;
-  cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 10px;
+  border: 1.5px solid var(--text-secondary); border-radius: 14px;
+  background: transparent; color: var(--text-primary);
+  font-size: 0.84rem; font-weight: 500; line-height: 1;
+  cursor: pointer; transition: border-color .12s, color .12s, background .12s;
 }
-.hintdlg-pick-btn:hover,
-.hintdlg-pick-btn:focus-visible {
-  border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
+.hintdlg-pick-btn:hover, .hintdlg-pick-btn:focus-visible {
+  border-color: var(--text-primary); background: var(--surface-elevated);
+}
+/* The confirmation beat. Filled ink rather than the tinted accent the closet's
+   chips use: this tile is about to disappear, so the state has to be legible in
+   the ~quarter second it exists. */
+.hintdlg-pick-btn.on, .hintdlg-pick-btn.on:hover {
+  background: var(--text-primary); border-color: var(--text-primary); color: var(--surface);
 }
 
 .closet-tools { display: flex; align-items: center; gap: 6px; }

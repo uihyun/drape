@@ -17,10 +17,10 @@ const PERSONA_KEY = 'drape_stylist_persona';
 // Kept in sync with functions/stylist.js PERSONAS. Illustrated initials on
 // the client — explicitly AI characters, never photoreal faces (house rule).
 export const STYLIST_PERSONAS = [
-  { id: 'noa',  name: 'Noa',  tagKey: 'personaNoaTag',  color: '#8a8577', img: '/stylists/noa.webp' },
-  { id: 'remy', name: 'Remy', tagKey: 'personaRemyTag', color: '#4a6fa5', img: '/stylists/remy.webp' },
-  { id: 'sol',  name: 'Sol',  tagKey: 'personaSolTag',  color: '#c2716b', img: '/stylists/sol.webp' },
-  { id: 'juno', name: 'Juno', tagKey: 'personaJunoTag', color: '#7d5ba6', img: '/stylists/juno.webp' },
+  { id: 'noa',  name: 'Noa',  tagKey: 'personaNoaTag', bioKey: 'personaNoaBio',  color: '#8a8577', img: '/stylists/noa.webp' },
+  { id: 'remy', name: 'Remy', tagKey: 'personaRemyTag', bioKey: 'personaRemyBio', color: '#4a6fa5', img: '/stylists/remy.webp' },
+  { id: 'sol',  name: 'Sol',  tagKey: 'personaSolTag', bioKey: 'personaSolBio',  color: '#c2716b', img: '/stylists/sol.webp' },
+  { id: 'juno', name: 'Juno', tagKey: 'personaJunoTag', bioKey: 'personaJunoBio', color: '#7d5ba6', img: '/stylists/juno.webp' },
 ];
 
 export function getChosenPersona() {

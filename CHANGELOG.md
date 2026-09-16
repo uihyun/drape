@@ -647,6 +647,35 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Stylist prompt said "write it in undefined" for Spanish and French.**
+`functions/stylist.js` accepted five locales but mapped only three to a language
+name, so es/fr users got `"why" in undefined` and the model fell back to
+English. Exactly the failure mode CLAUDE.md warns about when adding a language —
+the accepted-list and the map were edited apart. Both now list five, with an
+English fallback so a future gap degrades instead of emitting `undefined`.
+
+**The four stylists were converging.** Each persona was one line of "styling
+lens" at the top of a prompt that then supplies the user's taste profile, stated
+preferences (marked *authoritative*), thumbs history and avoid-list — all far
+more specific, all pulling every persona toward the same safe pick. Two changes:
+each lens now names what it REFUSES, not just what it likes (the refusal is what
+separates them, because it removes options the others would take — Remy will not
+use tailoring, Sol will not use sportswear, Juno discards anything another
+stylist could have produced), and a STAY IN CHARACTER line is restated at the
+*end* of the prompt, after the taste blocks, where it can still be heard.
+
+**The chosen stylist introduces themselves.** The card inside the stylist page
+showed the same two-word tag as the chooser — enough to pick between four faces,
+useless once you're in with one of them. It now carries a first-person line
+saying how they actually style ("I start at the shoes and build up. One loud
+thing per outfit, never two."), in all five locales.
+
+**The home-screen tiles were too faint and showed no press.** Hairline border in
+muted grey, and the dialog unmounted on click, so the chosen tile never lit —
+the second half of the same bug fixed above. Border and label go to full
+strength, and the tile holds a filled-ink selected state for 260 ms before the
+dialog closes.
+
 **The home-screen question's buttons did nothing.** `HomeFlipAsk` gated itself
 on a render-time localStorage read and deliberately held no state — the comment
 said every input was already persistent. But writing localStorage doesn't notify

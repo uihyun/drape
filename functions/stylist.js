@@ -26,11 +26,37 @@ const MAX_ITEMS = 150;          // inventory digest cap fed to the model
 
 // Personas are PROMPT LENSES, not people. Client renders them as illustrated,
 // explicitly-AI characters (house rule: no photoreal synthetic humans).
+// Four stylists have to produce four visibly different outfits from ONE closet,
+// so a lens is not enough on its own — the user's taste profile and stated
+// preferences sit lower in the prompt and are far more specific, and without a
+// counterweight every persona converges on the same safe pick. Each lens
+// therefore names what it REACHES FOR and what it REFUSES; the refusal is what
+// actually separates them, because it removes options the others would take.
 const PERSONAS = {
-  noa:  { name: 'Noa',  lens: 'minimal & classic: restrained palettes, clean silhouettes, long-lived pieces, quiet luxury. You dislike logos and clutter.' },
-  remy: { name: 'Remy', lens: 'street & casual: proportion play, layering, sneakers-first thinking, relaxed fits with one loud element.' },
-  sol:  { name: 'Sol',  lens: 'romantic & feminine: color harmony, soft textures, seasonal mood, dresses and knits, delicate details.' },
-  juno: { name: 'Juno', lens: 'bold & experimental: unexpected pairings, color blocking, rediscovering ignored pieces, fashion-forward risks.' },
+  noa: {
+    name: 'Noa',
+    lens: 'minimal & classic: restrained palettes, clean silhouettes, long-lived pieces, quiet luxury. '
+      + 'You build around one excellent neutral piece and let everything else recede. '
+      + 'You REFUSE loud logos, busy prints, more than three colours, and anything trend-chasing.',
+  },
+  remy: {
+    name: 'Remy',
+    lens: 'street & casual: proportion play, oversized over fitted, layering, sneakers-first thinking. '
+      + 'You start from the footwear and build up, and every look carries exactly one loud element. '
+      + 'You REFUSE anything that reads formal or precious — no tailoring, no delicate fabrics, never a dress shoe.',
+  },
+  sol: {
+    name: 'Sol',
+    lens: 'romantic & feminine: colour harmony, soft textures, seasonal mood, dresses and knits, delicate details. '
+      + 'You style for how a fabric moves and reach for the accessory nobody else would bother with. '
+      + 'You REFUSE hard streetwear silhouettes, all-black looks, and sportswear.',
+  },
+  juno: {
+    name: 'Juno',
+    lens: 'bold & experimental: unexpected pairings, colour blocking, clashing texture, fashion-forward risk. '
+      + 'You deliberately pull the pieces this user has been ignoring and make them the point of the outfit. '
+      + 'You REFUSE the safe, obvious combination — if a look could have come from any of the other stylists, discard it.',
+  },
 };
 
 // "YYYY-MM-DD" in the user's timezone — same convention as fits.js.
@@ -257,7 +283,12 @@ exports.styleRecommend = onCall(
       model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
-    const langName = { en: 'English', ko: 'Korean', ja: 'Japanese' }[lang];
+    // Every locale the client can send must be here. es/fr were added to the
+    // accepted list without being added to this map, so those users got a
+    // prompt reading "in undefined" and silently fell back to English.
+    const langName = {
+      en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French',
+    }[lang] || 'English';
     const prompt = [
       `You are ${persona.name}, a personal fashion stylist inside the drape app. Your styling lens: ${persona.lens}`,
       `Build outfits ONLY from the user's closet below, referencing items by their exact "id". Rules:`,
@@ -267,6 +298,10 @@ exports.styleRecommend = onCall(
       'Return JSON: {"outfits":[{"title":string,"itemIds":string[],"why":string,"confidence":number 0-1}]}',
       profile?.summary ? `USER STYLE PROFILE:\n${profile.summary}` : '',
       stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      // Restated at the end because the lens is one line at the top of a long
+      // prompt and the taste blocks below it are far more specific. Without
+      // this, four stylists converge on the same safe outfit.
+      `STAY IN CHARACTER: you are ${persona.name}. Within the user's stated preferences, the outfits must be recognisably YOURS — a different stylist looking at this same closet should reach a visibly different answer. Honour your refusals above.`,
       loved.length ? `THEY RATED THESE COMBINATIONS 👍 (item ids — lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
       disliked.length ? `THEY RATED THESE 👎 (do NOT repeat these combinations or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
       alreadyProposed.length

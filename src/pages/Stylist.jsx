@@ -177,13 +177,19 @@ export function Stylist({ user, onSignIn }) {
           </div>
         </>
       ) : (
+        /* The two-word tag is enough to pick between four faces; once you're
+           inside with one of them it says nothing about how they'll style you.
+           The bio is first person, so the card reads as the stylist talking. */
         <button type="button" className="stylist-chosen" onClick={() => setChoosing(true)}>
-          <img src={personaMeta?.img} alt="" className="stylist-chosen-img" />
-          <span className="stylist-chosen-meta">
-            <strong>{personaMeta?.name}</strong>
-            <em>{t(personaMeta?.tagKey)}</em>
+          <span className="stylist-chosen-top">
+            <img src={personaMeta?.img} alt="" className="stylist-chosen-img" />
+            <span className="stylist-chosen-meta">
+              <strong>{personaMeta?.name}</strong>
+              <em>{t(personaMeta?.tagKey)}</em>
+            </span>
+            <span className="stylist-chosen-change">{t('stylistChange')}</span>
           </span>
-          <span className="stylist-chosen-change">{t('stylistChange')}</span>
+          <span className="stylist-chosen-bio">{t(personaMeta?.bioKey)}</span>
         </button>
       )}
 
