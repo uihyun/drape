@@ -64,7 +64,10 @@ const HEAD_WEIGHT_KO = 600;
 // days of GA (4.4% of profile views, 8 s/user).
 const DECK = [
   { out: '01-calendar', src: 'calendar' },
-  { out: '02-trends',   src: 'trends-1' },
+  // trends-3, not the other masthead captures: it's the only full-length shot,
+  // so the outfit reads at thumbnail size — and it sets up the next two slides,
+  // where that kind of street look gets analysed and tried on.
+  { out: '02-trends',   src: 'trends-3' },
   { out: '03-closet',   src: 'closet-1' },
   { out: '04-analyze',  src: 'analyzed-photo' },
   { out: '05-tryon',    src: 'tryon-3' },
