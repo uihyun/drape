@@ -24,11 +24,13 @@ styliste ia, tenues & ootd
 Photographiez vos vêtements, construisez votre dressing numérique et voyez chaque pièce sur vous avant de la porter. Votre styliste IA compose avec ce que vous avez déjà.
 ```
 
-**Keywords** (≤100 chars total, comma-separated, no spaces after commas — do
-not repeat words already in the name or subtitle, Apple indexes those anyway):
+**Keywords** (≤100 chars) — a new locale, so there is no live set to protect;
+this can go in as-is. Words already in the name or subtitle are left out on
+purpose: Apple indexes name + subtitle + keywords together, so a repeat is
+spent budget:
 
 ```
-garde-robe,essayage virtuel,tenue,OOTD,mode,style,penderie,lookbook,tendances,IA
+garde-robe,mode,style,penderie,vêtements,capsule,lookbook,tendances,essayage virtuel
 ```
 
 **Description** (≤4000):
@@ -36,10 +38,16 @@ garde-robe,essayage virtuel,tenue,OOTD,mode,style,penderie,lookbook,tendances,IA
 ```
 drape, c’est là où vit votre garde-robe.
 
-Photographiez chaque pièce : drape la détoure, la tague et la range. Composez
-des tenues, notez ce que vous avez porté dans un calendrier et — ce qui fait
-la différence — essayez n’importe quoi sur votre propre corps avant de le
-porter ou de l’acheter.
+Ajoutez deux ou trois photos de vous, puis voyez n’importe quelle pièce sur
+votre propre corps avant de la porter ou de l’acheter. Photographiez ce que
+vous avez : drape détoure chaque pièce, la tague et la range — le dressing est
+le vôtre, pas un catalogue.
+
+ESSAYEZ SUR VOUS
+• Ajoutez deux ou trois photos de vous en pied, puis essayez n’importe quelle pièce.
+• C’est votre vrai visage et votre vrai corps : le résultat vous ressemble,
+  pas à un mannequin.
+• 5 essayages gratuits par jour. Invitez un ami et vous en recevez 10 chacun.
 
 VOTRE DRESSING NUMÉRIQUE
 • Une photo par pièce : nous retirons le fond et taguons catégorie, couleur,
@@ -47,12 +55,6 @@ VOTRE DRESSING NUMÉRIQUE
 • Pressé ? Envoyez la photo d’une tenue complète et nous détectons chaque pièce.
 • Cherchez et filtrez par tag, marque ou couleur. Pincez la grille pour en
   voir plus d’un coup, ou moins et en plus grand.
-
-ESSAYEZ SUR VOUS
-• Ajoutez deux ou trois photos de vous en pied, puis essayez n’importe quelle pièce.
-• C’est votre vrai visage et votre vrai corps : le résultat vous ressemble,
-  pas à un mannequin.
-• 5 essayages gratuits par jour. Invitez un ami et vous en recevez 10 chacun.
 
 VOTRE STYLISTE IA
 • Choisissez un styliste personnel : il compose des tenues avec votre dressing.
@@ -68,10 +70,10 @@ TENDANCES
 • Un nouveau numéro chaque lundi : les styles, couleurs et marques qui montent,
   tirés de ce que les membres portent réellement.
 
-COMMUNAUTÉ ET MARCHÉ
-• Parcourez de vrais dressings, essayez les pièces des autres, gardez vos
-  coups de cœur.
-• Revendez ce que vous ne mettez plus et trouvez des pièces chez les autres membres.
+PARCOUREZ D’AUTRES DRESSINGS
+• Ouvrez un look dans Tendances pour voir à qui il est, puis parcourez tout
+  son dressing public.
+• Essayez ses pièces sur vous et gardez les looks qui vous plaisent.
 
 drape est gratuit au départ. Les essayages utilisent un quota quotidien qui se
 recharge chaque jour.

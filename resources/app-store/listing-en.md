@@ -26,12 +26,16 @@ ai stylist, outfits & ootd
 Photograph your clothes, build a digital closet, and see any piece on your own body before you wear or buy it. Your AI stylist builds looks from what you already own.
 ```
 
-**Keywords** (≤100 chars total, comma-separated, no spaces after commas. Do
-not repeat words already in the name or subtitle — Apple indexes those anyway,
-so every repeat is wasted budget):
+**Keywords** (≤100 chars, currently 87) — this is the LIVE set with one change:
+`ai stylist` is gone, because the new subtitle carries it and Apple indexes
+name + subtitle + keywords together. Everything else is left alone on purpose:
+ranking accrues per keyword, so a term you drop loses its position immediately
+and a new one starts from zero. 2.1.0 already changes the subtitle, the
+description and the screenshots — churning keywords at the same time would make
+the result unreadable:
 
 ```
-digital closet,virtual try on,outfit planner,ootd,wardrobe,capsule,fitting,fashion ai,lookbook
+wardrobe,fashion,style,lookbook,clothes,dressing room,fit check,capsule,virtual fitting
 ```
 
 **Description** (≤4000):
@@ -39,9 +43,15 @@ digital closet,virtual try on,outfit planner,ootd,wardrobe,capsule,fitting,fashi
 ```
 drape is where your wardrobe lives.
 
-Photograph each piece and drape cuts it out, tags it, and files it away.
-Build outfits, log what you wore on a calendar, and — the part that makes
-drape different — try anything on your own body before you wear or buy it.
+Add two or three photos of yourself, then see any piece on your own body
+before you wear it or buy it. Photograph what you own and drape cuts each
+piece out, tags it, and files it away — so the closet is yours, not a
+catalogue.
+
+TRY IT ON YOURSELF
+• Add two or three full-body photos of yourself, then try on any piece.
+• It's your real face and body, so the result looks like you — not a model.
+• 5 free try-ons every day. Invite a friend and you each get 10 more.
 
 YOUR DIGITAL CLOSET
 • One photo per piece: we remove the background and tag category, colour,
@@ -49,11 +59,6 @@ YOUR DIGITAL CLOSET
 • In a hurry? Upload a photo of a full outfit and we detect every piece in it.
 • Search and filter by tag, brand or colour. Pinch the grid to see more at
   once, or fewer and larger.
-
-TRY IT ON YOURSELF
-• Add two or three full-body photos of yourself, then try on any piece.
-• It's your real face and body, so the result looks like you — not a model.
-• 5 free try-ons every day. Invite a friend and you each get 10 more.
 
 YOUR OWN AI STYLIST
 • Pick a personal stylist and get outfit ideas built from your own closet.
@@ -69,9 +74,10 @@ TRENDS
 • A new issue every Monday: the styles, colours and brands moving this week,
   drawn from what members are actually wearing.
 
-COMMUNITY & MARKETPLACE
-• Browse real closets, try on other members' pieces, save what you love.
-• Sell what you no longer wear and find pieces from other members.
+BROWSE OTHER CLOSETS
+• Open any look from Trends to see whose it is, then browse their whole
+  public closet.
+• Try their pieces on yourself, and keep the looks you love.
 
 drape is free to start. Try-ons use a daily allowance that refills every day.
 ```

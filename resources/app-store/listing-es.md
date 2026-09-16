@@ -35,11 +35,13 @@ estilista ia, looks y ootd
 Fotografía tu ropa, arma tu armario digital y pruébate cualquier prenda en tu propio cuerpo. Tu estilista con IA arma looks con lo que ya tienes.
 ```
 
-**Keywords** (≤100 chars total, comma-separated, no spaces after commas — do
-not repeat words already in the name or subtitle, Apple indexes those anyway):
+**Keywords** (≤100 chars) — a new locale, so there is no live set to protect;
+this can go in as-is. Words already in the name or subtitle are left out on
+purpose: Apple indexes name + subtitle + keywords together, so a repeat is
+spent budget:
 
 ```
-ropa,outfit,OOTD,probador,moda,estilo,armario,guardarropa,looks,estilista,IA,vender
+ropa,moda,estilo,probador,armario,guardarropa,cápsula,lookbook,tendencias,vender
 ```
 
 **Description** (≤4000):
@@ -47,21 +49,21 @@ ropa,outfit,OOTD,probador,moda,estilo,armario,guardarropa,looks,estilista,IA,ven
 ```
 drape es el lugar donde vive tu guardarropa.
 
-Fotografía cada prenda y drape la recorta, la etiqueta y la archiva sola. Arma
-looks, registra tu OOTD diario en el calendario y —lo mejor— pruébate cualquier
-cosa en tu propio cuerpo antes de usarla o comprarla.
+Agrega dos o tres fotos tuyas y mira cualquier prenda en tu propio cuerpo
+antes de usarla o comprarla. Fotografía lo que tienes y drape lo recorta, lo
+etiqueta y lo archiva — así el armario es tuyo, no un catálogo.
+
+PRUEBA VIRTUAL EN TI
+• Agrega 2 o 3 fotos tuyas de cuerpo completo y pruébate cualquier prenda.
+• Es tu rostro y tu cuerpo reales, así que el resultado se ve natural.
+• 5 pruebas gratis cada día. Invita a una amistad y ambos reciben 10 más.
 
 TU ARMARIO DIGITAL
 • Una foto por prenda: quitamos el fondo y etiquetamos categoría, color,
   temporada y estilo automáticamente.
 • ¿Tienes prisa? Sube la foto de un look completo y detectamos cada prenda.
-• Busca y filtra por etiqueta, marca o color. Descubre lo que llevas meses
-  sin ponerte.
-
-PRUEBA VIRTUAL EN TI
-• Agrega 2 o 3 fotos tuyas de cuerpo completo y pruébate cualquier prenda.
-• Es tu rostro y tu cuerpo reales, así que el resultado se ve natural.
-• 5 pruebas gratis cada día. Invita amistades y ambos ganan más.
+• Busca y filtra por etiqueta, marca o color. Pellizca la cuadrícula para ver
+  más de una vez, o menos y en grande.
 
 TU ESTILISTA CON IA
 • Elige un estilista personal y recibe looks armados con tu propio armario.
@@ -76,9 +78,9 @@ TENDENCIAS
 • Una edición nueva cada lunes: los estilos, colores y marcas de la semana,
   sacados de lo que los miembros realmente están usando.
 
-COMUNIDAD Y MERCADO
-• Explora looks reales de otros miembros y pruébate sus prendas.
-• Vende lo que ya no usas y encuentra piezas de otras personas.
+EXPLORA OTROS ARMARIOS
+• Abre un look en Tendencias para ver de quién es y recorrer su armario público.
+• Pruébate sus prendas y guarda los looks que te gusten.
 
 drape es gratis para empezar. Las pruebas virtuales usan una cuota diaria que
 se renueva cada día.

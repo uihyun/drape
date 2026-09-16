@@ -626,6 +626,30 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**The marketplace is described but not reachable.** `/market` has a route and
+nothing in the UI links to it; the Market tab lives inside `/feed`, which lost
+its nav entry in 2.1.0 and now only appears from three empty-state CTAs (empty
+outfits, empty boards, someone else's profile) — so a user with any content
+never sees it. `components/Header.jsx` still has a `/feed` link but that
+component isn't rendered anywhere. Community browsing itself is fine: Trends →
+look detail → author's public closet all works. The marketplace paragraph was
+cut from all five descriptions rather than shipping a claim App Review can
+check and users can't reach. Restoring it is one link from the Trends
+"Fresh on the marketplace" row, or flipping `config/app.feedMode`.
+
+**Descriptions lead with try-on now.** The App Store shows roughly three lines
+before "more"; try-on was the third clause of the opening sentence and the
+second section. It is now the first of both, matching screenshot 1.
+
+**Keywords: one word changed, not ten.** The live English set is
+`wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsule,virtual fitting`.
+A draft had replaced seven of ten. Ranking accrues per keyword — a dropped term
+loses its position immediately and a new one starts from zero — and 2.1.0
+already moves the subtitle, description and screenshots, so churning keywords
+too would make the result unattributable. Only `ai stylist` leaves, because the
+new subtitle carries it. KO/JA keyword blocks are marked "check the live set
+first" for the same reason; ES/FR are new locales with nothing to protect.
+
 **Subtitle stays lowercase.** The live subtitle is `plan outfits & log your
 ootd` — all lowercase, matching the brand rule set 2026-06-16 (wordmark, page
 titles, OG titles, native display names). A draft written 2026-09-14 had
