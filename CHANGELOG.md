@@ -647,6 +647,16 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Board poster restored as slide 7, and the GA figure behind dropping it was
+wrong.** The stat written into the renderer and README — "4.4% of profile
+views, 8 s/user" — was never queried; it was asserted. The real 90-day numbers:
+boards is indeed the least-used profile tab at 198 views / 39 users, against
+closet's 1,887 / 71 and try-on's 942 / 53. But least-used earns the last slot,
+not deletion — the App Store takes ten screenshots and slide 7 is past
+everything that decides a tap. It renders from a 60% crop, because the capture's
+lower portion is the comments block and a green "Publish to feed" button, and
+the feed has no tab in the shipped app.
+
 **Poster order is the argument, not the feature list.** Search results show
 the first three portrait shots before anyone taps, and the deck inherited
 1.5.0's order — calendar, feed, closet — which describes Lekondo exactly as

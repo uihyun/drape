@@ -2,6 +2,11 @@
 
 ## What's here
 
+The board capture is the one slide rendered from a crop (`crop: 0.60` in the
+DECK): shot whole, its lower 40% is the comments block and a green "Publish to
+feed" button, and the feed has no tab in the shipped app — the store would be
+advertising a door that isn't there.
+
 - `captures/` — the raw phone screenshots the posters are built from. Source of
   truth, committed. Older ones are 1290×2796 (6.7"); the trends and stylist
   ones are 1170×2532 (iPhone 12 Pro). Both work: the renderer scales to the
@@ -34,7 +39,7 @@ shipped Japanese deck does.
 
 ## The 2.1.0 deck
 
-Six slides, four locales.
+Seven slides, four locales.
 
 | # | slide | line (en) |
 |---|---|---|
@@ -44,11 +49,14 @@ Six slides, four locales.
 | 4 | closet | your closet, digitized |
 | 5 | stylist | a stylist in your closet |
 | 6 | calendar | log every outfit |
+| 7 | board | moodboard your style |
 
 Two substitutions against shipped 1.5.0: trends replaces `02-feed` (the feed
 lost its tab) and stylist replaces `06-market` (the marketplace has no entry
-point in the shipped UI). `07-board` drops — least-used tab across 90 days of
-GA (4.4% of profile views, 8 s/user). The four surviving slides keep their
+point in the shipped UI). `07-board` survives, at the back: boards is the
+least-used profile tab — 198 views / 39 users across 90 days of GA, against
+closet's 1,887 / 71 — which earns it the last slot, not deletion, and slide 7
+is past everything that decides a tap. The five surviving slides keep their
 shipped headline word for word.
 
 The order changed, though. 1.5.0 opened calendar / feed / closet, and those are

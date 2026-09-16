@@ -50,8 +50,9 @@ const HEAD_WEIGHT_JA = 500;
 // ── The deck ───────────────────────────────────────────────────────────
 // `02-feed` became trends and `06-market` became the stylist, because the feed
 // lost its tab and the marketplace has no entry point in the shipped app.
-// `07-board` dropped: least-used tab in 90 days of GA (4.4% of profile views,
-// 8 s/user).
+// Boards is the least-used profile tab — 198 views / 39 users across 90 days
+// of GA, against closet's 1,887 / 71 — so it earns the last slot, not a
+// front one, and slide 7 is past everything that decides a tap anyway.
 //
 // Order is the argument, not the feature list. Search results show the first
 // three portrait shots before anyone taps, and the 1.5.0 order spent all three
@@ -70,6 +71,11 @@ const DECK = [
   { out: '04-closet',   src: 'closet-1' },
   { out: '05-stylist',  src: 'stylist' },
   { out: '06-calendar', src: 'calendar' },
+  // `crop` keeps the collage owning the card. Shot as-is, the lower 40% is the
+  // comments block and a green "Publish to feed" button — and the feed has no
+  // tab in the shipped app, so the store would be advertising a door that
+  // isn't there.
+  { out: '07-board',    src: 'board', crop: 0.60 },
 ];
 
 // EN and JA keep their shipped lines word for word; only trends and stylist
@@ -90,6 +96,7 @@ const LINES = {
     '04-closet': 'your closet, digitized',
     '05-stylist': 'a stylist in your closet',
     '06-calendar': 'log every outfit',
+    '07-board':    'moodboard your style',
   },
   ja: {
     '01-trends': '今週のスタイル',
@@ -98,6 +105,7 @@ const LINES = {
     '04-closet': 'クローゼットをデジタルに',
     '05-stylist': 'クローゼット専属スタイリスト',
     '06-calendar': '毎日のコーデを記録',
+    '07-board':    'スタイルをムードボードに',
   },
   es: {
     '01-trends': 'lo que se lleva ahora',
@@ -106,6 +114,7 @@ const LINES = {
     '04-closet': 'tu armario, en digital',
     '05-stylist': 'un estilista en tu armario',
     '06-calendar': 'anota cada look',
+    '07-board':    'tu estilo, en un mural',
   },
   fr: {
     '01-trends': 'ce que l’on porte',
@@ -114,6 +123,7 @@ const LINES = {
     '04-closet': 'votre dressing, en numérique',
     '05-stylist': 'un styliste dans votre dressing',
     '06-calendar': 'notez chaque tenue',
+    '07-board':    'votre style en planche',
   },
 };
 
@@ -150,9 +160,16 @@ function posterSvg(line) {
 </svg>`;
 }
 
-async function roundedCard(file) {
+async function roundedCard(file, crop) {
   const cardH = Math.round(CARD_W * (H / W));
-  const shot = await sharp(file).resize({ width: CARD_W }).toBuffer();
+  // A capture whose interesting part is only the top: trim before scaling, so
+  // the subject fills the card instead of being one band inside it.
+  const trimmed = crop
+    ? await sharp(file).metadata().then(({ width, height }) => sharp(file)
+        .extract({ left: 0, top: 0, width, height: Math.round(height * crop) })
+        .toBuffer())
+    : file;
+  const shot = await sharp(trimmed).resize({ width: CARD_W }).toBuffer();
   const mask = Buffer.from(
     `<svg width="${CARD_W}" height="${cardH}" xmlns="http://www.w3.org/2000/svg">` +
     `<rect width="${CARD_W}" height="${cardH}" rx="${CARD_R}" ry="${CARD_R}" fill="#fff"/></svg>`
@@ -182,10 +199,10 @@ async function roundedCard(file) {
   fs.mkdirSync(OUT, { recursive: true });
 
   console.log(`${locale} → ${OUT}`);
-  for (const { out, src } of DECK) {
+  for (const { out, src, crop } of DECK) {
     const file = path.join(SRC, `${src}.png`);
     if (!fs.existsSync(file)) throw new Error(`Missing capture: ${file}`);
-    const card = await roundedCard(file);
+    const card = await roundedCard(file, crop);
     const poster = await sharp(Buffer.from(posterSvg(lines[out])))
       .composite([{ input: card, left: CARD_X, top: CARD_Y }])
       .extract({ left: 0, top: 0, width: W, height: H })
