@@ -133,7 +133,7 @@ en/ko/ja. 텍스트 출처 → `store-metadata.md`.
 자산:
 - App icon 512×512
 - Feature graphic 1024×500 — `scripts/build-play-feature-graphic.cjs` 출력 (`resources/app-store/play-feature-graphic.png`)
-- Phone screenshots 6.7" — App Store 의 `screenshots-6.7-en-marketing-b/` 재사용 (Play 가 6.9" 도 받음)
+- Phone screenshots 6.7" — App Store 와 같은 덱 재사용: `resources/app-store/screenshots-6.7-<locale>-marketing-b/` (Play 가 6.9" 도 받음)
 
 ### 3-5. 카테고리
 - Primary: **House & Home**

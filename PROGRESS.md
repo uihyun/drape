@@ -56,11 +56,11 @@ stylist rec → "save as outfit" button; style-profile refresh is a 12h lazy
 TTL rather than event-driven; the "this week" stats line is a rolling 7-day
 window while the looks slate is calendar-weekly.
 
-**Screenshots:** the `resources/app-store/screenshots-6.7-en*` folders are
-**voda** assets (interior design) that arrived with the migration and were
-never replaced — do not upload them. The renderer is locale-aware with
-captions written for all four languages; it needs six captures per locale in
-`captures-<locale>/`. See `resources/app-store/README.md` for the shot list.
+**Screenshots:** the renderer is locale-aware with captions written for all
+four languages; it needs six captures per locale in `captures-<locale>/`. See
+`resources/app-store/README.md` for the shot list. (The voda screenshot decks
+and the `_archive/voda-docs/` reference copies were deleted 2026-09-16 — git
+history has them if anything is ever needed back.)
 
 **Next:** owner shoots the six screens per locale, then builds and submits
 2.1.0 (Xcode: DrapeShare target already wired; Android Studio: vc20 AAB
@@ -290,7 +290,7 @@ Copied `../voda` (achelier.co interior-design app) into `./drape` and substitute
 - `README.md` rewritten — overview, setup, deploy, dev
 - `ROADMAP.md` — MVP / Phase 2 / Later, parity with brief
 - `PROGRESS.md` — this file
-- `_archive/voda-docs/` — original archelier docs preserved (PRODUCT_PLAN, SPRINT_A_LOG, BRANDING, BRAND_ASSETS, store-metadata) for reference
+- `_archive/voda-docs/` — original archelier docs (deleted 2026-09-16; in git history)
 
 ### In flight / known gaps before drape can ship
 
@@ -302,7 +302,7 @@ Copied `../voda` (achelier.co interior-design app) into `./drape` and substitute
   - Update `android/app/build.gradle` `applicationId` + `namespace`
   - Reset Apple Sign-In Service IDs and Firebase iOS app entries
 - **Calendar tap-to-log flow is not wired** — month view renders entries but tapping a cell doesn't yet open a sheet to attach an outfit or selfie. Service (`OotdService.upsertOotd`) is ready; UI sheet is the only missing piece.
-- **Following tab in /feed dropped from this build** — restore by re-importing `FollowService.getFollowingIds` and adding the tab to `pages/Feed.jsx`. Voda's pattern is referenced in `_archive/voda-docs/PRODUCT_PLAN.md`.
+- **Following tab in /feed dropped from this build** — restore by re-importing `FollowService.getFollowingIds` and adding the tab to `pages/Feed.jsx`.
 - **billing-service.js still references Stripe endpoints** (`/createCheckoutSession`, `/stripeWebhook`) that no longer exist in `functions/`. Calls will 404 until web Pro is built. Module imports cleanly so the SPA still loads.
 - **Comment-service handle denormalization** uses `profiles/{uid}.handle` — wires up only after `initializeUser` creates a profile. New users land in this path via the Settings auto-init; flow is untested end-to-end in a deployed project.
 - **No Stripe-cancellation path in account deletion** — the brief defers Stripe to Phase 2 anyway; RevenueCat-side IAP cancellations remain user-initiated in App Store / Play Store settings.

@@ -1,8 +1,15 @@
 # Store listing — Spanish (es-MX / es-ES)
 
-Neutral Latin-American Spanish, same register as `src/locales/es.js` (tú, no
-vosotros). Upload under **Spanish (Mexico)** on both stores; App Store Connect
-falls back to it for every other Spanish locale, so one entry covers es-ES too.
+One neutral Spanish for every market, same register as `src/locales/es.js`:
+`tú` (never `vosotros`, which reads as Spain-only) and vocabulary a reader in
+Madrid, Mexico City, Bogotá or Buenos Aires all recognises — "camiseta" not the
+Mexican "playera", "gafas" not "lentes".
+
+Upload under **Spanish (Spain)** on the App Store: it is the locale Apple falls
+back to for every other Spanish storefront, so one entry covers es-MX and the
+rest. On Play use **Spanish (Latin America)** plus **Spanish (Spain)** pointing
+at the same text. Two national variants are not worth maintaining — the copy
+below is written so neither market reads it as foreign.
 
 Character limits are annotated — they are hard caps, and both stores reject the
 whole submission on overflow.
@@ -31,7 +38,7 @@ Fotografía tu ropa, arma tu armario digital y pruébate cualquier prenda en tu 
 not repeat words already in the name or subtitle, Apple indexes those anyway):
 
 ```
-ropa,outfit,OOTD,probador,moda,estilo,clóset,guardarropa,looks,estilista,IA,vender
+ropa,outfit,OOTD,probador,moda,estilo,armario,guardarropa,looks,estilista,IA,vender
 ```
 
 **Description** (≤4000):
@@ -111,12 +118,13 @@ Play renders the bullet characters fine and the length is well within cap.
 
 ## Owner checklist
 
-- [ ] App Store Connect → this version → **+ Spanish (Mexico)** → paste the
+- [ ] App Store Connect → this version → **+ Spanish (Spain)** → paste the
       fields above. Screenshots: the English set is reused automatically unless
       a Spanish set is uploaded; captions on variant B are burned into the image,
       so a proper Spanish set means re-rendering via
       `scripts/build-app-store-screenshots-b.cjs` with Spanish captions.
-- [ ] Play Console → Main store listing → **Add language → Spanish (Latin America)**.
+- [ ] Play Console → Main store listing → **Add Spanish (Latin America) and
+      Spanish (Spain)**, same text in both.
 - [ ] Both: privacy policy URL stays `https://drape.nyc/privacy.html` — the page
       now carries a Spanish tab, no separate URL needed.
 - [ ] Verify the build declares Spanish: `ios/App/App/Info.plist` →

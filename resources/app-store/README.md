@@ -1,11 +1,5 @@
 # App Store screenshot assets
 
-> **Stale:** every folder below (`screenshots-6.7-en*`) is a **voda** asset —
-> interior-design captures (playrooms, floor plans, furniture) that arrived with
-> the migration baseline and were never replaced. They are NOT drape and must
-> not be uploaded. The drape screenshots currently live on the App Store were
-> uploaded directly to App Store Connect and were never committed here.
-
 ## The shot list
 
 Six screens. Shoot on an iPhone 14/15/16 **Pro Max** (6.7") so the capture is
@@ -42,10 +36,11 @@ check measures ems rather than counting characters: a Korean or Japanese glyph
 is ~1.7x the width of a Latin capital, so a character count would wave through
 a line that runs half the canvas past the edge.
 
-## Historical variants (voda)
+## History
 
-`scripts/build-app-store-screenshots*.cjs` — variant A (quiet atelier), B (loud
-dark, selected), C (hybrid). Only B has been carried forward to drape + locales.
+Variants A (quiet atelier) and C (hybrid) were voda decks and were deleted with
+the rest of that material on 2026-09-16; B is the one carried forward, and it
+is now the locale-aware drape renderer. Git history has the originals.
 
 ## Upload
 

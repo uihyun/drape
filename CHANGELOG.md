@@ -34,6 +34,21 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **One Spanish, not a national variant.** The taxonomy had drifted Mexican —
+  *playera*, *chamarra*, *tenis*, *lentes de sol*, *brasier* — which reads as
+  foreign in Spain while the point of the locale is that everyone can use it.
+  Swapped for terms a reader in Madrid, Mexico City, Bogotá or Buenos Aires all
+  recognise (*camiseta*, *chaqueta*, *zapatillas*, *gafas de sol*, *sujetador*),
+  keeping `tú` and never `vosotros`. Splitting into es-ES and es-419 would
+  double the parity burden on every future string for an audience that reads
+  both fine; the store listing now goes up under Spanish (Spain), which Apple
+  falls back to for every other Spanish storefront.
+- **voda's leftovers are gone.** 27 MB of interior-design screenshots (raw
+  captures plus three rendered marketing decks), the two deck renderers that
+  only ever pointed at them, and `_archive/voda-docs/`. Every doc that
+  referenced them was updated rather than left dangling, and `store-metadata.md`
+  now defers to the per-locale listing files instead of carrying a second copy
+  of the description that could drift from them.
 - **Prompt fields lock while their request is in flight.** The stylist's
   occasion box and try-on's background box stayed editable after you pressed
   the button, so the text on screen could stop matching the result coming back
@@ -615,8 +630,8 @@ still described a slide-deck onboarding that no longer exists.
 screens per locale in `captures-<locale>/`, then
 `node scripts/build-app-store-screenshots-b.cjs <locale>`. Captions are written
 for all four languages; a headline that would overflow the canvas throws before
-anything renders. **The `screenshots-6.7-en*` folders in the repo are voda
-assets** (interior design) that arrived with the migration — do not upload them.
+anything renders. The voda screenshot folders that shipped with the migration
+were deleted 2026-09-16 — there is nothing stale left to upload by mistake.
 
 Slide order carries more weight than the copy: try-on result -> closet ->
 stylist. App Store Browse impressions are surging and the product page is the

@@ -1,6 +1,9 @@
-// Neutral Latin-American Spanish (tú, no vosotros) — the audience is Mexico
-// and US Hispanic users, not Spain. "armario" over the Mexico-only "clóset";
-// "prueba/probar" for try-on, matching the English product term.
+// One neutral Spanish for every market, not a national variant: `tú` (never
+// `vosotros`, which reads as Spain-only) and vocabulary a reader in Madrid,
+// Mexico City, Bogotá or Buenos Aires all recognises — "camiseta" not the
+// Mexican "playera", "chaqueta" not "chamarra", "gafas" not "lentes".
+// Splitting into es-ES and es-419 would double the parity burden on every
+// future string for an audience that reads both fine.
 export const es = {
   // ── Nav / shell ─────────────────────────────────────────────────────
   navCloset: 'Armario',
@@ -691,23 +694,23 @@ export const es = {
       bottom: 'Parte de abajo',
       dress: 'Vestido',
       footwear: 'Calzado',
-      bag: 'Bolsa',
+      bag: 'Bolso',
       accessory: 'Accesorio',
       innerwear: 'Ropa interior',
       other: 'Otro',
     },
     subcategories: {
-      coat: 'Abrigo', jacket: 'Chamarra', blazer: 'Blazer', cardigan: 'Cárdigan', vest: 'Chaleco', puffer: 'Chamarra inflada', trench: 'Gabardina',
-      't-shirt': 'Playera', shirt: 'Camisa', sweater: 'Suéter', hoodie: 'Sudadera con capucha', blouse: 'Blusa', knit: 'Tejido', tank: 'Blusa de tirantes',
-      jeans: 'Jeans', pants: 'Pantalón', skirt: 'Falda', shorts: 'Shorts', leggings: 'Leggings', sweatpants: 'Pants',
+      coat: 'Abrigo', jacket: 'Chaqueta', blazer: 'Blazer', cardigan: 'Cárdigan', vest: 'Chaleco', puffer: 'Chaqueta acolchada', trench: 'Gabardina',
+      't-shirt': 'Camiseta', shirt: 'Camisa', sweater: 'Suéter', hoodie: 'Sudadera con capucha', blouse: 'Blusa', knit: 'Tejido', tank: 'Camiseta de tirantes',
+      jeans: 'Jeans', pants: 'Pantalón', skirt: 'Falda', shorts: 'Shorts', leggings: 'Leggings', sweatpants: 'Pantalón deportivo',
       dress: 'Vestido', jumpsuit: 'Jumpsuit', romper: 'Romper',
-      sneakers: 'Tenis', boots: 'Botas', heels: 'Tacones', loafers: 'Mocasines', sandals: 'Sandalias', flats: 'Flats',
-      tote: 'Tote', crossbody: 'Bandolera', backpack: 'Mochila', clutch: 'Clutch', shoulder: 'Bolsa de hombro', duffel: 'Maleta de mano',
-      hat: 'Sombrero', scarf: 'Bufanda', belt: 'Cinturón', jewelry: 'Joyería', sunglasses: 'Lentes de sol', watch: 'Reloj', tie: 'Corbata', gloves: 'Guantes',
-      bra: 'Brasier', underwear: 'Ropa interior', baselayer: 'Capa base', socks: 'Calcetines', tights: 'Mallas',
+      sneakers: 'Zapatillas', boots: 'Botas', heels: 'Tacones', loafers: 'Mocasines', sandals: 'Sandalias', flats: 'Bailarinas',
+      tote: 'Tote', crossbody: 'Bandolera', backpack: 'Mochila', clutch: 'Clutch', shoulder: 'Bolso de hombro', duffel: 'Bolso de viaje',
+      hat: 'Sombrero', scarf: 'Bufanda', belt: 'Cinturón', jewelry: 'Joyería', sunglasses: 'Gafas de sol', watch: 'Reloj', tie: 'Corbata', gloves: 'Guantes',
+      bra: 'Sujetador', underwear: 'Ropa interior', baselayer: 'Capa base', socks: 'Calcetines', tights: 'Mallas',
     },
     colors: {
-      black: 'Negro', white: 'Blanco', gray: 'Gris', beige: 'Beige', brown: 'Café',
+      black: 'Negro', white: 'Blanco', gray: 'Gris', beige: 'Beige', brown: 'Marrón',
       navy: 'Azul marino', blue: 'Azul', lightblue: 'Azul claro',
       green: 'Verde', olive: 'Olivo',
       red: 'Rojo', pink: 'Rosa',

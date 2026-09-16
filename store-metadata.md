@@ -75,20 +75,12 @@ CONTACT
 
 ---
 
-## Listing copy (current, finalized)
+## Listing copy
 
-**Promotional text (170)**
-Build your digital closet, try anything on yourself with AI, and log every outfit. Your wardrobe, finally in one place.
-
-**Description** — see the screenshot/ASC; lead is "drape is where your wardrobe lives." with the six bullets (closet / try-on / OOTD calendar / outfits & boards / lookbook feed / marketplace).
-
-**Keywords (100)**
-wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsule,virtual fitting
-- Optional swap now that marketplace shipped: drop one low-value term for `resale` or `preloved`.
-
-(KO / JA description + keyword strings: keep the versions already entered in ASC.)
-
----
+Lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name, subtitle,
+keywords, promotional text, description and What's New per locale, each capped
+field checked against its limit. Kept there rather than duplicated here so the
+two can't drift; this file stays the home of the App Review notes above.
 
 ## Release notes (What's New) — per version
 

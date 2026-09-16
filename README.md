@@ -74,7 +74,6 @@ drape/
 ├── capacitor.config.json
 ├── ROADMAP.md                # MVP → Phase 2 → Later
 ├── PROGRESS.md               # running log of what's done / in-flight / TODO
-└── _archive/voda-docs/       # original voda product/branding docs (reference)
 ```
 
 ## 🚀 Local dev
@@ -143,7 +142,6 @@ npm run deploy:functions  # functions only
 - **[ROADMAP.md](ROADMAP.md)** — MVP / Phase 2 / Later, from the brief.
 - **[PROGRESS.md](PROGRESS.md)** — what's done vs in-flight vs known gaps.
 - **[drape-app-brief.md](drape-app-brief.md)** — original product brief (Korean).
-- **`_archive/voda-docs/`** — the achelier (voda) product/branding/sprint docs that drape forked from. Reference only.
 
 ## 🧭 Working with Claude Code
 
