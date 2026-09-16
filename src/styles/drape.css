@@ -11,6 +11,28 @@ button, a, [role="button"] {
   touch-action: manipulation;
 }
 
+/* ── "Is this a web page?" tells ──────────────────────────────────────
+   iOS paints a grey rounded rectangle over any tapped element and pops a
+   callout on long-press. Both were switched off for <a> only, so every
+   <button> — the floating +, the nav pills, every chip — flashed a box when
+   pressed. Set at the root so a clickable <div> or <label> can't reintroduce
+   it either. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"], label {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* A tap leaves focus behind; the ring that then sits on the control is the
+   other tell. Keyboard focus still shows — that's :focus-visible's whole job. */
+button:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* ── Safe-area pattern (voda parity) ───────────────────────────────── */
 /* iOS notch / Dynamic Island clearance. Native (Capacitor) wrappers
    sometimes report env(safe-area-inset-top) as 0; we fall back to a
@@ -6773,9 +6795,6 @@ input[type="search"]::-webkit-search-decoration {
 .tmag-hero-img { position: absolute; inset: 0; }
 .tmag-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tmag-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,19,18,0) 22%, rgba(20,19,18,0) 45%, rgba(20,19,18,0.66) 100%); pointer-events: none; }
-/* Light haze behind the status bar only — invisible over a bright cover,
-   and the difference between a readable clock and no clock over a dark one. */
-.tmag-hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--safe-top, 0px) + 26px); background: linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.28) 55%, rgba(255,255,255,0) 100%); pointer-events: none; z-index: 1; }
 .tmag-hero-text { position: relative; z-index: 1; padding: calc(var(--safe-top, 0px) + 1rem) 1.1rem 1.3rem; color: #fff; width: 100%; }
 .tmag-kicker--hero { color: rgba(255,255,255,0.78); margin-bottom: 8px; }
 .tmag-headline { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-weight: 500; font-size: clamp(1.8rem, 7.5vw, 2.4rem); line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.01em; text-shadow: 0 2px 22px rgba(0,0,0,0.35); }

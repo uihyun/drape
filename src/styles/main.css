@@ -223,7 +223,10 @@ img {
   font-family: inherit;
 }
 
-.btn:focus {
+/* :focus-visible, not :focus — a tap leaves focus behind, and the ring that
+   then appears around the button is one of the tells that this is a web view
+   rather than a native control. Keyboard users still get it. */
+.btn:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
@@ -4144,7 +4147,8 @@ body.is-native {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.04);
+  /* No press wash here either — the card has its own active state. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .feed-card-image {

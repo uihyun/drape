@@ -34,6 +34,17 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **The web tells are gone.** iOS paints a grey rounded rectangle over any
+  tapped element and leaves a focus ring behind afterwards; both were switched
+  off for `<a>` only, so every `<button>` — the floating +, the nav pills, the
+  chips — flashed a box when pressed and looked like a web page. Tap highlight
+  is now off at the root (so a clickable `<div>` or `<label>` can't reintroduce
+  it), long-press callout and text selection are off for buttons, and focus
+  rings only render for `:focus-visible`, which is what keyboard users get.
+- **Trends cover lost its white top haze.** It was there so dark status bar
+  glyphs would survive a dark cover, but it is plainly visible on a bright
+  cover — which is most of them. Accepted trade (owner, 2026-09-16): the clean
+  edge is worth the occasional hard-to-read clock.
 - **Pinch-to-resize was dead on the first visit to the closet.** `usePinchColumns`
   attached its touch listeners in a mount-time effect keyed on `[key, min, max]`
   — but the grid isn't in the first render (the subscription is still in
