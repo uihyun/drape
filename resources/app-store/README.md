@@ -1,64 +1,46 @@
-# App Store screenshot assets
+# App Store poster decks
 
-## The live deck — baseline, read before changing anything
+## What's here
 
-Seven slides, built 2026-06-04, order: **calendar → feed → closet → analyze →
-tryon → market → board**. Sources live OUTSIDE this repo:
+- `captures/` — the raw phone screenshots the posters are built from. Source of
+  truth, committed. Older ones are 1290×2796 (6.7"); the trends and stylist
+  ones are 1170×2532 (iPhone 12 Pro). Both work: the renderer scales to the
+  card width and the poster is always 1290×2796.
+- `posters-shipped/1.5.0-en`, `posters-shipped/1.5.0-ja` — the decks actually
+  on the stores. Committed because once 2.1.0 replaces them they are gone: they
+  were never in this repo, and the only other copy was Apple's CDN.
+- `posters-2.1.0-<locale>/` — rendered output. **Not committed** (gitignored):
+  derived from `captures/` plus the script, and regenerating is one command.
 
-- `~/Desktop/idea/drape/screenshots/` — raw 1290×2796 captures
-  (`calendar.png`, `closet-1/2`, `analyzed-photo`, `analyzed-tryon`,
-  `tryon-1..4`, `market1/2`, `market-thread`, `board`, `home-1..3`)
-- `~/Desktop/idea/drape/screenshots/poster/` — the finished EN deck
-  (`01-calendar` … `07-board`)
-- `~/Desktop/idea/drape/screenshots/poster-ja/` — the Japanese deck
+Everything above used to live only in `~/Desktop/idea/drape/screenshots/`,
+outside any repo, which is how it went missing.
 
-**The design** (this is drape's, and any new deck must match it):
-- Ink `#141312` ground, full bleed.
-- One headline, centred, **Didot/Bodoni italic, lowercase**, no subhead — the
-  same voice as the wordmark. Live copy: *"log every outfit"*, *"a feed of real
-  looks"*, *"see it on you, first"*.
-- A single pine dot under the headline.
-- The app screen sits as a **white rounded card**, bleeding off the bottom edge
-  — not a phone mockup with a drop shadow.
+## Rendering
 
-No generator for this deck is in either repo; the posters appear to have been
-composed by hand. `scripts/build-app-store-screenshots-b.cjs` is **voda's**
-loud charcoal/terracotta treatment (all-caps Archivo + subhead + terracotta
-bar) and does NOT match the above. It was carried forward by mistake; treat its
-output as a draft layout only until it is rebuilt to the design above.
+    node scripts/build-store-posters.cjs en      # also ko · ja · es · fr
 
-## What 2.1.0 changes about the deck
+The treatment was measured off the shipped deck and is reproduced exactly: ink
+`#141312` ground, one centred Didot-italic lowercase line with a baseline at
+y=356, a 14px pine dot at y=430, and the capture as a white rounded card at
+x=155, y=560, width 980, corner radius 40. No subhead — the single line carries
+it. CJK has no italic, so those locales use a Mincho/Myeongjo face upright,
+which is what the shipped Japanese deck does.
 
-- `02-feed` — the feed lost its tab; **Trends** is the surface that replaced it.
-- `06-market` — the marketplace has no entry point in the shipped UI, and the
-  claim was cut from every description. It cannot be a slide.
-- `07-board` — boards is the least used tab in 90 days of GA (4.4% of profile
-  views, 8 s/user).
-- New since the deck was built: **stylist**, **trends**.
+## The 2.1.0 deck
 
-Proposed 2.1.0 deck, keeping the live order and only substituting what changed:
+Six slides. The order is the shipped one with two substitutions and one drop:
 
-| # | slide | vs live |
+| # | slide | vs shipped 1.5.0 |
 |---|---|---|
-| 1 | calendar | unchanged |
-| 2 | trends | replaces `02-feed` |
-| 3 | closet | unchanged |
-| 4 | analyze | unchanged |
-| 5 | tryon | unchanged |
-| 6 | stylist | replaces `06-market` |
+| 1 | calendar | unchanged, same line |
+| 2 | trends | replaces `02-feed` — the feed lost its tab |
+| 3 | closet | unchanged, same line |
+| 4 | analyze | unchanged, same line |
+| 5 | tryon | unchanged, same line |
+| 6 | stylist | replaces `06-market` — the marketplace has no entry point in the shipped UI |
 
-`07-board` drops. For the Trends capture, scroll so the bottom of the cover and
-the first rows of "Styles on the rise" are both in frame — the frame crops the
-bottom of whatever you shoot, and the cover alone doesn't say what Trends is.
+`07-board` drops: least-used tab across 90 days of GA (4.4% of profile views,
+8 s/user). The four unchanged slides keep their shipped headline word for word.
 
-## Making the 2.1.0 deck
-
-There is no generator. The live posters were composed by hand in the design
-above, and the previous renderer in this repo was voda's — different ground,
-different type, a subhead drape's deck doesn't use — so it was deleted rather
-than kept as a misleading starting point.
-
-Five languages × six slides is thirty posters, so a renderer matching the
-design above is worth building before the next deck. Until then, the live
-posters under `~/Desktop/idea/drape/screenshots/poster/` are the reference for
-ground colour, type treatment, dot placement and card geometry.
+Korean, Spanish and French have no shipped deck — the Korean storefront runs
+the English screenshots today — so those lines are new.

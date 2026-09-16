@@ -81,3 +81,8 @@ public/firebase-config.js
 # item-crop A/B test photos/results (personal images — never commit)
 .crop-ab/
 .gstack/
+
+# Rendered poster decks are derived — regenerate with
+# scripts/build-store-posters.cjs. Only the captures they are built FROM, and
+# the decks actually shipped to the stores, are committed.
+resources/app-store/posters-2.1.0-*/
