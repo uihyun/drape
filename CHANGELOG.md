@@ -647,6 +647,28 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Poster headlines use the app's own face, and the CJK decks got real
+typography.** The renderer had been asking for the system Didot, so the store
+showed a different typeface from the one inside the app — it now loads
+`resources/fonts/BodoniModa-Italic.ttf`, the same file the stylesheets alias as
+'Brand Didone'. CJK has no italic, so the counterpart is a high-contrast
+Mincho/Myeongjo: Shippori Mincho for Japanese (what the shipped deck was
+designed in — the renderer had fallen back to Hiragino, which is flatter) and
+Gowun Batang for Korean, which is lighter and more current than Nanum or Noto
+Serif, both of which read institutional beside a Bodoni italic. Fonts are
+committed under `resources/fonts/`.
+
+**Korean and Japanese poster lines are written, not translated.** They had been
+the English headlines rendered in another script, which a native reader spots
+instantly. They are now the thought someone actually has in front of a
+wardrobe — 「오늘 뭐 입지?」, 「似合うかは、着てみれば」 — while the English keeps
+the four shipped lines word for word.
+
+**Play short descriptions rewritten.** That field sits directly under the title
+in Play search results, where a feature list reads as noise. Each locale now
+carries one vivid idea instead: photograph your clothes, then try anything on
+your own body before you buy.
+
 **Descriptions rebased on the live copy instead of rewritten.** The live 1.5.0
 descriptions were pulled from the iTunes Lookup API (EN/KO/JA) — they had never
 been in the repo, and every rewrite so far had been made without them. They are

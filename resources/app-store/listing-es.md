@@ -88,7 +88,7 @@ drape: armario y prueba
 **Short description** (≤80, currently 74):
 
 ```
-Tu armario digital, tu OOTD y prueba virtual con IA en tu propio cuerpo.
+Fotografía tu ropa y pruébate lo que quieras en tu cuerpo antes de comprar.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim;

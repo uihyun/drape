@@ -82,7 +82,7 @@ drape: closet & try-on
 **Short description** (≤80, currently 74):
 
 ```
-Your closet, your AI stylist — and try every look on your own body first.
+Photograph your clothes, then try anything on your own body before you buy.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.

@@ -78,7 +78,7 @@ drape : dressing & essayage
 **Short description** (≤80, currently 76):
 
 ```
-Votre dressing, votre styliste IA — et chaque look essayé sur vous d’abord.
+Photographiez vos vêtements et essayez tout sur vous avant d’acheter.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.

@@ -34,12 +34,19 @@ const HEAD_SIZE = 104;
 const DOT_CY = 430;
 const DOT_R = 7;
 const DOT_FILL = '#2C4737';
-// Didot is the brand face and a macOS system font; Bodoni 72 is the fallback
-// that ships alongside it. Both are italic-capable — the treatment depends on it.
-const HEAD_FAMILY = 'Didot, Bodoni 72, Hoefler Text, Times New Roman, serif';
-// CJK has no italic; the live Japanese deck used Shippori Mincho, and the
-// nearest system face here is Hiragino Mincho.
-const HEAD_FAMILY_CJK = 'Hiragino Mincho ProN, Yu Mincho, AppleMyungjo, serif';
+// The app's own brand face — resources/fonts/BodoniModa-Italic.ttf, aliased in
+// the stylesheets as 'Brand Didone'. Using the system Didot instead put a
+// different typeface on the store than the one inside the app.
+const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
+// CJK has no italic, so the counterpart is a high-contrast Mincho/Myeongjo —
+// the closest thing to Bodoni's thick/thin in those scripts. Shippori Mincho
+// is what the shipped Japanese deck was designed in; Gowun Batang is its
+// Korean equivalent, lighter and more current than Nanum/Noto Serif, which
+// read institutional next to a Bodoni italic.
+// Fonts live in resources/fonts/ and must be installed for fontconfig to see
+// them: cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
+const HEAD_FAMILY_JA = 'Shippori Mincho, Hiragino Mincho ProN, serif';
+const HEAD_FAMILY_KO = 'Gowun Batang, Apple SD Gothic Neo, serif';
 
 // ── The deck ───────────────────────────────────────────────────────────
 // Order follows the live 1.5.0 deck; `02-feed` became trends and `06-market`
@@ -55,20 +62,15 @@ const DECK = [
   { out: '06-stylist',  src: 'stylist' },
 ];
 
-// Lines for the four unchanged slides are the LIVE ones, read back off the
-// shipped posters — there is no reason to rewrite copy that is already out
-// there. Only trends and stylist are new, written to the same length and
-// register.
+// EN keeps the four shipped lines word for word — there is no reason to
+// rewrite copy that is already out there. KO and JA are NOT translations of
+// them: a headline that reads as translated is the fastest way to lose a
+// reader. They are written as the thought someone actually has while standing
+// in front of a wardrobe, in that language.
 //
-// Live EN deck: log every outfit · a feed of real looks · your closet,
-// digitized · shop any photo · see it on you, first · buy & sell pre-loved ·
-// moodboard your style
-// Live JA deck: 毎日のコーデを記録 · リアルなルックのフィード ·
-// クローゼットをデジタルに · 気になる服を見つける · まず、自分で試着 ·
-// 古着を、人から人へ · スタイルをムードボードに
-//
-// KO / ES / FR have no live deck — the Korean storefront runs the English
-// screenshots today — so those lines are new throughout.
+// Shipped EN: log every outfit · a feed of real looks · your closet, digitized
+// · shop any photo · see it on you, first · buy & sell pre-loved · moodboard
+// your style
 const LINES = {
   en: {
     '01-calendar': 'log every outfit',
@@ -79,20 +81,20 @@ const LINES = {
     '06-stylist':  'a stylist in your closet',
   },
   ko: {
-    '01-calendar': '매일의 코디를 기록',
-    '02-trends':   '지금 다들 입는 것',
-    '03-closet':   '옷장을 디지털로',
-    '04-analyze':  '사진 속 옷을 찾다',
-    '05-tryon':    '먼저, 내 몸으로',
-    '06-stylist':  '내 옷장의 스타일리스트',
+    '01-calendar': '입은 날들이 쌓인다',
+    '02-trends':   '요즘 다들 뭐 입어?',
+    '03-closet':   '내 옷장이, 폰 안에',
+    '04-analyze':  '이 옷, 뭔지 알려줄게',
+    '05-tryon':    '나한테 어울릴까?',
+    '06-stylist':  '오늘 뭐 입지?',
   },
   ja: {
-    '01-calendar': '毎日のコーデを記録',
-    '02-trends':   'いま着られているもの',
-    '03-closet':   'クローゼットをデジタルに',
-    '04-analyze':  '気になる服を見つける',
-    '05-tryon':    'まず、自分で試着',
-    '06-stylist':  'あなた専属のスタイリスト',
+    '01-calendar': '着た日が、積もっていく',
+    '02-trends':   'いま、みんな何着てる',
+    '03-closet':   'クローゼットが、ポケットに',
+    '04-analyze':  'その服、見つけます',
+    '05-tryon':    '似合うかは、着てみれば',
+    '06-stylist':  '今日、何着よう',
   },
   es: {
     '01-calendar': 'anota cada look',
@@ -113,6 +115,7 @@ const LINES = {
 };
 
 
+
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -130,9 +133,13 @@ function fitSize(line) {
   return size;
 }
 
+const hasHangul = (s) => /[가-힯]/.test(s);
+
 function posterSvg(line) {
   const size = fitSize(line);
-  const family = hasCJK(line) ? HEAD_FAMILY_CJK : HEAD_FAMILY;
+  const family = hasHangul(line) ? HEAD_FAMILY_KO
+    : hasCJK(line) ? HEAD_FAMILY_JA
+    : HEAD_FAMILY;
   const style = hasCJK(line) ? '' : 'font-style="italic"';
   return `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
