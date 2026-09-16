@@ -560,6 +560,8 @@ export const ja = {
   homeFlipAsk: 'クローゼットに服が入りました。トレンドの代わりにここから開きますか？',
   homeFlipYes: 'クローゼットから開く',
   homeFlipNo: 'トレンドのまま',
+  sortAndFilter: '並べ替え・絞り込み',
+  closetZoomHint: '二本指でサイズを変えられます。つまむと小さく一覧に、広げると大きく詳しく表示。',
   myStyleTitle: 'マイスタイル',
   myStyleHint: 'ここに書いた内容が推測より優先されます。次の提案からすぐ反映されます。',
   myStyleLiked: '好きなスタイル',

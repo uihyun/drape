@@ -9,6 +9,8 @@ import {
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
+import { useFlipGrid } from '../hooks/useFlipGrid.js';
+import { ClosetZoomHint } from '../components/ClosetZoomHint.jsx';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
 import { closetWarm } from '../services/uiCache.js';
@@ -92,6 +94,8 @@ const matchesFilters = itemMatchesFilters;
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
   const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
+  // Cards glide between column counts instead of snapping to the new grid.
+  useFlipGrid(gridRef, cols);
   // Seed from the splash warm-up so the grid paints instantly on first open.
   const [items, setItems] = useState(() => (user && !user.isAnonymous ? (closetWarm.get(user.uid) || null) : null));
   // Top-row view: All (grid) / Brands (alpha groups) / Usage (recency).
@@ -337,10 +341,14 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           className="closet-grid pinch-grid"
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
-          {filtered.map((item, i) => <ItemCard key={item.id} item={item} ids={filteredIds} index={i} t={t} />)}
+          {filtered.map((item, i) => (
+            <ItemCard key={item.id} flipId={item.id} item={item} ids={filteredIds} index={i} t={t} />
+          ))}
         </div>
       )}
       {closetHasMore && <div ref={closetSentinelRef} className="feed-sentinel" />}
+      {/* Only once the grid is big enough for density to matter. */}
+      <ClosetZoomHint itemCount={filtered.length} />
     </div>
   );
 }
@@ -420,7 +428,7 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
   );
 }
 
-function ItemCard({ item, t, elapsed = null, ids, index }) {
+function ItemCard({ item, t, elapsed = null, ids, index, flipId = null }) {
   const [retrying, setRetrying] = useState(false);
   const processing = item.status === 'processing' || item.status === 'uploading' || retrying;
   const failed = item.status === 'failed' && !retrying;
@@ -441,7 +449,12 @@ function ItemCard({ item, t, elapsed = null, ids, index }) {
     }
   };
   return (
-    <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className={`item-card ${processing ? 'processing' : ''}`}>
+    <Link
+      to={`/i/${item.id}`}
+      state={buildSwipeState(ids, index, 'item')}
+      data-flip-id={flipId || undefined}
+      className={`item-card ${processing ? 'processing' : ''}`}
+    >
       <div className="item-card-image">
         {cover
           ? <img src={cover} alt={item.name || ''} loading="lazy" />

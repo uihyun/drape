@@ -558,6 +558,8 @@ export const es = {
   homeFlipAsk: 'Ya tienes algo en tu armario. ¿Quieres que drape abra aquí en vez de Tendencias?',
   homeFlipYes: 'Abrir en mi armario',
   homeFlipNo: 'Seguir en Tendencias',
+  sortAndFilter: 'Orden y filtros',
+  closetZoomHint: 'Pellizca la cuadrícula para cambiar el tamaño: junta los dedos para ver más, sepáralos para ver cada prenda en grande.',
   myStyleTitle: 'Mi estilo',
   myStyleHint: 'Tu estilista sigue esto por encima de lo que deduzca. Se aplica en tu próxima propuesta.',
   myStyleLiked: 'Estilos que me encantan',

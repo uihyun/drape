@@ -28,7 +28,7 @@ import { useHideOnScroll } from '../hooks/useHideOnScroll.js';
 // Each tab body is the existing page component rendered with `embedded`
 // (no top h2 / Add button) so the chrome is provided here once.
 const TABS = ['outfits', 'calendar', 'closet', 'boards', 'tryon'];
-const DEFAULT_TAB = 'calendar';
+const DEFAULT_TAB = 'closet';
 
 // Lucide dropped brand icons over trademark concerns. Inline the IG glyph
 // so we don't take a 2nd icon dep just for one mark.

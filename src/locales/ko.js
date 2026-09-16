@@ -558,6 +558,8 @@ export const ko = {
   homeFlipAsk: '옷장에 옷이 생겼어요. 이제 트렌드 대신 옷장으로 앱을 열까요?',
   homeFlipYes: '옷장으로 열기',
   homeFlipNo: '트렌드 유지',
+  sortAndFilter: '정렬·필터',
+  closetZoomHint: '두 손가락으로 옷장 크기를 바꿔요. 모으면 작아져 한눈에 많이, 벌리면 커져서 자세히 보여요.',
   myStyleTitle: '내 스타일',
   myStyleHint: '여기 적은 내용이 추측보다 우선해요. 다음 추천부터 바로 반영됩니다.',
   myStyleLiked: '좋아하는 스타일',

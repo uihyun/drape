@@ -558,6 +558,8 @@ export const en = {
   homeFlipAsk: 'Your closet has something in it now. Want drape to open here instead of Trends?',
   homeFlipYes: 'Open on my closet',
   homeFlipNo: 'Keep Trends',
+  sortAndFilter: 'Sort & filter',
+  closetZoomHint: 'Pinch the grid to resize: fingers together fits more in, fingers apart shows each piece bigger.',
   myStyleTitle: 'My style',
   myStyleHint: 'Your stylist follows this over anything it guesses. Takes effect on your next pick.',
   myStyleLiked: 'Styles I love',

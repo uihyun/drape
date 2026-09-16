@@ -34,6 +34,27 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Closet is the default profile tab.** 90 days of GA: the closet is 42.7% of
+  profile screen views at 1,292 s/user, the calendar 5.8% at **15** s/user on
+  almost the same number of people. That pattern — nearly everyone visits,
+  nobody stays — is what a forced default looks like, not a choice. Tab order
+  is unchanged; the closet stays in the middle.
+- **Pinch-to-resize is taught once.** The gesture has been in the closet since
+  the grid shipped and has no visible affordance, so it was effectively a
+  secret. A one-time card (shown at 6+ items, same scrim as the tour) animates
+  the gesture itself — arrows closing while the tiles shrink, then opening
+  while they grow — because the motion is the instruction.
+- **Cards glide between column counts instead of snapping.** FLIP: measure
+  before, measure after, invert, transition back. Resizing now reads as the
+  grid resizing rather than being rebuilt.
+- **The closet entrance animation was silently disabling all card transforms.**
+  `itemDrop` used `animation-fill-mode: both`, which pins the keyframe's final
+  `transform` on the element permanently — and a filling animation outranks
+  inline styles, so every FLIP transform computed to identity no matter what
+  was set. Changed to `backwards`, which still supplies the `from` state during
+  the stagger delay and then hands `transform` back.
+- **The filter sheet is "Sort & filter".** It has sorted as well as filtered
+  for a while; calling it Filter made Sort look like a filter category.
 - **The home-screen switch now asks instead of just happening.** A new account
   opens on Trends; the moment their closet stops being empty, a one-time hint
   on the profile asks whether drape should open there from now on. Both answers

@@ -132,7 +132,7 @@ export function LookFilterSheet({
         <button type="button" className="create-sheet-close" onClick={onClose} aria-label={t('close')}>
           <X size={18} />
         </button>
-        <h3 className="create-sheet-title" {...handleProps} style={{ cursor: 'grab', touchAction: 'none' }}>{t('detailedFilter')}</h3>
+        <h3 className="create-sheet-title" {...handleProps} style={{ cursor: 'grab', touchAction: 'none' }}>{t('sortAndFilter')}</h3>
 
         <div className="detail-filter-body">
           {sortOptions.length > 0 && (
