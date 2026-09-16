@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2, X } from 'lucide-react';
 import { hintSeen, markHintSeen } from '../services/homePref.js';
-import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
+import { useMessagePresence } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
@@ -172,7 +172,20 @@ export function Profile({ user, authReady, onSignIn }) {
   return (
     <div className="profile">
       <header className="profile-topbar">
-        <span className="profile-handle">{handle}</span>
+        <span className="profile-handle-wrap">
+          {profile?.instagram && (
+            <a
+              href={`https://instagram.com/${profile.instagram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="profile-ig"
+              aria-label="Instagram"
+            >
+              <InstagramGlyph />
+            </a>
+          )}
+          <span className="profile-handle">{handle}</span>
+        </span>
         <div className="profile-topbar-actions">
           <Link
             to="/stylist"
@@ -208,17 +221,6 @@ export function Profile({ user, authReady, onSignIn }) {
         <div className="profile-meta">
           <div className="profile-name-row">
             <span className="profile-name">{displayName}</span>
-            {profile?.instagram && (
-              <a
-                href={`https://instagram.com/${profile.instagram}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="profile-ig"
-                aria-label="Instagram"
-              >
-                <InstagramGlyph />
-              </a>
-            )}
           </div>
           <div className="profile-stats">
             <button type="button" className="profile-stat" onClick={() => navigate('/profile/closet')}>
@@ -303,7 +305,8 @@ function StylistCoachmark({ t, onDone }) {
 }
 
 function InboxIconLink({ user, t }) {
-  const unread = useUnreadMessages(user);
+  const { unread, hasThreads } = useMessagePresence(user);
+  if (!hasThreads) return null;
   return (
     <Link to="/messages" className="icon-btn icon-btn-badged" aria-label={t('inboxTitle')}>
       <MessageSquare size={20} strokeWidth={1.6} />

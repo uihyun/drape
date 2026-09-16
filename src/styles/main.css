@@ -1427,14 +1427,10 @@ img {
   padding: 0.4rem 0.75rem;
 }
 
-@media (max-width: 600px) {
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .profile-stats { justify-content: center; }
-}
+/* Dead since the profile was rebuilt around .profile-identity — no markup
+   uses .profile-header any more. The orphaned `.profile-stats` line kept
+   centring the stats row on mobile, which is why the location line under it
+   never lined up with the numbers. */
 
 /* Follow button (Phase 10-2) */
 .follow-btn {

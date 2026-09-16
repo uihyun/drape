@@ -34,6 +34,20 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Messages entry hides until there is a conversation.** DMs only start from
+  a marketplace listing, so for everyone who has never bought or sold the inbox
+  icon was a permanently empty room holding a slot in the header. It now appears
+  only when the account actually has a thread — deliberately not a blanket hide,
+  which would strand a seller with a message they could never open. The feature
+  itself is untouched.
+- **Instagram moved next to the handle.** It identifies the same person, so it
+  belongs with the name instead of floating above the stats column.
+- **Profile stats were silently centred on mobile.** A `.profile-stats
+  { justify-content: center }` line left over from `.profile-header` — markup
+  that no longer exists anywhere — was still matching the rebuilt profile,
+  pushing the numbers right while the location line below stayed left. That
+  mismatch is what made the location look misaligned. Rule deleted; the name,
+  the stats and the location pin now share one left edge.
 - **Guided tour replaces the stacked onboarding popups.** A slide deck
   describes the app in the abstract and is forgotten by the time you reach a
   screen — which is why the stylist kept going undiscovered no matter how the

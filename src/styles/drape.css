@@ -5563,6 +5563,10 @@ input[type="search"]::-webkit-search-decoration {
   justify-content: space-between;
   padding: 0.5rem 0;
 }
+/* Instagram sits with the handle: it identifies the same person, so it reads
+   as part of the name rather than a stray glyph over the stats column. */
+.profile-handle-wrap { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.profile-handle-wrap .profile-ig { display: inline-flex; color: var(--text-muted); }
 .profile-handle {
   font-size: 1.05rem;
   font-weight: 600;
