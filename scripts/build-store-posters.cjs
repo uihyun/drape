@@ -71,11 +71,12 @@ const DECK = [
   { out: '04-closet',   src: 'closet-1' },
   { out: '05-stylist',  src: 'stylist' },
   { out: '06-calendar', src: 'calendar' },
-  // `crop` keeps the collage owning the card. Shot as-is, the lower 40% is the
-  // comments block and a green "Publish to feed" button — and the feed has no
-  // tab in the shipped app, so the store would be advertising a door that
-  // isn't there.
-  { out: '07-board',    src: 'board', crop: 0.60 },
+  // Shot as-is. Trimming the bottom to hide the "Publish to feed" button was
+  // tried and is geometrically impossible here: the card is 980×2124, nearly
+  // the capture's own aspect, so cutting height leaves a relatively wider image
+  // and `fit: cover` scales it up to reach the card's height — blowing the
+  // collage up and cropping both sides off. Any height trim does this.
+  { out: '07-board',    src: 'board' },
 ];
 
 // EN and JA keep their shipped lines word for word; only trends and stylist
@@ -160,16 +161,9 @@ function posterSvg(line) {
 </svg>`;
 }
 
-async function roundedCard(file, crop) {
+async function roundedCard(file) {
   const cardH = Math.round(CARD_W * (H / W));
-  // A capture whose interesting part is only the top: trim before scaling, so
-  // the subject fills the card instead of being one band inside it.
-  const trimmed = crop
-    ? await sharp(file).metadata().then(({ width, height }) => sharp(file)
-        .extract({ left: 0, top: 0, width, height: Math.round(height * crop) })
-        .toBuffer())
-    : file;
-  const shot = await sharp(trimmed).resize({ width: CARD_W }).toBuffer();
+  const shot = await sharp(file).resize({ width: CARD_W }).toBuffer();
   const mask = Buffer.from(
     `<svg width="${CARD_W}" height="${cardH}" xmlns="http://www.w3.org/2000/svg">` +
     `<rect width="${CARD_W}" height="${cardH}" rx="${CARD_R}" ry="${CARD_R}" fill="#fff"/></svg>`
@@ -199,10 +193,10 @@ async function roundedCard(file, crop) {
   fs.mkdirSync(OUT, { recursive: true });
 
   console.log(`${locale} → ${OUT}`);
-  for (const { out, src, crop } of DECK) {
+  for (const { out, src } of DECK) {
     const file = path.join(SRC, `${src}.png`);
     if (!fs.existsSync(file)) throw new Error(`Missing capture: ${file}`);
-    const card = await roundedCard(file, crop);
+    const card = await roundedCard(file);
     const poster = await sharp(Buffer.from(posterSvg(lines[out])))
       .composite([{ input: card, left: CARD_X, top: CARD_Y }])
       .extract({ left: 0, top: 0, width: W, height: H })

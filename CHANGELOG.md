@@ -653,9 +653,12 @@ views, 8 s/user" — was never queried; it was asserted. The real 90-day numbers
 boards is indeed the least-used profile tab at 198 views / 39 users, against
 closet's 1,887 / 71 and try-on's 942 / 53. But least-used earns the last slot,
 not deletion — the App Store takes ten screenshots and slide 7 is past
-everything that decides a tap. It renders from a 60% crop, because the capture's
-lower portion is the comments block and a green "Publish to feed" button, and
-the feed has no tab in the shipped app.
+everything that decides a tap. It renders from the capture whole: a 60% crop was
+tried first, to push the green "Publish to feed" button out of frame, and it
+mangled the slide — the card is 980×2124, nearly the capture's own aspect, so
+cutting height leaves a relatively wider image that `fit: cover` scales up to
+reach the card height, blowing the collage up and cropping both sides off. Any
+height trim does this; reframing belongs in the capture.
 
 **Poster order is the argument, not the feature list.** Search results show
 the first three portrait shots before anyone taps, and the deck inherited

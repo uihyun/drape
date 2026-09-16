@@ -2,10 +2,11 @@
 
 ## What's here
 
-The board capture is the one slide rendered from a crop (`crop: 0.60` in the
-DECK): shot whole, its lower 40% is the comments block and a green "Publish to
-feed" button, and the feed has no tab in the shipped app — the store would be
-advertising a door that isn't there.
+Every slide uses its capture whole. Trimming one to hide something near the
+bottom does not work here and fails loudly: the card is 980×2124, nearly the
+captures' own aspect ratio, so cutting height leaves a relatively wider image
+and `fit: cover` scales it up to reach the card's height — blowing the content
+up and cropping both sides away. Reframe in the app and re-capture instead.
 
 - `captures/` — the raw phone screenshots the posters are built from. Source of
   truth, committed. Older ones are 1290×2796 (6.7"); the trends and stylist
