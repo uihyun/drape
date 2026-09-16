@@ -4,7 +4,13 @@
 // App Store search thumbnails. Pairs visually with the existing icon system
 // (charcoal a + terracotta dot) but at higher contrast than A.
 //
-// Output: resources/app-store/screenshots-6.7-en-marketing-b/
+// Output: resources/app-store/screenshots-6.7-<locale>-marketing-b/
+//
+// Usage: node scripts/build-app-store-screenshots-b.cjs [locale] [srcDir]
+//   locale — caption language, default 'en'. Must exist in CAPTIONS below.
+//   srcDir — raw 1290x2796 captures, default resources/app-store/captures-<locale>,
+//            falling back to captures-en (the phone UI stays English then; a
+//            Spanish-UI capture set is better but optional).
 
 const sharp = require('sharp');
 const path = require('path');
@@ -12,20 +18,53 @@ const fs = require('fs');
 
 const W = 1290;
 const H = 2796;
-const SRC_DIR = path.join(__dirname, '..', 'resources', 'app-store', 'screenshots-6.7-en');
-const OUT_DIR = path.join(__dirname, '..', 'resources', 'app-store', 'screenshots-6.7-en-marketing-b');
+const LOCALE = process.argv[2] || 'en';
+const ASSETS = path.join(__dirname, '..', 'resources', 'app-store');
+const SRC_DIR = process.argv[3]
+  || [path.join(ASSETS, `captures-${LOCALE}`), path.join(ASSETS, 'captures-en')]
+       .find((d) => fs.existsSync(d))
+  || path.join(ASSETS, 'captures-en');
+const OUT_DIR = path.join(ASSETS, `screenshots-6.7-${LOCALE}-marketing-b`);
 
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
-// Same copy as A (the deck is the same), but visually amplified.
+// The deck, per locale. `src` is the capture filename — shared across locales,
+// so a new language is a captions entry and nothing else.
+//
+// Spanish is neutral Latin-American, matching src/locales/es.js. Headlines run
+// longer than English; MAX_HEAD_CHARS below guards against silent overflow,
+// which on a store screenshot means text sliced off at the right edge.
 const SLIDES = [
-  { src: '01-before-after-playroom.png', headline: 'ANY ROOM,\nREIMAGINED',     subhead: 'Photo in. Design out. About a minute.' },
-  { src: '03-style-picker.png',           headline: 'PICK A STYLE,\nOR INVENT', subhead: '19 presets. 4 modes. Unlimited mix.' },
-  { src: '04-floor-plan-to-3d.png',       headline: 'SKETCHES READ\nLIKE PHOTOS', subhead: 'Plans, drawings, even 3D — all input.' },
-  { src: '05-ai-analysis.png',            headline: 'DESIGNER NOTES\nINCLUDED',  subhead: 'Color, style, furniture — explained.' },
-  { src: '06-furniture-shop.png',         headline: 'SHOP\nWHAT YOU SEE',       subhead: 'Every piece, tappable.' },
-  { src: '09-feed.png',                   headline: 'SEE WHAT’S\nPOSSIBLE', subhead: 'A community of AI-designed spaces.' },
+  { src: '01-tryon.png',    key: 'tryon' },
+  { src: '02-closet.png',   key: 'closet' },
+  { src: '03-stylist.png',  key: 'stylist' },
+  { src: '04-calendar.png', key: 'calendar' },
+  { src: '05-trends.png',   key: 'trends' },
+  { src: '06-market.png',   key: 'market' },
 ];
+
+const CAPTIONS = {
+  en: {
+    tryon:    { headline: 'TRY IT ON\nYOURSELF',      subhead: 'Your real face and body. In seconds.' },
+    closet:   { headline: 'YOUR CLOSET,\nDIGITIZED',  subhead: 'One photo per piece. Tagged for you.' },
+    stylist:  { headline: 'YOUR OWN\nAI STYLIST',     subhead: 'Looks built from what you already own.' },
+    calendar: { headline: 'YOUR YEAR\nIN OUTFITS',    subhead: 'One photo a day fills the calendar.' },
+    trends:   { headline: 'WHAT PEOPLE\nARE WEARING', subhead: 'A new issue every Monday.' },
+    market:   { headline: 'SELL WHAT\nYOU DON’T WEAR', subhead: 'And find pieces from other members.' },
+  },
+  es: {
+    tryon:    { headline: 'PRUÉBATELO\nEN TI',         subhead: 'Tu rostro y tu cuerpo reales. En segundos.' },
+    closet:   { headline: 'TU ARMARIO,\nDIGITAL',      subhead: 'Una foto por prenda. Se etiqueta sola.' },
+    stylist:  { headline: 'TU ESTILISTA\nCON IA',      subhead: 'Looks armados con lo que ya tienes.' },
+    calendar: { headline: 'TU AÑO\nEN LOOKS',          subhead: 'Una foto al día llena el calendario.' },
+    trends:   { headline: 'LO QUE SE\nESTÁ USANDO',    subhead: 'Una edición nueva cada lunes.' },
+    market:   { headline: 'VENDE LO QUE\nYA NO USAS',  subhead: 'Y encuentra piezas de otros miembros.' },
+  },
+};
+
+// 124pt bold Helvetica at letter-spacing -3 runs ~72px per uppercase glyph;
+// (1290 - 100 left margin - 60 right breathing room) / 72 ≈ 15.
+const MAX_HEAD_CHARS = 15;
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -129,9 +168,21 @@ async function buildSlide(slide, index) {
 }
 
 (async () => {
-  console.log(`Building ${SLIDES.length} marketing screenshots (variant B — loud dark) → ${OUT_DIR}`);
+  const copy = CAPTIONS[LOCALE];
+  if (!copy) throw new Error(`No captions for locale '${LOCALE}'. Have: ${Object.keys(CAPTIONS).join(', ')}`);
+  const over = [];
+  for (const s of SLIDES) {
+    for (const ln of copy[s.key].headline.split('\n')) {
+      if (ln.length > MAX_HEAD_CHARS) over.push(`${s.key}: "${ln}" (${ln.length} > ${MAX_HEAD_CHARS})`);
+    }
+  }
+  if (over.length) throw new Error(`Headline too long for the canvas:\n  ${over.join('\n  ')}`);
+  if (!fs.existsSync(SRC_DIR)) throw new Error(`Capture folder not found: ${SRC_DIR}`);
+
+  console.log(`Building ${SLIDES.length} marketing screenshots (variant B — loud dark, ${LOCALE}) → ${OUT_DIR}`);
+  console.log(`  captures: ${path.relative(process.cwd(), SRC_DIR)}`);
   for (let i = 0; i < SLIDES.length; i++) {
-    const p = await buildSlide(SLIDES[i], i);
+    const p = await buildSlide({ ...SLIDES[i], ...copy[SLIDES[i].key] }, i);
     console.log(`  ✓ ${path.basename(p)}`);
   }
   console.log('done.');

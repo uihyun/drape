@@ -1,24 +1,33 @@
 # App Store screenshot assets
 
-## Sources
+> **Stale:** every folder below (`screenshots-6.7-en*`) is a **voda** asset —
+> interior-design captures (playrooms, floor plans, furniture) that arrived with
+> the migration baseline and were never replaced. They are NOT drape and must
+> not be uploaded. The drape screenshots currently live on the App Store were
+> uploaded directly to App Store Connect and were never committed here.
 
-- `screenshots-6.7-en/` — raw iPhone captures (1290×2796), no marketing text.
+## Making a localized deck
 
-## Marketing variants
+1. Drop raw 1290×2796 captures into `captures-<locale>/` named
+   `01-tryon.png`, `02-closet.png`, `03-stylist.png`, `04-calendar.png`,
+   `05-trends.png`, `06-market.png`. A `captures-en/` set is the fallback for
+   every locale, so a Spanish deck can reuse the English phone UI — the
+   marketing caption is translated either way.
+2. `node scripts/build-app-store-screenshots-b.cjs es`
+3. Output lands in `screenshots-6.7-es-marketing-b/`.
 
-Three styles were prototyped from the same 6 captures. Build scripts live in
-`scripts/build-app-store-screenshots*.cjs` — each variant is reproducible.
+Captions live in the `CAPTIONS` table in that script, keyed by locale — adding a
+language is one entry, no new script. A headline that would overflow the canvas
+throws before anything renders, because on a store screenshot overflow means
+text sliced off at the right edge.
 
-| Variant | Folder | Tone | Notes |
-|---|---|---|---|
-| A | `screenshots-6.7-en-marketing-a/` | Quiet atelier — beige bg, 96pt serif headline, small terracotta dot | Brand-faithful but reads small at thumbnail size |
-| **B (selected)** | `screenshots-6.7-en-marketing-b/` | Loud dark — charcoal bg, 124pt all-caps sans, terracotta bar, larger shot | Highest contrast / strongest in search results |
-| C | `screenshots-6.7-en-marketing-c/` | Hybrid — cover (slide 1) hero with cropped before/after + italic serif; remainder identical to A | Compromise between editorial and impact |
+## Historical variants (voda)
+
+`scripts/build-app-store-screenshots*.cjs` — variant A (quiet atelier), B (loud
+dark, selected), C (hybrid). Only B has been carried forward to drape + locales.
 
 ## Upload
 
-App Store Connect → archelier → App Store → 1.0.x → Screenshots (6.7" Display) →
-upload the 6 files from the **B folder** in numeric order.
-
-Localized variants (KR / JA) not yet generated; the iOS App Store accepts
-English-only screenshots and renders them across locales unless overridden.
+English-only screenshots are reused by both stores for any locale with none of
+its own, so a localized deck is optional — it only matters where the caption
+text is burned into the image, which it is in variant B.
