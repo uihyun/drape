@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, X, Bookmark, RefreshCw } from 'lucide-react';
+import { SlidersHorizontal, X, Bookmark, RefreshCw, LayoutGrid } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { buildSwipeState } from '../services/swipeNav.js';
 import { CATEGORIES, categoryLabel, COLOR_HEX } from '../services/taxonomy.js';
@@ -93,7 +93,7 @@ const matchesFilters = itemMatchesFilters;
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
-  const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 5, def: 3 });
+  const { cols, setCols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 5, def: 3 });
   // Cards glide between column counts instead of snapping to the new grid.
   useFlipGrid(gridRef, cols);
   // Seed from the splash warm-up so the grid paints instantly on first open.
@@ -205,6 +205,18 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
             </button>
           ))}
         </nav>
+        {/* Density has a tap target, not just the pinch. A gesture with no
+            visible control can strand someone at a size they can't undo —
+            and on a phone the two-finger spread doesn't always register. */}
+        <button
+          type="button"
+          className="closet-search-btn closet-density-btn"
+          aria-label={t('closetDensity')}
+          onClick={() => setCols(cols >= 5 ? 1 : cols + 1)}
+        >
+          <LayoutGrid size={18} strokeWidth={1.7} />
+          <span className="closet-density-n">{cols}</span>
+        </button>
         <button
           type="button"
           className={`closet-search-btn${filterCount > 0 ? ' has-filters' : ''}`}

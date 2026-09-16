@@ -251,6 +251,7 @@ export function Profile({ user, authReady, onSignIn }) {
             role="tab"
             type="button"
             aria-selected={activeTab === name}
+            data-tour={name === 'tryon' ? 'tab-tryon' : undefined}
             className={`profile-tab${activeTab === name ? ' active' : ''}`}
             onClick={() => navigate(`/profile/${name}`)}
           >

@@ -34,7 +34,27 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
-- **Trends cover starts below the status bar.** It bled to the very top, which
+- **The tour IS the onboarding now.** The four-slide deck is gone; nothing
+  renders it. It described the app in the abstract and was forgotten by the
+  time the user reached a screen — which is exactly why the stylist kept going
+  undiscovered no matter how its copy was worded. The tour gained a try-on step
+  and ends on the + button with "start here: photograph a piece", so the last
+  thing on screen when the walkthrough closes is the thing to do. Admin's
+  onboarding-steps editor still reads the baked defaults, so the server
+  override path is intact.
+- **Closet density has a button, not only a gesture.** A pinch with no visible
+  control can strand someone at a size they can't undo — on a phone the
+  two-finger spread doesn't always register, and there was no other way back.
+  The toolbar now carries a grid button showing the current column count;
+  tapping cycles 1→5. The hook exports `setCols` for it.
+- **Trends cover is full-bleed again — top and both edges.** It now breaks out
+  of `.main`'s gutter and runs under the status bar, with one addition that
+  makes it safe: the top scrim is *light* rather than dark. The status bar
+  glyphs are dark app-wide and the cover is auto-picked from member photos, so
+  a dark cover would have swallowed the clock; a white haze over the top ~26px
+  is invisible on a bright cover and the difference between a readable clock
+  and none on a dark one. No status-bar state to keep in sync.
+ It bled to the very top, which
   read well on a bright cover and would have failed on a dark one: the status
   bar glyphs are dark app-wide and the cover is auto-picked from whatever
   members posted that week, so the clock was one unlucky photo away from

@@ -10,7 +10,6 @@ import { useLocale, currentLang } from './hooks/useLocale.jsx';
 
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
-import { Onboarding } from './components/Onboarding.jsx';
 import { Tour, tourPending } from './components/Tour.jsx';
 import { NoticeBanner } from './components/NoticeBanner.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
@@ -395,8 +394,7 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // people most lost about where things live are the ones already inside.
   useEffect(() => {
     if (!isLoggedIn || noChrome) return;
-    const deckPending = localStorage.getItem('drape_onboarding_dismissed_v2') !== '1';
-    if (!deckPending && tourPending()) setTourOn(true);
+    if (tourPending()) setTourOn(true);
   }, [isLoggedIn, noChrome]);
 
   const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? getHomeRoute(user?.uid) : '/welcome');
@@ -491,12 +489,10 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
       {!hideNav && <MobileTabBar user={user} onSignIn={handleSignIn} />}
 
-      {/* Onboarding only after sign-in — never on /welcome or /landing. The
-          slide deck hands off to the tour: the deck says what drape is, the
-          tour says where each part of it lives. Sequential, never stacked. */}
-      {isLoggedIn && !noChrome && (
-        <Onboarding user={user} onClose={() => setTourOn(tourPending())} />
-      )}
+      {/* The spotlight tour IS the onboarding (2026-09-16). The slide deck it
+          replaced described the app in the abstract and was forgotten by the
+          time the user reached a screen — the tour points at the real control
+          and ends on the thing to do. */}
       {isLoggedIn && !noChrome && <Tour open={tourOn} onClose={() => setTourOn(false)} />}
     </div>
   );

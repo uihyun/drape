@@ -8,9 +8,11 @@ import { useEffect, useRef, useState } from 'react';
 // Persistence: localStorage keyed by `name` so each grid (closet /
 // outfit / board) remembers the user's last zoom.
 //
-// Returns `{ cols, ref }`. Spread `ref` on the grid container; the hook
-// attaches non-passive touchmove listeners (needed for preventDefault to
-// suppress browser-level pinch-zoom).
+// Returns `{ cols, setCols, ref }`. Spread `ref` on the grid container; the
+// hook attaches non-passive touchmove listeners (needed for preventDefault to
+// suppress browser-level pinch-zoom). `setCols` is the escape hatch for a
+// visible control — the gesture alone can strand a user at a density they
+// can't undo if the spread doesn't register on their device.
 export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
   const key = `drape:cols:${name}`;
   const [cols, setCols] = useState(() => {
@@ -86,7 +88,15 @@ export function usePinchColumns(name, { min = 1, max = 4, def = 2 } = {}) {
     };
   }, [key, min, max]);
 
-  return { cols, ref };
+  const applyCols = (n) => {
+    const next = Math.min(max, Math.max(min, Math.round(n)));
+    if (next === colsRef.current) return;
+    colsRef.current = next;
+    setCols(next);
+    try { window.localStorage?.setItem(key, String(next)); } catch { /* quota / private mode */ }
+  };
+
+  return { cols, setCols: applyCols, ref };
 }
 
 export default usePinchColumns;

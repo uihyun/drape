@@ -22,12 +22,15 @@ export const TOUR_KEY = 'drape_tour_v1';
 // controls whose visual weight is bigger than their box (the floating nav
 // pills carry a shadow well outside their bounds).
 const STEPS = [
-  { target: '[data-tour="nav-trends"]',  route: '/trends',         body: 'tourTrends',   pad: 10 },
-  { target: '[data-tour="nav-profile"]', route: '/trends',         body: 'tourProfileNav', pad: 10 },
-  { target: '[data-tour="tabs"]',        route: '/profile',        body: 'tourTabs',     pad: 6 },
-  { target: '[data-tour="nav-create"]',  route: '/profile',        body: 'tourCreate',   pad: 12 },
-  { target: '[data-tour="stylist"]',     route: '/profile',        body: 'tourStylist',  pad: 8 },
-  { target: '[data-tour="settings"]',    route: '/profile',        body: 'tourSettings', pad: 8 },
+  { target: '[data-tour="nav-trends"]',  route: '/trends',  body: 'tourTrends',     pad: 10 },
+  { target: '[data-tour="nav-profile"]', route: '/trends',  body: 'tourProfileNav', pad: 10 },
+  { target: '[data-tour="tabs"]',        route: '/profile', body: 'tourTabs',       pad: 6 },
+  { target: '[data-tour="tab-tryon"]',   route: '/profile', body: 'tourTryon',      pad: 6 },
+  { target: '[data-tour="stylist"]',     route: '/profile', body: 'tourStylist',    pad: 8 },
+  { target: '[data-tour="settings"]',    route: '/profile', body: 'tourSettings',   pad: 8 },
+  // Last on purpose: the walkthrough ends holding the thing to do next, so the
+  // closing tap lands on the button that starts the closet.
+  { target: '[data-tour="nav-create"]',  route: '/profile', body: 'tourCreate',     pad: 12 },
 ];
 
 // The target may not be mounted yet when a step begins (route change, sticky
