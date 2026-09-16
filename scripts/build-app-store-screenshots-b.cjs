@@ -60,11 +60,35 @@ const CAPTIONS = {
     trends:   { headline: 'LO QUE SE\nESTÁ USANDO',    subhead: 'Una edición nueva cada lunes.' },
     market:   { headline: 'VENDE LO QUE\nYA NO USAS',  subhead: 'Y encuentra piezas de otros miembros.' },
   },
+  // No uppercase in KO/JA, so the headline leans on size alone. Full-width
+  // glyphs are ~1.7x a Latin cap, which is why the fit check measures ems
+  // rather than counting characters.
+  ko: {
+    tryon:    { headline: '직접\n입어보기',        subhead: '진짜 내 얼굴과 몸으로, 몇 초 만에.' },
+    closet:   { headline: '내 옷장을\n디지털로',   subhead: '한 벌에 사진 한 장. 태그는 자동으로.' },
+    stylist:  { headline: '나만의\nAI 스타일리스트', subhead: '가진 옷으로만 만드는 코디.' },
+    calendar: { headline: '입은 옷으로\n쌓는 1년',  subhead: '하루 한 장이면 달력이 채워져요.' },
+    trends:   { headline: '지금 뜨는\n스타일',      subhead: '매주 월요일 새 이슈.' },
+    market:   { headline: '안 입는 옷은\n팔고 사고', subhead: '다른 사람 옷장에서 찾아보세요.' },
+  },
+  ja: {
+    tryon:    { headline: '自分の体で\n試着',         subhead: '本物の顔と体のまま、数秒で。' },
+    closet:   { headline: 'クローゼットを\nデジタルに', subhead: '一着に一枚。タグ付けは自動。' },
+    stylist:  { headline: 'あなた専用の\nAIスタイリスト', subhead: '手持ちの服だけで組むコーデ。' },
+    calendar: { headline: '着た服で\n埋まる1年',      subhead: '一日一枚でカレンダーが埋まる。' },
+    trends:   { headline: 'いま着られて\nいるもの',    subhead: '毎週月曜、新しい号。' },
+    market:   { headline: '着ない服を\n売る',         subhead: '他の人の服も見つかる。' },
+  },
 };
 
-// 124pt bold Helvetica at letter-spacing -3 runs ~72px per uppercase glyph;
-// (1290 - 100 left margin - 60 right breathing room) / 72 ≈ 15.
-const MAX_HEAD_CHARS = 15;
+// Fit check in ems, not characters: a full-width CJK glyph is ~1 em where a
+// Latin cap is ~0.58 em, so "15 characters" would pass a Korean line that
+// overruns the canvas by half its width. Available width is
+// 1290 - 100 (left margin) - 60 (right breathing room) = 1130px at 124pt.
+const HEAD_SIZE_PX = 124;
+const MAX_HEAD_EM = 1130 / HEAD_SIZE_PX;
+const isWide = (ch) => /[\u1100-\u11FF\u2E80-\u9FFF\uA960-\uA97F\uAC00-\uD7FF\uF900-\uFAFF\uFF00-\uFF60]/.test(ch);
+const headEm = (line) => [...line].reduce((w, ch) => w + (isWide(ch) ? 1.0 : 0.58), 0);
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -173,7 +197,8 @@ async function buildSlide(slide, index) {
   const over = [];
   for (const s of SLIDES) {
     for (const ln of copy[s.key].headline.split('\n')) {
-      if (ln.length > MAX_HEAD_CHARS) over.push(`${s.key}: "${ln}" (${ln.length} > ${MAX_HEAD_CHARS})`);
+      const em = headEm(ln);
+      if (em > MAX_HEAD_EM) over.push(`${s.key}: "${ln}" (${em.toFixed(1)}em > ${MAX_HEAD_EM.toFixed(1)}em)`);
     }
   }
   if (over.length) throw new Error(`Headline too long for the canvas:\n  ${over.join('\n  ')}`);
