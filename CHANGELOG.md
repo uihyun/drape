@@ -668,6 +668,12 @@ fill plus a measured horizontal window is the right trade; and hero slides ship
 as JPEG — lossless PNG cost ~6 MB a slide, and palette quantisation, which the
 card slides use happily, bands a photograph's sky.
 
+**2.1.0 builds cut.** Android AAB versionCode 20 signed with the upload
+keystore (`resources/app-store/builds/drape-2.1.0-20.aab`, gitignored — large
+and rebuildable with `cd android && ./gradlew bundleRelease` under the Android
+Studio JBR). Hosting redeployed; Cloud Functions reported no changes, so the
+French locale work was already live there.
+
 **Trends and calendar run as a pair.** They say the same thing from two sides —
 what everyone's wearing, then what you wore — so they open the deck's first act
 together. The order that separated them kept analyze next to trends on the

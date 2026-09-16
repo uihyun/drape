@@ -82,3 +82,6 @@ public/firebase-config.js
 .crop-ab/
 .gstack/
 
+
+# release binaries are large and rebuildable; kept locally only
+resources/app-store/builds/
