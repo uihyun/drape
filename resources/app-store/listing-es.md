@@ -53,7 +53,7 @@ Sube dos o tres fotos tuyas y pruébate cualquier prenda en tu propio cuerpo ant
 
 PRUÉBATELO ANTES
 • Cualquier prenda, sobre tu propia foto. Es tu cara y tu cuerpo, así que se nota enseguida si te queda bien.
-• 5 pruebas gratis al día. Invita a alguien y ambos conseguís 10 más.
+• 5 pruebas gratis al día. Invita a alguien y los dos consiguen 10 más.
 
 TU ARMARIO, EN DIGITAL
 • Una foto por prenda y listo. La categoría, el color, la temporada y el estilo se ponen solos.

@@ -296,7 +296,7 @@ export const ko = {
   welcomeLegalAnd: '및',
   termsOfService: '이용약관',
   privacyPolicy: '개인정보 처리방침',
-  comingSoon: '곧 추가됩니다',
+  comingSoon: '곧 추가돼요',
   search: '검색',
   searchPlaceholder: '내 옷장에서 검색…',
   detailedFilter: '상세 찾기',

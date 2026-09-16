@@ -626,6 +626,17 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
+**Korean store copy is 해요체 throughout, matching the app.** The description
+had been bouncing between 합니다체 and 해요체 line by line, which reads as
+unedited. The app's own strings are 해요체 37:1, so the store copy follows —
+including the promotional text, which mixed 하세요 and 만들어줍니다 in one
+sentence. The one stray 합니다체 string left in the app (`comingSoon`) was
+aligned too.
+
+**A `vosotros` form had slipped into the Spanish.** `ambos conseguís 10 más` is
+Spain-only — the exact thing this locale exists to avoid. Now `los dos
+consiguen`.
+
 **Descriptions rewritten natively, and unwrapped.** They had been hard-wrapped
 at ~76 characters for the markdown file — the stores reflow the text
 themselves, so those breaks land mid-sentence on a phone. Each paragraph and
