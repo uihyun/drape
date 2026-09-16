@@ -558,8 +558,6 @@ export const ja = {
   tourStylist: 'AIスタイリストはここにいます。手持ちの服だけでコーデを組むので、まず服の登録から。',
   tourSettings: '設定 — 言語、アプリが開く画面、試着に使う写真を変更できます。',
   homeFlipAsk: 'アプリを開いたとき、どの画面から始めますか？',
-  homeFlipYes: 'クローゼット',
-  homeFlipNo: 'トレンド',
   sortAndFilter: '並べ替え・絞り込み',
   closetZoomHint: '二本指でサイズを変えられます。つまむと小さく一覧に、広げると大きく詳しく表示。',
   closetDensity: '表示サイズ',

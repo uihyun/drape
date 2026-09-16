@@ -647,6 +647,26 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**The home-screen question's buttons did nothing.** `HomeFlipAsk` gated itself
+on a render-time localStorage read and deliberately held no state — the comment
+said every input was already persistent. But writing localStorage doesn't notify
+React, so after a choice nothing re-rendered and the dialog just sat there: the
+preference *was* saved, and the UI never admitted it. A one-line `answered` flag
+fixes it. The rule: a component whose visibility depends on storage it writes
+itself needs local state, not because the storage is unreliable but because
+nothing else will re-render it.
+
+**It's a picker now, not two stacked buttons.** The same choice already exists in
+Settings → Display as two icon tiles; the one-time question rendered it as a
+green primary over a white secondary, which read as a recommendation rather than
+two equal options. `HintDialog` now renders an action carrying an `Icon` as a
+side-by-side tile, same order (Trends, then closet) and same icons as Settings,
+so answering once and changing it later look like the same control. Stacked
+buttons remain the default for everything else — five locales can produce labels
+too long for a shared row, which is what broke the banner this dialog replaced.
+`homeFlipYes` / `homeFlipNo` are gone from all five locales; the tiles reuse
+`homeScreenTrends` / `homeScreenProfile`.
+
 **Three full-bleed look slides, and the deck grows to ten.** Real OOTDs from
 the app, filling the poster with the line laid over them — the format the
 category uses (Depop, Vinted, Grailed all open this way), which the seven card

@@ -560,8 +560,6 @@ export const fr = {
   tourTryon: 'L’essayage est la raison d’être de drape : voyez n’importe quelle pièce sur votre propre photo, votre visage et votre corps conservés. 5 gratuits par jour.',
   homeFlipAsk: 'Sur quel écran drape doit-il s’ouvrir ?',
   homeFlipNote: 'Modifiable à tout moment dans les Réglages.',
-  homeFlipYes: 'Mon dressing',
-  homeFlipNo: 'Tendances',
   sortAndFilter: 'Tri et filtres',
   closetZoomHint: 'Pincez la grille pour changer la taille : doigts rapprochés pour en voir plus, doigts écartés pour voir chaque pièce en grand.',
   closetDensity: 'Taille de la grille',

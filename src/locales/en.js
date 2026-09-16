@@ -556,8 +556,6 @@ export const en = {
   tourStylist: 'Your AI stylist lives here. It builds looks from the clothes you already own — so the closet comes first.',
   tourSettings: 'Settings — language, what the app opens on, and the reference photos try-on uses.',
   homeFlipAsk: 'Which screen should drape open on?',
-  homeFlipYes: 'My closet',
-  homeFlipNo: 'Trends',
   sortAndFilter: 'Sort & filter',
   closetZoomHint: 'Pinch the grid to resize: fingers together fits more in, fingers apart shows each piece bigger.',
   closetDensity: 'Grid size',

@@ -559,8 +559,6 @@ export const es = {
   tourStylist: 'Aquí vive tu estilista con IA. Arma looks con la ropa que ya tienes, así que primero llena el armario.',
   tourSettings: 'Ajustes — idioma, en qué pantalla abre la app y las fotos de referencia para las pruebas.',
   homeFlipAsk: '¿En qué pantalla debe abrir drape?',
-  homeFlipYes: 'Mi armario',
-  homeFlipNo: 'Tendencias',
   sortAndFilter: 'Orden y filtros',
   closetZoomHint: 'Pellizca la cuadrícula para cambiar el tamaño: junta los dedos para ver más, sepáralos para ver cada prenda en grande.',
   closetDensity: 'Tamaño de la cuadrícula',

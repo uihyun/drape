@@ -556,8 +556,6 @@ export const ko = {
   tourStylist: 'AI 스타일리스트가 여기 있어요. 가진 옷으로만 코디를 만들어주니 옷 등록이 먼저예요.',
   tourSettings: '설정 — 언어, 앱이 열리는 화면, 트라이온에 쓰는 사진을 바꿀 수 있어요.',
   homeFlipAsk: '앱을 열면 어느 화면으로 시작할까요?',
-  homeFlipYes: '내 옷장',
-  homeFlipNo: '트렌드',
   sortAndFilter: '정렬·필터',
   closetZoomHint: '두 손가락으로 옷장 크기를 바꿔요. 모으면 작아져 한눈에 많이, 벌리면 커져서 자세히 보여요.',
   closetDensity: '크기 바꾸기',
