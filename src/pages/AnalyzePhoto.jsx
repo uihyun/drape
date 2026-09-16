@@ -41,13 +41,17 @@ const MAX_PHOTOS = 8;
 // each photo, then create every detected piece — items stream in as Processing
 // cards via the live closet subscription. Fire-and-forget (not awaited), so it
 // keeps running after AnalyzePhoto unmounts on navigate.
-async function bulkAddOwnedInBackground(photos) {
+// `shopUrl` is passed in, not read from the component: this runs after
+// AnalyzePhoto unmounts, so it cannot reach the component's refs. It used to
+// reference importedSourceRef directly — a ReferenceError swallowed by the
+// per-piece catch below, which made every bulk add silently produce nothing.
+async function bulkAddOwnedInBackground(photos, shopUrl = '') {
   for (const blob of photos) {
     try {
       const data = await ItemService.analyzePhoto({ blob, mime: blob.type || 'image/jpeg' });
       for (const piece of (data.items || [])) {
         try {
-          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', shopUrl: importedSourceRef.current, owned: true });
+          await ItemService.createFromDetected({ blob, detected: piece, sourceLabel: data.style || '', shopUrl, owned: true });
         } catch { /* one failed create = one missing card; the rest still land */ }
       }
     } catch { /* detection failure on one photo shouldn't abort the others */ }
@@ -212,7 +216,7 @@ export function AnalyzePhoto({ user, onSignIn }) {
       cache.savedBatchIds = new Map();
       setBatches([]);
       navigate('/profile/closet');
-      bulkAddOwnedInBackground(photos);
+      bulkAddOwnedInBackground(photos, importedSourceRef.current);
       return;
     }
 

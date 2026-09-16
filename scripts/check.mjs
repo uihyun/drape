@@ -221,10 +221,10 @@ console.log(`\n🔎 drape full check${FAST ? ' (fast)' : ''}\n`);
 function checkHooksLint() {
   try {
     sh('npx eslint src --quiet');
-    record('rules-of-hooks lint', 'PASS');
+    record('eslint runtime-crash gate', 'PASS');
   } catch (e) {
     const out = (e.stdout || '') + (e.stderr || '');
-    record('rules-of-hooks lint', 'FAIL', out.split('\n').filter((l) => l.includes('error')).slice(0, 4).join(' | ') || 'eslint failed');
+    record('eslint runtime-crash gate', 'FAIL', out.split('\n').filter((l) => l.includes('error')).slice(0, 4).join(' | ') || 'eslint failed');
   }
 }
 

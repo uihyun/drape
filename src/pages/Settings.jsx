@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2, Loader2 } from 'lucide-react';
+import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2, Loader2, TrendingUp, Shirt } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
@@ -91,32 +91,27 @@ function DisplaySection({ profile, t }) {
     <section className="settings-card">
       <h2 className="settings-h2">{t('display')}</h2>
 
-      <div className="settings-row settings-row-stack">
+      <div className="settings-row">
         <span className="settings-row-label">{t('homeScreen')}</span>
-        <div className="settings-segment" role="radiogroup" aria-label={t('homeScreen')}>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={home === 'trends'}
-            className={`settings-segment-btn${home === 'trends' ? ' on' : ''}`}
-            onClick={() => pickHome('trends')}
-          >
-            {t('homeScreenTrends')}
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={home === 'profile'}
-            className={`settings-segment-btn${home === 'profile' ? ' on' : ''}`}
-            onClick={() => pickHome('profile')}
-          >
-            {t('homeScreenProfile')}
-          </button>
+        <div className="settings-homepick" role="radiogroup" aria-label={t('homeScreen')}>
+          {[
+            { v: 'trends', Icon: TrendingUp, label: t('homeScreenTrends') },
+            { v: 'profile', Icon: Shirt, label: t('homeScreenProfile') },
+          ].map(({ v, Icon, label }) => (
+            <button
+              key={v}
+              type="button"
+              role="radio"
+              aria-checked={home === v}
+              className={`settings-homepick-btn${home === v ? ' on' : ''}`}
+              onClick={() => pickHome(v)}
+            >
+              <Icon size={20} strokeWidth={1.6} />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
       </div>
-      <p className="settings-hint">
-        {home === 'profile' ? t('homeScreenProfileHint') : t('homeScreenTrendsHint')}
-      </p>
 
       <div className="settings-row">
         <span className="settings-row-label">{t('calendarShowBg')}</span>

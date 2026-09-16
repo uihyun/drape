@@ -34,6 +34,22 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Bulk "these are my clothes" added nothing, silently.**
+  `bulkAddOwnedInBackground` runs after AnalyzePhoto unmounts, but read
+  `importedSourceRef` from the component — a ReferenceError thrown while
+  building the arguments, then swallowed by the per-piece `catch` meant for a
+  single failed create. Every piece failed identically, so the user watched
+  "Adding to your closet…" and got an empty closet with no error. The URL is
+  passed in now.
+- **`no-undef` added to the eslint gate.** The bug above, and a missing
+  `<TrendingUp>` import shipped minutes earlier, are the same class: Vite
+  builds a JSX tag with no import just fine and it explodes at render. Nothing
+  in the pipeline caught it; now `npm run check` does, and it found the
+  AnalyzePhoto bug on its first run.
+- **Home screen picker is two icon tiles.** Same glyphs as the tab bar, small
+  caption under each, sitting inline beside the label — so the choice looks
+  like the thing it picks instead of reading as a settings decision. The
+  explanatory hint under it is gone; the icons say it.
 - **Home screen: Trends or Closet, and it lives under Display now.** The
   setting still offered *Feed*, which 2.1.0 removed from the tab bar — anyone
   who had picked it was cold-starting onto a surface with no nav entry to leave

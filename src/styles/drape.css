@@ -6788,10 +6788,21 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-savedcard header strong { display: block; font-size: 0.95rem; letter-spacing: -0.01em; }
 .stylist-savedcard header span { font-size: 0.7rem; color: var(--text-muted); }
 .stylist-savedrm { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; }
-/* Home screen: label above its segmented control — the two options need the
-   full row width, unlike the toggles that sit inline beside their label. */
-.settings-row-stack { flex-direction: column; align-items: stretch; gap: 8px; }
-.settings-row-stack .settings-row-label { margin-bottom: 2px; }
+/* Home screen: two icon tiles sitting inline beside the label, same glyphs as
+   the tab bar so the choice reads as "which of these two do I land on". */
+.settings-homepick { display: flex; gap: 8px; }
+.settings-homepick-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 64px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: transparent; color: var(--text-muted);
+  font-size: 0.68rem; line-height: 1;
+  cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+}
+.settings-homepick-btn.on {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-soft);
+}
 .stylist-thin { font-size: 0.72rem; color: var(--text-muted); margin: 2px 0 10px; line-height: 1.5; }
 .stylist-guide { font-size: 0.72rem; color: var(--text-muted); margin: 8px 0 2px; line-height: 1.5; }
 .stylist-guide a { color: var(--text-secondary); }
