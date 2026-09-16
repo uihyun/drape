@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends cover starts below the status bar.** It bled to the very top, which
+  read well on a bright cover and would have failed on a dark one: the status
+  bar glyphs are dark app-wide and the cover is auto-picked from whatever
+  members posted that week, so the clock was one unlucky photo away from
+  disappearing. Keeping the bleed would have meant flipping the status bar to
+  light text over the hero and back over the white body — state that must
+  survive navigation, backgrounding and scroll, failing silently into an
+  unreadable clock. Starting below the bar is one line, cannot regress, and
+  stops the phone's rounded corners from clipping the photo's top edge.
 - **Trends was reserving room for the floating nav twice.** `.main` already
   pads 6.5rem for it; the page added another 8rem on top, leaving roughly an
   eighth of the screen blank under the colophon. Now 1.5rem of breathing room —

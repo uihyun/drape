@@ -6756,15 +6756,26 @@ input[type="search"]::-webkit-search-decoration {
    objects floating on the page (look cards, marketplace thumbs, the detail
    photo). The cover is not a card, it IS the page: full-bleed, edge to edge,
    the way a magazine cover plate ends before the article starts. Its bottom
-   gradient makes the hard edge against the white body read as intentional. */
-.tmag-hero { position: relative; margin: 0 0 22px; min-height: 62vh; display: flex; align-items: flex-end; overflow: hidden; background: var(--surface-elevated); }
+   gradient makes the hard edge against the white body read as intentional.
+
+   The plate starts BELOW the status bar (2026-09-16). It used to bleed to the
+   very top, which looked right on a bright cover and failed on a dark one:
+   the status bar glyphs are dark app-wide, the cover is auto-picked from
+   whatever members posted that week, and a dark cover would have swallowed the
+   clock. Fixing that while keeping the bleed needs the status bar to flip to
+   light text over the hero and back to dark once the white body scrolls up —
+   state that has to survive navigation, backgrounding and scroll, and silently
+   leaves an unreadable clock whenever it doesn't. Starting below the bar is one
+   line and cannot regress. It also stops the phone's rounded corners from
+   clipping the photo's top edge. */
+.tmag-hero { position: relative; margin: var(--safe-top, 0px) 0 22px; min-height: 62vh; display: flex; align-items: flex-end; overflow: hidden; background: var(--surface-elevated); }
 .tmag-hero--ink { background: #141312; min-height: 0; }
-.tmag-hero--ink .tmag-hero-text { padding-top: calc(var(--safe-top, 0px) + 3.2rem); padding-bottom: 2.2rem; }
+.tmag-hero--ink .tmag-hero-text { padding-top: 3.2rem; padding-bottom: 2.2rem; }
 .tmag-hero--ink .tmag-headline { font-size: clamp(2.1rem, 9vw, 2.9rem); }
 .tmag-hero-img { position: absolute; inset: 0; }
 .tmag-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tmag-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,19,18,0.18) 0%, rgba(20,19,18,0) 30%, rgba(20,19,18,0) 45%, rgba(20,19,18,0.66) 100%); pointer-events: none; }
-.tmag-hero-text { position: relative; z-index: 1; padding: calc(var(--safe-top, 0px) + 1rem) 1.1rem 1.3rem; color: #fff; width: 100%; }
+.tmag-hero-text { position: relative; z-index: 1; padding: 1rem 1.1rem 1.3rem; color: #fff; width: 100%; }
 .tmag-kicker--hero { color: rgba(255,255,255,0.78); margin-bottom: 8px; }
 .tmag-headline { font-family: 'Brand Didone', Georgia, serif; font-style: italic; font-weight: 500; font-size: clamp(1.8rem, 7.5vw, 2.4rem); line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.01em; text-shadow: 0 2px 22px rgba(0,0,0,0.35); }
 .tmag-dataline { font-size: 0.7rem; letter-spacing: 0.03em; margin: 0; color: rgba(255,255,255,0.82); }
