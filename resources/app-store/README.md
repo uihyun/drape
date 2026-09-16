@@ -9,15 +9,21 @@
 - `posters-shipped/1.5.0-en`, `posters-shipped/1.5.0-ja` — the decks actually
   on the stores. Committed because once 2.1.0 replaces them they are gone: they
   were never in this repo, and the only other copy was Apple's CDN.
-- `posters-2.1.0-<locale>/` — rendered output. **Not committed** (gitignored):
-  derived from `captures/` plus the script, and regenerating is one command.
+- `posters-2.1.0-<locale>/` — the decks to upload for 2.1.0. Committed too,
+  even though they are derived: the headline face is a macOS system font, so a
+  different machine does not reproduce them, and the upload artifact is worth
+  more than the bytes it costs.
 
-Everything above used to live only in `~/Desktop/idea/drape/screenshots/`,
-outside any repo, which is how it went missing.
+All of this used to live only in `~/Desktop/idea/drape/screenshots/`, outside
+any repo, which is how it went missing. That path still holds a copy, but the
+repo is the original now — the renderer reads and writes here.
 
 ## Rendering
 
     node scripts/build-store-posters.cjs en      # also ko · ja · es · fr
+
+Reads `captures/`, writes `posters-2.1.0-<locale>/`. Both inside the repo — no
+argument needed, and it refuses to write anywhere near `posters-shipped/`.
 
 The treatment was measured off the shipped deck and is reproduced exactly: ink
 `#141312` ground, one centred Didot-italic lowercase line with a baseline at

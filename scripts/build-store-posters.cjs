@@ -2,17 +2,18 @@
 /* App Store / Play poster deck.
  *
  * Rebuilds the treatment used for the live 1.5.0 deck, measured pixel-for-pixel
- * off `~/Desktop/idea/drape/screenshots/poster/01-calendar.png`: ink ground, one
+ * off `posters-shipped/1.5.0-en/01-calendar.png`: ink ground, one
  * centred Didot-italic lowercase line, a single pine dot beneath it, and the
  * app capture as a white rounded card. No subhead — the line carries it.
  *
  * Usage:
- *   node scripts/build-store-posters.cjs en
- *   node scripts/build-store-posters.cjs en --src ~/Desktop/idea/drape/screenshots
+ *   node scripts/build-store-posters.cjs en        # also ko · ja · es · fr
+ *   node scripts/build-store-posters.cjs en --src <dir>
  *
- * Captures are looked up by the `src` key in DECK below. Output lands in
- * <srcDir>/poster-<locale>/ (and plain `poster/` for English, matching the
- * existing folders).
+ * Everything lives in the repo: captures in resources/app-store/captures/,
+ * output in resources/app-store/posters-2.1.0-<locale>/. Both are committed —
+ * the rendered decks are not reliably reproducible off this machine, because
+ * the headline face is a macOS system font.
  */
 
 const sharp = require('sharp');
@@ -160,18 +161,18 @@ async function roundedCard(file) {
 (async () => {
   const locale = process.argv[2] || 'en';
   const srcFlag = process.argv.indexOf('--src');
+  const REPO = path.join(__dirname, '..');
   const SRC = srcFlag > -1
     ? process.argv[srcFlag + 1].replace(/^~/, os.homedir())
-    : path.join(os.homedir(), 'Desktop/idea/drape/screenshots');
+    : path.join(REPO, 'resources/app-store/captures');
 
   const lines = LINES[locale];
   if (!lines) throw new Error(`No copy for '${locale}'. Have: ${Object.keys(LINES).join(', ')}`);
   if (!fs.existsSync(SRC)) throw new Error(`Capture folder not found: ${SRC}`);
 
-  // Never write into  or  — those hold the shipped 1.5.0
-  // deck, and a run that overwrites them destroys the only full-res copy
-  // outside Apple'''s CDN.
-  const OUT = path.join(SRC, `poster-2.1.0-${locale}`);
+  // Never inside `posters-shipped/` — that holds the decks actually on the
+  // stores, and once 2.1.0 replaces them there is no other copy anywhere.
+  const OUT = path.join(REPO, `resources/app-store/posters-2.1.0-${locale}`);
   fs.mkdirSync(OUT, { recursive: true });
 
   console.log(`${locale} → ${OUT}`);
