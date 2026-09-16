@@ -668,9 +668,19 @@ fill plus a measured horizontal window is the right trade; and hero slides ship
 as JPEG — lossless PNG cost ~6 MB a slide, and palette quantisation, which the
 card slides use happily, bands a photograph's sky.
 
+**Calendar sits ahead of closet, not at the back.** An earlier pass put it
+second-to-last on the reasoning that a logging feature is for people already
+sold. The GA figure that reasoning leaned on was the views column, and the views
+column is the wrong one: calendar has 263 views across 90 days but **68 users**,
+the second-widest reach of any tab — more than try-on's 53, within three of
+closet's 71. Few views per user is what a daily logging feature looks like when
+it is working, not a sign nobody goes there.
+
 **Play gets eight of the ten.** Play caps phone screenshots at 8 where the App
-Store allows 10, so calendar and board — the two least-used tabs in GA — come
-off for that listing only.
+Store allows 10; `05-hero-tryon` and `10-board` come off for that listing. That
+pair costs least — the try-on title card is followed immediately by the slide
+that makes the same point, and boards is the least-used tab. Cutting calendar
+was considered and rejected for the reason above.
 
 **Board poster restored as slide 7, and the GA figure behind dropping it was
 wrong.** The stat written into the renderer and README — "4.4% of profile
