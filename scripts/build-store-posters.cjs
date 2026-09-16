@@ -45,12 +45,18 @@ const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
 // read institutional next to a Bodoni italic.
 // Fonts live in resources/fonts/ and must be installed for fontconfig to see
 // them: cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
+// The Korean statics are instanced out of NotoSerifKR[wght].ttf — fontconfig
+// resolves a named weight from a variable font inconsistently, and the failure
+// is silent: the poster just renders at Regular.
 // Weight matters more than family here: at 100px a Regular-weight Mincho goes
-// spindly next to Bodoni's thick strokes and the poster looks weak. Both of
-// these are set at Medium for that reason.
+// spindly next to Bodoni's thick strokes and the poster looks weak.
+// The two scripts don't land at the same weight. Zen Old Mincho's Medium
+// already carries Bodoni-like contrast; Hangul's even stroke density makes the
+// same nominal weight read lighter, so Korean is set one step up.
 const HEAD_FAMILY_JA = 'Zen Old Mincho, Shippori Mincho, Hiragino Mincho ProN, serif';
 const HEAD_FAMILY_KO = 'Noto Serif KR, Apple SD Gothic Neo, serif';
-const HEAD_WEIGHT_CJK = 500;
+const HEAD_WEIGHT_JA = 500;
+const HEAD_WEIGHT_KO = 600;
 
 // ── The deck ───────────────────────────────────────────────────────────
 // Order follows the live 1.5.0 deck; `02-feed` became trends and `06-market`
@@ -147,7 +153,9 @@ function posterSvg(line) {
     : hasCJK(line) ? HEAD_FAMILY_JA
     : HEAD_FAMILY;
   const style = hasCJK(line) ? '' : 'font-style="italic"';
-  const weight = hasCJK(line) ? HEAD_WEIGHT_CJK : 400;
+  const weight = hasHangul(line) ? HEAD_WEIGHT_KO
+    : hasCJK(line) ? HEAD_WEIGHT_JA
+    : 400;
   return `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${W}" height="${H}" fill="${GROUND}"/>
