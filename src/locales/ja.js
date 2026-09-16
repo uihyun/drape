@@ -509,6 +509,7 @@ export const ja = {
   onboardStylistTitle: 'あなた専属のスタイリスト',
   onboardStylistBody: 'AIスタイリストを選んでください — クローゼットから無料でコーデ提案、ワンタップで自分の姿に試着できます。',
   stylistError: 'スタイリングに失敗しました。もう一度お試しください。',
+  stylistThinCloset: 'アイテムが{n}点なので似た組み合わせになりがちです。数点追加すると提案の幅が広がります。',
   stylistGuide: 'クローゼット・試着の👍👎・登録したスタイルをもとに提案します。',
   stylistGuideLink: 'マイスタイルを編集',
   stylistSave: '保存',

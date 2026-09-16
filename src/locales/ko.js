@@ -507,6 +507,7 @@ export const ko = {
   onboardStylistTitle: '나만의 스타일리스트',
   onboardStylistBody: 'AI 스타일리스트를 골라보세요 — 내 옷장으로 무료 코디 추천을 받고, 탭 한 번으로 내 모습에 입혀볼 수 있어요.',
   stylistError: '스타일링에 실패했어요. 다시 시도해주세요.',
+  stylistThinCloset: '옷이 {n}벌이라 비슷한 조합이 자주 나와요. 몇 벌 더 등록하면 추천이 다양해져요.',
   stylistGuide: '내 옷장, 트라이온 👍👎, 입력한 스타일을 함께 보고 추천해요.',
   stylistGuideLink: '내 스타일 수정',
   stylistSave: '저장',

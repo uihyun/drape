@@ -34,6 +34,12 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **"Why do I keep getting similar looks?" — answered where it's true.** A
+  closet under 15 items can't support genuinely different outfits, so the
+  stylist reuses pieces and the feature reads as stuck. A muted line now
+  appears under the results in that case only, naming the actual item count.
+  Deliberately conditional: a permanent disclaimer would read as an excuse to
+  every user whose closet is big enough.
 - **A stylist only shows its own work.** The warm cache was keyed by user, so
   switching from Remy to Noa left Remy's recommendation sitting under Noa's
   name. It's now keyed per `(user, persona)`: each stylist keeps its own last

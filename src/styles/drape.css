@@ -6788,6 +6788,7 @@ input[type="search"]::-webkit-search-decoration {
 .stylist-savedcard header strong { display: block; font-size: 0.95rem; letter-spacing: -0.01em; }
 .stylist-savedcard header span { font-size: 0.7rem; color: var(--text-muted); }
 .stylist-savedrm { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; }
+.stylist-thin { font-size: 0.72rem; color: var(--text-muted); margin: 2px 0 10px; line-height: 1.5; }
 .stylist-guide { font-size: 0.72rem; color: var(--text-muted); margin: 8px 0 2px; line-height: 1.5; }
 .stylist-guide a { color: var(--text-secondary); }
 

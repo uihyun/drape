@@ -507,6 +507,7 @@ export const en = {
   onboardStylistTitle: 'Meet your stylist',
   onboardStylistBody: 'Pick a personal AI stylist — free outfit ideas from your own closet, then see each look on you with one tap.',
   stylistError: 'Your stylist couldn’t finish that one. Try again.',
+  stylistThinCloset: 'With {n} items the same combinations come up often — add a few more for wider variety.',
   stylistGuide: 'Picks use your closet, your 👍👎 on try-ons, and your stated style.',
   stylistGuideLink: 'Edit my style',
   stylistSave: 'Save',

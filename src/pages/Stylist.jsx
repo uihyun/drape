@@ -18,6 +18,9 @@ import {
 // Saved looks come in pages — a long archive shouldn't dump 50 cards under
 // the recommend button.
 const PAGE = 3;
+// Below this a closet can't support genuinely different outfits — the stylist
+// reuses pieces and it reads as a stuck feature rather than a small wardrobe.
+const THIN_CLOSET = 15;
 
 export function Stylist({ user, onSignIn }) {
   const { t } = useLocale();
@@ -232,6 +235,14 @@ export function Stylist({ user, onSignIn }) {
         </p>
       )}
       {err && <div className="empty-state"><p>{err}</p></div>}
+
+      {/* Only when it's actually true. A permanent "results may repeat" note
+          would read as an excuse to everyone whose closet is big enough. */}
+      {rec?.outfits?.length > 0 && closet && Object.keys(closet).length < THIN_CLOSET && (
+        <p className="stylist-thin">
+          {t('stylistThinCloset', { n: Object.keys(closet).length })}
+        </p>
+      )}
 
       {rec?.outfits?.map((o, i) => (
         <section className="stylist-outfit" key={i}>
