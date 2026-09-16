@@ -1660,7 +1660,7 @@ body.is-native {
 .closet-grid {
   display: grid;
   /* Default 3-col rhythm — overridden inline by .pinch-grid when the
-     user pinch-zooms (1..4 cols persisted in localStorage). */
+     user pinch-zooms (1..5 cols persisted in localStorage). */
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem 0.75rem;
 }
@@ -1678,6 +1678,14 @@ body.is-native {
    each card shrink to its fr share and the overflowing text gets the
    ellipsis treatment from .item-card-name. */
 .closet-grid > .item-card { min-width: 0; }
+
+/* Dense end of the pinch range. At 5-up a card is ~62px on a phone, so the
+   generous gap eats the images and the name is unreadable either way — this
+   density is for scanning by silhouette, not for reading labels. */
+.closet-grid[data-cols="4"] { gap: 0.9rem 0.5rem; }
+.closet-grid[data-cols="4"] .item-card-name { font-size: 0.68rem; }
+.closet-grid[data-cols="5"] { gap: 0.7rem 0.4rem; }
+.closet-grid[data-cols="5"] .item-card-name { display: none; }
 
 /* Usage / Brands views render a stack of grouped 3-col grids. Heading
    sits flush-left above each section with a count chip on the right. */

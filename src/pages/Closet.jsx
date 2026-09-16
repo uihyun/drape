@@ -93,7 +93,7 @@ const matchesFilters = itemMatchesFilters;
 
 export function Closet({ user, authReady, onSignIn, embedded = false }) {
   const { t } = useLocale();
-  const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 4, def: 3 });
+  const { cols, ref: gridRef } = usePinchColumns('closet', { min: 1, max: 5, def: 3 });
   // Cards glide between column counts instead of snapping to the new grid.
   useFlipGrid(gridRef, cols);
   // Seed from the splash warm-up so the grid paints instantly on first open.
@@ -339,6 +339,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
         <div
           ref={gridRef}
           className="closet-grid pinch-grid"
+          data-cols={cols}
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
           {filtered.map((item, i) => (

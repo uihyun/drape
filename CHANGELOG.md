@@ -34,6 +34,10 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Closet pinch goes to five across.** Was capped at four. At 5-up a card is
+  ~62px on a phone, so the dense end tightens its gaps and drops the item name
+  — that density is for scanning silhouettes, and the label is unreadable at
+  that size anyway.
 - **Closet is the default profile tab.** 90 days of GA: the closet is 42.7% of
   profile screen views at 1,292 s/user, the calendar 5.8% at **15** s/user on
   almost the same number of people. That pattern — nearly everyone visits,
