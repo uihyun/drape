@@ -260,9 +260,14 @@ export function Stylist({ user, onSignIn }) {
         // The persona picker above doubles as the filter: a stylist's page
         // shows that stylist's picks. Looks kept under another persona stay
         // put — a one-liner says so instead of letting them seem deleted.
-        const mine = saved.filter((l) => l.persona === persona);
-        const others = saved.length - mine.length;
-        if (!saved.length || !persona || choosing) return null;
+        // On a stylist's page the archive narrows to that stylist. On the
+        // chooser screen there is no stylist in context, so it shows
+        // everything — that's also the only place to reach looks saved
+        // under a persona you no longer use.
+        const filtered = choosing || !persona;
+        const mine = filtered ? saved : saved.filter((l) => l.persona === persona);
+        const others = filtered ? 0 : saved.length - mine.length;
+        if (!saved.length) return null;
         if (!mine.length) {
           return (
             <section className="stylist-saved">

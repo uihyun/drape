@@ -34,6 +34,20 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Stylist stops repeating itself.** With a small closet the same three
+  outfits came back every time, which reads as a broken feature rather than
+  a limited wardrobe. `styleRecommend` now passes the last four
+  recommendations' item sets into the prompt with an instruction to reuse
+  individual pieces freely but change the combination and the angle — and to
+  say so in the "why" if the closet genuinely can't support something new.
+  Verified: two consecutive runs returned six different looks. The query
+  needed a new `stylistRecs(userId, createdAt)` index; it is wrapped so a
+  failed read (index building, quota blip) degrades to "no variety hint"
+  instead of taking the recommendation down.
+- **Saved looks on the chooser screen show every stylist.** Filtering by
+  persona is right on a stylist's page, but the chooser has no stylist in
+  context — and it's the only way back to looks saved under a persona you
+  no longer use. Same "Show more" paging there.
 - **Saved looks: per-stylist, paged, and tagged correctly.** The persona
   picker now filters the archive — a stylist's page shows that stylist's
   picks — with a one-line note when looks are parked under another persona,

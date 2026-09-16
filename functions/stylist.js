@@ -204,7 +204,7 @@ exports.styleRecommend = onCall(
     // Stated prefs are read FRESH each call (not just via the profile
     // summary, which refreshes at most 2×/day) — an edit in Settings must
     // change the very next recommendation.
-    const [inventory, profDoc, recentGens] = await Promise.all([
+    const [inventory, profDoc, recentGens, recentRecs] = await Promise.all([
       loadInventory(uid),
       db().collection('profiles').doc(uid).get(),
       // Thumbs are read FRESH here, not just through the 12-hour profile
@@ -212,8 +212,23 @@ exports.styleRecommend = onCall(
       // feels like it does nothing (owner, 2026-09-16).
       db().collection('generations').where('userId', '==', uid)
         .orderBy('createdAt', 'desc').limit(30).get(),
+      // What this stylist proposed recently — a small closet otherwise gets
+      // the same three outfits every time, which reads as a broken feature
+      // rather than a limited wardrobe (owner, 2026-09-16).
+      // Variety input only — if this read fails (index still building, quota
+      // blip) the recommendation must still go out. Never let a nice-to-have
+      // query take down the feature.
+      db().collection('stylistRecs').where('userId', '==', uid)
+        .orderBy('createdAt', 'desc').limit(4).get()
+        .catch((e) => { console.warn('recentRecs read skipped:', e?.message); return { forEach: () => {} }; }),
     ]);
     const stated = (profDoc.exists && profDoc.data().stylePrefs) || null;
+    const alreadyProposed = [];
+    recentRecs.forEach((d) => {
+      (d.data().outfits || []).forEach((o) => {
+        if (Array.isArray(o.itemIds) && o.itemIds.length) alreadyProposed.push(o.itemIds);
+      });
+    });
     const loved = [];
     const disliked = [];
     recentGens.forEach((d) => {
@@ -254,6 +269,9 @@ exports.styleRecommend = onCall(
       stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
       loved.length ? `THEY RATED THESE COMBINATIONS 👍 (item ids — lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
       disliked.length ? `THEY RATED THESE 👎 (do NOT repeat these combinations or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
+      alreadyProposed.length
+        ? `ALREADY PROPOSED RECENTLY — offer something different: ${JSON.stringify(alreadyProposed.slice(0, 9))}. Reuse individual pieces freely (that is what a closet is for), but the COMBINATION and the angle should feel new. If the closet is too small for a genuinely new combination, say so in "why" rather than repeating a look silently.`
+        : '',
       profile?.avoidList?.length ? `AVOID: ${profile.avoidList.join(', ')}` : '',
       ask ? `USER REQUEST: ${ask}` : 'USER REQUEST: (none — style for a normal day this season)',
       `CLOSET: ${JSON.stringify(inventory).slice(0, 8000)}`,
