@@ -647,6 +647,20 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Found the real screenshot baseline — it was never in this repo.** The live
+deck is seven slides (calendar → feed → closet → analyze → tryon → market →
+board), built 2026-06-04, with raw captures and finished posters under
+`~/Desktop/idea/drape/screenshots/`. PROGRESS.md recorded the order in one line
+and nothing else, so every screenshot proposal made on 2026-09-16 was invented
+without reference to what exists. Worse, the design is nothing like what the
+repo's renderer produces: drape's posters are ink #141312 with a single
+centred **Didot italic lowercase** line and no subhead ("log every outfit",
+"see it on you, first"), the app screen shown as a white rounded card. The
+renderer carried forward from voda is all-caps Archivo on charcoal with a
+terracotta bar and a subhead. `resources/app-store/README.md` now records the
+deck, where the files are, and the design, so this can't be re-derived from
+scratch again.
+
 **Screenshot 6 is no longer the marketplace.** The shot list still asked for a
 Market capture after the marketplace claim was cut from every description —
 shooting a screen the store copy doesn't mention, of a surface users can't

@@ -35,57 +35,58 @@ if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 // longer than English; MAX_HEAD_CHARS below guards against silent overflow,
 // which on a store screenshot means text sliced off at the right edge.
 const SLIDES = [
-  { src: '01-tryon.png',    key: 'tryon' },
-  { src: '02-closet.png',   key: 'closet' },
-  { src: '03-stylist.png',  key: 'stylist' },
-  { src: '04-calendar.png', key: 'calendar' },
-  { src: '05-trends.png',   key: 'trends' },
-  { src: '06-discover.png', key: 'discover' },
+  // Slides 1–2 are one sentence told across two frames: the look you saw on
+  // someone else, then the same look on you. A try-on result on its own has no
+  // context — the viewer can't tell what they're looking at. Only the first
+  // two or three slides get seen on the product page, so the story goes there.
+  { src: '01-look.png',     key: 'look' },
+  { src: '02-tryon.png',    key: 'tryon' },
+  { src: '03-closet.png',   key: 'closet' },
+  { src: '04-stylist.png',  key: 'stylist' },
+  { src: '05-calendar.png', key: 'calendar' },
+  { src: '06-trends.png',   key: 'trends' },
 ];
 
 const CAPTIONS = {
   en: {
-    tryon:    { headline: 'TRY IT ON\nYOURSELF',      subhead: 'Your real face and body. In seconds.' },
-    closet:   { headline: 'YOUR CLOSET,\nDIGITIZED',  subhead: 'One photo per piece. Tagged for you.' },
-    stylist:  { headline: 'YOUR OWN\nAI STYLIST',     subhead: 'Looks built from what you already own.' },
-    calendar: { headline: 'YOUR YEAR\nIN OUTFITS',    subhead: 'One photo a day fills the calendar.' },
+    look:     { headline: 'SAW THIS\nON SOMEONE', subhead: 'Any look, from any member's closet.' },
+    tryon:    { headline: 'NOW SEE IT\nON YOURSELF', subhead: 'Your real face and body. 5 free every day.' },
+    closet:   { headline: 'YOUR CLOSET,\nDIGITAL', subhead: 'One photo per piece. Tagged for you.' },
+    stylist:  { headline: 'YOUR OWN\nAI STYLIST', subhead: 'Looks built from what you already own.' },
+    calendar: { headline: 'YOUR YEAR\nIN OUTFITS', subhead: 'One photo a day fills the calendar.' },
     trends:   { headline: 'WHAT PEOPLE\nARE WEARING', subhead: 'A new issue every Monday.' },
-    discover: { headline: 'SEE INSIDE\nREAL CLOSETS', subhead: 'Open a look, then browse whose it is.' },
   },
-  es: {
-    tryon:    { headline: 'PRUÉBATELO\nEN TI',         subhead: 'Tu rostro y tu cuerpo reales. En segundos.' },
-    closet:   { headline: 'TU ARMARIO,\nDIGITAL',      subhead: 'Una foto por prenda. Se etiqueta sola.' },
-    stylist:  { headline: 'TU ESTILISTA\nCON IA',      subhead: 'Looks armados con lo que ya tienes.' },
-    calendar: { headline: 'TU AÑO\nEN LOOKS',          subhead: 'Una foto al día llena el calendario.' },
-    trends:   { headline: 'LO QUE SE\nESTÁ USANDO',    subhead: 'Una edición nueva cada lunes.' },
-    discover: { headline: 'ARMARIOS\nDE VERDAD',    subhead: 'Abre un look y mira de quién es.' },
-  },
-  // No uppercase in KO/JA, so the headline leans on size alone. Full-width
-  // glyphs are ~1.7x a Latin cap, which is why the fit check measures ems
-  // rather than counting characters.
   ko: {
-    tryon:    { headline: '직접\n입어보기',        subhead: '진짜 내 얼굴과 몸으로, 몇 초 만에.' },
-    closet:   { headline: '내 옷장을\n디지털로',   subhead: '한 벌에 사진 한 장. 태그는 자동으로.' },
-    stylist:  { headline: '나만의\nAI 스타일리스트', subhead: '가진 옷으로만 만드는 코디.' },
-    calendar: { headline: '입은 옷으로\n쌓는 1년',  subhead: '하루 한 장이면 달력이 채워져요.' },
-    trends:   { headline: '지금 뜨는\n스타일',      subhead: '매주 월요일 새 이슈.' },
-    discover: { headline: '다른 사람\n옷장 구경',      subhead: '룩을 열면 누구 것인지 보여요.' },
+    look:     { headline: '남의 룩에서\n마음에 들면', subhead: '누구의 옷이든 고를 수 있어요.' },
+    tryon:    { headline: '내 몸으로\n바로 확인', subhead: '진짜 내 얼굴과 체형. 하루 5번 무료.' },
+    closet:   { headline: '내 옷장을\n디지털로', subhead: '한 벌에 사진 한 장. 태그는 자동.' },
+    stylist:  { headline: '나만의\nAI 스타일리스트', subhead: '가진 옷으로 만드는 코디.' },
+    calendar: { headline: '입은 옷으로\n쌓는 1년', subhead: '하루 한 장이면 달력이 채워져요.' },
+    trends:   { headline: '지금 뜨는\n스타일', subhead: '매주 월요일 새 이슈.' },
   },
   ja: {
-    tryon:    { headline: '自分の体で\n試着',         subhead: '本物の顔と体のまま、数秒で。' },
+    look:     { headline: '誰かのコーデが\n気になったら', subhead: 'どのメンバーの服でも選べます。' },
+    tryon:    { headline: 'そのまま\n自分の体で', subhead: '本物の顔と体。毎日5回無料。' },
     closet:   { headline: 'クローゼットを\nデジタルに', subhead: '一着に一枚。タグ付けは自動。' },
     stylist:  { headline: 'あなた専用の\nAIスタイリスト', subhead: '手持ちの服だけで組むコーデ。' },
-    calendar: { headline: '着た服で\n埋まる1年',      subhead: '一日一枚でカレンダーが埋まる。' },
-    trends:   { headline: 'いま着られて\nいるもの',    subhead: '毎週月曜、新しい号。' },
-    discover: { headline: '他の人の\nクローゼット',    subhead: 'コーデを開けば持ち主が分かる。' },
+    calendar: { headline: '着た服で\n埋まる1年', subhead: '一日一枚でカレンダーが埋まる。' },
+    trends:   { headline: 'いま着られて\nいるもの', subhead: '毎週月曜、新しい号。' },
+  },
+  es: {
+    look:     { headline: 'LO VISTE EN\nOTRA PERSONA', subhead: 'Cualquier look, de cualquier miembro.' },
+    tryon:    { headline: 'AHORA, EN TI', subhead: 'Tu cara y tu cuerpo reales. 5 gratis al día.' },
+    closet:   { headline: 'TU ARMARIO,\nDIGITAL', subhead: 'Una foto por prenda. Se etiqueta sola.' },
+    stylist:  { headline: 'TU ESTILISTA\nCON IA', subhead: 'Looks armados con lo que ya tienes.' },
+    calendar: { headline: 'TU AÑO\nEN LOOKS', subhead: 'Una foto al día llena el calendario.' },
+    trends:   { headline: 'LO QUE SE\nESTÁ USANDO', subhead: 'Una edición nueva cada lunes.' },
   },
   fr: {
-    tryon:    { headline: 'ESSAYEZ-LA\nSUR VOUS',      subhead: 'Votre vrai visage, votre vrai corps. En quelques secondes.' },
+    look:     { headline: 'VU SUR\nQUELQU’UN', subhead: 'N’importe quelle tenue, de n’importe quel membre.' },
+    tryon:    { headline: 'MAINTENANT,\nSUR VOUS', subhead: 'Votre vrai visage, votre silhouette. 5 par jour.' },
     closet:   { headline: 'VOTRE DRESSING,\nNUMÉRIQUE', subhead: 'Une photo par pièce. Le tag se fait tout seul.' },
-    stylist:  { headline: 'VOTRE STYLISTE\nIA',          subhead: 'Des looks composés avec ce que vous avez déjà.' },
-    calendar: { headline: 'VOTRE ANNÉE\nEN TENUES',      subhead: 'Une photo par jour remplit le calendrier.' },
-    trends:   { headline: 'CE QUE L’ON\nPORTE',          subhead: 'Un nouveau numéro chaque lundi.' },
-    discover: { headline: 'DE VRAIS\nDRESSINGS',    subhead: 'Ouvrez un look, puis son dressing.' },
+    stylist:  { headline: 'VOTRE STYLISTE\nIA', subhead: 'Des looks composés avec ce que vous avez déjà.' },
+    calendar: { headline: 'VOTRE ANNÉE\nEN TENUES', subhead: 'Une photo par jour remplit le calendrier.' },
+    trends:   { headline: 'CE QUE L’ON\nPORTE', subhead: 'Un nouveau numéro chaque lundi.' },
   },
 };
 

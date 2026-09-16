@@ -1,5 +1,41 @@
 # App Store screenshot assets
 
+## The live deck — baseline, read before changing anything
+
+Seven slides, built 2026-06-04, order: **calendar → feed → closet → analyze →
+tryon → market → board**. Sources live OUTSIDE this repo:
+
+- `~/Desktop/idea/drape/screenshots/` — raw 1290×2796 captures
+  (`calendar.png`, `closet-1/2`, `analyzed-photo`, `analyzed-tryon`,
+  `tryon-1..4`, `market1/2`, `market-thread`, `board`, `home-1..3`)
+- `~/Desktop/idea/drape/screenshots/poster/` — the finished EN deck
+  (`01-calendar` … `07-board`)
+- `~/Desktop/idea/drape/screenshots/poster-ja/` — the Japanese deck
+
+**The design** (this is drape's, and any new deck must match it):
+- Ink `#141312` ground, full bleed.
+- One headline, centred, **Didot/Bodoni italic, lowercase**, no subhead — the
+  same voice as the wordmark. Live copy: *"log every outfit"*, *"a feed of real
+  looks"*, *"see it on you, first"*.
+- A single pine dot under the headline.
+- The app screen sits as a **white rounded card**, bleeding off the bottom edge
+  — not a phone mockup with a drop shadow.
+
+No generator for this deck is in either repo; the posters appear to have been
+composed by hand. `scripts/build-app-store-screenshots-b.cjs` is **voda's**
+loud charcoal/terracotta treatment (all-caps Archivo + subhead + terracotta
+bar) and does NOT match the above. It was carried forward by mistake; treat its
+output as a draft layout only until it is rebuilt to the design above.
+
+## What 2.1.0 changes about the deck
+
+- `02-feed` — the feed lost its tab; **Trends** is the surface that replaced it.
+- `06-market` — the marketplace has no entry point in the shipped UI, and the
+  claim was cut from every description. It cannot be a slide.
+- `07-board` — boards is the least used tab in 90 days of GA (4.4% of profile
+  views, 8 s/user). The weakest candidate for a slot.
+- New since the deck was built: **stylist**, **trends**.
+
 ## The shot list
 
 Six screens. Shoot on an iPhone 14/15/16 **Pro Max** (6.7") so the capture is
