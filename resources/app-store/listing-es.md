@@ -9,10 +9,10 @@ whole submission on overflow.
 
 ## App Store Connect
 
-**Name** (≤30) — keep identical across locales, it is the brand:
+**Name** (≤30, currently 25):
 
 ```
-drape
+drape: armario y prueba
 ```
 
 **Subtitle** (≤30, currently 29):
@@ -64,22 +64,32 @@ OOTD Y CALENDARIO
 • Una foto registra tu día: el calendario se llena solo.
 • Mira en qué usas más tu ropa y qué prendas están olvidadas.
 
+TENDENCIAS
+• Una edición nueva cada lunes: los estilos, colores y marcas de la semana,
+  sacados de lo que los miembros realmente están usando.
+
 COMUNIDAD Y MERCADO
 • Explora looks reales de otros miembros y pruébate sus prendas.
 • Vende lo que ya no usas y encuentra piezas de otras personas.
 
-drape es gratis para empezar. Las pruebas virtuales usan créditos diarios que
-se renuevan cada día.
+drape es gratis para empezar. Las pruebas virtuales usan una cuota diaria que
+se renueva cada día.
 ```
 
 **What's New** (≤4000) — 2.1.0:
 
 ```
-• Tendencias: una edición semanal con los estilos, colores y marcas del momento.
-• Estilista con IA: looks armados con tu propio armario, ahora en español.
-• Importa prendas compartiendo un enlace desde cualquier app.
-• Ordena tu armario por color, categoría o uso.
+• Tu estilista con IA: elige uno de cuatro y recibe ideas armadas con tu
+  propio armario; míralas en ti con un toque.
+• Tendencias: una edición nueva cada lunes con los estilos, colores y marcas
+  de la semana.
+• Comparte la página de un producto desde cualquier app a drape para ver si
+  te queda antes de comprarlo.
 • drape ahora está completamente en español.
+• Un recorrido guiado que te muestra dónde está cada cosa, en vez de una pila
+  de diapositivas.
+• Cambia el tamaño de tu armario con dos dedos, ordénalo por color, categoría
+  o uso, y agrega varias prendas de una vez.
 ```
 
 ## Google Play Console
@@ -87,7 +97,7 @@ se renuevan cada día.
 **App name** (≤30):
 
 ```
-drape
+drape: armario y prueba
 ```
 
 **Short description** (≤80, currently 74):

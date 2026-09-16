@@ -600,43 +600,38 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   preference labels on the try-on training corpus (brief §8). GA event
   `tryon_feedback` {value}. Locale keys `feedbackGood`/`feedbackBad` ×3.
 
-### 2.1.0 store submission kit (prepared 2026-09-14)
+### 2.1.0 store submission kit
 
-**Release notes — EN (App Store / Play):**
-> Meet your stylist. Pick one of four AI stylists and get free outfit ideas
-> built from your own closet — then see any look on your own body with one
-> tap. Share a product page from any app straight into drape to check if it
-> suits you before you buy. Plus: a new onboarding, instant-loading lists,
-> and plenty of polish.
+Listing copy lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name,
+subtitle, keywords, promotional text, full description and What's New for both
+stores, per locale. Every capped field is verified against its limit (both
+stores reject the whole submission on overflow, so this is not advisory).
 
-**KO:**
-> 나만의 스타일리스트가 생겼어요. 4명의 AI 스타일리스트 중 하나를 고르면 내
-> 옷장으로 무료 코디를 제안하고, 탭 한 번으로 내 모습에 입혀볼 수 있어요.
-> 쇼핑 앱에서 상품 페이지를 drape로 공유하면 사기 전에 어울리는지 확인할 수
-> 있어요. 새 온보딩, 즉시 뜨는 리스트 등 전반적인 개선 포함.
+The kit was first written 2026-09-14 and rewritten 2026-09-16: the original
+predated Trends, Spanish, the guided tour and the closet-first default, and
+still described a slide-deck onboarding that no longer exists.
 
-**JA:**
-> あなた専属のスタイリストが登場。4人のAIスタイリストから選ぶと、クローゼット
-> から無料でコーデを提案。ワンタップで自分の姿に試着できます。ショップの商品
-> ページをdrapeに共有すれば、買う前に似合うか確認できます。新しいオンボー
-> ディングや高速化などの改善も。
+**Screenshots.** The shot list is in `resources/app-store/README.md`. Six
+screens per locale in `captures-<locale>/`, then
+`node scripts/build-app-store-screenshots-b.cjs <locale>`. Captions are written
+for all four languages; a headline that would overflow the canvas throws before
+anything renders. **The `screenshots-6.7-en*` folders in the repo are voda
+assets** (interior design) that arrived with the migration — do not upload them.
 
-**ASO (owner applies in the consoles):**
-- iOS subtitle (30 chars): `Closet, stylist & try-on` (current title
-  `drape: closet & try-on` stays).
-- iOS keyword field (100 chars, no spaces after commas):
-  `digital closet,virtual try on,outfit planner,ootd,wardrobe,stylist,capsule,fitting,fashion ai,lookbook`
-- Play short description (80): `Your closet, your AI stylist — and try every
-  look on your own body first.`
-- Screenshots: first 3 = try-on result → stylist recommendation card →
-  share-import flow (App Store Browse is surging, the product page is the
-  bottleneck — 노출→설치 전환이 지표).
-- Both consoles: paste the release notes above per locale.
+Slide order carries more weight than the copy: try-on result -> closet ->
+stylist. App Store Browse impressions are surging and the product page is the
+conversion bottleneck.
 
-**Owner build checklist:** ① Xcode: add DrapeShare target once
-(ios/App/DrapeShare/README.md, ~2 min) → archive build 16 → submit.
-② Android Studio: AAB versionCode 20 → upload (this clears the API-36
-block). ③ After approval: watch /admin acquisition + stylist GA events.
+**Owner build checklist:**
+1. Shoot six screens per locale, render the decks, upload.
+2. Xcode: archive build 16 and submit. The DrapeShare target is wired, and the
+   Podfile now lifts pod deployment targets to 15.0 — without that the archive
+   fails on ~45 "deployment target 14.0" errors, which read as warnings in the
+   issue navigator but stop the build.
+3. Android Studio: AAB versionCode 20 — this is what clears Play's API-36
+   update block.
+4. Both consoles: add **Spanish** as a listing language (es-MX / es-419).
+5. After approval: watch /admin acquisition + the stylist and trends GA events.
 
 ## 1.5.1 — SKIPPED (folded into 1.6.0; versionCode 19 / build 15 never submitted)
 
