@@ -8,8 +8,12 @@ Running notes on what's been built, what's been deferred, and what would break r
 build 14). Everything below has been live on web/functions for weeks but no
 app user has seen any of it. Play has enforced target API 36 since Aug 31,
 so **no Android update can ship until the 2.1.0 AAB goes up** — the repo is
-already API 36, versionCode 20 / iOS build 16, with the submission kit
-(release notes EN/KO/JA + ASO metadata + build checklist) in CHANGELOG.md.
+already API 36, versionCode 20 / iOS build 16. Listing copy for all five
+locales is in `resources/app-store/listing-{en,ko,ja,es,fr}.md`, every capped
+field verified; the build checklist is in CHANGELOG under "2.1.0 store
+submission kit". The iOS archive was failing until 2026-09-16 — Capacitor pins
+pods to deployment target 14.0 and current Xcode rejects anything under 15.0,
+as errors, not warnings. The Podfile lifts them now.
 
 **Shipped since the last snapshot** (all live on web):
 - **Trends** replaced the feed in the tab bar (feed itself untouched at
@@ -24,22 +28,33 @@ already API 36, versionCode 20 / iOS build 16, with the submission kit
   returning the same three looks.
 - **Share-to-drape** on all three entry points; a product shot with one
   piece now registers straight to the closet (§A fast path).
-- **Spanish** as a fourth locale — app, legal documents, static web pages,
-  server-side generation prompts, SEO metadata, store listing copy.
+- **Spanish and French** as fourth and fifth locales — app, legal documents,
+  static web pages, server-side generation prompts (including the
+  translate-this-post target list), SEO metadata, store listing copy and
+  screenshot captions. Spanish is ONE neutral Spanish, not a national variant;
+  French is France French. French was added for portfolio consistency with
+  voda, not on demand — GA has it at 0.2% of engagement time.
 - **Server-configurable AI models** (`config/models`, /admin → Config).
-- **Guided tour** replacing the stacked onboarding popups: scrim + spotlight
-  on one real control at a time, step copy in `tour*` locale keys so it is
-  server-overridable.
+- **Guided tour IS the onboarding** — the four-slide deck is gone. Scrim +
+  spotlight on one real control at a time, ending on the + button so the
+  walkthrough closes holding the thing to do. Step copy in `tour*` locale keys,
+  server-overridable. `?tour=1` replays it without wiping app storage.
 - **Closet is the default profile tab** (GA: 42.7% of profile views at
   1,292 s/user vs the calendar's 5.8% at 15 s/user). Pinch now goes 1–5
   columns, is taught once at 6+ items, and cards FLIP between densities.
 - **Home screen follows the closet.** New accounts open on Trends; the first
   time a closet stops being empty the profile asks, once, whether to open
-  there instead. An explicit choice always wins.
+  there instead. An explicit choice always wins, and the question is only put
+  to accounts that actually landed on Trends — existing users never see it.
 - Closet sorting, bulk add inside the add-item sheet, in-app review nudge,
   Firestore offline persistence, icon-only bottom nav.
 - Admin: persona-sunset gauge, trends curation, config/models editors,
   acquisition channels, 30-day default window.
+
+**Also shipped:** prompt fields lock while their request is in flight; iOS tap
+highlights, focus rings and long-press callouts removed app-wide (they were the
+"this is a web page" tells); Trends cover is full-bleed on all four edges; the
+voda screenshot decks and `_archive/voda-docs/` were deleted (27 MB).
 
 **Bugs this wave surfaced** (all fixed — worth knowing they were possible):
 - Bulk "these are my clothes" added **nothing**, silently: a background
@@ -50,6 +65,11 @@ already API 36, versionCode 20 / iOS build 16, with the submission kit
   card forever, outranking inline styles — no card transform could ever work.
 - A stale `.profile-stats { justify-content: center }` from the deleted
   `.profile-header` layout was still centring the stats row.
+- Pinch-to-resize was dead on the FIRST visit to the closet every session: the
+  listeners attached in a mount-time effect, but the grid isn't in the first
+  render, and the effect never re-ran to catch it. A callback ref fixed it, and
+  the density control now also has a button — a gesture with no visible
+  fallback can strand someone at a size they can't undo.
 
 **Known gaps (decided, not forgotten)** — see docs/SPEC-1.6.md "deviations":
 stylist rec → "save as outfit" button; style-profile refresh is a 12h lazy

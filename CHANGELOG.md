@@ -626,7 +626,7 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
 
 ### 2.1.0 store submission kit
 
-Listing copy lives in `resources/app-store/listing-{en,ko,ja,es}.md` — name,
+Listing copy lives in `resources/app-store/listing-{en,ko,ja,es,fr}.md` — name,
 subtitle, keywords, promotional text, full description and What's New for both
 stores, per locale. Every capped field is verified against its limit (both
 stores reject the whole submission on overflow, so this is not advisory).
@@ -654,7 +654,10 @@ conversion bottleneck.
    issue navigator but stop the build.
 3. Android Studio: AAB versionCode 20 — this is what clears Play's API-36
    update block.
-4. Both consoles: add **Spanish** as a listing language (es-MX / es-419).
+4. Both consoles: add **Spanish** and **French** as listing languages. App
+   Store: Spanish (Spain) covers every Spanish storefront by fallback, French
+   (France) covers the French ones. Play: add Spanish (Spain) + Spanish (Latin
+   America) with identical text, and French (France).
 5. After approval: watch /admin acquisition + the stylist and trends GA events.
 
 ## 1.5.1 — SKIPPED (folded into 1.6.0; versionCode 19 / build 15 never submitted)
