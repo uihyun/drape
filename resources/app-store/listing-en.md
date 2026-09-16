@@ -94,3 +94,17 @@ Build your digital closet, try anything on with AI, and log your outfits.
   surging and the product page is the bottleneck — impressions → installs is
   the metric to watch after release.
 - The shot list and the renderer live in `README.md` next to this file.
+
+**What's new** (Play, ≤500) — 2.1.0:
+
+The App Store takes 4000 characters here; **Play takes 500**, so the release
+notes are not the same text trimmed — they are a shorter list. The two weakest
+bullets are merged into one closing line.
+
+```
+• AI stylist — pick one of four and get outfits built from your own closet, then see them on you in a tap.
+• Trends — a new issue every Monday: the styles, colours and brands moving this week.
+• Share any product page to drape to see it on you before you buy.
+• Now in Spanish and French, alongside English, Korean and Japanese.
+• A guided tour instead of a stack of slides. Pinch to resize your closet, new sorting, add several pieces at once.
+```

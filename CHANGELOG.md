@@ -810,6 +810,15 @@ sans. Three font passes could not make the Korean sit beside the English deck,
 so the KR storefront keeps inheriting the English set, which is what it already
 runs. Reviving it means a different treatment for Korean, not another serif.
 
+**Play release notes are a separate, shorter list.** The What's New written for
+2.1.0 ran 576–693 characters depending on locale, which is fine for the App
+Store's 4000 but over **Play's 500** in every language — a submission-blocking
+overflow, not a style problem. Play now gets its own block in each
+`listing-*.md`: the four bullets that matter, with the guided tour and the
+closet gestures merged into one closing line. 204–481 characters, every locale
+under the cap. Not the same text trimmed; trimming the App Store copy would have
+cut mid-bullet.
+
 **Play short description put back to the shipped angle.** The live one is
 "Build your digital closet, try anything on with AI, and log your outfits" —
 three clauses, one per pillar. A rewrite had re-angled the whole thing on

@@ -82,3 +82,16 @@ Créez votre dressing numérique, essayez tout avec l’IA et notez vos tenues.
 ```
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.
+
+**Nouveautés** (Play, ≤500) — 2.1.0:
+
+L'App Store accepte 4000 caractères ; **Play en accepte 500**, donc ces notes
+ne sont pas le même texte tronqué mais une liste plus courte.
+
+```
+• Styliste IA : choisissez parmi quatre et recevez des tenues composées avec votre dressing, puis essayez-les en un geste.
+• Tendances : un nouveau numéro chaque lundi avec les styles, couleurs et marques de la semaine.
+• Partagez une fiche produit vers drape pour voir le vêtement sur vous avant d'acheter.
+• Disponible en espagnol et en français.
+• Une visite guidée au lieu de diapositives. Redimensionnez le dressing à deux doigts, triez-le, ajoutez plusieurs pièces d'un coup.
+```

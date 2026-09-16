@@ -108,3 +108,16 @@ Play renders the bullet characters fine and the length is well within cap.
 - [ ] Verify the build declares Spanish: `ios/App/App/Info.plist` →
       `CFBundleLocalizations` must list `es` (done in 2.1.0), otherwise the App
       Store shows the app as English-only regardless of the listing.
+
+**Novedades** (Play, ≤500) — 2.1.0:
+
+La App Store admite 4000 caracteres; **Play admite 500**, así que estas notas
+no son el mismo texto recortado sino una lista más corta.
+
+```
+• Estilista con IA: elige uno de cuatro y recibe looks armados con tu propio armario; míralos en ti con un toque.
+• Tendencias: una edición nueva cada lunes con los estilos, colores y marcas de la semana.
+• Comparte la página de un producto a drape para ver si te queda antes de comprarlo.
+• Ahora en español y francés.
+• Un recorrido guiado en vez de diapositivas. Ajusta tu armario con dos dedos, ordénalo y agrega varias prendas a la vez.
+```
