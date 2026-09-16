@@ -39,10 +39,9 @@ const DOT_FILL = '#2C4737';
 // different typeface on the store than the one inside the app.
 const HEAD_FAMILY = 'Bodoni Moda, Didot, Bodoni 72, serif';
 // CJK has no italic, so the counterpart is a high-contrast Mincho/Myeongjo —
-// the closest thing to Bodoni's thick/thin in those scripts. Shippori Mincho
-// is what the shipped Japanese deck was designed in; Gowun Batang is its
-// Korean equivalent, lighter and more current than Nanum/Noto Serif, which
-// read institutional next to a Bodoni italic.
+// the closest thing to Bodoni's thick/thin in those scripts. Gowun Batang and
+// Shippori Mincho were tried first and both go spindly at poster size; these
+// two hold their contrast at 100px, which is the whole job here.
 // Fonts live in resources/fonts/ and must be installed for fontconfig to see
 // them: cp resources/fonts/*.ttf ~/Library/Fonts && fc-cache -f
 // The Korean statics are instanced out of NotoSerifKR[wght].ttf — fontconfig
