@@ -111,13 +111,75 @@ brand rule).
 **Keywords, EN (100)**
 > wardrobe,fashion,style,lookbook,clothes,ai stylist,dressing room,fit check,capsule,virtual fitting
 
-**Description, EN** — never captured here; it lives in ASC. Lead was "drape is
-where your wardrobe lives." with six bullets (closet / try-on / OOTD calendar /
-outfits & boards / lookbook feed / marketplace).
+**Descriptions** — pulled from the public iTunes Lookup API on 2026-09-16, so
+this no longer depends on anyone remembering to copy them out:
 
-**KO / JA description + keywords** — NOT in this repo. They were entered
-directly in ASC and no copy was kept. Before changing either, open the console
-and paste the live strings in here first.
+    curl -s "https://itunes.apple.com/lookup?id=6775511709&country=us" | jq -r '.results[0].description'
+
+Swap `country=` for `kr` / `jp` to get the other storefronts. The same response
+carries the live screenshot URLs, the version, and the category pair. Keywords
+are the one field the API does NOT expose — those still have to be read out of
+App Store Connect by hand.
+
+Live at 1.5.0, EN:
+
+```
+drape is where your wardrobe lives.
+
+Snap each piece you own and drape builds a clean digital closet — auto-cut and auto-tagged. Add a few full-body photos and try anything on with AI: see clothes on your real body and face before you wear or buy them. Love a look you saw on someone else? Recreate the whole thing, right on you.
+
+• Digital closet — photograph your clothes; we cut out the garment and tag category, color, and season automatically.
+• Virtual try-on — see any item, or a full outfit, on your own body. Identity-preserving AI keeps your face and pose.
+• OOTD calendar — log what you wore each day and build your style history.
+• Outfits & boards — combine pieces into looks and mood boards.
+• Lookbook feed — follow others, discover looks, save pieces to your wishlist.
+• Marketplace — buy and sell pieces from real closets.
+
+Your closet, your fitting room, your style diary — all in drape.
+```
+
+Live at 1.5.0, KO:
+
+```
+옷장 전체가, 이제 손안에.
+
+가진 옷을 한 장씩 찍기만 하면 drape가 배경을 깔끔하게 지우고 카테고리·색·계절까지 자동으로 정리해 디지털 옷장을 만들어줘요. 전신 사진 몇 장이면 AI 가상 피팅으로 무엇이든 입어볼 수 있어요. 사기 전에, 입기 전에 — 진짜 내 얼굴과 몸에 걸친 모습을 미리 확인하세요.
+
+마음에 드는 누군가의 착장? 그 룩을 통째로 내 몸에 입혀 보세요.
+
+• 디지털 옷장 — 찍기만 하면 배경 제거부터 카테고리·색·계절 태그까지 자동으로.
+• 가상 피팅 — 한 벌이든 코디 전체든, 내 얼굴과 포즈를 그대로 살리는 AI로.
+• OOTD 캘린더 — 매일의 착장을 기록하고 나만의 스타일을 쌓아가요.
+• 코디 & 보드 — 옷을 조합해 룩을 짜고, 무드보드로 영감을 모아요.
+• 룩북 피드 — 취향이 맞는 사람을 팔로우하고, 새로운 룩을 발견하고, 갖고 싶은 건 위시리스트에.
+• 마켓 — 안 입는 옷은 팔고, 탐나는 옷은 사고.
+
+옷장, 피팅룸, 스타일 다이어리. 전부 drape 안에.
+```
+
+Live at 1.5.0, JA:
+
+```
+ワードローブまるごと、手のひらに。
+
+持っている服を1枚ずつ撮るだけで、drape が背景をきれいに消し、カテゴリー・色・季節まで自動で整理してデジタルクローゼットに。 全身写真が数枚あれば、AIバーチャル試着で何でも着られます。買う前に、着る前に — 本物の自分の顔と体にまとった姿を、先に確かめて。
+
+気になる誰かのコーデ？ そのルックをまるごと自分の体に着せてみて。
+
+• デジタルクローゼット — 撮るだけで、背景除去からカテゴリー・色・季節のタグ付けまで自動で。
+• バーチャル試着 — 1点でもコーデ全体でも、顔とポーズをそのまま活かすAIで。
+• OOTDカレンダー — 毎日の装いを記録して、自分だけのスタイルを積み重ねて。
+• コーデ＆ボード — 服を組み合わせてルックを作り、ムードボードでインスピレーションを。
+• ルックブックフィード — 好みの合う人をフォローし、新しいルックを見つけ、欲しいものはウィッシュリストへ。
+• マーケット — 着ない服は売って、欲しい服は買って。
+
+クローゼット、試着室、スタイル日記。すべては drape の中に。
+```
+
+The shape to preserve: an opening line, one dense paragraph, six single-line
+bullets in `• Label — sentence` form, and a closing line. 905 / 509 / 486
+characters. Tight on purpose — a long sectioned description is a different
+product's voice.
 
 **Screenshots** — the live decks were uploaded directly to ASC and were never
 committed. The `screenshots-6.7-en*` folders that used to sit in

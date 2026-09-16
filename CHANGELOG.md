@@ -647,6 +647,22 @@ metaphor, not something a Korean copywriter would write). Each locale now opens
 on its own line and carries its own rhythm. A script-mixing check caught Hangul
 that had leaked into the Japanese copy (`毎日5回무료`).
 
+**Descriptions rebased on the live copy instead of rewritten.** The live 1.5.0
+descriptions were pulled from the iTunes Lookup API (EN/KO/JA) — they had never
+been in the repo, and every rewrite so far had been made without them. They are
+tight (905 / 509 / 486 characters): an opening line, one dense paragraph, six
+`• Label — sentence` bullets, a closing line. The 2.1.0 versions now keep all
+of that and change exactly two bullets — lookbook feed becomes Trends, and the
+marketplace makes way for the AI stylist. ES and FR follow the same shape.
+`store-metadata.md` records the live text plus the curl that re-fetches it, so
+the baseline can't go missing again; keywords remain the one field the API
+doesn't expose.
+
+**voda's remains deleted.** The screenshot renderer (its design, not drape's),
+133 lines of dead CSS for voda's 38 interior-style cards, the Gemini script
+that generated their thumbnails, and the one-time runtime-cache sweep that had
+long since done its job.
+
 **Found the real screenshot baseline — it was never in this repo.** The live
 deck is seven slides (calendar → feed → closet → analyze → tryon → market →
 board), built 2026-06-04, with raw captures and finished posters under

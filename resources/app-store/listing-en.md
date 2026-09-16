@@ -43,34 +43,16 @@ wardrobe,fashion,style,lookbook,clothes,dressing room,fit check,capsule,virtual 
 ```
 drape is where your wardrobe lives.
 
-Add two or three photos of yourself and see any piece on your own body before you wear it or buy it. Photograph what you already own — drape cuts each piece out, tags it, and files it away.
+Snap each piece you own and drape builds a clean digital closet — auto-cut and auto-tagged. Add a few full-body photos and try anything on with AI: see clothes on your real body and face before you wear or buy them. Love a look you saw on someone else? Recreate the whole thing, right on you.
 
-TRY IT ON YOURSELF
-• Any piece, on your own photo. It's your real face and body, so you can tell whether it actually suits you.
-• 5 free try-ons every day. Invite a friend and you each get 10 more.
+• Digital closet — photograph your clothes; we cut out the garment and tag category, color, and season automatically.
+• Virtual try-on — see any item, or a full outfit, on your own body. Identity-preserving AI keeps your face and pose.
+• AI stylist — pick a personal stylist and get outfit ideas built only from the clothes you already own.
+• OOTD calendar — log what you wore each day and build your style history.
+• Outfits & boards — combine pieces into looks and mood boards.
+• Trends — a new issue every Monday: the styles, colors, and brands moving this week.
 
-YOUR DIGITAL CLOSET
-• One photo per piece. We remove the background and tag category, colour, season and style for you.
-• In a hurry? Upload a photo of a full outfit and we find every piece in it.
-• Search by tag, brand or colour. Pinch the grid to fit more on screen, or fewer and larger.
-
-YOUR OWN AI STYLIST
-• Outfit ideas built only from clothes you already own — nothing you'd have to go buy.
-• Tell it the styles you love and the colours to avoid. What you say outranks what it guesses.
-• Keep the looks you like and try them on again whenever you want.
-
-OOTD CALENDAR
-• One photo logs the day. The calendar fills itself in.
-• See what you actually reach for, and which pieces you've forgotten.
-
-TRENDS
-• A new issue every Monday — the styles, colours and brands moving this week, drawn from what members are really wearing.
-
-BROWSE OTHER CLOSETS
-• Open any look from Trends to see whose it is, then go through their whole public closet.
-• Try their pieces on yourself and keep the ones you like.
-
-drape is free to start. Try-ons use a daily allowance that refills every day.
+Your closet, your fitting room, your style diary — all in drape.
 ```
 
 **What's New** (≤4000) — 2.1.0:

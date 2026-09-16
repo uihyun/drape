@@ -47,36 +47,18 @@ ropa,moda,estilo,probador,armario,guardarropa,cápsula,lookbook,tendencias,vende
 **Description** (≤4000):
 
 ```
-Toda tu ropa, por fin en un mismo sitio.
+Tu armario entero, en el bolsillo.
 
-Sube dos o tres fotos tuyas y pruébate cualquier prenda en tu propio cuerpo antes de comprarla. Fotografía lo que ya tienes: drape recorta cada prenda, la etiqueta y la ordena por ti.
+Fotografía cada prenda y drape monta un armario digital limpio: recorta el fondo y etiqueta categoría, color y temporada solo. Con dos o tres fotos tuyas de cuerpo entero puedes probarte lo que quieras con IA, antes de comprarlo y antes de ponértelo. ¿Te gustó un look que viste en otra persona? Recréalo entero sobre ti.
 
-PRUÉBATELO ANTES
-• Cualquier prenda, sobre tu propia foto. Es tu cara y tu cuerpo, así que se nota enseguida si te queda bien.
-• 5 pruebas gratis al día. Invita a alguien y los dos consiguen 10 más.
+• Armario digital — fotografía tu ropa; recortamos la prenda y etiquetamos categoría, color y temporada.
+• Prueba virtual — cualquier prenda, o un look completo, sobre tu propio cuerpo. La IA conserva tu cara y tu pose.
+• Estilista con IA — elige un estilista personal y recibe looks armados solo con la ropa que ya tienes.
+• Calendario OOTD — registra lo que llevaste cada día y construye tu historial de estilo.
+• Looks y tableros — combina prendas en conjuntos y arma tus tableros de inspiración.
+• Tendencias — una edición nueva cada lunes: los estilos, colores y marcas de la semana.
 
-TU ARMARIO, EN DIGITAL
-• Una foto por prenda y listo. La categoría, el color, la temporada y el estilo se ponen solos.
-• ¿Con prisa? Sube la foto de un look entero y encontramos cada prenda.
-• Busca por etiqueta, marca o color. Pellizca la cuadrícula para ver más de golpe, o menos y más grande.
-
-TU ESTILISTA CON IA
-• Ideas de looks hechas solo con la ropa que ya tienes. Nada que salir a comprar.
-• Dile qué estilos te gustan y qué colores evitar. Lo que tú digas manda sobre lo que él suponga.
-• Guarda los looks que te convenzan y vuelve a probártelos cuando quieras.
-
-UNA FOTO AL DÍA
-• Con una foto queda registrado el día y el calendario se llena solo.
-• Verás qué te pones de verdad y qué llevas meses sin tocar.
-
-TENDENCIAS
-• Un número nuevo cada lunes: los estilos, colores y marcas que suben esta semana, sacados de lo que la gente lleva puesto.
-
-CURIOSEA OTROS ARMARIOS
-• Abre un look en Tendencias, mira de quién es y recorre su armario entero.
-• Pruébate sus prendas y guarda las que te gusten.
-
-Empezar en drape es gratis. Las pruebas gastan una cuota diaria que se renueva cada día.
+Tu armario, tu probador y tu diario de estilo. Todo en drape.
 ```
 
 **What's New** (≤4000) — 2.1.0:

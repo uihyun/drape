@@ -33,53 +33,32 @@ output as a draft layout only until it is rebuilt to the design above.
 - `06-market` — the marketplace has no entry point in the shipped UI, and the
   claim was cut from every description. It cannot be a slide.
 - `07-board` — boards is the least used tab in 90 days of GA (4.4% of profile
-  views, 8 s/user). The weakest candidate for a slot.
+  views, 8 s/user).
 - New since the deck was built: **stylist**, **trends**.
 
-## The shot list
+Proposed 2.1.0 deck, keeping the live order and only substituting what changed:
 
-Six screens. Shoot on an iPhone 14/15/16 **Pro Max** (6.7") so the capture is
-1290×2796 with no resizing. Switch the app's language first (Settings →
-Language), then take all six before moving to the next language.
+| # | slide | vs live |
+|---|---|---|
+| 1 | calendar | unchanged |
+| 2 | trends | replaces `02-feed` |
+| 3 | closet | unchanged |
+| 4 | analyze | unchanged |
+| 5 | tryon | unchanged |
+| 6 | stylist | replaces `06-market` |
 
-| # | File | Where | What should be on screen |
-|---|---|---|---|
-| 1 | `01-tryon.png` | a finished try-on result | The generated image large and centred — this is the one shot that has to sell the product |
-| 2 | `02-closet.png` | Closet tab | A full grid, ideally 9+ cut-out items, mixed categories and colours |
-| 3 | `03-stylist.png` | Stylist, after "Style me" | A recommendation showing, with its item thumbnails — not the persona chooser |
-| 4 | `04-calendar.png` | Calendar tab | A month with several days filled; photo backgrounds off reads cleaner |
-| 5 | `05-trends.png` | Trends | Scrolled to the top so the cover photo and the headline are both visible |
-| 6 | `06-discover.png` | Trends → a look → its author's profile | Someone else's public closet, a full grid of their pieces |
+`07-board` drops. For the Trends capture, scroll so the bottom of the cover and
+the first rows of "Styles on the rise" are both in frame — the frame crops the
+bottom of whatever you shoot, and the cover alone doesn't say what Trends is.
 
-Shoot with **no notification banners**, battery not red, and the same account
-across all six so the profile chrome stays consistent.
+## Making the 2.1.0 deck
 
-## Rendering a deck
+There is no generator. The live posters were composed by hand in the design
+above, and the previous renderer in this repo was voda's — different ground,
+different type, a subhead drape's deck doesn't use — so it was deleted rather
+than kept as a misleading starting point.
 
-1. Put the six files in `captures-<locale>/` using exactly the names above.
-   `captures-en/` is the fallback for any locale with no set of its own, so a
-   Spanish deck can reuse the English phone UI if you'd rather not reshoot —
-   the marketing caption is translated either way.
-2. `node scripts/build-app-store-screenshots-b.cjs es`  (`en`, `ko`, `ja` too)
-3. Output lands in `screenshots-6.7-<locale>-marketing-b/`.
-
-Captions live in the `CAPTIONS` table in that script, keyed by locale — adding a
-language is one entry, no new script. All four locales are written already.
-
-A headline that would overflow the canvas throws before anything renders, since
-on a store screenshot overflow means text sliced off at the right edge. The fit
-check measures ems rather than counting characters: a Korean or Japanese glyph
-is ~1.7x the width of a Latin capital, so a character count would wave through
-a line that runs half the canvas past the edge.
-
-## History
-
-Variants A (quiet atelier) and C (hybrid) were voda decks and were deleted with
-the rest of that material on 2026-09-16; B is the one carried forward, and it
-is now the locale-aware drape renderer. Git history has the originals.
-
-## Upload
-
-English-only screenshots are reused by both stores for any locale with none of
-its own, so a localized deck is optional — it only matters where the caption
-text is burned into the image, which it is in variant B.
+Five languages × six slides is thirty posters, so a renderer matching the
+design above is worth building before the next deck. Until then, the live
+posters under `~/Desktop/idea/drape/screenshots/poster/` are the reference for
+ground colour, type treatment, dot placement and card geometry.

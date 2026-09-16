@@ -12,12 +12,6 @@ if (!isNativeApp() && 'serviceWorker' in navigator) {
     registerSW({ immediate: true });
   }).catch(() => {/* PWA disabled — ignore */});
 
-  // One-time sweep of voda-era runtime caches. Safe to remove a few months
-  // after launch when nobody has the old cache anymore.
-  if ('caches' in window) {
-    caches.delete('voda-images').catch(() => {});
-    caches.delete('voda-images-v2').catch(() => {});
-  }
 }
 
 // Native app: marker class + status-bar overlay so the webview fills the
