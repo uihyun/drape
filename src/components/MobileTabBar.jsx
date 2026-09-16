@@ -45,6 +45,7 @@ export function MobileTabBar({ user, onSignIn }) {
       <nav className="floating-nav" aria-label="primary">
         <Link
           to={getFeedMode() === 'feed' ? '/feed' : '/trends'}
+          data-tour="nav-trends"
           className={`floating-nav-btn${onHome ? ' active' : ''}`}
           aria-label={getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
         >
@@ -57,6 +58,7 @@ export function MobileTabBar({ user, onSignIn }) {
 
         <button
           type="button"
+          data-tour="nav-create"
           className="floating-nav-btn floating-nav-btn--center"
           onClick={() => setSheetOpen(true)}
           aria-label={t('create')}
@@ -68,6 +70,7 @@ export function MobileTabBar({ user, onSignIn }) {
 
         <Link
           to="/profile"
+          data-tour="nav-profile"
           className={`floating-nav-btn${onProfile ? ' active' : ''}`}
           aria-label={t('navCloset')}
         >

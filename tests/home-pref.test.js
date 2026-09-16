@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getHomePref, setHomePref, getHomeRoute } from '../src/services/homePref.js';
+import { getHomePref, setHomePref, getHomeRoute, closetHasItems } from '../src/services/homePref.js';
 
 // jsdom isn't configured for this suite, so stand up the one API the module
 // touches. Keeps the migration covered without pulling in a DOM environment.
@@ -18,24 +18,45 @@ describe('home screen preference', () => {
   it('migrates the legacy feed choice to trends', () => {
     store.set('drape_home', 'feed');
     expect(getHomePref()).toBe('trends');
-    expect(getHomeRoute()).toBe('/trends');
+    expect(getHomeRoute('u1')).toBe('/trends');
   });
 
   it('round-trips trends', () => {
     setHomePref('trends');
     expect(getHomePref()).toBe('trends');
-    expect(getHomeRoute()).toBe('/trends');
+    expect(getHomeRoute('u1')).toBe('/trends');
   });
 
   it('round-trips profile', () => {
     setHomePref('profile');
     expect(getHomePref()).toBe('profile');
-    expect(getHomeRoute()).toBe('/profile');
+    expect(getHomeRoute('u1')).toBe('/profile');
   });
 
-  it('defaults to the closet when never chosen', () => {
+  // The whole point of the content-aware default: a new account must not open
+  // onto an empty grid, and an established one must not be moved off its closet.
+  it('sends a never-chosen user with an empty closet to Trends', () => {
     expect(getHomePref()).toBe(null);
-    expect(getHomeRoute()).toBe('/profile');
+    expect(closetHasItems('u1')).toBe(false);
+    expect(getHomeRoute('u1')).toBe('/trends');
+  });
+
+  it('sends a never-chosen user who owns something to the closet', () => {
+    store.set('drape:itemCount:u1', '4');
+    expect(closetHasItems('u1')).toBe(true);
+    expect(getHomeRoute('u1')).toBe('/profile');
+  });
+
+  it('lets an explicit choice override the closet-based default', () => {
+    store.set('drape:itemCount:u1', '40');
+    setHomePref('trends');
+    expect(getHomeRoute('u1')).toBe('/trends');
+  });
+
+  it('treats a zero or unknown count as empty', () => {
+    store.set('drape:itemCount:u1', '0');
+    expect(getHomeRoute('u1')).toBe('/trends');
+    expect(getHomeRoute(undefined)).toBe('/trends');
   });
 
   it('refuses a value it cannot route', () => {

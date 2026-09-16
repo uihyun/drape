@@ -11,6 +11,7 @@ import { useLocale, currentLang } from './hooks/useLocale.jsx';
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { MobileTabBar } from './components/MobileTabBar.jsx';
 import { Onboarding } from './components/Onboarding.jsx';
+import { Tour, tourPending } from './components/Tour.jsx';
 import { NoticeBanner } from './components/NoticeBanner.jsx';
 import { SignInModal } from './components/SignInModal.jsx';
 import { JsSplash } from './components/JsSplash.jsx';
@@ -386,9 +387,19 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
   // "add drape.nyc as a Firebase custom domain" — no separate site needed.
   const isMarketingHost = typeof window !== 'undefined'
     && /(^|\.)drape\.nyc$/i.test(window.location.hostname);
-  // Logged-in landing follows the user's home-screen preference (feed vs
-  // profile); first run (no choice yet) defaults to feed. See services/homePref.
-  const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? getHomeRoute() : '/welcome');
+  // Logged-in landing follows the user's home-screen preference; with no
+  // explicit choice it follows the closet (empty → Trends). See homePref.
+  const [tourOn, setTourOn] = useState(false);
+  // Start the tour for anyone who hasn't seen it and isn't about to get the
+  // slide deck — otherwise only brand-new accounts would ever see it, and the
+  // people most lost about where things live are the ones already inside.
+  useEffect(() => {
+    if (!isLoggedIn || noChrome) return;
+    const deckPending = localStorage.getItem('drape_onboarding_dismissed_v2') !== '1';
+    if (!deckPending && tourPending()) setTourOn(true);
+  }, [isLoggedIn, noChrome]);
+
+  const rootTarget = isMarketingHost ? '/landing' : (isLoggedIn ? getHomeRoute(user?.uid) : '/welcome');
 
   return (
     <div className={`app${isFullBleed ? ' app-full-bleed' : ''}${isBare ? ' app-bare' : ''}`}>
@@ -480,8 +491,13 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
 
       {!hideNav && <MobileTabBar user={user} onSignIn={handleSignIn} />}
 
-      {/* Onboarding only after sign-in — never on /welcome or /landing. */}
-      {isLoggedIn && !noChrome && <Onboarding user={user} />}
+      {/* Onboarding only after sign-in — never on /welcome or /landing. The
+          slide deck hands off to the tour: the deck says what drape is, the
+          tour says where each part of it lives. Sequential, never stacked. */}
+      {isLoggedIn && !noChrome && (
+        <Onboarding user={user} onClose={() => setTourOn(tourPending())} />
+      )}
+      {isLoggedIn && !noChrome && <Tour open={tourOn} onClose={() => setTourOn(false)} />}
     </div>
   );
 }

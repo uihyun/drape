@@ -4793,6 +4793,9 @@ input[type="search"]::-webkit-search-decoration {
   flex: 1;
   min-width: 0;
 }
+/* Regular weight: this row is a third option, not a heading over the two
+   buttons above it. */
+.add-sheet-bulk-text { font-size: 0.95rem; font-weight: 400; }
 .add-item-bulk-text strong, .add-sheet-bulk-text strong { font-size: 0.95rem; font-weight: 600; }
 .add-item-bulk-text span, .add-sheet-bulk-text span { font-size: 0.82rem; color: var(--text-muted, #888); }
 
@@ -6859,3 +6862,55 @@ input[type="search"]::-webkit-search-decoration {
 /* wishlist marker on a stylist thumbnail — same glyph the closet uses */
 .stylist-wish { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; background: rgba(20,19,18,0.72); color: #fff; }
 .stylist-more { display: block; width: 100%; margin-top: 4px; }
+
+
+/* ── Guided tour ─────────────────────────────────────────────────────────
+   The scrim is painted as a huge spread shadow on the hole element rather
+   than four panels, so the lit area has one continuous soft edge and the app
+   stays faintly readable underneath — the "oiled paper" look. */
+.tour { position: fixed; inset: 0; z-index: 4000; }
+.tour-hole {
+  position: fixed;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(12, 11, 10, 0.72);
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+  pointer-events: none;
+  transition: left .28s ease, top .28s ease, width .28s ease, height .28s ease;
+}
+.tour-scrim-full { position: fixed; inset: 0; background: rgba(12, 11, 10, 0.72); }
+.tour-x {
+  position: fixed; top: calc(var(--safe-top, 0px) + 14px); right: 14px;
+  z-index: 2;
+  width: 34px; height: 34px; border-radius: 999px;
+  border: none; background: rgba(255, 255, 255, 0.16); color: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.tour-caption {
+  position: fixed; left: 18px; right: 18px;
+  z-index: 2;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--surface-elevated, #fff);
+  color: var(--text-primary, #141312);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36);
+}
+.tour-caption p { margin: 0; font-size: 0.92rem; line-height: 1.55; }
+.tour-caption-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px;
+}
+.tour-dots { display: flex; gap: 6px; }
+.tour-dots i {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--border, #dcdcd8);
+}
+.tour-dots i.on { background: var(--accent, #2f4a3c); }
+.tour-next {
+  border: none; background: none; cursor: pointer;
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--accent, #2f4a3c);
+  padding: 4px 2px;
+}
+/* Sits under the caption and the X, above the scrim. */
+.tour-advance { position: fixed; inset: 0; z-index: 1; border: none; background: transparent; cursor: pointer; }

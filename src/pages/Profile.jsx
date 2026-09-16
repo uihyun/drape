@@ -176,6 +176,7 @@ export function Profile({ user, authReady, onSignIn }) {
         <div className="profile-topbar-actions">
           <Link
             to="/stylist"
+            data-tour="stylist"
             className={`icon-btn${stylistHintOn ? ' icon-btn-pulse' : ''}`}
             aria-label={t('stylistTitle')}
             onClick={dismissStylistHint}
@@ -184,7 +185,7 @@ export function Profile({ user, authReady, onSignIn }) {
           </Link>
           <InboxIconLink user={user} t={t} />
           <NotifIconLink user={user} t={t} />
-          <Link to="/settings" className="icon-btn" aria-label={t('settings')}>
+          <Link to="/settings" data-tour="settings" className="icon-btn" aria-label={t('settings')}>
             <SettingsIcon size={20} strokeWidth={1.6} />
           </Link>
         </div>
@@ -245,7 +246,7 @@ export function Profile({ user, authReady, onSignIn }) {
 
       <ExpandableBio text={bio} />
 
-      <nav className="profile-tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
+      <nav className="profile-tabs" data-tour="tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
         {TABS.map(name => (
           <button
             key={name}

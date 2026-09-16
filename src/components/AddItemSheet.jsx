@@ -237,9 +237,7 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
               {!preview && (
                 <button type="button" className="add-sheet-bulk" onClick={() => setMode('bulk')}>
                   <Layers size={16} strokeWidth={1.7} />
-                  <span className="add-sheet-bulk-text">
-                    <strong>{t('addItemBulkTitle')}</strong>
-                  </span>
+                  <span className="add-sheet-bulk-text">{t('addItemBulkTitle')}</span>
                   <ChevronRight size={16} strokeWidth={1.7} />
                 </button>
               )}

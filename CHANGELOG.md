@@ -34,6 +34,25 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Guided tour replaces the stacked onboarding popups.** A slide deck
+  describes the app in the abstract and is forgotten by the time you reach a
+  screen — which is why the stylist kept going undiscovered no matter how the
+  copy was worded. The tour dims the real UI behind a translucent scrim, punches
+  a hole around one real control at a time, and captions it: Trends tab →
+  closet tab → the profile tabs → the + button → the stylist → settings. The
+  spotlight follows the target's own corner radius, so a round nav pill gets a
+  round hole. X in the corner quits at any point, and the whole thing is
+  one-and-done per device. Step copy is locale keys under `tour*`, so it is
+  hot-fixable through `config/copy` like everything else.
+- **Home screen default now follows the closet.** An explicit choice always
+  wins; with none, an empty closet opens on Trends and a stocked one opens on
+  the closet. A fixed default can't serve both — `trends` would move
+  established users off their closet for no reason, `profile` greets every new
+  account with an empty grid, which is the first frame of the activation leak.
+  The flip happens the moment they own a piece, which is exactly when the
+  closet becomes worth landing on. Covered by `tests/home-pref.test.js`.
+- **"Add several pieces at once" is no longer bold** — it is a third option
+  under the two buttons, not a heading over them.
 - **Bulk "these are my clothes" added nothing, silently.**
   `bulkAddOwnedInBackground` runs after AnalyzePhoto unmounts, but read
   `importedSourceRef` from the component — a ReferenceError thrown while
