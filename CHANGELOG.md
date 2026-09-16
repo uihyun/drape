@@ -34,6 +34,14 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **One name for the shared balance: "try-ons".** The Settings row said
+  Try-ons, the invite row said try-ons, and the stylist said "try-on credit" —
+  a third word for the same wallet, which reads as a separate currency the user
+  has to reason about. The stylist now says the next set *uses 1 of your
+  try-ons*, and account deletion lists "any try-ons you have left". "Credits"
+  was the alternative but it loses the marketing line the whole funnel rests on
+  ("5 free try-ons a day" sells; "5 free credits" says nothing) and reads as a
+  paid currency when the balance is free and refills daily. All four locales.
 - **Spanish (es) — full fourth locale.** All 615 keys, plus the privacy/terms
   documents and the static support/privacy/terms pages. Neutral Latin-American
   Spanish (tú, never vosotros): the audience is Mexico and US Hispanic users,
