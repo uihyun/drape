@@ -380,20 +380,31 @@ These are the archive/build gotchas archelier (../voda) hit; for drape they're a
   film it on a **real device** (sign in → Settings → Delete Account → confirm), host the link, and
   paste it into the **permanent** App Review Notes so future builds aren't re-asked.
 
+## 2.1.0 submitted — 16 Sep 2026
+
+Both stores. iOS build 16 / MARKETING_VERSION 2.1.0; Android versionCode 20 /
+versionName 2.1.0. Listings in en · ko · ja · es · fr; poster decks in
+en · ja · es · fr (Korean inherits English, see
+`resources/app-store/README.md`). App Store got all ten slides, Play the eight
+without `-ios-only` in the filename.
+
+The checklist below was cleared for this submission. Re-verify it next release
+rather than assuming — Review Notes and the login toggle are per-version fields.
+
 ## Still-to-do checklist (ASC, user-side)
 
-- [ ] **Review Notes (메모)** — paste the block above (this is the empty field in the screenshot).
-- [ ] **로그인 정보** — uncheck "로그인 필요" OR note Sign in with Apple (fields can stay empty).
-- [ ] **Screenshots** — 6.9" (1290×2796) slot, EN + JA + ES + FR from
+- [x] **Review Notes (메모)** — paste the block above (this is the empty field in the screenshot).
+- [x] **로그인 정보** — uncheck "로그인 필요" OR note Sign in with Apple (fields can stay empty).
+- [x] **Screenshots** — 6.9" (1290×2796) slot, EN + JA + ES + FR from
       `resources/app-store/posters-2.1.0-<locale>/`. Korean is deliberately not
       uploaded; it falls back to the English set.
-- [ ] **Support URL** = `https://drape-9e532.web.app/support.html` (standalone, live).
-- [ ] **Privacy Policy URL** = `https://drape-9e532.web.app/privacy.html` (standalone, live).
-- [ ] **App Privacy** questionnaire matches the Privacy Policy (done earlier — re-verify after marketplace/DM).
-- [ ] **Export compliance** — `ITSAppUsesNonExemptEncryption = false` in Info.plist (HTTPS-only).
-- [ ] **Sign in with Apple** entitlement present (Guideline 4.8 — Google is offered, so Apple is required).
-- [ ] **Build** uploaded via TestFlight + export-compliance answered.
-- [ ] **Developer name → "uhz LLC"** — the App Store seller name follows the Apple Developer
+- [x] **Support URL** = `https://drape-9e532.web.app/support.html` (standalone, live).
+- [x] **Privacy Policy URL** = `https://drape-9e532.web.app/privacy.html` (standalone, live).
+- [x] **App Privacy** questionnaire matches the Privacy Policy (done earlier — re-verify after marketplace/DM).
+- [x] **Export compliance** — `ITSAppUsesNonExemptEncryption = false` in Info.plist (HTTPS-only).
+- [x] **Sign in with Apple** entitlement present (Guideline 4.8 — Google is offered, so Apple is required).
+- [x] **Build** uploaded via TestFlight + export-compliance answered.
+- [x] **Developer name → "uhz LLC"** — the App Store seller name follows the Apple Developer
       account type: Individual shows the personal legal name (Uihyun Kim), Organization shows the
       LLC. To show "uhz LLC" you need an **Organization account** (D-U-N-S # for the LLC). No
       payout/tax impact while there are NO in-app purchases, so it's cleanest to set the entity
