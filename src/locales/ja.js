@@ -502,7 +502,6 @@ export const ja = {
   stylistRecommend: 'スタイリングしてもらう',
   stylistRecsLeft: '本日の無料提案 {left}/{max}回',
   stylistTryAll: 'このルックを試着',
-  stylistWishlistBadge: 'ほしい物',
   stylistRateAsk: '今回の提案はどうでしたか？',
   stylistClosetTooSmall: 'まずクローゼットにアイテムを3点以上登録してください — スタイリストは手持ちの服でコーディネートします。',
   stylistPaidNote: '無料提案は終了 — 次回の提案はクレジット1回分を消費します（残り{fits}回）。',

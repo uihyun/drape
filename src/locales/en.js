@@ -500,7 +500,6 @@ export const en = {
   stylistRecommend: 'Style me',
   stylistRecsLeft: '{left}/{max} free picks today',
   stylistTryAll: 'Try this look on me',
-  stylistWishlistBadge: 'wishlist',
   stylistRateAsk: 'How were these picks?',
   stylistClosetTooSmall: 'Add at least 3 items to your closet first — your stylist works with what you own.',
   stylistPaidNote: 'Free picks used — the next set costs 1 try-on credit. You have {fits}.',

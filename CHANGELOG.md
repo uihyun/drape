@@ -34,6 +34,21 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Stylist crash fixed (TDZ).** The warm-cache read landed below the state
+  that seeds from it, so every stylist mount threw "Cannot access 'warm'
+  before initialization" and the page went blank. Declaration moved above
+  the `useState` calls.
+- **Stylist gets its own glyph.** It shared the Sparkles icon with try-on,
+  which made two different destinations look like one feature; the stylist
+  is now a wand (profile top bar, try-on page link, Style-me button) and
+  Sparkles stays with try-on everywhere.
+- **Wishlist marker unified.** The stylist thumbnails introduced a second
+  way to say "wishlist" (a text chip). They now use the same bookmark glyph
+  the closet already uses, and the extra string was deleted.
+- **Manifest warning gone.** `share_target` now states
+  `enctype: application/x-www-form-urlencoded` explicitly, which is what a
+  GET target uses anyway — Chrome no longer logs a manifest warning on
+  every load.
 - **Stylist picks survive a detour.** Tapping an item from a recommendation
   and coming back used to wipe the picks (local state died with the unmount)
   — the worst possible loss, since producing them costs a free slot or a

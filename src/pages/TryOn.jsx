@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Sparkles, Upload, X, SlidersHorizontal } from 'lucide-react';
+import { Check, Sparkles, Wand2, Upload, X, SlidersHorizontal } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -260,7 +260,7 @@ export function TryOn({ user, onSignIn }) {
         <h1 className="page-h1">{t('tryOnPick')}</h1>
         {/* Stylist entry — recs are free and exist to feed this page. */}
         <Link to="/stylist" className="tryon-stylist-link">
-          <Sparkles size={14} strokeWidth={1.8} /> {t('stylistTitle')}
+          <Wand2 size={14} strokeWidth={1.8} /> {t('stylistTitle')}
         </Link>
       </div>
 

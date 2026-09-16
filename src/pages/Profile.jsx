@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Sparkles, X } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2, X } from 'lucide-react';
 import { hintSeen, markHintSeen } from '../services/homePref.js';
 import { useUnreadMessages } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
@@ -180,7 +180,7 @@ export function Profile({ user, authReady, onSignIn }) {
             aria-label={t('stylistTitle')}
             onClick={dismissStylistHint}
           >
-            <Sparkles size={20} strokeWidth={1.6} />
+            <Wand2 size={20} strokeWidth={1.6} />
           </Link>
           <InboxIconLink user={user} t={t} />
           <NotifIconLink user={user} t={t} />

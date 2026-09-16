@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ThumbsUp, ThumbsDown, Loader2, Bookmark, X } from 'lucide-react';
+import { Wand2, ThumbsUp, ThumbsDown, Loader2, Bookmark, X } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
@@ -18,11 +18,13 @@ import {
 export function Stylist({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
+  // Read the warm cache BEFORE any state that seeds from it — a `const`
+  // referenced above its declaration is a TDZ crash, not undefined.
+  const warm = user ? stylistWarm.get(user.uid) : null;
   const [persona, setPersona] = useState(getChosenPersona());
   const [choosing, setChoosing] = useState(false);
   const [ask, setAsk] = useState(warm?.ask || '');
   const [busy, setBusy] = useState(false);
-  const warm = user ? stylistWarm.get(user.uid) : null;
   const [rec, setRec] = useState(warm?.rec || null);      // { recId, outfits, remaining }
   const [rated, setRated] = useState(warm?.rated || null); // 'up' | 'down' | null
   const [err, setErr] = useState('');
@@ -172,7 +174,7 @@ export function Stylist({ user, onSignIn }) {
             onKeyDown={(e) => { if (e.key === 'Enter' && !busy) run(); }}
           />
           <button type="button" className="btn btn-primary" onClick={run} disabled={busy}>
-            {busy ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} strokeWidth={1.8} />}
+            {busy ? <Loader2 size={16} className="spin" /> : <Wand2 size={16} strokeWidth={1.8} />}
             {t('stylistRecommend')}
           </button>
         </div>
@@ -220,7 +222,11 @@ export function Stylist({ user, onSignIn }) {
                 {thumbOf(id)
                   ? <img src={thumbOf(id)} alt={closet?.[id]?.name || ''} loading="lazy" />
                   : <div className="stylist-item-ph" />}
-                {closet?.[id]?.kind === 'wishlist' && <span className="stylist-wish">{t('stylistWishlistBadge')}</span>}
+                {closet?.[id]?.kind === 'wishlist' && (
+                  <span className="stylist-wish" aria-label={t('itemKindWishlist')} title={t('itemKindWishlist')}>
+                    <Bookmark size={10} strokeWidth={2.4} fill="currentColor" />
+                  </span>
+                )}
               </div>
             ))}
           </div>

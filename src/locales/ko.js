@@ -500,7 +500,6 @@ export const ko = {
   stylistRecommend: '스타일링 받기',
   stylistRecsLeft: '오늘 무료 추천 {left}/{max}회',
   stylistTryAll: '이 룩 입어보기',
-  stylistWishlistBadge: '찜',
   stylistRateAsk: '이번 추천 어땠어요?',
   stylistClosetTooSmall: '옷장에 아이템을 3개 이상 먼저 등록해주세요 — 스타일리스트는 내 옷으로 코디해요.',
   stylistPaidNote: '무료 추천 소진 — 다음 추천은 크레딧 1개가 차감돼요 (보유 {fits}개).',

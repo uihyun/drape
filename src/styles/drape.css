@@ -6810,3 +6810,5 @@ input[type="search"]::-webkit-search-decoration {
 .mystyle-note { display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 0.82rem; padding: 9px 11px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: inherit; resize: vertical; margin-top: 4px; }
 .mystyle-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
 .mystyle-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+/* wishlist marker on a stylist thumbnail — same glyph the closet uses */
+.stylist-wish { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; border-radius: 50%; background: rgba(20,19,18,0.72); color: #fff; }
