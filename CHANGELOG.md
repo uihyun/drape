@@ -668,6 +668,14 @@ fill plus a measured horizontal window is the right trade; and hero slides ship
 as JPEG — lossless PNG cost ~6 MB a slide, and palette quantisation, which the
 card slides use happily, bands a photograph's sky.
 
+**Trends and calendar run as a pair.** They say the same thing from two sides —
+what everyone's wearing, then what you wore — so they open the deck's first act
+together. The order that separated them kept analyze next to trends on the
+theory that analyze was reading the trends photo. It isn't: the trends masthead
+is a different look by a different person. The one literal chain in the deck is
+analyze → try-on, the same varsity jacket read off a photo and then put on a
+body, and only the title card goes between those.
+
 **Calendar sits ahead of closet, not at the back.** An earlier pass put it
 second-to-last on the reasoning that a logging feature is for people already
 sold. The GA figure that reasoning leaned on was the views column, and the views

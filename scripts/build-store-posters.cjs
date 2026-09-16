@@ -81,12 +81,15 @@ const DECK = [
   // trends-3, not the other masthead captures: it's the only full-length shot,
   // so the outfit reads at thumbnail size — and it sets up the two that follow.
   { out: '03-trends',      src: 'trends-3' },
-  { out: '04-analyze',     src: 'analyzed-photo' },
-  // A title card for the payoff: the hero states the promise, the slide after
-  // it shows the promise kept.
-  { out: '05-hero-tryon',  hero: 'park-bench',    cx: 0.50, iosOnly: true },
-  { out: '06-tryon',       src: 'tryon-3' },
-  { out: '07-calendar',    src: 'calendar' },
+  // Trends and calendar are a pair — other people's outfits, then your own —
+  // and they open the deck's first act: looking at looks.
+  { out: '04-calendar',    src: 'calendar' },
+  // Second act: wearing them. analyze → tryon is the deck's one literal chain
+  // (the same varsity jacket, read off a photo then put on a body), so nothing
+  // goes between them except the title card.
+  { out: '05-analyze',     src: 'analyzed-photo' },
+  { out: '06-hero-tryon',  hero: 'park-bench',    cx: 0.50, iosOnly: true },
+  { out: '07-tryon',       src: 'tryon-3' },
   { out: '08-closet',      src: 'closet-1' },
   { out: '09-stylist',     src: 'stylist' },
   { out: '10-board',       src: 'board', iosOnly: true },
@@ -105,36 +108,36 @@ const DECK = [
 const LINES = {
   en: {
     '03-trends': 'what everyone’s wearing',
-    '04-analyze': 'shop any photo',
-    '06-tryon': 'see it on you, first',
-    '07-calendar': 'log every outfit',
+    '04-calendar': 'log every outfit',
+    '05-analyze': 'shop any photo',
+    '07-tryon': 'see it on you, first',
     '08-closet': 'your closet, digitized',
     '09-stylist': 'a stylist in your closet',
     '10-board': 'moodboard your style',
   },
   ja: {
     '03-trends': '今週のスタイル',
-    '04-analyze': '気になる服を見つける',
-    '06-tryon': 'まず、自分で試着',
-    '07-calendar': '毎日のコーデを記録',
+    '04-calendar': '毎日のコーデを記録',
+    '05-analyze': '気になる服を見つける',
+    '07-tryon': 'まず、自分で試着',
     '08-closet': 'クローゼットをデジタルに',
     '09-stylist': 'クローゼット専属スタイリスト',
     '10-board': 'スタイルをムードボードに',
   },
   es: {
     '03-trends': 'lo que se lleva ahora',
-    '04-analyze': 'compra desde una foto',
-    '06-tryon': 'pruébatelo antes',
-    '07-calendar': 'anota cada look',
+    '04-calendar': 'anota cada look',
+    '05-analyze': 'compra desde una foto',
+    '07-tryon': 'pruébatelo antes',
     '08-closet': 'tu armario, en digital',
     '09-stylist': 'un estilista en tu armario',
     '10-board': 'tu estilo, en un mural',
   },
   fr: {
     '03-trends': 'ce que l’on porte',
-    '04-analyze': 'achetez depuis une photo',
-    '06-tryon': 'essayez-la sur vous',
-    '07-calendar': 'notez chaque tenue',
+    '04-calendar': 'notez chaque tenue',
+    '05-analyze': 'achetez depuis une photo',
+    '07-tryon': 'essayez-la sur vous',
     '08-closet': 'votre dressing, en numérique',
     '09-stylist': 'un styliste dans votre dressing',
     '10-board': 'votre style en planche',
@@ -150,22 +153,22 @@ const HERO_LINES = {
   en: {
     '01-hero-closet': 'your closet, in your pocket',
     '02-hero-own':    'wear what you already own',
-    '05-hero-tryon':  'try it on before it\u2019s yours',
+    '06-hero-tryon':  'try it on before it\u2019s yours',
   },
   ja: {
     '01-hero-closet': 'クローゼットごと、ポケットに',
     '02-hero-own':    '今ある服で、着こなす',
-    '05-hero-tryon':  '買う前に、着た姿を見る',
+    '06-hero-tryon':  '買う前に、着た姿を見る',
   },
   es: {
     '01-hero-closet': 'tu armario, en el bolsillo',
     '02-hero-own':    'viste lo que ya tienes',
-    '05-hero-tryon':  'lo ves en ti antes de comprarlo',
+    '06-hero-tryon':  'lo ves en ti antes de comprarlo',
   },
   fr: {
     '01-hero-closet': 'votre dressing, dans votre poche',
     '02-hero-own':    'portez ce que vous avez déjà',
-    '05-hero-tryon':  'voyez-le sur vous avant d\u2019acheter',
+    '06-hero-tryon':  'voyez-le sur vous avant d\u2019acheter',
   },
 };
 

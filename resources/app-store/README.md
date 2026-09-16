@@ -48,10 +48,10 @@ captures in the ink-ground card treatment.
 | 1 | `01-hero-closet.jpg` | your closet, in your pocket |
 | 2 | `02-hero-own.jpg` | wear what you already own |
 | 3 | `03-trends.png` | what everyone's wearing |
-| 4 | `04-analyze.png` | shop any photo |
-| 5 | `05-hero-tryon-ios-only.jpg` | try it on before it's yours |
-| 6 | `06-tryon.png` | see it on you, first |
-| 7 | `07-calendar.png` | log every outfit |
+| 4 | `04-calendar.png` | log every outfit |
+| 5 | `05-analyze.png` | shop any photo |
+| 6 | `06-hero-tryon-ios-only.jpg` | try it on before it's yours |
+| 7 | `07-tryon.png` | see it on you, first |
 | 8 | `08-closet.png` | your closet, digitized |
 | 9 | `09-stylist.png` | a stylist in your closet |
 | 10 | `10-board-ios-only.png` | moodboard your style |
@@ -62,6 +62,15 @@ phone screenshots at 8, the App Store at 10 — so those two slides go up on the
 App Store only. Names still sort into the right sequence with them absent, so
 there is nothing to renumber for Play.
 
+Two acts after the heroes. **Looking at looks:** trends and calendar are a pair —
+other people's outfits, then your own, the same thing from outside and inside.
+**Wearing them:** analyze → try-on is the deck's one literal chain (the same
+varsity jacket, read off a photo and then put on a body), so nothing goes
+between them except the title card. An earlier order put analyze straight after
+trends to keep those adjacent, which was a misread — the trends masthead is a
+different look by a different person, so trends only sets the world; it isn't
+the photo analyze is reading.
+
 Order is the argument, not the feature list. Search results show the first three
 portrait shots before anyone taps, and the shipped 1.5.0 order spent all three
 on calendar + feed + closet — a trio that describes Lekondo as well as it
@@ -71,8 +80,7 @@ before the tap. Putting all three heroes up front was considered and rejected:
 our heroes carry no app UI (Lekondo's hold phone mockups; ours don't), so three
 in a row would show a searcher nothing of the product.
 
-Closet is the foundation but not the pitch, so it follows the payoff; calendar
-and board close, because habit features are for people already sold.
+Closet is the foundation but not the pitch, so it follows the payoff.
 
 `07-board` survives at the back rather than being cut: boards is the least-used
 profile tab — 198 views / 39 users across 90 days of GA, against closet's
