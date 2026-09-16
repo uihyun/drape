@@ -6918,3 +6918,12 @@ input[type="search"]::-webkit-search-decoration {
 }
 /* Sits under the caption and the X, above the scrim. */
 .tour-advance { position: fixed; inset: 0; z-index: 1; border: none; background: transparent; cursor: pointer; }
+
+/* Second choice in a hint that asks a question — quieter than the CTA, but a
+   real button: the answer has to be explicit either way. */
+.onboard-hint-alt {
+  border: none; background: none; cursor: pointer;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--text-muted);
+  padding: 4px 6px; white-space: nowrap;
+}

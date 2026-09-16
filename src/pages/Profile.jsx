@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2, X } from 'lucide-react';
-import { hintSeen, markHintSeen } from '../services/homePref.js';
+import { OnboardHint } from '../components/OnboardHint.jsx';
+import { hintSeen, markHintSeen, getHomePref, setHomePref, HINT_HOME_FLIP } from '../services/homePref.js';
 import { useMessagePresence } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
@@ -247,6 +248,21 @@ export function Profile({ user, authReady, onSignIn }) {
       </section>
 
       <ExpandableBio text={bio} />
+
+      {/* The closet just stopped being empty, which is the moment the landing
+          screen is worth revisiting — and the moment it would otherwise change
+          under them. Asked once, with both answers explicit: an X here would
+          record no preference while the default quietly moved them anyway. */}
+      {!user?.isAnonymous && itemCount > 0 && getHomePref() === null && (
+        <OnboardHint
+          storageKey={HINT_HOME_FLIP}
+          text={t('homeFlipAsk')}
+          ctaLabel={t('homeFlipYes')}
+          onCta={() => setHomePref('profile')}
+          altLabel={t('homeFlipNo')}
+          onAlt={() => setHomePref('trends')}
+        />
+      )}
 
       <nav className="profile-tabs" data-tour="tabs" role="tablist" aria-label="Profile sections" ref={tabsRef}>
         {TABS.map(name => (

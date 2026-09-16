@@ -34,6 +34,13 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **The home-screen switch now asks instead of just happening.** A new account
+  opens on Trends; the moment their closet stops being empty, a one-time hint
+  on the profile asks whether drape should open there from now on. Both answers
+  are buttons — no X. An X would record no preference while the closet-aware
+  default moved them anyway, which is the confusing outcome the ask exists to
+  prevent. Established users who already own items and never chose are
+  unaffected: they keep landing on their closet.
 - **Messages entry hides until there is a conversation.** DMs only start from
   a marketplace listing, so for everyone who has never bought or sold the inbox
   icon was a permanently empty room holding a slot in the header. It now appears
