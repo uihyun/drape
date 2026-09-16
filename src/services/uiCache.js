@@ -29,3 +29,9 @@ export const olKey = (uid, tab) => `${uid}|${tab}`;
 // page paints instantly then attaches its own onSnapshot for live updates.
 export const calendarWarm = new Map(); // `${uid}|${YYYY-MM}` -> { [date]: ootd[] }
 export const closetWarm = new Map();   // `${uid}` -> item[]
+
+// Last stylist recommendation, kept across unmounts so tapping an item and
+// coming back doesn't throw the picks away (they cost a free slot or a fit
+// to produce — losing them on a detour is the worst possible outcome).
+// `{ rec, savedKeys, persona, ask }`, one per uid.
+export const stylistWarm = new Map();

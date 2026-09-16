@@ -34,6 +34,21 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Stylist picks survive a detour.** Tapping an item from a recommendation
+  and coming back used to wipe the picks (local state died with the unmount)
+  — the worst possible loss, since producing them costs a free slot or a
+  fit. They're now mirrored into a module cache (`stylistWarm`) alongside
+  the save markers and the ask, so returning restores the screen you left.
+- **Stylist copy cleanup.** Dropped the curly quotes and the "— Noa"
+  attribution from both recommendation and saved cards: the page already
+  says whose voice it is, and the quote glyphs rendered badly. The wishlist
+  chip on a thumbnail said "saved", which now collided with the Save action
+  — it reads "wishlist" / 찜 / ほしい物.
+- **One upload button instead of two.** Now that the detector classifies
+  each photo (product cut vs worn look), the user never has to choose an
+  upload "kind" — "Upload photo" and "Upload several" merged into a single
+  multi-select "Upload photos" (1…8). Camera capture stays separate because
+  that is a genuinely different action, not a different kind of file.
 - **"My style" moved to the stylist page and rebuilt for mobile.** The
   setting exists for the stylist, so living in Settings hid it from the one
   screen where it changes anything: it now sits inline on /stylist, opens

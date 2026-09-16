@@ -4,6 +4,7 @@ import { Sparkles, ThumbsUp, ThumbsDown, Loader2, Bookmark, X } from 'lucide-rea
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
+import { stylistWarm } from '../services/uiCache.js';
 import { ProfileService } from '../services/profile-service.js';
 import { MyStyleEditor } from '../components/MyStyleEditor.jsx';
 import { useStyleRecs, RECS_PER_DAY, useFits } from '../hooks/useFits.js';
@@ -19,17 +20,18 @@ export function Stylist({ user, onSignIn }) {
   const navigate = useNavigate();
   const [persona, setPersona] = useState(getChosenPersona());
   const [choosing, setChoosing] = useState(false);
-  const [ask, setAsk] = useState('');
+  const [ask, setAsk] = useState(warm?.ask || '');
   const [busy, setBusy] = useState(false);
-  const [rec, setRec] = useState(null);      // { recId, outfits, remaining }
-  const [rated, setRated] = useState(null);  // 'up' | 'down' | null
+  const warm = user ? stylistWarm.get(user.uid) : null;
+  const [rec, setRec] = useState(warm?.rec || null);      // { recId, outfits, remaining }
+  const [rated, setRated] = useState(warm?.rated || null); // 'up' | 'down' | null
   const [err, setErr] = useState('');
   const [closet, setCloset] = useState(null); // id → item (thumbnails)
   const recs = useStyleRecs(user); // live free-quota chip (server-enforced)
   const [profile, setProfile] = useState(null);
   const [styleOpen, setStyleOpen] = useState(false);
   const [saved, setSaved] = useState([]);        // looks kept from past recs
-  const [savedKeys, setSavedKeys] = useState({}); // rec-outfit index → saved doc id
+  const [savedKeys, setSavedKeys] = useState(warm?.savedKeys || {}); // rec-outfit index → saved doc id
   const fits = useFits(user);      // shown once free recs are spent (1 rec = 1 fit)
 
   useEffect(() => {
@@ -50,6 +52,11 @@ export function Stylist({ user, onSignIn }) {
     if (!user || user.isAnonymous) { setSaved([]); return undefined; }
     return StylistService.subscribeSavedLooks(user.uid, setSaved);
   }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    if (rec) stylistWarm.set(user.uid, { rec, savedKeys, rated, ask });
+  }, [user?.uid, rec, savedKeys, rated, ask]);
 
   const personaMeta = useMemo(
     () => STYLIST_PERSONAS.find((p) => p.id === persona) || null,
@@ -217,7 +224,7 @@ export function Stylist({ user, onSignIn }) {
               </div>
             ))}
           </div>
-          <p className="stylist-why">“{o.why}” <span className="muted">— {personaMeta?.name}</span></p>
+          <p className="stylist-why">{o.why}</p>
           <div className="stylist-cardacts">
             <button type="button" className="btn btn-primary" onClick={() => tryOnLook(o.itemIds, 'rec')}>
               {t('stylistTryAll')}
@@ -269,7 +276,7 @@ export function Stylist({ user, onSignIn }) {
                     </div>
                   ))}
                 </div>
-                {l.why && <p className="stylist-why">“{l.why}”</p>}
+                {l.why && <p className="stylist-why">{l.why}</p>}
                 <button
                   type="button"
                   className="btn btn-secondary"

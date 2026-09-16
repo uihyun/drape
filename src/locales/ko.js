@@ -517,6 +517,8 @@ export const ko = {
   stylistSavedGone: '옷장에 없는 아이템이에요',
   stylistChoose: '나만의 스타일리스트를 골라주세요 — 언제든 바꿀 수 있어요.',
   stylistChange: '변경',
+  uploadPhotos: '사진 업로드',
+  analyzeUploadHint2: '한 장이든 최대 {max}장이든 — 각각 알아서 읽어요',
   uploadSeveral: '여러 장 업로드',
   analyzeMultiHint: '최대 {max}장 선택 — 사진마다 아이템을 각각 등록해요',
   sortTitle: '정렬',
