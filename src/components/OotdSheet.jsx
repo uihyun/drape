@@ -152,6 +152,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
             placeholder={t('ootdNotePlaceholder')}
             rows={2}
             maxLength={100}
+            disabled={saving}
           />
 
           {/* Publish toggle */}
@@ -160,6 +161,7 @@ export function OotdSheet({ open, date, user, existing, onClose, onSaved }) {
               type="checkbox"
               checked={isPublic}
               onChange={e => setIsPublic(e.target.checked)}
+              disabled={saving}
             />
             <span className="ootd-sheet-public-label">
               <strong>{t('ootdPublishLabel')}</strong>

@@ -79,6 +79,7 @@ export function MyStyleEditor({ profile, onSaved }) {
         value={noteV}
         placeholder={t('myStyleNotePlaceholder')}
         onChange={(e) => setNote(e.target.value)}
+        disabled={saving}
       />
 
       <div className="mystyle-actions">

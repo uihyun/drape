@@ -193,6 +193,7 @@ export function Stylist({ user, onSignIn }) {
             value={ask}
             maxLength={120}
             placeholder={t('stylistAskPlaceholder')}
+            disabled={busy}
             onChange={(e) => setAsk(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !busy) run(); }}
           />

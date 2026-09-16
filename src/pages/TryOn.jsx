@@ -336,6 +336,7 @@ export function TryOn({ user, onSignIn }) {
             onChange={e => setBackgroundDesc(e.target.value.slice(0, 160))}
             placeholder={t('tryOnBackgroundPlaceholder')}
             maxLength={160}
+            disabled={submitting}
           />
         </div>
       )}

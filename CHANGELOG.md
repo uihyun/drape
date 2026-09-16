@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Prompt fields lock while their request is in flight.** The stylist's
+  occasion box and try-on's background box stayed editable after you pressed
+  the button, so the text on screen could stop matching the result coming back
+  — and a second Enter could fire a duplicate paid call. Same for the
+  add-item shop URL, the OOTD title and publish toggle, and the My-style note,
+  all of which sit in front of an upload. Disabled fields also dim now; without
+  that they just stop responding, which reads as the app hanging. The chat
+  composer is deliberately excluded — messages send fast and locking the box
+  would drop the keyboard between every line.
 - **The web tells are gone.** iOS paints a grey rounded rectangle over any
   tapped element and leaves a focus ring behind afterwards; both were switched
   off for `<a>` only, so every `<button>` — the floating +, the nav pills, the

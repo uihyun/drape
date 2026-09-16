@@ -7047,3 +7047,10 @@ input[type="search"]::-webkit-search-decoration {
 .closet-tools { display: flex; align-items: center; gap: 6px; }
 .closet-density-btn { position: relative; }
 
+
+/* A field locked while its request is in flight should look locked — without
+   this it just stops responding to taps, which reads as the app hanging. */
+input:disabled, textarea:disabled, select:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

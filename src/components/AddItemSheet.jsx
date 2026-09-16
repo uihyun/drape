@@ -254,6 +254,7 @@ export function AddItemSheet({ open, user, onClose, onSaved }) {
             placeholder={t('tagShopUrlPlaceholder')}
             autoCapitalize="none"
             autoCorrect="off"
+            disabled={saving}
           />
 
           {error && <p className="settings-error" style={{ margin: '0.5rem 0' }}>{error}</p>}
