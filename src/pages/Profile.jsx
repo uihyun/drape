@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2, X } from 'lucide-react';
+import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2 } from 'lucide-react';
 import { OnboardHint } from '../components/OnboardHint.jsx';
-import { hintSeen, markHintSeen, getHomePref, setHomePref, HINT_HOME_FLIP } from '../services/homePref.js';
+import { getHomePref, setHomePref, HINT_HOME_FLIP } from '../services/homePref.js';
 import { useMessagePresence } from '../hooks/useUnreadMessages.js';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications.js';
 import { httpsCallable } from 'firebase/functions';
@@ -53,20 +53,6 @@ export function Profile({ user, authReady, onSignIn }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [skipClaim, setSkipClaim] = useState(false);
   const [followSheet, setFollowSheet] = useState(null); // 'followers' | 'following' | null
-  // Stylist feature-discovery (1.6): bubble + pulse until dismissed. MUST
-  // live up here with the other hooks — Profile has early returns below,
-  // and a hook after a conditional return is React error #310.
-  const [stylistHintOn, setStylistHintOn] = useState(() => {
-    try {
-      return !hintSeen('hint_stylist_profile')
-        && localStorage.getItem('drape_onboarding_dismissed_v2') === '1';
-    } catch { return false; }
-  });
-  const dismissStylistHint = () => {
-    if (!stylistHintOn) return;
-    markHintSeen('hint_stylist_profile');
-    setStylistHintOn(false);
-  };
   // Owned-closet count. Seeded from a per-user cache so it renders instantly
   // (like the stored followerCount) instead of flashing 0 → n on every open.
   const [itemCount, setItemCount] = useState(() => {
@@ -191,9 +177,8 @@ export function Profile({ user, authReady, onSignIn }) {
           <Link
             to="/stylist"
             data-tour="stylist"
-            className={`icon-btn${stylistHintOn ? ' icon-btn-pulse' : ''}`}
+            className="icon-btn"
             aria-label={t('stylistTitle')}
-            onClick={dismissStylistHint}
           >
             <Wand2 size={20} strokeWidth={1.6} />
           </Link>
@@ -204,11 +189,6 @@ export function Profile({ user, authReady, onSignIn }) {
           </Link>
         </div>
       </header>
-      {/* One-time "new feature" bubble + pulsing button, only for users who
-          finished onboarding BEFORE the stylist existed (new signups learn
-          it inside onboarding step 3 — no double announcement). */}
-      {stylistHintOn && <StylistCoachmark t={t} onDone={dismissStylistHint} />}
-
       <section className="profile-identity">
         <div className="profile-avatar-wrap">
           <Avatar
@@ -298,24 +278,6 @@ export function Profile({ user, authReady, onSignIn }) {
         kind={followSheet}
         onClose={() => setFollowSheet(null)}
       />
-    </div>
-  );
-}
-
-// Speech-bubble coachmark under the topbar, arrow pointing up at the new
-// stylist icon (which pulses while this shows). Controlled by Profile so
-// the bubble and the button highlight clear together. Tapping goes there.
-function StylistCoachmark({ t, onDone }) {
-  const navigate = useNavigate();
-  return (
-    <div className="coachmark coachmark-stylist" role="status">
-      <span className="coachmark-arrow" aria-hidden="true" />
-      <button type="button" className="coachmark-body" onClick={() => { onDone(); navigate('/stylist'); }}>
-        {t('stylistHint')}
-      </button>
-      <button type="button" className="coachmark-x" aria-label={t('close')} onClick={onDone}>
-        <X size={14} strokeWidth={1.9} />
-      </button>
     </div>
   );
 }

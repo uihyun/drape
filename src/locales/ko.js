@@ -570,7 +570,6 @@ export const ko = {
   importLoading: '링크에서 룩을 가져오는 중…',
   importNoUrl: '공유된 내용에서 링크를 찾지 못했어요.',
   importFailed: '이 링크에서 이미지를 가져오지 못했어요. 이미지를 저장한 뒤 여기서 직접 올려주세요.',
-  stylistHint: 'NEW — AI 스타일리스트가 생겼어요. 내 옷장으로 무료 코디 추천을 받고, 바로 입어보세요.',
   onboardTryonTitle: '입어보고 정하세요',
   onboardTryonBody: '피드의 look도 옷장 아이템도 ‘입어보기’ 한 번이면 내 사진에 그대로 입혀져요 — 얼굴도 몸도 진짜 나. 매일 5번 무료예요.',
   hintTryonCalendar: '캘린더의 look은 언제든 다시 입어볼 수 있어요 — 날짜를 열고 ‘입어보기’를 눌러보세요.',

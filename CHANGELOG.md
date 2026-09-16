@@ -34,6 +34,15 @@ which ships as 2.1.0 (versionCode 20 / iOS build 16) and clears Play's API-36 bl
   valid save → stored, reset → doc removed) and a real styleRecommend call
   still returned 3 outfits afterwards. Changing a model now reaches
   production in ≤5 minutes with no deploy and no client release.
+- **Trends was reserving room for the floating nav twice.** `.main` already
+  pads 6.5rem for it; the page added another 8rem on top, leaving roughly an
+  eighth of the screen blank under the colophon. Now 1.5rem of breathing room —
+  content ends ~35px above the nav instead of ~140px.
+- **Stylist coachmark removed.** The tour points at the same button, so the
+  bubble was a second announcement of one thing. Its copy, CSS and the pulse
+  state went with it, along with the line in onboarding that suppressed it.
+- **Tour's dismiss is a bare X.** The circular chip read as a button belonging
+  to the page underneath rather than a way out of the overlay.
 - **iOS build was failing outright, not warning.** Capacitor's
   `assertDeploymentTarget` pins every pod to its own floor of 14.0, and current
   Xcode refuses any target below 15.0 — as an error, once per pod, so the

@@ -570,7 +570,6 @@ export const en = {
   importLoading: 'Fetching the look from your link…',
   importNoUrl: 'No link found in what was shared.',
   importFailed: 'Couldn’t pull an image from that link. Save the image and upload it here instead.',
-  stylistHint: 'NEW — meet your AI stylist. Free outfit picks from your own closet, then try them on you.',
   onboardTryonTitle: 'See it on you',
   onboardTryonBody: 'Open any look or closet item and tap “Try this on” — drape puts it on your actual photo, your face and body preserved. 5 free try-ons every day.',
   hintTryonCalendar: 'Every look on this calendar can be tried on again — open a day and tap “Try this on”.',

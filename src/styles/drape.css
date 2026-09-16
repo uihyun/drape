@@ -5527,7 +5527,7 @@ input[type="search"]::-webkit-search-decoration {
 
 /* ── Profile shell (Lekondo) ───────────────────────────────────────── */
 .profile {
-  position: relative; /* anchors the floating stylist coachmark */
+  position: relative;
   max-width: 640px;
   margin: 0 auto;
   /* Profile is the topmost surface on /profile — no MobileHeader above
@@ -6734,10 +6734,6 @@ input[type="search"]::-webkit-search-decoration {
 /* Coachmark speech bubble (feature discovery, 1.6). FLOATS over content
    (absolute in .profile) — it must never take layout space; a transparent
    undefined-token bug once left a ghost gap here, hence the explicit tokens. */
-.coachmark { position: absolute; top: calc(var(--safe-top, 0px) + 48px); right: 8px; z-index: 80; display: flex; align-items: flex-start; gap: 4px; max-width: 300px; filter: drop-shadow(0 6px 16px rgba(20, 19, 18, 0.22)); }
-.coachmark-arrow { position: absolute; top: -5px; right: 146px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--text-primary); border-radius: 2px; }
-.coachmark-body { border: none; background: var(--text-primary); color: var(--surface); font: inherit; font-size: 0.8rem; line-height: 1.35; padding: 9px 12px; border-radius: 12px; cursor: pointer; text-align: left; }
-.coachmark-x { border: none; background: var(--text-primary); color: var(--surface); border-radius: 10px; padding: 6px; cursor: pointer; display: flex; flex: none; }
 .icon-btn-pulse { position: relative; }
 .icon-btn-pulse::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--text-primary); animation: stylist-pulse 1.6s ease-out infinite; pointer-events: none; }
 @keyframes stylist-pulse { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.25); opacity: 0; } 100% { opacity: 0; } }
@@ -6752,7 +6748,7 @@ input[type="search"]::-webkit-search-decoration {
    Lekondo grammar (photography-led, rounded modules, micro-labels, one
    dark block) with drape's serif accents. Numbers from everyone; images
    only from public surfaces — see functions/trends.js. */
-.tmag { max-width: 560px; margin: 0 auto; padding: 0 0 8rem; }
+.tmag { max-width: 560px; margin: 0 auto; padding: 0 0 1.5rem; }
 .tmag-kicker { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px; }
 .tmag-section { margin: 0 0 26px; padding: 0 1.1rem; }
 /* hero — full-bleed cover with overlaid masthead */
@@ -6897,10 +6893,10 @@ input[type="search"]::-webkit-search-decoration {
 }
 .tour-scrim-full { position: fixed; inset: 0; background: rgba(12, 11, 10, 0.72); }
 .tour-x {
-  position: fixed; top: calc(var(--safe-top, 0px) + 14px); right: 14px;
+  position: fixed; top: calc(var(--safe-top, 0px) + 14px); right: 16px;
   z-index: 2;
-  width: 34px; height: 34px; border-radius: 999px;
-  border: none; background: rgba(255, 255, 255, 0.16); color: #fff;
+  width: 34px; height: 34px;
+  border: none; background: none; color: #fff;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 .tour-caption {

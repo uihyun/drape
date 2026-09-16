@@ -570,7 +570,6 @@ export const es = {
   importLoading: 'Trayendo el look desde tu enlace…',
   importNoUrl: 'No se encontró ningún enlace en lo que compartiste.',
   importFailed: 'No se pudo obtener una imagen de ese enlace. Guarda la imagen y súbela aquí.',
-  stylistHint: 'NUEVO — conoce a tu estilista con IA. Propuestas gratis con tu propio armario, y luego pruébatelas.',
   onboardTryonTitle: 'Míralo en ti',
   onboardTryonBody: 'Abre cualquier look o prenda de tu armario y toca “Probar” — drape la pone en tu foto real, conservando tu rostro y tu cuerpo. 5 pruebas gratis cada día.',
   hintTryonCalendar: 'Cada look de este calendario se puede volver a probar — abre un día y toca “Probar”.',
