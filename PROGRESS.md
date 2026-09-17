@@ -2,14 +2,23 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-16 (2.1.0 submitted to both stores; store still serving 1.5.0)
+## Snapshot — 2026-09-17 (2.1.1 ready to submit; store still serving 1.5.0)
 
-**2.1.0 went to both consoles on 16 Sep** — iOS build 16, Android versionCode 20
-— and is in review. Production still serves **1.5.0** (vc17 / iOS build 14)
-until it clears, so everything below has been live on web/functions for weeks
-and no app user has seen it yet. That also unblocks Android: Play has enforced
-target API 36 since Aug 31, and no Android update could ship at all until this
-AAB went up.
+**2.1.0 was rejected on review day** — Guideline 2.1(a), crash on launch on
+iPhone 17 Pro Max / iOS 27.0. iOS 27 traps any app still on the legacy
+UIApplication lifecycle, which is what Capacitor 7's template is. Not
+reproducible below iOS 27, so neither local testing nor TestFlight caught it.
+
+**2.1.1 is the same release with that fixed**, by upgrading to Capacitor 8.5
+where UIScene adoption is official rather than patching around 7. iOS build 17,
+Android versionCode 21. Both platforms verified to launch and run; Google and
+Apple sign-in re-verified on device, because adopting scenes retires
+`application(_:open:options:)` where those callbacks used to live.
+
+Production still serves **1.5.0** (vc17 / iOS build 14) until 2.1.1 clears.
+Everything below has been live on web/functions for weeks and no app user has
+seen it yet. This also still gates Android: Play has enforced target API 36
+since Aug 31.
 
 The submission material is all in the repo and does not need rediscovering:
 listing copy per locale in `resources/app-store/listing-{en,ko,ja,es,fr}.md`
@@ -17,7 +26,7 @@ listing copy per locale in `resources/app-store/listing-{en,ko,ja,es,fr}.md`
 block because Play caps at 500 where the App Store allows 4000), poster decks in
 `resources/app-store/posters-2.1.0-<locale>/` with the deck's reasoning in that
 folder's README, and the per-release checklist in `store-metadata.md` — which
-now separates **settled** requirements (account deletion, Apple Sign-In, export
+separates **settled** requirements (account deletion, Apple Sign-In, export
 compliance, push) from the fields that genuinely reset every version.
 
 **Shipped since the last snapshot** (all live on web):

@@ -392,7 +392,13 @@ per-version field, so later builds are not asked again.
 
 ## Submission log
 
-**2.1.0 — submitted to both stores 16 Sep 2026.** iOS build 16 /
+**2.1.1 — iOS build 17 / Android versionCode 21.** The 2.1.0 resubmission. Store
+copy is byte-identical apart from the version number: 2.1.0 never reached a
+user, so from outside this *is* that release.
+
+
+**2.1.0 — submitted 16 Sep 2026, rejected the same day** under Guideline 2.1(a):
+crash on launch on iOS 27. Superseded by 2.1.1. Details: iOS build 16 /
 MARKETING_VERSION 2.1.0; Android versionCode 20 / versionName 2.1.0. Listings in
 en · ko · ja · es · fr; poster decks in en · ja · es · fr (Korean inherits the
 English set on purpose — see `resources/app-store/README.md`). App Store got all

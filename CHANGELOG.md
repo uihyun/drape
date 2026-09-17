@@ -24,7 +24,26 @@ adoption is official.
 
 Sign-in was the risk the upgrade created, because adopting scenes silently
 retires `application(_:open:options:)`. Owner verified Google and Apple sign-in
-on device after the move: both work.
+on an iOS device after the move: both work.
+
+Android was not exposed to the crash — UIScene is iOS-only — but the Capacitor 8
+migration moved its whole toolchain: AGP 8.7.2 → 8.13.0, Gradle wrapper 8.11.1 →
+8.13 (the migration's own wrapper step failed, leaving AGP above its minimum
+Gradle), google-services 4.4.2 → 4.4.4, the AndroidX set, cordova-android
+10.1.1 → 14.0.1, and `density` added to the MainActivity `configChanges`.
+Verified by installing the signed release APK on a Pixel 9 emulator
+(Android 17 / API 37): launches, renders, no fatals. Owner confirmed on top of
+that.
+
+A device log review turned up nothing to fix. The one entry that looked like an
+app bug — `makeImagePlus: 'WEBP'-_reader->initImage[0] failed err=-50`, twice —
+is WebKit's fast decode path failing and silently retrying on the welcome
+screen's two mockups (`lp/calendar.webp`, `lp/feed.webp`); both files are plain
+lossy VP8 that decode correctly and both render. The rest was Firebase
+informational output and OS noise. Worth recording because
+`GoogleAppMeasurementIdentitySupport dependency is not currently linked` reads
+like a defect and is the opposite: IDFA stays unlinked deliberately, which is
+what keeps drape clear of the ATT prompt.
 
 ## 2.1.0 — submitted ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
