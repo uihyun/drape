@@ -14,6 +14,52 @@ Conventions:
 ## 2.1.0 — submitted ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
 **Submitted to both stores 16 Sep 2026.** iOS build 16, Android versionCode 20.
+**Rejected the same day** under Guideline 2.1(a) — crash on launch, review device
+iPhone 17 Pro Max / iOS 27.0. Fixed in **build 17**; Android was unaffected but
+is rebuilt on the same Capacitor version.
+
+**The crash: iOS 27 requires UIScene lifecycle adoption.** The faulting frame is
+`__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_`,
+`EXC_BREAKPOINT`, main thread, with no drape code anywhere on the stack — the OS
+traps the process before `main` hands off. Capacitor 7's iOS template is the
+legacy lifecycle (`var window: UIWindow?`, no scene manifest), which was a
+warning through the iOS 26 SDK and is fatal once linked against iOS 27. The
+archive was built with Xcode 27.0.
+
+It could not have been caught on the owner's iPhone 16 Pro or in TestFlight: the
+trap is a function of the *device's* OS version, not the distribution channel,
+and that phone is below iOS 27.
+
+**Fixed by upgrading to Capacitor 8.5, not by patching around 7.** A first pass
+hand-rolled a scene delegate on Capacitor 7 and worked; checking the upstream
+templates afterwards showed 8.5 adopts scenes officially — and ships
+`SceneDelegateProxy`, a plugin-routing API that does not exist in 7, so the
+hand-rolled version was re-implementing it against the older app-delegate proxy.
+That pass was reverted and `npx cap migrate` run instead.
+
+Core, CLI, both platforms and the first-party plugins went to 8.
+`@capacitor-firebase/*` deliberately stayed on 7.5.0: its 8.x line peers on
+`firebase@^12`, and dragging the web SDK from 11 to 12 has nothing to do with a
+launch crash. Its peer is `@capacitor/core: >=7.0.0`, so it runs on 8 unchanged;
+`@capacitor-community/apple-sign-in` has no 8.x at all and declares the same open
+peer.
+
+Two things the migration left for us. It writes the scene delegate but only
+*warns* about a custom `application(_:open:)` — ours handled the Google OAuth
+callback, so it moved to `scene(_:openURLContexts:)` with GIDSignIn taking first
+refusal ahead of `SceneDelegateProxy`, plus `connectionOptions.urlContexts` for
+cold start. Fixing only the crash would have left sign-in quietly broken. And its
+gradle-wrapper step failed outright, leaving AGP at 8.13 against wrapper 8.11.1,
+below AGP 8.13's own minimum; the wrapper is now 8.13.
+
+**What the verification does and does not prove.** The build compiles against the
+iOS 27 SDK, links `SceneDelegateProxy`, resolves `App.SceneDelegate` with no
+UIKit error, and launches and renders on an iOS 27 simulator; Android builds a
+signed AAB on the new gradle. But the iOS 27 *simulator does not enforce the
+trap* — a pre-fix build with the manifest stripped back out launched there too.
+So the diagnosis rests on the crash frame, which names the check exactly, and on
+the app now satisfying it the way Capacitor ships it. Device-side proof needs a
+real iOS 27 handset.
 
 Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
 analyze → register), per-user style profile summary, stylist personas with

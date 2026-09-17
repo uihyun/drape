@@ -62,6 +62,21 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   escapes; don't relax it.
 - **Server-editable copy layer** (`config/copy`): t() string overrides, onboarding steps, and the notice banner — edited in /admin → Config via `adminSetConfig` (server validates against the client parsers). Missing/malformed doc always falls back to bundled; don't break that contract.
 - **Share-import fetches stay SSRF-disciplined** (`functions/import.js`): https only, DNS-checked public IPs, every redirect hop re-validated, size/time caps. Don't loosen for a convenience case.
+- **iOS is on the UIScene lifecycle; don't put URL handling back on AppDelegate.**
+  iOS 27 traps at launch (`EXC_BREAKPOINT` in
+  `__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`) for any app
+  linked against its SDK without a scene manifest — it rejected 2.1.0 build 16.
+  Capacitor 8.5 adopts scenes officially, so `SceneDelegate.swift` is Capacitor's
+  file plus one line: GIDSignIn gets first refusal in `scene(_:openURLContexts:)`
+  before `SceneDelegateProxy`. Google OAuth and Sign in with Apple arrive there,
+  and at `connectionOptions.urlContexts` on a cold start;
+  `application(_:open:options:)` is never called again, and `cap migrate` leaves
+  the stale copy behind with only a warning — re-adding it compiles, runs, and
+  silently never fires.
+- **`@capacitor-firebase/*` stays on 7.5.0 while the rest of Capacitor is on 8.**
+  Its 8.x line peers on `firebase@^12` and the web SDK is on 11. The 7.5.0 peer
+  is `@capacitor/core: >=7.0.0`, so it runs on 8 unchanged.
+  `@capacitor-community/apple-sign-in` has no 8.x at all, same open peer.
 - **Store assets live in `resources/app-store/`, not on the Desktop.** Captures,
   the recovered shipped decks, the current poster decks, the look photos the
   hero slides are cut from, and the per-locale listing copy. The renderer is
