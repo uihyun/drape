@@ -14,6 +14,44 @@ Conventions:
 ## 2.1.0 — submitted ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
 **Submitted to both stores 16 Sep 2026.** iOS build 16, Android versionCode 20.
+**Rejected the same day** under Guideline 2.1(a) — crash on launch, review device
+iPhone 17 Pro Max / iOS 27.0. Fixed in **build 17**; Android unaffected.
+
+**The crash: iOS 27 requires UIScene lifecycle adoption.** The faulting frame is
+`__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_`,
+`EXC_BREAKPOINT`, main thread, with no drape code anywhere on the stack — the OS
+traps the process before `main` hands off. Capacitor 7.6's iOS template is still
+the legacy lifecycle (`var window: UIWindow?`, `UIMainStoryboardFile`, no scene
+manifest), which was a warning through the iOS 26 SDK and is fatal once the app
+is linked against iOS 27. The archive was built with Xcode 27.0.
+
+It could not have been caught on the owner's iPhone 16 Pro or in TestFlight:
+the trap is a function of the *device's* OS version, not the distribution
+channel, and that phone is below iOS 27.
+
+The fix adopts scenes properly rather than only silencing the trap:
+`UIApplicationSceneManifest` in `Info.plist` (and `UIMainStoryboardFile` removed,
+superseded by `UISceneStoryboardFile`), a new `SceneDelegate.swift`, and
+`AppDelegate` reduced to process-level setup.
+
+**The trap inside the fix.** Adding the manifest alone stops the crash and
+silently breaks sign-in: once a scene manifest exists UIKit no longer calls
+`application(_:open:options:)` or `application(_:continue:)`, and both the Google
+OAuth callback and Sign in with Apple arrive that way. Those hooks moved to
+`SceneDelegate` — including `connectionOptions.urlContexts` in
+`scene(_:willConnectTo:)`, which is the cold-start-from-URL path that
+`openURLContexts` does not cover. The five empty `application*` lifecycle stubs
+were deleted too; they would have sat there looking like working lifecycle
+handling while never firing again.
+
+**What the verification does and does not prove.** The fixed build compiles
+against the iOS 27 SDK, resolves `App.SceneDelegate` with no UIKit error, and
+launches and renders on both iOS 26.5 and iOS 27 simulators. But the iOS 27
+*simulator does not enforce the trap* — the pre-fix build, with the manifest
+stripped back out, launched there too. So the diagnosis rests on the crash frame,
+which names the check exactly, and on the app now satisfying it; device-side
+proof needs a real iOS 27 handset.
+
 
 Scope locked 2026-09-08: share-to-drape import (iOS/Android/web share sheet →
 analyze → register), per-user style profile summary, stylist personas with
