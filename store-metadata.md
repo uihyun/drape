@@ -392,7 +392,8 @@ per-version field, so later builds are not asked again.
 
 ## Submission log
 
-**2.1.1 — iOS build 17 / Android versionCode 21.** The stores are NOT in the
+**2.1.1 — submitted to both stores 17 Sep 2026.** iOS build 17 / Android
+versionCode 21. The stores are NOT in the
 same place for this one, so the release notes differ:
 
 - **Play** already shipped 2.1.0 (16 Sep). Its users have the stylist, Trends and

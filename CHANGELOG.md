@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## 2.1.1 — launch-crash fix (iOS 27 / UIScene)
+## 2.1.1 — launch-crash fix (iOS 27 / UIScene) — submitted 17 Sep 2026
 
 iOS build 17, Android versionCode 21. No user-facing change from 2.1.0, which
 never reached anyone: it was rejected on review day and this is the same release

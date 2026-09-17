@@ -2,14 +2,14 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-17 (2.1.1 ready to submit; store still serving 1.5.0)
+## Snapshot — 2026-09-17 (2.1.1 in review on both stores)
 
 **2.1.0 was rejected on review day** — Guideline 2.1(a), crash on launch on
 iPhone 17 Pro Max / iOS 27.0. iOS 27 traps any app still on the legacy
 UIApplication lifecycle, which is what Capacitor 7's template is. Not
 reproducible below iOS 27, so neither local testing nor TestFlight caught it.
 
-**2.1.1 is the same release with that fixed**, by upgrading to Capacitor 8.5
+**2.1.1 is the same release with that fixed**, submitted to both stores 17 Sep, by upgrading to Capacitor 8.5
 where UIScene adoption is official rather than patching around 7. iOS build 17,
 Android versionCode 21. Both platforms verified to launch and run; Google and
 Apple sign-in re-verified on device, because adopting scenes retires
