@@ -11,6 +11,21 @@ Conventions:
 
 ---
 
+## 2.1.1 — launch-crash fix (iOS 27 / UIScene)
+
+iOS build 17, Android versionCode 21. No user-facing change from 2.1.0, which
+never reached anyone: it was rejected on review day and this is the same release
+with the crash fixed. Store copy is unchanged apart from the version number.
+
+See the 2.1.0 entry below for the full account — the short version is that iOS 27
+traps at launch for apps still on the legacy UIApplication lifecycle, which was
+Capacitor 7's template, and the fix is the upgrade to Capacitor 8.5 where scene
+adoption is official.
+
+Sign-in was the risk the upgrade created, because adopting scenes silently
+retires `application(_:open:options:)`. Owner verified Google and Apple sign-in
+on device after the move: both work.
+
 ## 2.1.0 — submitted ("your stylist", spec: docs/SPEC-1.6.md; was 1.6.0 → 2.0.0 → 2.1.0, final renumber 2026-09-12 — owner call: 2.x signals the repositioning, .1 avoids the "never trust a .0" smell and matches reality: the 2.0 feature wave already shipped continuously on web, the store build is its refined snapshot)
 
 **Submitted to both stores 16 Sep 2026.** iOS build 16, Android versionCode 20.

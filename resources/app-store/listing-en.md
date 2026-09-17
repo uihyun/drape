@@ -55,7 +55,7 @@ Snap each piece you own and drape builds a clean digital closet — auto-cut and
 Your closet, your fitting room, your style diary — all in drape.
 ```
 
-**What's New** (≤4000) — 2.1.0:
+**What's New** (≤4000) — 2.1.1:
 
 ```
 • Your AI stylist: pick one of four and get outfit ideas from your own
@@ -95,7 +95,7 @@ Build your digital closet, try anything on with AI, and log your outfits.
   the metric to watch after release.
 - The shot list and the renderer live in `README.md` next to this file.
 
-**What's new** (Play, ≤500) — 2.1.0:
+**What's new** (Play, ≤500) — 2.1.1:
 
 The App Store takes 4000 characters here; **Play takes 500**, so the release
 notes are not the same text trimmed — they are a shorter list. The two weakest

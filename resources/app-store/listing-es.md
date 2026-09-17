@@ -61,7 +61,7 @@ Fotografía cada prenda y drape monta un armario digital limpio: recorta el fond
 Tu armario, tu probador y tu diario de estilo. Todo en drape.
 ```
 
-**What's New** (≤4000) — 2.1.0:
+**What's New** (≤4000) — 2.1.1:
 
 ```
 • Tu estilista con IA: elige uno de cuatro y recibe ideas armadas con tu
@@ -109,7 +109,7 @@ Play renders the bullet characters fine and the length is well within cap.
       `CFBundleLocalizations` must list `es` (done in 2.1.0), otherwise the App
       Store shows the app as English-only regardless of the listing.
 
-**Novedades** (Play, ≤500) — 2.1.0:
+**Novedades** (Play, ≤500) — 2.1.1:
 
 La App Store admite 4000 caracteres; **Play admite 500**, así que estas notas
 no son el mismo texto recortado sino una lista más corta.

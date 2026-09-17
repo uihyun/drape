@@ -50,7 +50,7 @@ Photographiez chaque pièce et drape construit un dressing numérique net : dét
 Votre dressing, votre cabine d'essayage, votre journal de style. Tout dans drape.
 ```
 
-**What's New** (≤4000) — 2.1.0:
+**What's New** (≤4000) — 2.1.1:
 
 ```
 • Votre styliste IA : choisissez-en un parmi quatre et recevez des idées de
@@ -83,7 +83,7 @@ Créez votre dressing numérique, essayez tout avec l’IA et notez vos tenues.
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.
 
-**Nouveautés** (Play, ≤500) — 2.1.0:
+**Nouveautés** (Play, ≤500) — 2.1.1:
 
 L'App Store accepte 4000 caractères ; **Play en accepte 500**, donc ces notes
 ne sont pas le même texte tronqué mais une liste plus courte.
