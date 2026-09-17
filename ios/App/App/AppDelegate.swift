@@ -1,36 +1,57 @@
 import UIKit
 import Capacitor
 import FirebaseCore
+import GoogleSignIn
 
-// Scene lifecycle is adopted — see SceneDelegate.swift and the
-// UIApplicationSceneManifest in Info.plist — because iOS 27 traps at launch
-// without it. That changes what this file is for: the window belongs to the
-// scene, and UIKit no longer calls the URL, userActivity or foreground/
-// background hooks here. What still runs on the app delegate is process-level
-// setup like Firebase, plus the remote-notification callbacks Capacitor's
-// plugins swizzle on.
-//
-// Deliberately NOT here any more:
-//   application(_:open:options:)     — Google OAuth + Sign in with Apple
-//   application(_:continue:)         — Universal Links
-//   applicationDidBecomeActive(_:)   — and the rest of the lifecycle stubs
-// All of those moved to SceneDelegate. Re-adding one here would compile, run,
-// and silently never fire — a worse failure than the crash was.
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    var window: UIWindow?
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // FirebaseApp.configure() is required by @capacitor-firebase/authentication
         // so the native Google sign-in plugin can hand off to FirebaseAuth.
         FirebaseApp.configure()
         return true
     }
 
-    func application(_ application: UIApplication,
-                     configurationForConnecting connectingSceneSession: UISceneSession,
-                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        UISceneConfiguration(name: "Default Configuration",
-                             sessionRole: connectingSceneSession.role)
+    func applicationWillResignActive(_ application: UIApplication) {
+        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
     }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        // Google Sign-In returns its OAuth callback via this URL hook. Forward to
+        // GIDSignIn first; if it doesn't claim the URL, fall through to Capacitor's
+        // standard URL routing (Apple Sign-In, Universal Links, etc.).
+        if GIDSignIn.sharedInstance.handle(url) {
+            return true
+        }
+        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+    }
+
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        // Called when the app was launched with an activity, including Universal Links.
+        // Feel free to add additional processing here, but if you want the App API to support
+        // tracking app url opens, make sure to keep this call
+        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
 }

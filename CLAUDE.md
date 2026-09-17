@@ -62,16 +62,6 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   escapes; don't relax it.
 - **Server-editable copy layer** (`config/copy`): t() string overrides, onboarding steps, and the notice banner — edited in /admin → Config via `adminSetConfig` (server validates against the client parsers). Missing/malformed doc always falls back to bundled; don't break that contract.
 - **Share-import fetches stay SSRF-disciplined** (`functions/import.js`): https only, DNS-checked public IPs, every redirect hop re-validated, size/time caps. Don't loosen for a convenience case.
-- **iOS uses the UIScene lifecycle; don't put URL handling back on AppDelegate.**
-  iOS 27 traps at launch (`EXC_BREAKPOINT` in
-  `__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`) for any app
-  linked against the iOS 27 SDK without a scene manifest — it rejected 2.1.0
-  build 16. Capacitor's template is still legacy, so `Info.plist`'s
-  `UIApplicationSceneManifest` and `SceneDelegate.swift` are ours to maintain
-  across `npx cap sync`. Google OAuth and Sign in with Apple callbacks arrive at
-  `scene(_:openURLContexts:)` and at `connectionOptions.urlContexts` on cold
-  start; `application(_:open:options:)` is never called again and re-adding it
-  compiles, runs, and silently never fires.
 - **Store assets live in `resources/app-store/`, not on the Desktop.** Captures,
   the recovered shipped decks, the current poster decks, the look photos the
   hero slides are cut from, and the per-locale listing copy. The renderer is
