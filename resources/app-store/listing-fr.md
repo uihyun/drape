@@ -83,7 +83,7 @@ Créez votre dressing numérique, essayez tout avec l’IA et notez vos tenues.
 
 **Full description** (≤4000) — reuse the App Store description above verbatim.
 
-**Nouveautés** (Play, ≤500) — 2.1.1:
+**Nouveautés** (Play, ≤500) — shipped with 2.1.0:
 
 L'App Store accepte 4000 caractères ; **Play en accepte 500**, donc ces notes
 ne sont pas le même texte tronqué mais une liste plus courte.
@@ -94,4 +94,14 @@ ne sont pas le même texte tronqué mais une liste plus courte.
 • Partagez une fiche produit vers drape pour voir le vêtement sur vous avant d'acheter.
 • Disponible en espagnol et en français.
 • Une visite guidée au lieu de diapositives. Redimensionnez le dressing à deux doigts, triez-le, ajoutez plusieurs pièces d'un coup.
+```
+
+**Nouveautés** (Play, 2.1.1):
+
+**Play uniquement, à partir de 2.1.1.** Play a déjà publié 2.1.0. L'App Store
+en est encore à 1.5.0, donc là-bas cette même build constitue toute la
+version : gardez les notes longues ci-dessus.
+
+```
+Mises à jour internes de la plateforme et quelques finitions.
 ```

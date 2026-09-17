@@ -109,7 +109,7 @@ Play renders the bullet characters fine and the length is well within cap.
       `CFBundleLocalizations` must list `es` (done in 2.1.0), otherwise the App
       Store shows the app as English-only regardless of the listing.
 
-**Novedades** (Play, ≤500) — 2.1.1:
+**Novedades** (Play, ≤500) — shipped with 2.1.0:
 
 La App Store admite 4000 caracteres; **Play admite 500**, así que estas notas
 no son el mismo texto recortado sino una lista más corta.
@@ -120,4 +120,14 @@ no son el mismo texto recortado sino una lista más corta.
 • Comparte la página de un producto a drape para ver si te queda antes de comprarlo.
 • Ahora en español y francés.
 • Un recorrido guiado en vez de diapositivas. Ajusta tu armario con dos dedos, ordénalo y agrega varias prendas a la vez.
+```
+
+**Novedades** (Play, 2.1.1):
+
+**Solo Play, y solo a partir de 2.1.1.** Play ya publicó 2.1.0, así que sus
+usuarios tienen el estilista, Tendencias y los nuevos idiomas. La App Store
+sigue en 1.5.0, así que allí esta misma compilación es toda la versión.
+
+```
+Actualizaciones internas de la plataforma y varios retoques.
 ```

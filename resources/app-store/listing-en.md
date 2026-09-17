@@ -95,7 +95,7 @@ Build your digital closet, try anything on with AI, and log your outfits.
   the metric to watch after release.
 - The shot list and the renderer live in `README.md` next to this file.
 
-**What's new** (Play, ≤500) — 2.1.1:
+**What's new** (Play, ≤500) — shipped with 2.1.0:
 
 The App Store takes 4000 characters here; **Play takes 500**, so the release
 notes are not the same text trimmed — they are a shorter list. The two weakest
@@ -107,4 +107,16 @@ bullets are merged into one closing line.
 • Share any product page to drape to see it on you before you buy.
 • Now in Spanish and French, alongside English, Korean and Japanese.
 • A guided tour instead of a stack of slides. Pinch to resize your closet, new sorting, add several pieces at once.
+```
+
+**What's new** (Play, 2.1.1):
+
+**Play only, and only from 2.1.1 on.** Play already shipped 2.1.0, so its
+users have the stylist, Trends and the new locales — 21 really is just the
+Capacitor 8 upgrade. The App Store is still on 1.5.0 because 2.1.0 was
+rejected, so there this same build is the whole feature release: keep the
+long **What's New** above for App Store Connect.
+
+```
+Platform updates under the hood, plus a round of polish.
 ```

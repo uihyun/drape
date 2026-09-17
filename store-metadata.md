@@ -392,9 +392,20 @@ per-version field, so later builds are not asked again.
 
 ## Submission log
 
-**2.1.1 — iOS build 17 / Android versionCode 21.** The 2.1.0 resubmission. Store
-copy is byte-identical apart from the version number: 2.1.0 never reached a
-user, so from outside this *is* that release.
+**2.1.1 — iOS build 17 / Android versionCode 21.** The stores are NOT in the
+same place for this one, so the release notes differ:
+
+- **Play** already shipped 2.1.0 (16 Sep). Its users have the stylist, Trends and
+  the new locales, so versionCode 21 is a genuine patch — one line about the
+  platform upgrade. Use the "(Play, 2.1.1)" block in `listing-*.md`.
+- **The App Store** is still on 1.5.0, because 2.1.0 was rejected on review day
+  and never reached anyone. There this same build carries the whole feature
+  release, so it keeps the long **What's New**. Announcing it as "under-the-hood
+  updates" would ship the AI stylist without telling a single user it exists.
+
+Verify the live versions rather than assuming, the way this was settled:
+`curl -s "https://itunes.apple.com/lookup?id=6775511709&country=us"` for the App
+Store, and the Play listing page for Android.
 
 
 **2.1.0 — submitted 16 Sep 2026, rejected the same day** under Guideline 2.1(a):
