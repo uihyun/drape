@@ -13,9 +13,60 @@
 const admin = require('firebase-admin');
 const { onCall } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { classify, weekKey } = require('./admin-helpers.js');
 
 function db() { return admin.firestore(); }
+
+// The rest of trends/current is a weekly snapshot on purpose — the numbers and
+// the cover are an edition, and an edition that shifts under you is not one.
+// The marketplace row is the exception: it is live inventory. A listing pulled
+// down kept showing for up to 24h and led to an item page with no Contact
+// button — a dead end, and the seller's side was just as bad (a new listing was
+// invisible until the next cron). So this row is rebuilt from a trigger.
+const MARKET_MAX = 8;
+
+async function buildMarketRow() {
+  const market = [];
+  const snap = await db().collection('items')
+    .where('forSale', '==', true).orderBy('listedAt', 'desc').limit(20).get();
+  snap.forEach((d) => {
+    if (market.length >= MARKET_MAX) return;
+    const x = d.data();
+    const img = x.croppedUrl || x.originalUrl || null;
+    if (!img) return;
+    market.push({ id: d.id, img, category: x.tags?.category || null });
+  });
+  return market;
+}
+
+// Fields that change what the row should contain. Everything else an item
+// write touches — tags, wear log, status, favourites — must NOT wake this up;
+// the closet is the busiest collection in the app.
+const MARKET_FIELDS = ['forSale', 'listedAt', 'croppedUrl', 'originalUrl'];
+
+exports.onListingChanged = onDocumentWritten('items/{itemId}', async (event) => {
+  const before = event.data?.before?.data() || null;
+  const after = event.data?.after?.data() || null;
+
+  // Only care when the item is, or just stopped being, a listing.
+  if (!before?.forSale && !after?.forSale) return;
+
+  const changed = MARKET_FIELDS.some((k) => {
+    const a = before?.[k]; const b = after?.[k];
+    // listedAt is a Timestamp; compare by millis so identical stamps match.
+    if (a?.toMillis && b?.toMillis) return a.toMillis() !== b.toMillis();
+    return a !== b;
+  }) || (before?.tags?.category !== after?.tags?.category);
+  if (!changed) return;
+
+  const ref = db().collection('trends').doc('current');
+  // Patch the one field. A full recompute here would re-roll the weekly cover
+  // and the stats on every listing edit, which is the opposite of an edition.
+  const doc = await ref.get();
+  if (!doc.exists) return;     // nothing to patch until the first cron runs
+  await ref.update({ market: await buildMarketRow() });
+});
 
 // Style axis → persona who fronts that section (mirrors stylist.js lenses).
 const STYLE_PERSONA = {
@@ -214,16 +265,7 @@ async function computeTrends() {
     .map((l) => ({ id: l.id, img: l.img, style: l.style }));
 
   // Marketplace row — listings are public by definition.
-  const market = [];
-  const mktSnap = await db().collection('items')
-    .where('forSale', '==', true).orderBy('listedAt', 'desc').limit(20).get();
-  mktSnap.forEach((d) => {
-    if (market.length >= 8) return;
-    const x = d.data();
-    const img = x.croppedUrl || x.originalUrl || null;
-    if (!img) return;
-    market.push({ id: d.id, img, category: x.tags?.category || null });
-  });
+  const market = await buildMarketRow();
 
   // Where closets live — profile city strings, real users, counts only.
   const regions = {};

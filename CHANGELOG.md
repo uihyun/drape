@@ -11,6 +11,32 @@ Conventions:
 
 ---
 
+## Unreleased — server only
+
+**The Trends marketplace row is live now, not a daily snapshot.** The rest of
+`trends/current` is a weekly edition on purpose — numbers and cover that shift
+under you are not an edition — but the market row is inventory, and it was
+being rebuilt only by the 04:30 UTC cron. Owner unlisted an item and it kept
+showing for hours; tapping it landed on an item page with no Contact button,
+because the listing was gone. A dead end from the one buying path that is
+actually reachable in the shipped UI. The seller's side was the mirror image: a
+new listing was invisible until the next morning.
+
+`onListingChanged` (`functions/trends.js`) is an `onDocumentWritten` trigger on
+`items/{itemId}` that rebuilds *only* `trends/current.market`. Three things it
+deliberately does not do: it does not fire unless the item is or was `forSale`
+(the closet is the busiest collection in the app and tag/wear-log writes must
+not wake it), it does not fire unless a field the row actually renders changed
+(`forSale`, `listedAt`, the two photo URLs, `tags.category`), and it does not
+recompute the whole doc — a full recompute on every listing edit would re-roll
+the weekly cover and stats.
+
+**No client release needed**, which is why it was done this way: 2.1.1 is in
+review, and the alternative (have the client re-read each item doc to validate
+the snapshot) would have meant another submission plus eight extra reads per
+Trends view. Verified against production: listing appears in 2.5s, unlisting
+removes it in 2.5s. The one stale entry in the live doc was pruned by hand.
+
 ## 2.1.1 — launch-crash fix (iOS 27 / UIScene) — submitted 17 Sep 2026
 
 iOS build 17, Android versionCode 21. No user-facing change from 2.1.0, which

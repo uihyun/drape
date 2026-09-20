@@ -172,6 +172,8 @@ const trendsFns = require('./trends.js');
 exports.dailyTrends = trendsFns.dailyTrends;
 exports.adminRecomputeTrends = trendsFns.adminRecomputeTrends;
 exports.adminCurateTrends = trendsFns.adminCurateTrends;
+// Keeps trends/current.market live — the rest of the doc is a weekly edition.
+exports.onListingChanged = trendsFns.onListingChanged;
 
 // ── Admin analytics (email-gated; admin SDK reads across all accounts) ──
 const adminFns = require('./admin.js');
