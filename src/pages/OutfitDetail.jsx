@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
+import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
 import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
@@ -564,7 +564,12 @@ export function OutfitDetail({ user, onSignIn }) {
               disabled={verdictBusy}
               onClick={() => askVerdict(persona)}
             >
-              <Sparkles size={16} strokeWidth={1.8} />
+              {/* Wand2, not Sparkles — sparkles is try-on's icon throughout the
+                  app, and this button sits a few pixels from an actual try-on
+                  control. Same wand the Stylist page's "Style me" uses. */}
+              {verdictBusy
+                ? <Loader2 size={16} className="spin" />
+                : <Wand2 size={16} strokeWidth={1.8} />}
               {verdictBusy ? t('verdictBusy') : t('verdictAsk')}
             </button>
           )}
