@@ -40,7 +40,34 @@ export const stylistWarm = new Map();
 
 // Keyed `${outfitId}:${persona}` — a verdict belongs to the stylist who gave
 // it, so switching personas asks again (which is the point: a different
-// stylist should reach a different call). Survives back-and-return within the
-// session; a cold start re-asks, and that re-ask is free because the server
-// checks its own cache before charging.
-export const verdictWarm = new Map();
+// stylist should reach a different call).
+//
+// Unlike the caches above this one is PERSISTED. The others are speed: losing
+// them costs a reload. Losing a verdict costs the user a button press to see
+// an answer they already have, which reads as the app forgetting. Small enough
+// to keep — a few hundred bytes each, capped at VERDICT_KEEP by insertion
+// order, oldest dropped first.
+const VERDICT_STORE = 'drape_verdicts_v1';
+const VERDICT_KEEP = 40;
+
+function loadVerdicts() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(VERDICT_STORE) || '{}');
+    return new Map(Object.entries(raw));
+  } catch { return new Map(); }
+}
+
+export const verdictWarm = loadVerdicts();
+
+export function rememberVerdict(key, value) {
+  verdictWarm.set(key, value);
+  try {
+    // Map preserves insertion order, so trimming from the front drops the
+    // oldest. Re-setting an existing key does not move it, which is fine:
+    // re-reads are free, only first asks matter.
+    const entries = [...verdictWarm.entries()].slice(-VERDICT_KEEP);
+    verdictWarm.clear();
+    for (const [k, v] of entries) verdictWarm.set(k, v);
+    localStorage.setItem(VERDICT_STORE, JSON.stringify(Object.fromEntries(entries)));
+  } catch { /* private mode / quota — the in-memory Map still works */ }
+}

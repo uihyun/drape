@@ -6,7 +6,7 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
-import { dropFromFeedCaches, verdictWarm } from '../services/uiCache.js';
+import { dropFromFeedCaches, verdictWarm, rememberVerdict } from '../services/uiCache.js';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
@@ -135,7 +135,7 @@ export function OutfitDetail({ user, onSignIn }) {
     setVerdictBusy(true); setVerdictErr('');
     try {
       const v = await StylistService.verdict({ outfitId: outfit.id, persona: personaId });
-      verdictWarm.set(key, v);
+      rememberVerdict(key, v);
       setVerdict(v);
     } catch (e) {
       const code = e?.code || '';
