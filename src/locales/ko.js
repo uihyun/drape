@@ -199,6 +199,8 @@ export const ko = {
   linkItemsTitle: '입은 아이템 연결하기',
   linkItemsSub: '추천 매칭을 누르거나, 옷장을 필터로 좁혀 고르거나, 보드에서 가져오세요. 태그 검색과 착용 기록에 쓰여요.',
   linkItemsCta: '아이템 연결',
+  linkItemsPrompt: '입은 옷 연결하기',
+  linkItemsPromptBody: '옷장에서 고르면 여기에 나와요. 사람들이 입어볼 수 있고, 판매중인 건 바로 살 수 있어요.',
   linkFromBoard: '보드에서',
   linkFromCloset: '옷장에서',
   ootdNextStepHint: '다음: 오늘 입은 옷장 아이템을 연결해요.',

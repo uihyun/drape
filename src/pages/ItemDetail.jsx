@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { dropFromFeedCaches } from '../services/uiCache.js';
@@ -12,6 +12,7 @@ import { ShareButton } from '../components/ShareButton.jsx';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { MessageService, threadIdFor } from '../services/message-service.js';
 import { ProfileService } from '../services/profile-service.js';
+import { Avatar } from '../components/Avatar.jsx';
 import { shareOrDownloadImage } from '../services/share-service.js';
 import { elapsedLabel, daysSince } from '../utils/elapsed.js';
 import { currencyForCountry, currencySymbol, formatPrice } from '../utils/currency.js';
@@ -43,6 +44,9 @@ export function ItemDetail({ user, onSignIn }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [ownerCurrency, setOwnerCurrency] = useState(null);
+  // Who is selling. A price with no name behind it is not a thing anyone
+  // messages about, and this page is the only place a buyer ever lands.
+  const [seller, setSeller] = useState(null);
   const [listingOpen, setListingOpen] = useState(false);
   const [listingSaving, setListingSaving] = useState(false);
   // Phase-2 translate toggle for the auto-generated item name (description
@@ -101,11 +105,20 @@ export function ItemDetail({ user, onSignIn }) {
   // for a freshly-listed item so this only matters for the form preview.
   useEffect(() => {
     if (!item?.userId) return;
-    if (item.currency) { setOwnerCurrency(item.currency); return; }
+    // One read serves both: the currency the editor previews, and the byline
+    // a visitor needs. Skip it entirely when I'm looking at my own item.
+    // A signed-OUT visitor is the clearest case of "not the owner", so the
+    // guard cannot be written as `user && …` — that reads false when there is
+    // no user and skips the byline for exactly the person who needs it.
+    const isMine = !!user && item.userId === user.uid;
+    if (isMine && item.currency) { setOwnerCurrency(item.currency); return; }
     ProfileService.getByUid(item.userId)
-      .then(p => setOwnerCurrency(currencyForCountry(cityCountry(p?.location))))
-      .catch(() => setOwnerCurrency('KRW'));
-  }, [item?.userId, item?.currency]);
+      .then((p) => {
+        setOwnerCurrency(item.currency || currencyForCountry(cityCountry(p?.location)));
+        setSeller(p || null);
+      })
+      .catch(() => setOwnerCurrency(item.currency || 'KRW'));
+  }, [item?.userId, item?.currency, user?.uid]);
 
   // "Used in" — lazy-load generations/outfits/boards that include this
   // item, shown only to the owner. Board stickers are object arrays, so
@@ -355,11 +368,13 @@ export function ItemDetail({ user, onSignIn }) {
       {swipe.swipeable && <SwipeHint />}
 
       <aside className="item-viewer-rail" aria-label="actions">
-        {isOwner && (
-          <Link to={`/tryon?items=${item.id}`} className="item-rail-btn" aria-label={t('tryThisOn')}>
-            <Sparkles size={20} strokeWidth={1.6} />
-          </Link>
-        )}
+        {/* Trying on someone else's piece is the whole product, and this rail
+            was owner-only — so the one screen a buyer lands on from an outfit
+            or from Trends couldn't do it, while the outfit page could. Anyone
+            signed in can try any item they can see. */}
+        <Link to={`/tryon?items=${item.id}`} className="item-rail-btn" aria-label={t('tryThisOn')}>
+          <Sparkles size={20} strokeWidth={1.6} />
+        </Link>
         <ShareButton
           className="item-rail-btn item-rail-share"
           title={item.name || t('untitledItem')}
@@ -504,6 +519,16 @@ export function ItemDetail({ user, onSignIn }) {
                 )}
               </h1>
               <TranslateToggle tr={tr} className="item-name-translate" />
+              {/* The byline closes the loop the other way round: you arrive
+                  from an outfit, and from here you can go look at the rest of
+                  what this person wears. Owner-side it would just say "you". */}
+              {!isOwner && seller?.handle && (
+                <Link to={`/u/${seller.handle}`} className="item-seller">
+                  <Avatar src={seller.photoURL} name={seller.displayName || seller.handle} size={22} />
+                  <span className="item-seller-name">@{seller.handle}</span>
+                  <ChevronRight size={14} strokeWidth={1.8} />
+                </Link>
+              )}
               {/* Shopping: owner-set product link (recommend / remember) +
                   a Google Shopping search from brand + description. */}
               <div className="item-shop-row">

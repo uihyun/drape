@@ -203,6 +203,8 @@ export const fr = {
   linkItemsTitle: 'Associez les pièces que vous portiez',
   linkItemsSub: 'Touchez les correspondances suggérées, filtrez votre dressing ou piochez dans une planche. C’est ce qui alimente la recherche par tag et le suivi du port.',
   linkItemsCta: 'Associer des pièces',
+  linkItemsPrompt: 'Associez ce que vous portiez',
+  linkItemsPromptBody: 'Choisissez les pièces de votre dressing : elles apparaîtront ici, on pourra les essayer et acheter celles que vous vendez.',
   linkFromBoard: 'Depuis une planche',
   linkFromCloset: 'Depuis votre dressing',
   ootdNextStepHint: 'Ensuite : associez les pièces de votre dressing que vous portiez.',

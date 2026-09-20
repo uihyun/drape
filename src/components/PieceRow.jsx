@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shirt, ExternalLink, Plus, Check, X } from 'lucide-react';
 import { matchCloset } from '../utils/itemMatch.js';
+import { formatPrice } from '../utils/currency.js';
 
 // One detected garment + its tag-matched closet items ("from your closet").
 // Shared by the analyze result and the saved-look detail so the two read as
@@ -75,6 +76,11 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
                     ? <img src={cover} alt={item.name || ''} loading="lazy" />
                     : <div className="item-card-skeleton" />}
                   {proc && <span className="thumb-proc"><span className="dot-pulse" /></span>}
+                  {/* Same badge the flat strip and the closet grid use, so a
+                      listing reads identically wherever the item surfaces. */}
+                  {item.forSale && item.priceAsking > 0 && (
+                    <span className="item-card-sale">{formatPrice(item.priceAsking, item.currency)}</span>
+                  )}
                 </Link>
               );
             })}

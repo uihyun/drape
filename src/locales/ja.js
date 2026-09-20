@@ -201,6 +201,8 @@ export const ja = {
   linkItemsTitle: '着たアイテムを紐づけ',
   linkItemsSub: 'おすすめの一致をタップ、クローゼットをフィルタで絞る、またはボードから取り込み。タグ検索と着用記録に使われます。',
   linkItemsCta: 'アイテムを紐づけ',
+  linkItemsPrompt: '着たアイテムを紐づける',
+  linkItemsPromptBody: 'クローゼットから選ぶとここに並びます。試着してもらえて、出品中のものはそのまま買ってもらえます。',
   linkFromBoard: 'ボードから',
   linkFromCloset: 'クローゼットから',
   ootdNextStepHint: '次：今日着たクローゼットのアイテムを紐づけます。',

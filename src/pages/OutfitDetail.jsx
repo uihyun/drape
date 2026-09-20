@@ -20,6 +20,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
+import { formatPrice } from '../utils/currency.js';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -380,6 +381,22 @@ export function OutfitDetail({ user, onSignIn }) {
         </section>
       )}
 
+      {/* Nothing linked yet. 588 of 591 public outfits are in this state, because
+          the only way in was one shirt icon in the action row and OOTD upload
+          never asks — so the strip above, the try-on and the selling all had
+          nothing to render. Ask here, where the owner is already looking at the
+          outfit, and say what linking is FOR rather than naming the feature. */}
+      {isOwner && !isAnalyzed && items.length === 0 && (
+        <section className="outfit-items outfit-link-prompt">
+          <header><h2>{t('linkItemsPrompt')}</h2></header>
+          <p className="outfit-link-prompt-body">{t('linkItemsPromptBody')}</p>
+          <Link to={`/o/${outfit.id}/link`} className="btn btn-primary outfit-link-prompt-cta">
+            <Shirt size={16} strokeWidth={1.8} />
+            {t('linkItemsCta')}
+          </Link>
+        </section>
+      )}
+
       {/* Visitor / no-pieces view: the full worn set, flat. (Owner-with-pieces
           shows items under each piece below; only leftovers list here.) */}
       {!piecesShown && items.length > 0 && (
@@ -393,6 +410,13 @@ export function OutfitDetail({ user, onSignIn }) {
                   : <div className="item-card-skeleton" />}
                 {isProcessing(it) && (
                   <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>
+                )}
+                {/* The price IS the discovery. Without it a visitor has to open
+                    every thumbnail to learn which pieces are actually buyable,
+                    which nobody does — this strip was silent about sales even
+                    though the item page has sold them since launch. */}
+                {it.forSale && it.priceAsking > 0 && (
+                  <span className="item-card-sale">{formatPrice(it.priceAsking, it.currency)}</span>
                 )}
               </Link>
             ))}

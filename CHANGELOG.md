@@ -13,6 +13,43 @@ Conventions:
 
 ## Unreleased — server only
 
+**Selling moved into outfits, and out of a storefront that nobody could reach.**
+The marketplace has always worked — list an item, a visitor opens it, "Contact
+seller" starts a thread keyed to that listing — but the only doors were an
+unlinked `/market` and a `/feed` that lost its tab. One listing exists and zero
+threads have ever been created. So rather than restore the storefront, selling
+now shows up where people already look: on the outfits themselves.
+
+**The price is the discovery.** A public outfit's item strip rendered bare
+thumbnails, so a visitor had to open each one to learn which pieces were
+buyable. It now carries the same `.item-card-sale` badge the closet grid and
+the marketplace cards use, in the flat strip and in the owner's per-piece view,
+so a listing looks identical wherever it surfaces.
+
+**Try-on is no longer owner-only on an item.** `ItemDetail`'s rail gated it on
+`isOwner`, which meant the one screen a buyer lands on from an outfit could not
+do the thing the app exists for — while the outfit page above it could. Trying
+on someone else's piece before asking to buy it is the whole argument for
+selling here rather than on Depop.
+
+**An item page says who is selling.** It showed a price and a Contact button
+with no name attached. There is now an avatar + handle linking to that person's
+profile, which also closes the loop the other way: arrive from an outfit, leave
+toward the rest of what they wear.
+
+**And the reason none of that would have rendered: 588 of 591 public outfits
+have no items attached.** Linking is manual, OOTD upload never asks, and the
+only way in was one shirt icon in the action row. An owner looking at their own
+public outfit with nothing linked now gets a real prompt that says what linking
+is *for* — people can try these on and buy the ones you list — instead of an
+unlabelled icon.
+
+Verified on production as a signed-out visitor: try-on button present, seller
+byline resolves. One debugging note worth keeping: the first three checks
+showed no seller row and no console output because the headless browser was
+holding older `ItemDetail-*` chunks; the network log listed three of them at
+once. A cache-busting query param was what finally proved the code was fine.
+
 **The Trends marketplace row is live now, not a daily snapshot.** The rest of
 `trends/current` is a weekly edition on purpose — numbers and cover that shift
 under you are not an edition — but the market row is inventory, and it was

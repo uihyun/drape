@@ -199,6 +199,8 @@ export const en = {
   linkItemsTitle: 'Link the items you wore',
   linkItemsSub: 'Tap suggested matches, filter your closet, or pull from a board. These power tag search + wear tracking.',
   linkItemsCta: 'Link items',
+  linkItemsPrompt: 'Link what you wore',
+  linkItemsPromptBody: 'Tap the pieces from your closet and they show up here — people can try them on, and buy the ones you list.',
   linkFromBoard: 'From a board',
   linkFromCloset: 'From your closet',
   ootdNextStepHint: 'Next: link the closet items you wore.',

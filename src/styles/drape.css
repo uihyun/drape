@@ -7077,3 +7077,29 @@ input:disabled, textarea:disabled, select:disabled {
   opacity: 0.55;
   cursor: default;
 }
+
+/* Owner nudge on an outfit with nothing linked. Reads as a section that is
+   missing its content, not as an ad — same header rhythm as .outfit-items. */
+.outfit-link-prompt-body {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.outfit-link-prompt-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  width: auto; padding: 0.55rem 1rem;
+}
+
+/* Seller byline on someone else's item. Quiet — the piece is the subject, the
+   seller is provenance — but tappable, so the item page also works as a way
+   into that person's outfits rather than being a dead end. */
+.item-seller {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 0.5rem; padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  border: 1px solid var(--border); border-radius: 999px;
+  color: var(--text-secondary); text-decoration: none;
+  font-size: 0.8rem; line-height: 1;
+}
+.item-seller:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.item-seller-name { font-weight: 500; }
