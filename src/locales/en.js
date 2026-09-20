@@ -200,6 +200,8 @@ export const en = {
   linkItemsSub: 'Tap suggested matches, filter your closet, or pull from a board. These power tag search + wear tracking.',
   linkItemsCta: 'Link items',
   verdictAsk: 'Would this suit me?',
+  verdictPickStylist: 'Who should look at this?',
+  verdictAskAnother: 'Ask another',
   verdictBusy: 'Asking…',
   verdictError: 'Couldn\'t get a read on this one.',
   verdictNoFits: 'No stylist picks left today.',

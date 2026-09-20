@@ -7128,3 +7128,25 @@ input:disabled, textarea:disabled, select:disabled {
 .verdict-card-call { font-size: 0.95rem; }
 .verdict-card-why { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); }
 .verdict-card-by { font-size: 0.7rem; color: var(--text-muted); }
+
+/* Persona chooser shown in place of the ask button until one is picked. Same
+   2x2 idea as the Stylist page, scaled to sit inside an outfit. */
+.verdict-pick-title { margin: 0 0 0.55rem; font-size: 0.85rem; color: var(--text-secondary); }
+.verdict-pick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.verdict-pick-cell {
+  display: flex; align-items: center; gap: 9px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: transparent; color: inherit; font: inherit;
+  cursor: pointer; text-align: left;
+}
+.verdict-pick-cell:hover { border-color: var(--accent); background: var(--accent-soft); }
+.verdict-pick-cell img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; }
+.verdict-pick-cell span { display: flex; flex-direction: column; min-width: 0; }
+.verdict-pick-cell strong { font-size: 0.85rem; }
+.verdict-pick-cell em { font-style: normal; font-size: 0.68rem; color: var(--text-muted); }
+.verdict-card-change {
+  margin-left: 8px; padding: 0; border: 0; background: none;
+  font: inherit; font-size: inherit; color: var(--accent);
+  text-decoration: underline; cursor: pointer;
+}

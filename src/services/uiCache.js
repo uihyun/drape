@@ -37,3 +37,10 @@ export const closetWarm = new Map();   // `${uid}` -> item[]
 // switching personas must not show the previous one's work (and coming back
 // should still find it).
 export const stylistWarm = new Map();
+
+// Keyed `${outfitId}:${persona}` — a verdict belongs to the stylist who gave
+// it, so switching personas asks again (which is the point: a different
+// stylist should reach a different call). Survives back-and-return within the
+// session; a cold start re-asks, and that re-ask is free because the server
+// checks its own cache before charging.
+export const verdictWarm = new Map();

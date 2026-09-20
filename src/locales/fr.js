@@ -204,6 +204,8 @@ export const fr = {
   linkItemsSub: 'Touchez les correspondances suggérées, filtrez votre dressing ou piochez dans une planche. C’est ce qui alimente la recherche par tag et le suivi du port.',
   linkItemsCta: 'Associer des pièces',
   verdictAsk: 'Est-ce que ça m\'irait ?',
+  verdictPickStylist: 'À qui le demander ?',
+  verdictAskAnother: 'Demander à un autre',
   verdictBusy: 'On demande…',
   verdictError: 'Impossible de trancher cette fois.',
   verdictNoFits: 'Plus de consultations pour aujourd\'hui.',

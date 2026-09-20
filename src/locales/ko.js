@@ -200,6 +200,8 @@ export const ko = {
   linkItemsSub: '추천 매칭을 누르거나, 옷장을 필터로 좁혀 고르거나, 보드에서 가져오세요. 태그 검색과 착용 기록에 쓰여요.',
   linkItemsCta: '아이템 연결',
   verdictAsk: '이거 나한테 어울릴까?',
+  verdictPickStylist: '누구한테 물어볼까요?',
+  verdictAskAnother: '다른 스타일리스트',
   verdictBusy: '물어보는 중…',
   verdictError: '이번엔 판단하지 못했어요.',
   verdictNoFits: '오늘 스타일리스트 횟수를 다 썼어요.',

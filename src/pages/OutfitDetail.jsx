@@ -6,7 +6,7 @@ import { db } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
-import { dropFromFeedCaches } from '../services/uiCache.js';
+import { dropFromFeedCaches, verdictWarm } from '../services/uiCache.js';
 import { ReportModal } from '../components/ReportModal.jsx';
 import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
@@ -21,7 +21,7 @@ import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
 import { formatPrice } from '../utils/currency.js';
-import { StylistService, STYLIST_PERSONAS, getChosenPersona } from '../services/stylist-service.js';
+import { StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona } from '../services/stylist-service.js';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -35,9 +35,15 @@ export function OutfitDetail({ user, onSignIn }) {
   const { outfitId } = useParams();
   const navigate = useNavigate();
   // "Would this suit me?" — only meaningful on someone else's look.
-  const [verdict, setVerdict] = useState(null);
+  // Seeded from the session cache so leaving and coming back doesn't lose the
+  // answer; keyed by persona, so switching stylists asks the new one fresh.
+  const [persona, setPersona] = useState(() => getChosenPersona());
+  const [verdict, setVerdict] = useState(() => (
+    persona ? verdictWarm.get(`${outfitId}:${persona}`) || null : null
+  ));
   const [verdictBusy, setVerdictBusy] = useState(false);
   const [verdictErr, setVerdictErr] = useState('');
+  const [choosing, setChoosing] = useState(false);
   const swipe = useSwipeNavigate();
   const [outfit, setOutfit] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [items, setItems] = useState([]);
@@ -122,6 +128,21 @@ export function OutfitDetail({ user, onSignIn }) {
 
   // Unified visibility = isPublic (with legacy isListed as fallback read).
   const isPublic = outfit.isPublic === true || outfit.isListed === true;
+  const askVerdict = async (personaId) => {
+    const key = `${outfit.id}:${personaId}`;
+    const warm = verdictWarm.get(key);
+    if (warm) { setVerdict(warm); return; }
+    setVerdictBusy(true); setVerdictErr('');
+    try {
+      const v = await StylistService.verdict({ outfitId: outfit.id, persona: personaId });
+      verdictWarm.set(key, v);
+      setVerdict(v);
+    } catch (e) {
+      const code = e?.code || '';
+      setVerdictErr(code.includes('resource-exhausted') ? t('verdictNoFits') : t('verdictError'));
+    } finally { setVerdictBusy(false); }
+  };
+
   const togglePublish = async () => {
     setBusy(true);
     try {
@@ -504,22 +525,44 @@ export function OutfitDetail({ user, onSignIn }) {
       {!isOwner && user && !user.isAnonymous && (
         <section className="outfit-verdict">
           {verdict ? (
-            <VerdictCard verdict={verdict} t={t} />
+            <VerdictCard
+              verdict={verdict}
+              t={t}
+              onChange={() => { setVerdict(null); setChoosing(true); }}
+            />
+          ) : choosing || !persona ? (
+            /* The verdict IS the stylist's opinion, so who gives it is half the
+               answer. Defaulting a first-timer to Noa put a face and a name on
+               screen they never chose — and Noa's minimal lens would quietly
+               judge a streetwear user by the wrong yardstick. Same 2x2 the
+               Stylist page opens with, so picking means the same thing here. */
+            <div className="verdict-pick">
+              <p className="verdict-pick-title">{t('verdictPickStylist')}</p>
+              <div className="verdict-pick-grid">
+                {STYLIST_PERSONAS.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="verdict-pick-cell"
+                    onClick={() => {
+                      setChosenPersona(p.id);
+                      setPersona(p.id);
+                      setChoosing(false);
+                      askVerdict(p.id);
+                    }}
+                  >
+                    <img src={p.img} alt="" loading="lazy" />
+                    <span><strong>{p.name}</strong><em>{t(p.tagKey)}</em></span>
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             <button
               type="button"
               className="outfit-verdict-ask"
               disabled={verdictBusy}
-              onClick={async () => {
-                setVerdictBusy(true); setVerdictErr('');
-                try {
-                  const persona = getChosenPersona() || 'noa';
-                  setVerdict(await StylistService.verdict({ outfitId: outfit.id, persona }));
-                } catch (e) {
-                  const code = e?.code || '';
-                  setVerdictErr(code.includes('resource-exhausted') ? t('verdictNoFits') : t('verdictError'));
-                } finally { setVerdictBusy(false); }
-              }}
+              onClick={() => askVerdict(persona)}
             >
               <Sparkles size={16} strokeWidth={1.8} />
               {verdictBusy ? t('verdictBusy') : t('verdictAsk')}
@@ -646,7 +689,7 @@ function contrastInk(hex) {
 
 // The persona's face makes the opinion attributable — an unattributed verdict
 // reads as the app pronouncing on you, which is a different and worse thing.
-function VerdictCard({ verdict, t }) {
+function VerdictCard({ verdict, t, onChange }) {
   const meta = STYLIST_PERSONAS.find(p => p.id === verdict.persona) || STYLIST_PERSONAS[0];
   return (
     <div className="verdict-card">
@@ -654,7 +697,14 @@ function VerdictCard({ verdict, t }) {
       <div className="verdict-card-body">
         <strong className="verdict-card-call">{verdict.verdict}</strong>
         <p className="verdict-card-why">{verdict.why}</p>
-        <span className="verdict-card-by">{meta.name} · {t('stylistAiNote')}</span>
+        <span className="verdict-card-by">
+          {meta.name} · {t('stylistAiNote')}
+          {/* Four stylists reach four different calls on the same look — that's
+              the design, so asking another has to be one tap from the answer. */}
+          <button type="button" className="verdict-card-change" onClick={onChange}>
+            {t('verdictAskAnother')}
+          </button>
+        </span>
       </div>
     </div>
   );

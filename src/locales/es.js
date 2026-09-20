@@ -204,6 +204,8 @@ export const es = {
   linkItemsSub: 'Toca las coincidencias sugeridas, filtra tu armario o toma de un tablero. Esto alimenta la búsqueda por etiquetas y el conteo de uso.',
   linkItemsCta: 'Vincular prendas',
   verdictAsk: '¿Me quedaría bien?',
+  verdictPickStylist: '¿Quién debería verlo?',
+  verdictAskAnother: 'Preguntar a otro',
   verdictBusy: 'Preguntando…',
   verdictError: 'No pudimos valorarlo esta vez.',
   verdictNoFits: 'Hoy ya no te quedan consultas.',

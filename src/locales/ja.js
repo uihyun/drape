@@ -202,6 +202,8 @@ export const ja = {
   linkItemsSub: 'おすすめの一致をタップ、クローゼットをフィルタで絞る、またはボードから取り込み。タグ検索と着用記録に使われます。',
   linkItemsCta: 'アイテムを紐づけ',
   verdictAsk: 'これ、私に似合う？',
+  verdictPickStylist: '誰に聞きますか？',
+  verdictAskAnother: '別のスタイリスト',
   verdictBusy: '聞いています…',
   verdictError: '今回は判断できませんでした。',
   verdictNoFits: '今日のスタイリスト回数を使い切りました。',
