@@ -13,6 +13,28 @@ Conventions:
 
 ## Unreleased — server only
 
+**Admin sees the selling funnel and the quota pressure.** The overview had
+"listings" and nothing else about commerce — a count that says almost nothing
+once selling lives inside outfits rather than a storefront. Two new panels.
+
+*Selling funnel*: listings and distinct sellers, **reachable** (listings linked
+to at least one public outfit — a listing that isn't is invisible no matter how
+good it is), public outfits and how many carry items at all, and buyer threads
+split by whether anyone answered. Threads are created lazily on the first
+message, so their count is literally the number of real approaches; the answered
+split is what separates a lead from a dead one. Under 10% linking coverage the
+panel says so in words rather than leaving it to be read off two tiles.
+
+*Stylist quota*: who used each call today, who hit the cap, who topped up, and
+how much top-up balance is held. These are the only numbers that can say whether
+3/day and 10/day are right, and they read live rather than from the daily
+snapshot, since they're the values being tuned.
+
+First read on production: 591 public outfits, **3 with items (1%)**, 0 listings,
+0 threads — the funnel is gated at linking exactly as expected. And already one
+piece of signal on the caps: of two people who used Style me today, **both hit
+the 3/day cap**.
+
 **Stylist quotas: free daily, then one fit buys a block — and the block
 carries over.** A fit is an image generation ($0.039–0.15 per `docs/COST.md`);
 a recommendation and a verdict are both Flash text, which that file already

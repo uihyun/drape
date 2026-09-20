@@ -297,6 +297,60 @@ function Overview() {
         </>
       )}
 
+      {data.linking && (() => {
+        const L = data.linking; const M = data.marketplace;
+        const share = (n, d) => pct(d ? n / d : 0);
+        return (
+          <>
+            <h3 className="adm-h3">
+              Selling funnel{' '}
+              <span className="adm-muted">
+                (no storefront — a listing is only findable through an outfit or a profile)
+              </span>
+            </h3>
+            <div className="adm-tiles">
+              <Tile label="listings" value={fmt(M.listings)} sub={`${fmt(M.sellers)} seller${M.sellers === 1 ? '' : 's'}`} />
+              {/* The one that decides whether any of this works: a listing not
+                  linked to a public outfit has no surface a buyer can reach. */}
+              <Tile label="reachable" value={fmt(M.reachable)} sub={`${share(M.reachable, M.listings)} of listings`} />
+              <Tile label="public outfits" value={fmt(L.publicOutfits)} />
+              <Tile label="…with items" value={fmt(L.withItems)} sub={`${share(L.withItems, L.publicOutfits)} · ${fmt(L.itemRefs)} refs`} />
+              <Tile label="…with a listing" value={fmt(L.withListing)} sub={share(L.withListing, L.publicOutfits)} />
+              <Tile label="buyer threads" value={fmt(M.threads)} sub={`${fmt(M.threadsWithReply)} answered`} />
+            </div>
+            {L.publicOutfits > 0 && L.withItems / L.publicOutfits < 0.1 && (
+              <p className="adm-note">
+                Item linking is the gate: {share(L.withItems, L.publicOutfits)} of public outfits have
+                any items attached, so price badges, per-piece try-on and buying have nothing to render
+                on the rest. Watch <code>link_items_prompt</code> in GA.
+              </p>
+            )}
+          </>
+        );
+      })()}
+
+      {data.stylist && (() => {
+        const S = data.stylist;
+        return (
+          <>
+            <h3 className="adm-h3">
+              Stylist quota{' '}
+              <span className="adm-muted">(today — these are the numbers that say whether 3/day and 10/day are right)</span>
+            </h3>
+            <div className="adm-tiles">
+              <Tile label="used Style me" value={fmt(S.recUsers)} sub={`${fmt(S.recAtCap)} hit the 3/day cap`} />
+              <Tile label="topped up recs" value={fmt(S.recTopped)} sub={`${fmt(S.recExtraHeld)} held`} />
+              <Tile label="used verdicts" value={fmt(S.verdictUsers)} sub={`${fmt(S.verdictAtCap)} hit the 10/day cap`} />
+              <Tile label="topped up verdicts" value={fmt(S.verdictTopped)} sub={`${fmt(S.verdictExtraHeld)} held`} />
+            </div>
+            <p className="adm-note adm-muted">
+              Daily counters reset at the user\'s local midnight, so &quot;used&quot; is today only;
+              top-up balances carry over and are cumulative.
+            </p>
+          </>
+        );
+      })()}
+
       {data.personaSunset && (() => {
         const ps = data.personaSunset;
         const phaseLabel = { seeding: 'SEEDING', taper: 'TAPER', sunset: 'SUNSET' }[ps.phase];
@@ -1067,6 +1121,7 @@ const ADMIN_CSS = `
 .adm-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
 .adm-card-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;margin-bottom:8px}
 .adm-card-foot{margin-top:6px}
+.adm-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--text-secondary)}
 .adm-chart{width:100%;height:auto;display:block}
 .adm-axis{fill:var(--text-muted);font-size:11px;font-family:var(--font-body)}
 .adm-daterow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
