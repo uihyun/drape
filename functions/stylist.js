@@ -556,7 +556,7 @@ exports.styleRecommend = onCall(
       ask: ask || null,
       lang,
       outfits,
-      charged,
+      charged: res.charged,
       profileRev: profile?.rev || 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });

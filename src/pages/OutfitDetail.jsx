@@ -44,6 +44,10 @@ export function OutfitDetail({ user, onSignIn }) {
   const [verdictBusy, setVerdictBusy] = useState(false);
   const [verdictErr, setVerdictErr] = useState('');
   const [choosing, setChoosing] = useState(false);
+  // Quota state from the last answer. Deliberately NOT shown up front — the
+  // ask reads better as one clean question, and the cost only becomes the
+  // user's business once the free allowance is actually gone.
+  const [quota, setQuota] = useState(null);
   const swipe = useSwipeNavigate();
   const [outfit, setOutfit] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [items, setItems] = useState([]);
@@ -141,6 +145,7 @@ export function OutfitDetail({ user, onSignIn }) {
       const v = await StylistService.verdict({ outfitId: outfit.id, persona: personaId });
       rememberVerdict(key, v);
       setVerdict(v);
+      setQuota({ charged: v.charged, remaining: v.remaining, extra: v.extra });
       // `charged` and `fit` are the two numbers that decide whether the free
       // allowance is set right — without them the caps stay guesses forever.
       logEvent(analytics, 'verdict_ask', {
@@ -601,6 +606,17 @@ export function OutfitDetail({ user, onSignIn }) {
             </button>
           )}
           {verdictErr && <p className="outfit-verdict-err">{verdictErr}</p>}
+          {!verdictErr && quota && (
+            // Two moments worth a line, and no others: the free ones just ran
+            // out (so the next tap costs something), or one was just spent.
+            quota.charged === 'free' && quota.remaining === 0 ? (
+              <p className="outfit-verdict-note">{t('verdictPaidNote')}</p>
+            ) : quota.charged === 'daily' || quota.charged === 'bonus' ? (
+              <p className="outfit-verdict-note">
+                {t('verdictLeft').replace('{n}', quota.extra ?? 0)}
+              </p>
+            ) : null
+          )}
         </section>
       )}
 

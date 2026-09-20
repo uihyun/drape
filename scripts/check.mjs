@@ -220,7 +220,7 @@ console.log(`\n🔎 drape full check${FAST ? ' (fast)' : ''}\n`);
 // build-passing runtime crash we shipped 2026-09-10). Errors only.
 function checkHooksLint() {
   try {
-    sh('npx eslint src --quiet');
+    sh('npx eslint src functions --quiet');
     record('eslint runtime-crash gate', 'PASS');
   } catch (e) {
     const out = (e.stdout || '') + (e.stderr || '');

@@ -108,7 +108,16 @@ async function collectAll(days = ALL_DAYS) {
   });
 
   const tryon = { ready: 0, failed: 0, pending: 0, total: 0, variantReq: 0, variantRet: 0 };
-  const marketplace = { listings: 0, byCurrency: {} };
+  // Selling lives inside outfits now, so "how many listings" says almost
+  // nothing on its own — what matters is whether a listing is ever REACHABLE
+  // (linked to a public outfit) and whether anyone talks to the seller.
+  const marketplace = {
+    listings: 0, byCurrency: {}, sellers: 0,
+    listedItemIds: new Set(),
+    reachable: 0,          // listings linked to at least one public outfit
+    threads: 0, threadsWithReply: 0,
+  };
+  const sellerSet = new Set();
   const topCount = {};          // itemId -> # of try-ons referencing it
   const itemMeta = {};          // itemId -> { name, croppedUrl, category, userId }
 
@@ -129,6 +138,8 @@ async function collectAll(days = ALL_DAYS) {
     if (bucketOf(uid) === 'real') bump(trends.items, dayKey(x.createdAt));
     if (x.forSale) {
       marketplace.listings++;
+      marketplace.listedItemIds.add(d.id);
+      sellerSet.add(uid);
       const cur = x.currency || '?';
       marketplace.byCurrency[cur] = (marketplace.byCurrency[cur] || 0) + 1;
     }
@@ -162,6 +173,9 @@ async function collectAll(days = ALL_DAYS) {
   // OOTDs are `outfits` docs carrying a `date`; plain outfits are the
   // builder's saved looks (counted under `outfits`, not `ootd`).
   const outfitWeekly = {}; // weekKey → { real, seed, realPublic } (persona sunset)
+  // The gate on everything above: a public outfit with no items attached can
+  // show no price badge, no try-on from a piece, and nothing to buy.
+  const linking = { publicOutfits: 0, withItems: 0, itemRefs: 0, withListing: 0 };
   (await windowed('outfits', outfitCutTs)).forEach((d) => {
     const x = d.data();
     const uid = x.userId;
@@ -180,13 +194,38 @@ async function collectAll(days = ALL_DAYS) {
       if (x.isPublic === false) rec.ootdPriv++;
       if (bucket === 'real') bump(trends.ootds, dayKey(x.createdAt));
     }
+    if (x.isPublic === true || x.isListed === true) {
+      linking.publicOutfits++;
+      const ids = Array.isArray(x.itemIds) ? x.itemIds : [];
+      if (ids.length) {
+        linking.withItems++;
+        linking.itemRefs += ids.length;
+        if (ids.some((id) => marketplace.listedItemIds.has(id))) {
+          linking.withListing++;
+          marketplace.reachable++;
+        }
+      }
+    }
   });
+  marketplace.sellers = sellerSet.size;
+  delete marketplace.listedItemIds;   // a Set doesn't serialise over onCall
+
+  // DM health. Threads are created lazily on the first message, so their count
+  // IS the number of real buyer approaches — but a thread nobody answered is a
+  // dead lead, and that difference is the one worth watching.
+  const threadSnap = await db.collection('threads').get();
+  marketplace.threads = threadSnap.size;
+  for (const t of threadSnap.docs) {
+    const msgs = await t.ref.collection('messages').limit(2).get();
+    const senders = new Set(msgs.docs.map((m) => m.data().senderId || m.data().userId));
+    if (senders.size > 1) marketplace.threadsWithReply++;
+  }
 
   const allUids = new Set([...Object.keys(prof), ...Object.keys(u), ...Object.keys(id)]);
   const buckets = { real: [], seed: [], dev: [] };
   allUids.forEach((uid) => buckets[bucketOf(uid)].push(uid));
 
-  return { id, prof, u, buckets, trends, tryon, marketplace, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
+  return { id, prof, u, buckets, trends, tryon, marketplace, linking, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
 }
 
 // Recently-active real users (lastActiveAt within `days`).
@@ -202,9 +241,33 @@ function activeWithin(prof, buckets, days) {
 // numbers (totals / activation / summary / tryon / marketplace) come from
 // the latest adminStats snapshot instead of a full-corpus read — the window
 // only has to pay for what it charts (trends + persona sunset).
+// Quota counters live on users/{uid} and are written by reserveStylistUse, so
+// this is the only place that can say whether 10/day and 3/day are the right
+// caps: how many people hit them, and how many paid a fit to go past.
+function stylistUsage(u, buckets) {
+  const real = new Set(buckets.real);
+  const out = {
+    recUsers: 0, recAtCap: 0, recTopped: 0, recExtraHeld: 0,
+    verdictUsers: 0, verdictAtCap: 0, verdictTopped: 0, verdictExtraHeld: 0,
+  };
+  for (const [uid, rec] of Object.entries(u)) {
+    if (!real.has(uid)) continue;
+    const used = rec.styleRecUsed || 0;
+    const vUsed = rec.styleVerdictUsed || 0;
+    const extra = rec.styleRecExtra || 0;
+    const vExtra = rec.styleVerdictExtra || 0;
+    if (used > 0) { out.recUsers++; if (used >= 3) out.recAtCap++; }
+    if (extra > 0) { out.recTopped++; out.recExtraHeld += extra; }
+    if (vUsed > 0) { out.verdictUsers++; if (vUsed >= 10) out.verdictAtCap++; }
+    if (vExtra > 0) { out.verdictTopped++; out.verdictExtraHeld += vExtra; }
+  }
+  return out;
+}
+
 async function computeOverview(days = ALL_DAYS) {
   const data = await collectAll(days);
-  const { prof, buckets, trends, tryon, marketplace } = data;
+  const { prof, buckets, trends, tryon, marketplace, linking, u } = data;
+  const stylist = stylistUsage(u, buckets);
 
   if (days < ALL_DAYS) {
     const snap = await admin.firestore().collection('adminStats')
@@ -227,7 +290,11 @@ async function computeOverview(days = ALL_DAYS) {
           users: buckets.real.length,
         },
         tryon: s.tryon,
-        marketplace: s.marketplace,
+        // Live, not from the snapshot: these are the numbers being actively
+        // tuned right now, and a day-old copy would be read as today's.
+        marketplace,
+        linking,
+        stylist,
         trends: buildTrends({
           signups: trends.signups,
           items: trends.items,
@@ -276,6 +343,8 @@ async function computeOverview(days = ALL_DAYS) {
       avgVariantYield: tryon.variantReq ? tryon.variantRet / tryon.variantReq : 0,
     },
     marketplace,
+    linking,
+    stylist,
     trends: buildTrends({
       signups: trends.signups,
       items: trends.items,
