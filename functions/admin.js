@@ -137,9 +137,11 @@ async function collectAll(days = ALL_DAYS) {
     };
     if (bucketOf(uid) === 'real') bump(trends.items, dayKey(x.createdAt));
     if (x.forSale) {
+      // Listings stay all-accounts (a seeded listing is still a listing a user
+      // can open), but the seller count is about real people.
       marketplace.listings++;
       marketplace.listedItemIds.add(d.id);
-      sellerSet.add(uid);
+      if (bucketOf(uid) === 'real') sellerSet.add(uid);
       const cur = x.currency || '?';
       marketplace.byCurrency[cur] = (marketplace.byCurrency[cur] || 0) + 1;
     }
@@ -175,6 +177,11 @@ async function collectAll(days = ALL_DAYS) {
   const outfitWeekly = {}; // weekKey → { real, seed, realPublic } (persona sunset)
   // The gate on everything above: a public outfit with no items attached can
   // show no price badge, no try-on from a piece, and nothing to buy.
+  //
+  // REAL USERS ONLY. Seed accounts publish outfits and never link items, and
+  // they outnumber real public outfits ~15:1 — counting them made the coverage
+  // read 1% when the number that means anything is 8%. A metric dominated by
+  // our own fixtures is worse than no metric.
   const linking = { publicOutfits: 0, withItems: 0, itemRefs: 0, withListing: 0 };
   (await windowed('outfits', outfitCutTs)).forEach((d) => {
     const x = d.data();
@@ -194,7 +201,7 @@ async function collectAll(days = ALL_DAYS) {
       if (x.isPublic === false) rec.ootdPriv++;
       if (bucket === 'real') bump(trends.ootds, dayKey(x.createdAt));
     }
-    if (x.isPublic === true || x.isListed === true) {
+    if ((x.isPublic === true || x.isListed === true) && bucket === 'real') {
       linking.publicOutfits++;
       const ids = Array.isArray(x.itemIds) ? x.itemIds : [];
       if (ids.length) {

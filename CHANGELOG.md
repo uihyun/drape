@@ -30,10 +30,15 @@ how much top-up balance is held. These are the only numbers that can say whether
 3/day and 10/day are right, and they read live rather than from the daily
 snapshot, since they're the values being tuned.
 
-First read on production: 591 public outfits, **3 with items (1%)**, 0 listings,
-0 threads — the funnel is gated at linking exactly as expected. And already one
-piece of signal on the caps: of two people who used Style me today, **both hit
-the 3/day cap**.
+The linking ratio counts **real users only**. The first version didn't, and
+read 1% — but 555 of those 591 public outfits belong to seed accounts, which
+publish looks and never link items. Real users: 36 public outfits, 3 with items,
+so **8%**. Still the gate, but a metric dominated by our own fixtures is worse
+than no metric; owner caught it.
+
+First read on production: 0 listings, 0 threads — the funnel is gated at linking
+as expected. And one early signal on the caps: of two people who used Style me
+today, **both hit the 3/day cap**.
 
 **Stylist quotas: free daily, then one fit buys a block — and the block
 carries over.** A fit is an image generation ($0.039–0.15 per `docs/COST.md`);

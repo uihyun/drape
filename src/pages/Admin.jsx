@@ -305,7 +305,7 @@ function Overview() {
             <h3 className="adm-h3">
               Selling funnel{' '}
               <span className="adm-muted">
-                (no storefront — a listing is only findable through an outfit or a profile)
+                (real users only — seed outfits never link items and would swamp the ratio)
               </span>
             </h3>
             <div className="adm-tiles">
