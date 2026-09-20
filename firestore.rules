@@ -160,6 +160,15 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
 
+      // "Would this suit me?" verdicts, keyed {viewerUid}_{persona}_{lang}.
+      // Server-written, server-read (styleVerdict returns them); a verdict is
+      // one person's private read on someone else's look and is nobody else's
+      // business — including the outfit's owner. Denying both sides here says
+      // that on purpose rather than leaving it to rule-inheritance trivia.
+      match /verdicts/{verdictId} {
+        allow read, write: if false;
+      }
+
       match /comments/{commentId} {
         allow read: if true;
         allow create: if request.auth != null

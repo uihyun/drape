@@ -21,6 +21,7 @@ import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
 import { formatPrice } from '../utils/currency.js';
+import { StylistService, STYLIST_PERSONAS, getChosenPersona } from '../services/stylist-service.js';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -33,6 +34,10 @@ export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
   const navigate = useNavigate();
+  // "Would this suit me?" — only meaningful on someone else's look.
+  const [verdict, setVerdict] = useState(null);
+  const [verdictBusy, setVerdictBusy] = useState(false);
+  const [verdictErr, setVerdictErr] = useState('');
   const swipe = useSwipeNavigate();
   const [outfit, setOutfit] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [items, setItems] = useState([]);
@@ -492,6 +497,38 @@ export function OutfitDetail({ user, onSignIn }) {
         ) : null;
       })()}
 
+      {/* Try-on answers "how would it look on me". This answers the other half
+          — "is it my kind of thing" — which is the question you actually have
+          about a stranger's outfit, and the one the app could never answer.
+          Owners are excluded: you don't need a verdict on your own outfit. */}
+      {!isOwner && user && !user.isAnonymous && (
+        <section className="outfit-verdict">
+          {verdict ? (
+            <VerdictCard verdict={verdict} t={t} />
+          ) : (
+            <button
+              type="button"
+              className="outfit-verdict-ask"
+              disabled={verdictBusy}
+              onClick={async () => {
+                setVerdictBusy(true); setVerdictErr('');
+                try {
+                  const persona = getChosenPersona() || 'noa';
+                  setVerdict(await StylistService.verdict({ outfitId: outfit.id, persona }));
+                } catch (e) {
+                  const code = e?.code || '';
+                  setVerdictErr(code.includes('resource-exhausted') ? t('verdictNoFits') : t('verdictError'));
+                } finally { setVerdictBusy(false); }
+              }}
+            >
+              <Sparkles size={16} strokeWidth={1.8} />
+              {verdictBusy ? t('verdictBusy') : t('verdictAsk')}
+            </button>
+          )}
+          {verdictErr && <p className="outfit-verdict-err">{verdictErr}</p>}
+        </section>
+      )}
+
       {/* Asymmetric action bar: one prominent primary (publish for owners,
           try-on for visitors with items) spanning wide, then a compact
           icon row — Delete pushed to the far right, off on its own. */}
@@ -605,4 +642,20 @@ function contrastInk(hex) {
   const b = parseInt(hex.slice(5, 7), 16);
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return lum > 0.6 ? '#111' : '#fff';
+}
+
+// The persona's face makes the opinion attributable — an unattributed verdict
+// reads as the app pronouncing on you, which is a different and worse thing.
+function VerdictCard({ verdict, t }) {
+  const meta = STYLIST_PERSONAS.find(p => p.id === verdict.persona) || STYLIST_PERSONAS[0];
+  return (
+    <div className="verdict-card">
+      <img src={meta.img} alt="" className="verdict-card-face" />
+      <div className="verdict-card-body">
+        <strong className="verdict-card-call">{verdict.verdict}</strong>
+        <p className="verdict-card-why">{verdict.why}</p>
+        <span className="verdict-card-by">{meta.name} · {t('stylistAiNote')}</span>
+      </div>
+    </div>
+  );
 }

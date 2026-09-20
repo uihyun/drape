@@ -13,6 +13,34 @@ Conventions:
 
 ## Unreleased — server only
 
+**"Would this suit me?" on someone else's outfit.** Try-on answers *how it
+would look*; nothing answered *whether it's your kind of thing* — which is the
+question you actually have about a stranger's look, and the one you ask right
+before deciding to buy. New `styleVerdict` callable judges the outfit against
+the viewer's own style profile and stated preferences, in their chosen
+persona's voice, and returns a call plus one sentence naming the specific thing
+about *them* that decides it.
+
+Three things it is not. It is not the analysis notes: those describe the outfit
+and read the same to everyone, this judges it and reads differently per person.
+It is not on your own outfits — you don't need a verdict on your own look, and
+the callable rejects `OWN_OUTFIT`. And it did not take try-on's slot; the
+original idea was to replace the try-on icon, which would have traded the one
+differentiator for commentary.
+
+It shares try-on's wallet via `reserveRecOrFit` (the no-second-currency
+invariant) and caches per outfit × viewer × persona × locale, because an opinion
+that changes every time you reopen the same look is not an opinion. Re-reads are
+free; the cache subcollection is server-only and explicitly denied to clients in
+rules, including to the outfit's owner — a verdict is the viewer's private read.
+
+Verified against the real model before shipping, both directions. Given a
+profile that wears only tailored greyscale and a street-military look, all four
+personas returned fit 0–0.1 and said no in their own register (Juno: "Beautiful,
+but not you… even if I love a dare"). Given a profile that lives in baggy cargos
+and sneakers, all four returned fit 1. The failure mode worth guarding — a
+stylist who says yes to everything — did not appear.
+
 **Selling moved into outfits, and out of a storefront that nobody could reach.**
 The marketplace has always worked — list an item, a visitor opens it, "Contact
 seller" starts a thread keyed to that listing — but the only doors were an

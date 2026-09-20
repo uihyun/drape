@@ -7103,3 +7103,28 @@ input:disabled, textarea:disabled, select:disabled {
 }
 .item-seller:hover { border-color: var(--border-hover); color: var(--text-primary); }
 .item-seller-name { font-weight: 500; }
+
+/* "Would this suit me?" — sits between the look and the action bar, because
+   it is a thought about the outfit, not an action on it. */
+.outfit-verdict { margin: 0.9rem 0 0.2rem; }
+.outfit-verdict-ask {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent); border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  font: inherit; font-size: 0.85rem; font-weight: 500;
+  cursor: pointer;
+}
+.outfit-verdict-ask:disabled { opacity: 0.6; cursor: default; }
+.outfit-verdict-err { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
+
+.verdict-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 0.85rem; border: 1px solid var(--border); border-radius: 14px;
+  background: var(--surface);
+}
+.verdict-card-face { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; }
+.verdict-card-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.verdict-card-call { font-size: 0.95rem; }
+.verdict-card-why { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); }
+.verdict-card-by { font-size: 0.7rem; color: var(--text-muted); }

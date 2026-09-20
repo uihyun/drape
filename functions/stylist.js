@@ -89,6 +89,15 @@ function dayKey(tz) {
   }
 }
 
+// Every locale the client can send must be here. es/fr were once added to the
+// accepted list without being added to this map, so those users got a prompt
+// reading "in undefined" and silently fell back to English. One function now,
+// so a new caller can't reintroduce that.
+const LANG_NAMES = {
+  en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French',
+};
+function langLabel(lang) { return LANG_NAMES[lang] || 'English'; }
+
 function db() { return admin.firestore(); }
 
 // Compact one-line-per-item inventory the model can reference by id.
@@ -235,6 +244,115 @@ async function reserveRecOrFit(uid) {
 }
 
 // ── The recommender (SPEC-1.6 §D) ───────────────────────────────────────
+// ── "Would this suit me?" (§D companion) ───────────────────────────────
+// styleRecommend answers "what should I wear" from MY closet. This answers a
+// different question you can only ask about SOMEONE ELSE'S outfit: does this
+// look suit me. Try-on already shows how it would look; this says whether it
+// is your kind of thing — description vs judgement, and the judgement is the
+// half the app could not give.
+//
+// Cached per (outfit, viewer, persona): the inputs barely move, and a verdict
+// that changes every time you reopen the same look reads as noise rather than
+// an opinion. Re-reading is free; only the first ask spends quota.
+const VERDICT_MAX_WORDS = 26;
+
+exports.styleVerdict = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    if (request.auth.token?.firebase?.sign_in_provider === 'anonymous') {
+      throw new HttpsError('permission-denied', 'SIGN_IN_REQUIRED');
+    }
+    const outfitId = String(request.data?.outfitId || '').slice(0, 128);
+    if (!outfitId) throw new HttpsError('invalid-argument', 'NO_OUTFIT');
+    const personaKey = PERSONAS[request.data?.persona] ? request.data.persona : 'noa';
+    const persona = PERSONAS[personaKey];
+    const lang = Object.keys(LANG_NAMES).includes(request.data?.lang) ? request.data.lang : 'en';
+
+    const outfitRef = db().collection('outfits').doc(outfitId);
+    const outfitSnap = await outfitRef.get();
+    if (!outfitSnap.exists) throw new HttpsError('not-found', 'NO_OUTFIT');
+    const outfit = outfitSnap.data();
+    // Mirrors the read rule rather than trusting the client: a verdict on a
+    // private look would leak its contents to someone who cannot open it.
+    const visible = outfit.isPublic === true || outfit.isListed === true || outfit.userId === uid;
+    if (!visible) throw new HttpsError('permission-denied', 'NOT_VISIBLE');
+    if (outfit.userId === uid) throw new HttpsError('failed-precondition', 'OWN_OUTFIT');
+
+    const cacheRef = outfitRef.collection('verdicts').doc(`${uid}_${personaKey}_${lang}`);
+    const cached = await cacheRef.get();
+    if (cached.exists) return { ...cached.data(), cached: true };
+
+    const { charged } = await reserveRecOrFit(uid);
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    let profile;
+    try {
+      profile = await ensureStyleProfile(uid, genAI);
+    } catch (e) {
+      refundFit(uid, charged);
+      throw e;
+    }
+    const profSnap = await db().collection('profiles').doc(uid).get();
+    const stated = (profSnap.exists && profSnap.data().stylePrefs) || null;
+
+    // What the look IS, in words. No photo — this is the text model, and the
+    // outfit already carries the analysis the owner paid for.
+    const look = {
+      mood: outfit.mood || '',
+      palette: (outfit.palette || []).slice(0, 5),
+      styles: (outfit.styles || []).slice(0, 5),
+      pieces: (outfit.pieces || outfit.detectedItems || [])
+        .slice(0, 8)
+        .map((x) => ({ name: x.name || x.label || '', category: x.category || '' })),
+      notes: (outfit.notes || '').slice(0, 400),
+    };
+
+    const langName = langLabel(lang);
+    const model = genAI.getGenerativeModel({
+      model: (await getModels()).vision,
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+    const prompt = [
+      `You are ${persona.name}, a personal fashion stylist inside the drape app.`,
+      `LENS: ${persona.lens}`,
+      `YOU REFUSE: ${persona.refuses}`,
+      `VOICE: ${persona.voice}`,
+      `Example of your voice: "${persona.example}"`,
+      'Someone is looking at SOMEONE ELSE\'S outfit and wants to know whether it suits THEM.',
+      'Judge the look against this person\'s taste — not against your own preferences, and not against whether the look is good in the abstract. A beautiful outfit that is wrong for them is a "no".',
+      `Return JSON: {"fit": number 0-1, "verdict": string, "why": string}`,
+      `- "verdict" is 2-4 words in ${langName}, your call: e.g. the equivalent of "Yes, this is you" / "Close, but heavy" / "Not your shape".`,
+      `- "why" is ONE sentence in ${langName}, HARD LIMIT ${VERDICT_MAX_WORDS} WORDS, in YOUR voice. Name the specific thing about THEM that decides it — a colour they never wear, a silhouette they always reach for. Never generic praise.`,
+      '- Be honest. If it does not suit them, say so plainly and kindly; a stylist who says yes to everything is useless.',
+      '- Never disparage the person, their body, or their wardrobe.',
+      profile?.summary ? `THEIR STYLE PROFILE:\n${profile.summary}` : '',
+      stated ? `THEIR STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      `THE OUTFIT THEY ARE LOOKING AT: ${JSON.stringify(look)}`,
+      `STAY IN CHARACTER: you are ${persona.name}. Another stylist should reach a different call and say it differently.`,
+    ].filter(Boolean).join('\n\n');
+
+    let parsed;
+    try {
+      const res = await model.generateContent(prompt);
+      parsed = JSON.parse(res.response.text());
+    } catch (e) {
+      refundFit(uid, charged);
+      console.error('styleVerdict failed:', e?.message);
+      throw new HttpsError('internal', 'VERDICT_FAILED');
+    }
+    const out = {
+      persona: personaKey,
+      fit: Math.max(0, Math.min(1, Number(parsed.fit) || 0)),
+      verdict: String(parsed.verdict || '').slice(0, 60),
+      why: String(parsed.why || '').slice(0, 300),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    await cacheRef.set(out);
+    return { ...out, createdAt: null, cached: false };
+  },
+);
+
 exports.styleRecommend = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
   async (request) => {
@@ -304,12 +422,7 @@ exports.styleRecommend = onCall(
       model: (await getModels()).vision,
       generationConfig: { responseMimeType: 'application/json' },
     });
-    // Every locale the client can send must be here. es/fr were added to the
-    // accepted list without being added to this map, so those users got a
-    // prompt reading "in undefined" and silently fell back to English.
-    const langName = {
-      en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French',
-    }[lang] || 'English';
+    const langName = langLabel(lang);
     const prompt = [
       `You are ${persona.name}, a personal fashion stylist inside the drape app.`,
       `LENS: ${persona.lens}`,

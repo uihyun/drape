@@ -162,6 +162,8 @@ exports.cleanupOldThreads = messageFns.cleanupOldThreads;
 // ── Stylist (SPEC-1.6: style profile + persona recommendations) ─────────
 const stylistFns = require('./stylist.js');
 exports.styleRecommend = stylistFns.styleRecommend;
+// "Would this suit me?" on someone else's outfit — judgement, not description.
+exports.styleVerdict = stylistFns.styleVerdict;
 
 // ── Share-import (SPEC-1.6 §A: shared URL → og:image → analyze flow) ────
 const importFns = require('./import.js');

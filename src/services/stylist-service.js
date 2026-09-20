@@ -40,6 +40,16 @@ async function recommend({ persona, ask }) {
   return data; // { recId, persona, outfits: [{title,itemIds,why,confidence}], remaining }
 }
 
+// "Would this suit me?" on someone ELSE'S outfit. The server caches per
+// (outfit, viewer, persona, lang), so reopening a look you already asked about
+// returns the same call for free — an opinion that changes on every visit is
+// not an opinion.
+async function verdict({ outfitId, persona }) {
+  const call = httpsCallable(functions, 'styleVerdict');
+  const { data } = await call({ outfitId, persona, lang: currentLang() });
+  return data; // { fit, verdict, why, persona, cached }
+}
+
 // Whole-batch rating ('up' | 'down' | null to clear) — per-outfit granularity
 // is a later iteration; the strongest per-outfit signal is the try-on itself.
 async function rateRec(recId, value) {
@@ -81,5 +91,5 @@ function subscribeSavedLooks(uid, cb, { max = 12 } = {}) {
   );
 }
 
-export const StylistService = { recommend, rateRec, saveLook, unsaveLook, subscribeSavedLooks };
+export const StylistService = { recommend, verdict, rateRec, saveLook, unsaveLook, subscribeSavedLooks };
 export default StylistService;
