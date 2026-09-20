@@ -482,12 +482,19 @@ export function OutfitDetail({ user, onSignIn }) {
           : (isOwner && (outfit.itemIds || []).length > 0
             ? `/tryon?items=${outfit.itemIds.join(',')}`
             : null);
+        // The action bar below already shows a full-width "Try on" for anyone
+        // who isn't the owner of a non-analyzed look. Repeating it in the hint
+        // put two identical buttons a thumb apart. The sentence still earns its
+        // place — it says why (your real face and body) — so only the duplicate
+        // button goes. For an OWNER the primary is publish/unpublish, and this
+        // hint is their only try-on entry, so it keeps its CTA.
+        const primaryIsTryon = !(isOwner && !isAnalyzed) && !!outfitCardPhoto(outfit);
         return tryonHref ? (
           <OnboardHint
             storageKey="hint_tryon_look"
             text={t('hintTryonLook')}
-            ctaLabel={t('tryThisOn')}
-            onCta={() => navigate(tryonHref)}
+            ctaLabel={primaryIsTryon ? null : t('tryThisOn')}
+            onCta={primaryIsTryon ? undefined : () => navigate(tryonHref)}
           />
         ) : null;
       })()}
