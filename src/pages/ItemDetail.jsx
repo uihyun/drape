@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
-import { db } from '../firebase.js';
+import { db, analytics, logEvent } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { dropFromFeedCaches } from '../services/uiCache.js';
 import { CameraService } from '../services/camera.js';
@@ -252,6 +252,12 @@ export function ItemDetail({ user, onSignIn }) {
         conditionGrade: saleDraft.conditionGrade,
         currency,
       });
+      // Relist vs first list matters: one is a seller returning, the other is
+      // the funnel actually recruiting someone.
+      logEvent(analytics, 'listing_changed', {
+        action: item.forSale ? 'edit' : 'list',
+        currency,
+      });
       setListingOpen(false);
     } finally { setListingSaving(false); }
   };
@@ -259,6 +265,7 @@ export function ItemDetail({ user, onSignIn }) {
   // Take the item off the market but KEEP price/condition so a future
   // re-list starts from the last values.
   const unlist = async () => {
+    logEvent(analytics, 'listing_changed', { action: 'unlist' });
     try { await ItemService.updateItem(item.id, { forSale: false }); }
     catch (e) { console.warn('unlist failed', e?.message); }
   };
@@ -372,7 +379,15 @@ export function ItemDetail({ user, onSignIn }) {
             was owner-only — so the one screen a buyer lands on from an outfit
             or from Trends couldn't do it, while the outfit page could. Anyone
             signed in can try any item they can see. */}
-        <Link to={`/tryon?items=${item.id}`} className="item-rail-btn" aria-label={t('tryThisOn')}>
+        <Link
+          to={`/tryon?items=${item.id}`}
+          className="item-rail-btn"
+          aria-label={t('tryThisOn')}
+          onClick={() => logEvent(analytics, 'item_tryon_open', {
+            owner: isOwner ? 'self' : 'other',
+            for_sale: !!(item.forSale && item.priceAsking > 0),
+          })}
+        >
           <Sparkles size={20} strokeWidth={1.6} />
         </Link>
         <ShareButton
@@ -523,7 +538,13 @@ export function ItemDetail({ user, onSignIn }) {
                   from an outfit, and from here you can go look at the rest of
                   what this person wears. Owner-side it would just say "you". */}
               {!isOwner && seller?.handle && (
-                <Link to={`/u/${seller.handle}`} className="item-seller">
+                <Link
+                  to={`/u/${seller.handle}`}
+                  className="item-seller"
+                  onClick={() => logEvent(analytics, 'seller_profile_open', {
+                    for_sale: !!(item.forSale && item.priceAsking > 0),
+                  })}
+                >
                   <Avatar src={seller.photoURL} name={seller.displayName || seller.handle} size={22} />
                   <span className="item-seller-name">@{seller.handle}</span>
                   <ChevronRight size={14} strokeWidth={1.8} />
@@ -570,7 +591,10 @@ export function ItemDetail({ user, onSignIn }) {
                 onClick={() => {
                   if (!user || user.isAnonymous) { onSignIn?.(); return; }
                   // Existing conversation → just open it (no new draft).
-                  if (existingThreadId) { navigate(`/messages/${existingThreadId}`); return; }
+                  if (existingThreadId) {
+                logEvent(analytics, 'seller_contact', { state: 'reopen' });
+                navigate(`/messages/${existingThreadId}`); return;
+              }
                   try {
                     // Don't create the room yet — carry a draft and let the
                     // first message persist it (see Thread / ensureThread).

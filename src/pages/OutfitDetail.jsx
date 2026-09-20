@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
-import { db } from '../firebase.js';
+import { db, analytics, logEvent } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
@@ -131,15 +131,30 @@ export function OutfitDetail({ user, onSignIn }) {
   const askVerdict = async (personaId) => {
     const key = `${outfit.id}:${personaId}`;
     const warm = verdictWarm.get(key);
-    if (warm) { setVerdict(warm); return; }
+    if (warm) {
+      setVerdict(warm);
+      logEvent(analytics, 'verdict_view', { persona: personaId, source: 'cache' });
+      return;
+    }
     setVerdictBusy(true); setVerdictErr('');
     try {
       const v = await StylistService.verdict({ outfitId: outfit.id, persona: personaId });
       rememberVerdict(key, v);
       setVerdict(v);
+      // `charged` and `fit` are the two numbers that decide whether the free
+      // allowance is set right — without them the caps stay guesses forever.
+      logEvent(analytics, 'verdict_ask', {
+        persona: personaId,
+        charged: v.charged || 'unknown',
+        remaining: v.remaining ?? -1,
+        fit: Math.round((v.fit || 0) * 10) / 10,
+        server_cached: !!v.cached,
+      });
     } catch (e) {
       const code = e?.code || '';
-      setVerdictErr(code.includes('resource-exhausted') ? t('verdictNoFits') : t('verdictError'));
+      const out = code.includes('resource-exhausted');
+      logEvent(analytics, 'verdict_failed', { persona: personaId, reason: out ? 'out_of_fits' : 'error' });
+      setVerdictErr(out ? t('verdictNoFits') : t('verdictError'));
     } finally { setVerdictBusy(false); }
   };
 
@@ -416,7 +431,11 @@ export function OutfitDetail({ user, onSignIn }) {
         <section className="outfit-items outfit-link-prompt">
           <header><h2>{t('linkItemsPrompt')}</h2></header>
           <p className="outfit-link-prompt-body">{t('linkItemsPromptBody')}</p>
-          <Link to={`/o/${outfit.id}/link`} className="btn btn-primary outfit-link-prompt-cta">
+          <Link
+            to={`/o/${outfit.id}/link`}
+            className="btn btn-primary outfit-link-prompt-cta"
+            onClick={() => logEvent(analytics, 'link_items_prompt', { from: 'outfit_detail' })}
+          >
             <Shirt size={16} strokeWidth={1.8} />
             {t('linkItemsCta')}
           </Link>
@@ -430,7 +449,14 @@ export function OutfitDetail({ user, onSignIn }) {
           <header><h2>{t('itemsInOutfit')}</h2></header>
           <div className="outfit-items-strip">
             {items.map(it => (
-              <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
+              <Link
+                key={it.id}
+                to={`/i/${it.id}`}
+                className="outfit-item-thumb"
+                onClick={() => logEvent(analytics, 'outfit_item_open', {
+                  for_sale: !!(it.forSale && it.priceAsking > 0),
+                })}
+              >
                 {it.croppedUrl || it.originalUrl
                   ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
                   : <div className="item-card-skeleton" />}
@@ -548,6 +574,7 @@ export function OutfitDetail({ user, onSignIn }) {
                       setChosenPersona(p.id);
                       setPersona(p.id);
                       setChoosing(false);
+                      logEvent(analytics, 'stylist_picked', { persona: p.id, source: 'verdict' });
                       askVerdict(p.id);
                     }}
                   >

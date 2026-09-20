@@ -13,6 +13,43 @@ Conventions:
 
 ## Unreleased — server only
 
+**Stylist quotas: free daily, then one fit buys a block — and the block
+carries over.** A fit is an image generation ($0.039–0.15 per `docs/COST.md`);
+a recommendation and a verdict are both Flash text, which that file already
+calls negligible at our scale. Charging one fit per call was an image price for
+a sentence. Now `reserveStylistUse` serves both: recommendations 3/day then +3
+per fit, verdicts 10/day then +10.
+
+Verdicts get the larger allowance because the two are different behaviours. A
+recommendation is a deliberate trip to the stylist page; a verdict happens
+mid-browse on a stranger's outfit, and with the client cache one use is one
+*new* outfit — five would have been five profiles' worth of browsing, which is
+the behaviour we're trying to grow.
+
+**Top-ups carry over, daily allowances don't.** The app already had exactly this
+split — `fitDailyUsed` resets, `fitBonus` doesn't — and a balance someone paid a
+fit for belongs on the second side of it. Expiring it would mean topping up at
+23:55 buys five minutes. Free is always consumed before a top-up, and
+`refundStylistUse` is symmetric with what was granted: refunding a purchase also
+claws back the unused remainder, or one API error would leave a user charged
+with the block already gone.
+
+Verified against production by replaying the transaction on a scratch user: ten
+free, the eleventh spends one fit and grants ten (nine left), further calls draw
+down the block, and after rolling the day key the free ten return with the
+top-up balance untouched.
+
+**Everything added this round is instrumented.** `OutfitDetail` and `ItemDetail`
+had no analytics at all, which is why the caps above are still judgement rather
+than measurement. Ten events now: `verdict_ask` (with `charged`, `remaining` and
+the fit score), `verdict_view`, `verdict_failed`, `stylist_picked` (tagged
+`source: verdict` to separate it from the stylist page), `outfit_item_open`
+(carrying `for_sale`, so the badge's effect is visible), `item_tryon_open`
+(`owner: self|other`), `seller_contact` (fired on *intent*, since the thread doc
+isn't written until the first message — the drop-off between the two was
+invisible), `seller_profile_open`, `listing_changed` (list / edit / unlist), and
+`link_items_prompt`.
+
 **"Would this suit me?" on someone else's outfit.** Try-on answers *how it
 would look*; nothing answered *whether it's your kind of thing* — which is the
 question you actually have about a stranger's look, and the one you ask right

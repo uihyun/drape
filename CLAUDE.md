@@ -24,7 +24,18 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 - **Linked items slot under their detected piece.** `outfit.pieceLinks` = `{ pieceIndex: [itemId] }` (index into `outfit.pieces`). Assigned in `OutfitLink` (0 matching-category pieces → unsorted, 1 → auto, 2+ → picker modal; `piecesForItem` narrows by subcategory first). OutfitDetail renders linked items under each `PieceRow`; unmatched go to "Other items". Keep `pieceLinks` in the `updateOutfit` allowlist + firestore.rules.
 - **Trends is self-running.** `functions/trends.js` re-picks "This week's looks" whenever the ISO week (Monday) rolls over, the daily 04:30 UTC cron refreshes the stats, and the masthead photo rotates per page load from that slate (excluded from the row below). Admin feature/cover/hide overrides the CURRENT week only. `LOOKS_MAX` caps both the auto-pick and the manual list — keep them on that one constant, and never hardcode content exclusions (watermarks etc. belong to the seed pipeline).
 - **AI model ids are server config, not constants.** `functions/model-config.js` reads `config/models` (5-min cache, strict id/size validation, falls back to baked defaults on anything malformed) and every Gemini call site resolves through `getModels()`. Switching or rolling back a model is an /admin → Config edit — never a functions deploy. Keep new call sites on `getModels()`; the constants in items/tryon/stylist are documentation of the defaults only.
-- **Stylist economics: 3 free recs/day, then 1 fit per rec — ONE wallet.** `reserveRecOrFit` in `functions/stylist.js` shares the fits reserve/refund with try-on; never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
+- **Stylist economics: free daily allowance, then ONE fit buys a block — one
+  wallet.** `reserveStylistUse` in `functions/stylist.js` serves both callables:
+  recommendations 3/day (+3 per fit), verdicts 10/day (+10 per fit). Verdicts get
+  the larger allowance because a recommendation is a deliberate trip to the
+  stylist page while a verdict happens mid-browse, and browsing is what we want
+  more of. 1:1 was charging an image-generation price (a fit) for a Flash text
+  call. **Top-ups carry over and daily allowances don't** — mirroring
+  `fitBonus` vs `fitDailyUsed`; a balance someone paid for must not expire, or
+  topping up near midnight is a trap. Free is always spent before a top-up, and
+  `refundStylistUse` is symmetric with what was granted (refunding a purchase
+  also claws back the unused block).
+  Never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
 - **Five locales: en / ko / ja / es / fr.** Spanish is ONE neutral Spanish for
   every market (`tú`, never `vosotros`; vocabulary a reader in Madrid, Mexico
   City or Buenos Aires all recognises) — not a national variant, and not split

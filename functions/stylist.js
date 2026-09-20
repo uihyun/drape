@@ -18,9 +18,19 @@ const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const { getModels } = require('./model-config.js');
 const MODEL = 'gemini-3.5-flash';   // default; overridable via config/models
 
-const REC_DAILY = 3;            // free recommendations per user-local day; after
-                                // that each rec charges ONE fit (same wallet as
-                                // try-on — no second refill economy, owner 9/10)
+// Free-per-day allowances, and how many uses ONE fit buys once they're spent.
+// A fit is worth far more than either call — it's an image generation, these
+// are Flash text — so 1:1 was charging an image price for a sentence. Topping
+// up in blocks narrows that without inventing a second currency.
+//
+// Verdicts get the bigger allowance on purpose: a recommendation is something
+// you go to the stylist page to do, while a verdict happens mid-browse on
+// someone else's outfit, and browsing is the behaviour we want more of. With
+// the client cache, one use = one NEW outfit.
+const REC_DAILY = 3;
+const REC_TOPUP = 3;
+const VERDICT_DAILY = 10;
+const VERDICT_TOPUP = 10;
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
 const MAX_ITEMS = 150;          // inventory digest cap fed to the model
 
@@ -223,7 +233,11 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
 // One wallet, not two: past the free allowance a rec spends the same fit a
 // try-on would (throws 'out_of_fits' when both are dry — same signal the
 // client already knows). Free-slot write and fit charge share a transaction.
-async function reserveRecOrFit(uid) {
+// Free daily allowance → carried-over top-up balance → spend one fit to buy a
+// block of more. The top-up does NOT reset daily: it was paid for, and the one
+// currency in the app that costs something (fitBonus) carries over, so a second
+// rule here would be a trap — top up at 23:59 and watch it vanish.
+async function reserveStylistUse(uid, { dayKey: dayField, usedKey, extraKey, daily, topup }) {
   const userRef = db().collection('users').doc(uid);
   const profRef = db().collection('profiles').doc(uid);
   return db().runTransaction(async (txn) => {
@@ -231,17 +245,57 @@ async function reserveRecOrFit(uid) {
     const u = userSnap.exists ? userSnap.data() : {};
     const tz = (profSnap.exists && profSnap.data().timezone) || 'America/New_York';
     const today = dayKey(tz);
-    const used = u.styleRecDayKey === today ? (u.styleRecUsed || 0) : 0;
-    if (used < REC_DAILY) {
-      txn.set(userRef, { styleRecDayKey: today, styleRecUsed: used + 1 }, { merge: true });
-      return { charged: 'free', freeRemaining: REC_DAILY - used - 1 };
+    const used = u[dayField] === today ? (u[usedKey] || 0) : 0;
+    const extra = u[extraKey] || 0;
+
+    // Free first — never spend something they bought while a free use is left.
+    if (used < daily) {
+      txn.set(userRef, { [dayField]: today, [usedKey]: used + 1 }, { merge: true });
+      return { charged: 'free', freeRemaining: daily - used - 1, extra };
+    }
+    if (extra > 0) {
+      txn.set(userRef, { [extraKey]: extra - 1 }, { merge: true });
+      return { charged: 'topup', freeRemaining: 0, extra: extra - 1 };
     }
     // reserveFit does its own reads — fine here because this branch hasn't
     // written yet (Firestore txns forbid reads after writes).
     const fitType = await reserveFit(txn, uid); // 'daily' | 'bonus' | throws out_of_fits
-    return { charged: fitType, freeRemaining: 0 };
+    txn.set(userRef, { [extraKey]: topup - 1 }, { merge: true });
+    return { charged: fitType, freeRemaining: 0, extra: topup - 1, bought: topup };
   });
 }
+
+// Undo a reservation when the model call failed. Symmetric with what was
+// granted: a purchase gave `topup` uses for one fit, so refunding it takes the
+// unused remainder back out as well — otherwise one API error leaves the user
+// paid-up but the balance already spent.
+async function refundStylistUse(uid, res, { extraKey, topup }) {
+  if (!res) return;
+  try {
+    if (res.charged === 'topup') {
+      await db().collection('users').doc(uid)
+        .set({ [extraKey]: admin.firestore.FieldValue.increment(1) }, { merge: true });
+      return;
+    }
+    if (res.charged === 'daily' || res.charged === 'bonus') {
+      await db().collection('users').doc(uid)
+        .set({ [extraKey]: admin.firestore.FieldValue.increment(-(topup - 1)) }, { merge: true });
+      await refundFit(uid, res.charged);
+    }
+    // 'free' costs nothing to leave counted — one wasted free use on an error
+    // is not worth a second write and a race with the daily reset.
+  } catch (e) { console.warn('refundStylistUse failed:', uid, e.message); }
+}
+
+const REC_QUOTA = {
+  dayKey: 'styleRecDayKey', usedKey: 'styleRecUsed', extraKey: 'styleRecExtra',
+  daily: REC_DAILY, topup: REC_TOPUP,
+};
+const VERDICT_QUOTA = {
+  dayKey: 'styleVerdictDayKey', usedKey: 'styleVerdictUsed', extraKey: 'styleVerdictExtra',
+  daily: VERDICT_DAILY, topup: VERDICT_TOPUP,
+};
+
 
 // ── The recommender (SPEC-1.6 §D) ───────────────────────────────────────
 // ── "Would this suit me?" (§D companion) ───────────────────────────────
@@ -284,13 +338,13 @@ exports.styleVerdict = onCall(
     const cached = await cacheRef.get();
     if (cached.exists) return { ...cached.data(), cached: true };
 
-    const { charged } = await reserveRecOrFit(uid);
+    const res = await reserveStylistUse(uid, VERDICT_QUOTA);
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
       profile = await ensureStyleProfile(uid, genAI);
     } catch (e) {
-      refundFit(uid, charged);
+      await refundStylistUse(uid, res, VERDICT_QUOTA);
       throw e;
     }
     const profSnap = await db().collection('profiles').doc(uid).get();
@@ -337,7 +391,7 @@ exports.styleVerdict = onCall(
       const res = await model.generateContent(prompt);
       parsed = JSON.parse(res.response.text());
     } catch (e) {
-      refundFit(uid, charged);
+      await refundStylistUse(uid, res, VERDICT_QUOTA);
       console.error('styleVerdict failed:', e?.message);
       throw new HttpsError('internal', 'VERDICT_FAILED');
     }
@@ -349,7 +403,10 @@ exports.styleVerdict = onCall(
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     await cacheRef.set(out);
-    return { ...out, createdAt: null, cached: false };
+    return {
+      ...out, createdAt: null, cached: false,
+      remaining: res.freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+    };
   },
 );
 
@@ -408,13 +465,14 @@ exports.styleRecommend = onCall(
       throw new HttpsError('failed-precondition', 'closet_too_small');
     }
 
-    const { charged, freeRemaining } = await reserveRecOrFit(uid);
+    const res = await reserveStylistUse(uid, REC_QUOTA);
+    const { freeRemaining } = res;
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
       profile = await ensureStyleProfile(uid, genAI);
     } catch (e) {
-      refundFit(uid, charged); // no-op for 'free'
+      await refundStylistUse(uid, res, REC_QUOTA);
       throw e;
     }
 
@@ -463,7 +521,7 @@ exports.styleRecommend = onCall(
       const res = await model.generateContent(prompt);
       parsed = JSON.parse(res.response.text());
     } catch (e) {
-      refundFit(uid, charged); // paid rec that produced nothing → give it back
+      await refundStylistUse(uid, res, REC_QUOTA); // produced nothing → give it back
       throw new HttpsError('internal', 'STYLIST_FAILED', e?.message);
     }
 
@@ -488,7 +546,7 @@ exports.styleRecommend = onCall(
       .filter((o) => o.itemIds.length >= 2)
       .slice(0, 3);
     if (!outfits.length) {
-      refundFit(uid, charged);
+      await refundStylistUse(uid, res, REC_QUOTA);
       throw new HttpsError('internal', 'STYLIST_EMPTY');
     }
 
@@ -502,6 +560,9 @@ exports.styleRecommend = onCall(
       profileRev: profile?.rev || 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    return { recId: recRef.id, persona: personaKey, outfits, remaining: freeRemaining, charged };
+    return {
+      recId: recRef.id, persona: personaKey, outfits,
+      remaining: freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+    };
   },
 );
