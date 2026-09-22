@@ -124,20 +124,17 @@ Platform updates under the hood, plus a round of polish.
 **What's New** (≤4000) — 2.2.0:
 
 ```
-• Ask a stylist whether a look would suit you — not just how it fits.
-• Items for sale show their price inside the outfit, and you can message the seller.
-• Try on any piece you see, not just your own. It saves to your wishlist.
-• Invite links now fill in the code for you.
-• Sort by newest or oldest on every screen with a filter.
-• Fixed: shared item and outfit links were broken.
+Now you can ask a stylist whether a look would actually suit you, not just how it would fit.
+
+Pieces that are for sale show their price right inside the outfit, so you can tap through and message whoever is wearing it. And you can try on anything you come across, not only what is already in your closet.
+
+We also fixed shared links, which had been quietly broken for a while — sorry about that. Invite links now fill the code in for you, and sorting works everywhere you can filter.
 ```
 
 **What's new** (Play, ≤500) — 2.2.0:
 
 ```
-• Ask a stylist whether a look would suit you.
-• Items for sale show their price inside the outfit — message the seller.
-• Try on any piece you see, not just your own.
-• Invite links fill in the code for you.
-• Sorting on every filter screen, and shared links work again.
+Now you can ask a stylist whether a look would actually suit you, not just how it would fit. Pieces for sale show their price right inside the outfit, so you can tap through and message whoever is wearing it — and you can try on anything you come across, not only what is in your closet.
+
+We also fixed shared links, which had been quietly broken for a while. Sorry about that.
 ```

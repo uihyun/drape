@@ -135,20 +135,17 @@ Actualizaciones internas de la plataforma y varios retoques.
 **What's New** (≤4000) — 2.2.0:
 
 ```
-• Pregunta a un estilista si un look te quedaría bien, no solo cómo te sienta.
-• Las prendas en venta muestran su precio dentro del look, y puedes escribir al vendedor.
-• Pruébate cualquier prenda que veas, no solo las tuyas. Se guarda en tu lista de deseos.
-• Los enlaces de invitación rellenan el código por ti.
-• Orden por más reciente o más antiguo en toda pantalla con filtro.
-• Corregido: los enlaces compartidos de prendas y looks estaban rotos.
+Ahora puedes preguntarle a un estilista si un look te quedaría bien de verdad, y no solo cómo te sienta la prenda.
+
+Las prendas en venta muestran su precio dentro del look, así que puedes entrar y escribirle a quien lo lleva puesto. Y puedes probarte cualquier prenda que veas, no solo las que ya tienes en el armario.
+
+También hemos arreglado los enlaces compartidos, que llevaban un tiempo rotos. Perdón por las molestias. Los enlaces de invitación ya rellenan el código por ti, y hay orden en todas las pantallas con filtro.
 ```
 
 **Novedades** (Play, ≤500) — 2.2.0:
 
 ```
-• Pregunta a un estilista si un look te quedaría bien.
-• Las prendas en venta muestran su precio dentro del look — escribe al vendedor.
-• Pruébate cualquier prenda que veas, no solo las tuyas.
-• Los enlaces de invitación rellenan el código por ti.
-• Orden en toda pantalla con filtro, y los enlaces compartidos vuelven a funcionar.
+Ahora puedes preguntarle a un estilista si un look te quedaría bien de verdad. Las prendas en venta muestran su precio dentro del look, así que puedes entrar y escribirle a quien lo lleva puesto. Y puedes probarte cualquier prenda que veas, no solo las que ya tienes.
+
+También hemos arreglado los enlaces compartidos, que llevaban un tiempo rotos. Perdón por las molestias.
 ```
