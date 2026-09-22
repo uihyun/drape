@@ -15,7 +15,7 @@ export function PhoneShowcase() {
         <div className="lp-phone-screen">
           {/* Front phone stays the feed shot — the prettier hero; the try-on
               sell lives in the landing's how-it-works section below. */}
-          <img className="lp-phone-img" src="/lp/feed.webp" alt="" loading="lazy" />
+          <img className="lp-phone-img" src="/lp/trends.webp" alt="" loading="lazy" />
         </div>
       </div>
     </div>

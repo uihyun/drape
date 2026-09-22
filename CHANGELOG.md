@@ -13,6 +13,19 @@ Conventions:
 
 ## Unreleased — server only
 
+**The landing page was still selling the feed.** drape.nyc's third step and the
+second hero phone both showed `/lp/feed.webp`, a June capture of a screen no one
+can reach — the feed has been behind `config/app.feedMode: 'trends'` since
+2026-09-15. And the stylist, shipped 2026-09-08, appeared nowhere on the page at
+all. Both fixed from the same captures the store deck uses (`trends-3`, the only
+full-length masthead shot, and `stylist`): the hero mockup and the last step are
+Trends, a new STEP 3 is the stylist, and `feed.webp` is deleted rather than left
+to rot. The feature pills drop `Market` for `Stylist` — with one live listing,
+naming the market on the landing page promises more than the app currently has.
+Four steps fold 4 → 2×2 → 1 (the extra 980px breakpoint exists because 222px
+columns are unreadable well before the mobile breakpoint fires).
+
+
 **Try-on works on a piece you don't own.** The rail button on someone else's
 item page pointed at `/tryon?items=<their id>`, but the builder's grid is
 `subscribeMyCloset` — the id was never in it, so the user landed on a try-on

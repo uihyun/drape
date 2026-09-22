@@ -244,7 +244,7 @@
 }
 .lp-how-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 28px;
 }
 .lp-how-step { text-align: center; }
@@ -271,6 +271,11 @@
 .lp-stores--how {
   justify-content: center;
   margin-top: 44px;
+}
+/* Four steps don't survive a narrow desktop window — 222px columns become
+   unreadable before the mobile breakpoint ever fires. Fold to 2×2 first. */
+@media (max-width: 980px) {
+  .lp-how-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
 }
 @media (max-width: 720px) {
   .lp-how { margin-top: 8px; }

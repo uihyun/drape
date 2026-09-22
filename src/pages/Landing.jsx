@@ -122,10 +122,16 @@ export function Landing() {
             <p>{t('landingHow2B')}</p>
           </div>
           <div className="lp-how-step">
-            <img src="/lp/feed.webp" alt="" loading="lazy" />
+            <img src="/lp/stylist.webp" alt="" loading="lazy" />
             <div className="lp-how-num">STEP 3</div>
             <h3>{t('landingHow3T')}</h3>
             <p>{t('landingHow3B')}</p>
+          </div>
+          <div className="lp-how-step">
+            <img src="/lp/trends.webp" alt="" loading="lazy" />
+            <div className="lp-how-num">STEP 4</div>
+            <h3>{t('landingHow4T')}</h3>
+            <p>{t('landingHow4B')}</p>
           </div>
         </div>
         <div className="lp-stores lp-stores--how">
