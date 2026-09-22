@@ -120,3 +120,24 @@ long **What's New** above for App Store Connect.
 ```
 Platform updates under the hood, plus a round of polish.
 ```
+
+**What's New** (≤4000) — 2.2.0:
+
+```
+• Ask a stylist whether a look would suit YOU. Try-on shows how a piece sits on you; a verdict says whether it is you — on any outfit you come across.
+• Pieces for sale now show their price inside the outfit they are worn in. Tap through to the item and message the seller.
+• Try on any piece you can see, not only your own. It is saved to your wishlist so you can find it again.
+• Invite links fill the code in for you — no more retyping six characters.
+• Newest / oldest sorting everywhere a filter lives: outfits, boards, try-ons, your closet and the try-on picker.
+• Fixed: shared item and outfit links had been broken. Every link works again.
+```
+
+**What's new** (Play, ≤500) — 2.2.0:
+
+```
+• Ask a stylist whether a look you come across would suit you.
+• Pieces for sale show their price inside the outfit, and you can message the seller.
+• Try on any piece you see, not just your own — it saves to your wishlist.
+• Invite links fill the code in for you.
+• Newest / oldest sorting on every screen with a filter, and shared item and outfit links work again.
+```

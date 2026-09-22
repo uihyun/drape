@@ -131,3 +131,24 @@ sigue en 1.5.0, así que allí esta misma compilación es toda la versión.
 ```
 Actualizaciones internas de la plataforma y varios retoques.
 ```
+
+**What's New** (≤4000) — 2.2.0:
+
+```
+• Pregunta a un estilista si un look te quedaría bien a TI. La prueba virtual enseña cómo te sienta una prenda; el veredicto dice si va contigo, en cualquier look que encuentres.
+• Las prendas en venta ya muestran su precio dentro del look que llevan puesto. Entra en la prenda y escribe al vendedor.
+• Pruébate cualquier prenda que veas, no solo las tuyas. Se guarda en tu lista de deseos para que la encuentres luego.
+• Los enlaces de invitación rellenan el código por ti: se acabó copiar seis caracteres.
+• Orden por más reciente o más antiguo en todas las pantallas con filtro: looks, tableros, pruebas y tu armario.
+• Corregido: los enlaces compartidos de prendas y looks estaban rotos. Vuelven a funcionar.
+```
+
+**Novedades** (Play, ≤500) — 2.2.0:
+
+```
+• Pregunta a un estilista si un look que ves te quedaría bien.
+• Las prendas en venta muestran su precio dentro del look, y puedes escribir al vendedor.
+• Pruébate cualquier prenda que veas, no solo las tuyas: se guarda en tu lista de deseos.
+• Los enlaces de invitación rellenan el código por ti.
+• Orden por más reciente o más antiguo en toda pantalla con filtro, y los enlaces compartidos vuelven a funcionar.
+```

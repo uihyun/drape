@@ -11,7 +11,13 @@ Conventions:
 
 ---
 
-## Unreleased — server only
+## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — 22 Sep 2026
+
+iOS build 18, Android versionCode 22. Both stores were on 2.1.1, so the store
+notes cover only this round. Most of what follows had already been live on web
+for days; the native build is what finally carries it to phones — which is also
+why the share bug survived a whole release cycle after it was fixed.
+
 
 **Invite links carry the code.** The invite share handed over a bare
 `drape.nyc` link plus a code in the message text, so the recipient had to read
