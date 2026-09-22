@@ -14,6 +14,22 @@ own, invite links that carry the code, sort on every filter surface, and the
 share fix. Screenshots unchanged from 2.1.0 — nothing in this release alters a
 screen in the deck.
 
+**Deferred: iPad (universal) support.** It is one line —
+`TARGETED_DEVICE_FAMILY` `"1"` → `"1,2"` in `ios/App/App.xcodeproj/project.pbxproj`,
+four build configs — and it was tried in this session and verified on an iPad
+Pro 11 simulator: the app fills the canvas and the existing CSS gives it the
+same 540px centred column as the web. No layout work needed.
+
+What blocks it is App Store Connect, not the code: supporting iPad makes an iPad
+screenshot set a hard submission requirement, and every deck in
+`resources/app-store/` is 1290×2796. `scripts/build-store-posters.cjs` composites
+(background + Didot headline + a phone-shaped card) rather than using a full-bleed
+capture, so a second canvas size is a small change — but Apple wants screenshots
+that show the app as it actually looks on that device, and on an iPad that is a
+narrow column on white. That is a design call, not a render setting.
+
+Android needs nothing for this; it already works on tablets and foldables.
+
 The share bug is the lesson worth keeping from this round: it was fixed and
 deployed to web on 21 Sep, and 2.1.1 users kept hitting it anyway, because the
 native app serves bundled assets (no `server.url` in `capacitor.config.json`).

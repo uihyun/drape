@@ -13,16 +13,21 @@ Conventions:
 
 ## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — 22 Sep 2026
 
-**iPad and foldables get the real screen.** The iOS target was
-`TARGETED_DEVICE_FAMILY = "1"` — iPhone only — so on an iPad the app ran in
-compatibility mode: a phone-sized window letterboxed in black with a 2x blur
-button. It is `"1,2"` now, and the layout needed nothing, because the CSS
-already answers this: under 640px a phone gets the full bleed, past it `.main`
-settles into the same 540px centred column the web has always used. Android was
-already correct (resizeable, `screenSize|screenLayout` in `configChanges`) —
-verified on an emulator forced to 1066dp, not inferred from the manifest.
+**Android tablets and foldables stopped looking broken; iPad is deferred.**
+Android was already right — resizeable, `screenSize|screenLayout` in
+`configChanges` — so an unfolded foldable gets the full canvas and the CSS does
+the rest: under 640px a phone keeps its full bleed, past it `.main` settles into
+the same 540px centred column the web has always used. Verified on an emulator
+forced to 1066dp rather than inferred from the manifest.
 
-The welcome screen was the one thing that broke at that width. `.lp-visual` took
+iOS is a one-line change (`TARGETED_DEVICE_FAMILY` `"1"` → `"1,2"`; today an
+iPad runs the app in compatibility mode, a letterboxed phone window with a 2x
+blur button) and it was tried and confirmed working on an iPad Pro 11 simulator
+— but it is NOT in this build. Supporting iPad makes an iPad screenshot set a
+hard submission requirement, the decks are all 1290×2796, and that is not worth
+holding 2.2.0 for. Deferred to a later release; see PROGRESS.md.
+
+The welcome screen was the one thing that broke at tablet width. `.lp-visual` took
 `height: 100%` of a `flex: 1 1 auto` hero, so on a tablet the box grew to over
 1000px while the two phone mockups stayed pinned to its `top: 0` and `bottom: 0`
 — they ended up at opposite ends of the screen with a white canyon between them.
