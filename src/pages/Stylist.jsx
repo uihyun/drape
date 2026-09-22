@@ -144,7 +144,7 @@ export function Stylist({ user, onSignIn }) {
 
   const tryOnLook = (itemIds, source) => {
     logEvent(analytics, 'stylist_tryon', { persona, source });
-    navigate(`/tryon?items=${itemIds.filter((id) => closet?.[id]).join(',')}`);
+    navigate(`/tryon?items=${itemIds.filter((id) => closet?.[id]).join(',')}&from=stylist`);
   };
 
   const thumbOf = (id) => closet?.[id]?.croppedUrl || closet?.[id]?.originalUrl || null;

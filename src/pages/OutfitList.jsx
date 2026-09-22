@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Calendar as CalendarIcon, SlidersHorizontal, Lock } from 'lucide-react';
 import { OutfitService } from '../services/outfit-service.js';
 import {
-  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
+  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { CardImage } from '../components/CardImage.jsx';
@@ -63,6 +63,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   }, { replace: true });
   const fkey = `outfits:${user?.uid || 'anon'}`;
   const [filters, setFilters] = useState(() => loadFilters(fkey, emptyLookFilters()));
+  const [sort, setSort] = useState('newest');
   const [sheetOpen, setSheetOpen] = useState(false);
   useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
   const filterCount = countLookFilters(filters);
@@ -140,9 +141,13 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
   // The list for the active tab, with the shared tag filter applied. OOTD
   // tabs derive tags from each look's style[]/pieces[]; analyzed likewise.
   const rawList = tab === 'analyzed' ? outfits : ootds;
+  // One time rule for every tab: the look's own date if it has one (OOTDs),
+  // otherwise when it was created (analyzed outfits have no date).
+  const lookTime = (o) => (o.date ? Date.parse(o.date) : (o.createdAt?.toMillis?.() ?? 0));
   const activeList = rawList === null
     ? null
-    : (filterCount === 0 ? rawList : rawList.filter(o => lookMatches(o, filters, {})));
+    : (filterCount === 0 ? rawList : rawList.filter(o => lookMatches(o, filters, {})))
+      .slice().sort(byTime(sort, lookTime));
 
   return (
     <div className={`outfit-list${embedded ? ' outfit-list-embedded' : ''}`}>
@@ -214,6 +219,9 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
 
       {sheetOpen && (
         <LookFilterSheet
+          sortValue={sort}
+          onSortChange={setSort}
+          sortOptions={TIME_SORT}
           filters={filters}
           onToggle={toggleFilter}
           onClear={() => setFilters(emptyLookFilters())}

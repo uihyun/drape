@@ -329,6 +329,64 @@ function Overview() {
         );
       })()}
 
+      {data.tryon?.entry?.length > 0 && (() => {
+        const rows = data.tryon.entry;
+        const total = rows.reduce((n, r) => n + r.total, 0);
+        // Human names for the `from` tags stamped in tryon.js. An unmapped
+        // tag renders raw rather than disappearing.
+        const DOOR = {
+          item: 'item page (own)',
+          item_borrowed: "item page (someone else's)",
+          outfit_look: 'outfit — recreate the look',
+          outfit_items: 'outfit — its items',
+          stylist: 'stylist rec',
+          board: 'board — selection',
+          board_item: 'board — one item',
+          create_sheet: 'create sheet (+)',
+          nav: 'top nav',
+          history: 'try-on tab header',
+          history_empty: 'try-on tab (empty state)',
+          direct: 'direct / back',
+          unknown: 'before tracking shipped',
+        };
+        const max = Math.max(1, ...rows.map((r) => r.total));
+        return (
+          <>
+            <h3 className="adm-h3">
+              Try-on entry paths{' '}
+              <span className="adm-muted">
+                (real users only — where a try-on was actually started from)
+              </span>
+            </h3>
+            <div className="adm-tablewrap">
+              <table className="adm-table">
+                <thead><tr><th>from</th><th>started</th><th></th><th>share</th><th>ready</th></tr></thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.from}>
+                      <td>{DOOR[r.from] || r.from}</td>
+                      <td>{fmt(r.total)}</td>
+                      <td style={{ width: '38%' }}>
+                        <div className="adm-bar" style={{ minWidth: 70 }}>
+                          <span style={{ width: `${Math.round((r.total / max) * 100)}%` }} />
+                        </div>
+                      </td>
+                      <td>{pct(total ? r.total / total : 0)}</td>
+                      <td>{pct(r.total ? r.ready / r.total : 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="adm-note adm-muted">
+              Counts completed starts. The open-but-never-generated half of the funnel is
+              <code> tryon_enter</code> vs <code>tryon_start</code> in GA, keyed on the same
+              <code> from</code>.
+            </p>
+          </>
+        );
+      })()}
+
       {data.stylist && (() => {
         const S = data.stylist;
         return (

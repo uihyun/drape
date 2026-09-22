@@ -58,6 +58,7 @@ async function startTryOn({
   // Outfit-reference: re-create a public outfit's whole look on the user.
   // The server reads that outfit's photo as the garment input — no itemIds.
   outfitRefId = null,
+  entryFrom = 'direct',
 }) {
   const user = auth.currentUser;
   if (!user) throw new Error('not_signed_in');
@@ -74,6 +75,10 @@ async function startTryOn({
   // Activation event — which try-on mode the user started.
   logEvent(analytics, 'tryon_start', {
     mode: outfitRefId ? 'outfit_ref' : customPhotoBlob ? 'custom_photo' : 'items',
+    // Same key as tryon_enter, so the two events join into a per-door
+    // conversion rate instead of two unrelated totals.
+    from: entryFrom,
+    items: Array.isArray(itemIds) ? itemIds.length : 0,
   });
 
   const callable = httpsCallable(functions, 'virtualTryOn');
@@ -87,6 +92,7 @@ async function startTryOn({
     customPhotoPath,
     removeCustomBg,
     outfitRefId,
+    entryFrom,
   });
   return res.data; // { generationId }
 }

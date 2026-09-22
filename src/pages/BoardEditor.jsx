@@ -83,7 +83,7 @@ export function BoardEditor({ user, onSignIn }) {
 
   const goTryOn = () => {
     if (tryonSelected.size === 0) return;
-    navigate(`/tryon?items=${Array.from(tryonSelected).join(',')}`);
+    navigate(`/tryon?items=${Array.from(tryonSelected).join(',')}&from=board`);
   };
 
   useEffect(() => {
@@ -655,7 +655,7 @@ function StickerMenu({ sticker, item, onClose, onRemove, t }) {
           <span className="create-sheet-icon"><Eye size={18} strokeWidth={1.6} /></span>
           <span className="create-sheet-label">{t('viewItem')}</span>
         </Link>
-        <Link to={`/tryon?items=${item.id}`} className="create-sheet-row" onClick={onClose}>
+        <Link to={`/tryon?items=${item.id}&from=board_item`} className="create-sheet-row" onClick={onClose}>
           <span className="create-sheet-icon"><Sparkles size={18} strokeWidth={1.6} /></span>
           <span className="create-sheet-label">{t('tryThisOn')}</span>
         </Link>

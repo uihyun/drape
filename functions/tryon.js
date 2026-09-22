@@ -412,6 +412,14 @@ comparison, before/after split, or multiple poses. One image, one frame,
 one person, no panels.`;
 }
 
+// The doors into the try-on builder. Stamped on every generation so the admin
+// panel can rank them; anything not on this list lands as 'other'.
+const ENTRY_PATHS = new Set([
+  'direct', 'nav', 'create_sheet', 'item', 'item_borrowed',
+  'outfit_look', 'outfit_items', 'board', 'board_item',
+  'history', 'history_empty', 'stylist',
+]);
+
 exports.virtualTryOn = onCall(
   { secrets: [geminiApiKey], cors: true, timeoutSeconds: 180, memory: '2GiB' },
   async (request) => {
@@ -439,6 +447,10 @@ exports.virtualTryOn = onCall(
       // photo (not isolated crops), so no itemIds are needed. The server
       // resolves the photo from the outfit doc and only allows public ones.
       outfitRefId = null,
+      // Which surface the user came from (item page, an outfit, the stylist,
+      // the nav…). Client-supplied and untrusted, so it is clamped to a known
+      // list — it only ever feeds admin counts, never a decision.
+      entryFrom = 'direct',
     } = request.data || {};
     const isOutfitRef = !!outfitRefId;
     if (!isOutfitRef && (!Array.isArray(itemIds) || itemIds.length === 0)) {
@@ -494,6 +506,7 @@ exports.virtualTryOn = onCall(
       userId: uid,
       itemIds: Array.isArray(itemIds) ? itemIds : [],
       outfitRefId: outfitRefId || null,
+      entryFrom: ENTRY_PATHS.has(entryFrom) ? entryFrom : 'other',
       title: (title || '').slice(0, 80),
       identityRefCount: referenceCount,
       customPhotoPath: customPhotoPath || null,

@@ -386,7 +386,7 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
  *  side — so the client never has to fetch the photo cross-origin (the
  *  firebasestorage download endpoint doesn't return CORS headers, which was
  *  breaking the blob-fetch path). */
-async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = false }) {
+async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = false, source = null }) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   if (!photoPath || !photoUrl) throw new Error('NO_SOURCE_PHOTO');
@@ -394,6 +394,10 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
     kind: owned ? 'owned' : 'wishlist',
+    // Where this copy came from, when it was lifted off someone else's item
+    // rather than out of a photo. The try-on grid badges it so a borrowed
+    // piece is never mistaken for something the user owns.
+    ...(source ? { sourceItemId: source.itemId, sourceUserId: source.userId } : {}),
     name: detected.name || detected.description || 'detected',
     notes: '',
     // Reuse the existing photo as the original — processItem crops a clean
@@ -425,7 +429,7 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
     console.warn('processItem (existing photo) failed:', err?.message);
     markFailedIfStuck(id);
   });
-  logEvent(analytics, 'item_add', { source: 'existing_photo' });
+  logEvent(analytics, 'item_add', { source: source ? 'borrowed_item' : 'existing_photo' });
   return { id };
 }
 

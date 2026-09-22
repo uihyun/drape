@@ -639,7 +639,7 @@ export function OutfitDetail({ user, onSignIn }) {
              (outfit-ref mode) — its itemIds belong to the owner's closet and
              can't be used directly. Available whenever the outfit has a photo. */
           outfitCardPhoto(outfit) ? (
-            <Link to={`/tryon?outfitRef=${outfit.id}`} className="outfit-action-primary">
+            <Link to={`/tryon?outfitRef=${outfit.id}&from=outfit_look`} className="outfit-action-primary">
               <Sparkles size={17} strokeWidth={1.7} /> {t('tryThisOn')}
             </Link>
           ) : null
@@ -677,7 +677,7 @@ export function OutfitDetail({ user, onSignIn }) {
             </button>
           )}
           {isOwner && (outfit.itemIds || []).length > 0 && (
-            <Link to={`/tryon?items=${outfit.itemIds.join(',')}`} className="outfit-action-icon" aria-label={t('tryThisOn')} title={t('tryThisOn')}>
+            <Link to={`/tryon?items=${outfit.itemIds.join(',')}&from=outfit_items`} className="outfit-action-icon" aria-label={t('tryThisOn')} title={t('tryThisOn')}>
               <Sparkles size={18} strokeWidth={1.7} />
             </Link>
           )}

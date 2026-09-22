@@ -21,7 +21,7 @@ export function Header({ user, onSignIn, onSignOut }) {
           <Link to="/closet">{t('navCloset')}</Link>
           <Link to="/outfits">{t('navOutfits')}</Link>
           <Link to="/calendar">{t('navCalendar')}</Link>
-          <Link to="/tryon">{t('navTryOn')}</Link>
+          <Link to="/tryon?from=nav">{t('navTryOn')}</Link>
           <Link to="/feed">{t('navFeed')}</Link>
         </nav>
 

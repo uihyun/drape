@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ChevronLeft, ChevronRight, Sparkles, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Loader2, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db, analytics, logEvent } from '../firebase.js';
 import { ItemService } from '../services/item-service.js';
 import { dropFromFeedCaches } from '../services/uiCache.js';
@@ -47,6 +47,8 @@ export function ItemDetail({ user, onSignIn }) {
   // Who is selling. A price with no name behind it is not a thing anyone
   // messages about, and this page is the only place a buyer ever lands.
   const [seller, setSeller] = useState(null);
+  // Bringing someone else's piece into my closet so I can try it on.
+  const [borrowing, setBorrowing] = useState(false);
   const [listingOpen, setListingOpen] = useState(false);
   const [listingSaving, setListingSaving] = useState(false);
   // Phase-2 translate toggle for the auto-generated item name (description
@@ -378,17 +380,59 @@ export function ItemDetail({ user, onSignIn }) {
             was owner-only — so the one screen a buyer lands on from an outfit
             or from Trends couldn't do it, while the outfit page could. Anyone
             signed in can try any item they can see. */}
-        <Link
-          to={`/tryon?items=${item.id}`}
-          className="item-rail-btn"
-          aria-label={t('tryThisOn')}
-          onClick={() => logEvent(analytics, 'item_tryon_open', {
-            owner: isOwner ? 'self' : 'other',
-            for_sale: !!(item.forSale && item.priceAsking > 0),
-          })}
-        >
-          <Sparkles size={20} strokeWidth={1.6} />
-        </Link>
+        {/* Try-on runs off MY closet — the grid is subscribeMyCloset — so
+            handing it someone else's id produced a screen with nothing
+            selected. Copy the piece into my wishlist first (the same
+            createFromExistingPhoto path the analyze flow uses for a garment
+            spotted on someone else), then try THAT on. It also leaves a
+            record: a piece you wanted enough to try is worth finding again. */}
+        {isOwner ? (
+          <Link
+            to={`/tryon?items=${item.id}&from=item`}
+            className="item-rail-btn"
+            aria-label={t('tryThisOn')}
+            onClick={() => logEvent(analytics, 'item_tryon_open', { owner: 'self', for_sale: !!(item.forSale && item.priceAsking > 0) })}
+          >
+            <Sparkles size={20} strokeWidth={1.6} />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="item-rail-btn"
+            aria-label={t('tryThisOn')}
+            disabled={borrowing}
+            onClick={async () => {
+              if (!user || user.isAnonymous) { onSignIn?.(); return; }
+              setBorrowing(true);
+              try {
+                const { id: newId } = await ItemService.createFromExistingPhoto({
+                  photoUrl: item.croppedUrl || item.originalUrl,
+                  photoPath: item.croppedPath || item.originalPath,
+                  detected: {
+                    name: item.name || '',
+                    description: item.tags?.description || '',
+                    category: item.tags?.category || null,
+                    subcategory: item.tags?.subcategory || null,
+                    colors: item.tags?.colors || [],
+                    brand: item.tags?.brand || null,
+                  },
+                  owned: false,
+                  source: { itemId: item.id, userId: item.userId },
+                });
+                logEvent(analytics, 'item_tryon_open', {
+                  owner: 'other', borrowed: true,
+                  for_sale: !!(item.forSale && item.priceAsking > 0),
+                });
+                navigate(`/tryon?items=${newId}&borrowed=1&from=item_borrowed`);
+              } catch (e) {
+                console.warn('borrow for try-on failed', e?.message);
+                setBorrowing(false);
+              }
+            }}
+          >
+            {borrowing ? <Loader2 size={20} className="spin" /> : <Sparkles size={20} strokeWidth={1.6} />}
+          </button>
+        )}
         <ShareButton
           className="item-rail-btn item-rail-share"
           title={item.name || t('untitledItem')}

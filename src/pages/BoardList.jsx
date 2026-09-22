@@ -6,7 +6,7 @@ import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { boardRatioWeight } from '../data/boardBackgrounds.js';
 import {
-  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
+  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { usePinchColumns } from '../hooks/usePinchColumns.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
@@ -31,6 +31,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   const fkey = `boards:${user?.uid || 'anon'}`;
   const [filters, setFilters] = useState(() => loadFilters(fkey, emptyLookFilters()));
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sort, setSort] = useState('newest');
   useEffect(() => { saveFilters(fkey, filters); }, [fkey, filters]);
   const [items, setItems] = useState([]);
   const itemsById = useMemo(
@@ -107,6 +108,7 @@ export function BoardList({ user, onSignIn, embedded = false }) {
   if (list && tab === 'mine' && filterCount > 0) {
     list = list.filter(boardMatchesFilters);
   }
+  if (list) list = list.slice().sort(byTime(sort, b => b.createdAt?.toMillis?.() ?? 0));
 
   // JS masonry: place each board into the currently-shortest column. CSS
   // `columns` balancing is engine-dependent (WebKit ≠ Blink), so it laid boards
@@ -225,6 +227,9 @@ export function BoardList({ user, onSignIn, embedded = false }) {
 
       {sheetOpen && (
         <LookFilterSheet
+          sortValue={sort}
+          onSortChange={setSort}
+          sortOptions={TIME_SORT}
           filters={filters}
           onToggle={toggleFilter}
           onClear={() => setFilters(emptyLookFilters())}

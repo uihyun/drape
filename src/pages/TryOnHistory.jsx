@@ -5,7 +5,7 @@ import { GenerationService } from '../services/generation-service.js';
 import { ItemService } from '../services/item-service.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import {
-  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches,
+  LookFilterSheet, emptyLookFilters, countLookFilters, lookMatches, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { effectiveTryonStatus } from '../utils/tryonStatus.js';
@@ -16,6 +16,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
   const [gens, setGens] = useState(null);
   const [closet, setCloset] = useState({});
   const [filters, setFilters] = useState(emptyLookFilters());
+  const [sort, setSort] = useState('newest');
   const [sheetOpen, setSheetOpen] = useState(false);
   const filterCount = countLookFilters(filters);
 
@@ -64,8 +65,10 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
     if (!gens) return null;
     let list = gens;
     if (filterCount > 0) list = list.filter(g => lookMatches(g, filters, closet));
-    return list;
-  }, [gens, closet, filters, filterCount]);
+    // A try-on has no age beyond when it was made, so recency is the only
+    // ordering that means anything here.
+    return [...list].sort(byTime(sort, g => g.createdAt?.toMillis?.() ?? 0));
+  }, [gens, closet, filters, filterCount, sort]);
 
   if (!user || user.isAnonymous) {
     return (
@@ -84,7 +87,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       {!embedded && (
         <div className="closet-header">
           <h1 className="page-h1" style={{ margin: 0 }}>{t('tryOnHistory')}</h1>
-          <Link to="/tryon" className="btn btn-primary">
+          <Link to="/tryon?from=history" className="btn btn-primary">
             <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
           </Link>
         </div>
@@ -109,7 +112,7 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
       ) : gens.length === 0 ? (
         <div className="empty-state empty-state-card">
           <p>{t('tryOnHistoryEmpty')}</p>
-          <Link to="/tryon" className="btn btn-primary">
+          <Link to="/tryon?from=history_empty" className="btn btn-primary">
             <Sparkles size={14} strokeWidth={1.8} /> {t('newTryOn')}
           </Link>
         </div>
@@ -182,6 +185,9 @@ export function TryOnHistory({ user, onSignIn, embedded = false }) {
 
       {sheetOpen && (
         <LookFilterSheet
+          sortValue={sort}
+          onSortChange={setSort}
+          sortOptions={TIME_SORT}
           filters={filters}
           onToggle={toggleFilter}
           onClear={() => setFilters(emptyLookFilters())}

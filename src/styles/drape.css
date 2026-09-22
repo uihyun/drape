@@ -7152,3 +7152,38 @@ input:disabled, textarea:disabled, select:disabled {
 }
 
 .outfit-verdict-note { margin: 0.5rem 0 0; font-size: 0.75rem; color: var(--text-muted); }
+
+/* Try-on picker: where a piece came from. Owned items carry no badge — the
+   mark is only for the two that aren't in the user's wardrobe (a wishlist
+   save, or a piece borrowed off someone else's item page to try on). */
+.item-card-origin {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.4rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(14, 14, 16, 0.62);
+  color: #FAFAFA;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* "We put this in your wishlist" — shown once after borrowing someone else's
+   piece to try on. Tap dismisses; it is a receipt, not a decision. */
+.tryon-borrowed-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  margin-bottom: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2, var(--surface));
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}

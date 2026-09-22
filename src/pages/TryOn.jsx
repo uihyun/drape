@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Sparkles, Wand2, Upload, X, SlidersHorizontal } from 'lucide-react';
+import { Check, Sparkles, Wand2, Upload, X, SlidersHorizontal, Bookmark, UserRound } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { IdentityService } from '../services/identity-service.js';
 import { GenerationService } from '../services/generation-service.js';
@@ -9,7 +9,7 @@ import { CameraService } from '../services/camera.js';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { AlertModal } from '../components/AlertModal.jsx';
 import {
-  LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters,
+  LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
@@ -97,6 +97,22 @@ export function TryOn({ user, onSignIn }) {
   // `?outfitRef=<id>` — we load that outfit to show its photo as the garment;
   // the closet item grid is hidden and submit sends outfitRefId instead.
   const outfitRefId = search.get('outfitRef');
+  // Arrived by tapping try-on on someone else's item: the piece was copied
+  // into this user's wishlist on the way here. Say so once — silently gaining
+  // a closet item is the kind of thing people notice later and distrust.
+  const [borrowedNote, setBorrowedNote] = useState(() => search.get('borrowed') === '1');
+  // Which door the user came through. Every link into this page tags itself
+  // (`?from=`), so `tryon_enter` → `tryon_start` is a funnel per entry path
+  // rather than one undifferentiated "someone opened try-on". Untagged means
+  // a typed URL, a back-navigation, or an entry point that predates this.
+  const entryFrom = search.get('from') || 'direct';
+  useEffect(() => {
+    logEvent(analytics, 'tryon_enter', {
+      from: entryFrom,
+      mode: outfitRefId ? 'outfit_ref' : (search.get('items') ? 'items' : 'blank'),
+      preselected: outfitRefId ? 1 : (search.get('items') || '').split(',').filter(Boolean).length,
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [outfitRef, setOutfitRef] = useState(null);
   // Optional scene description sent to the model — empty = default
   // catalog backdrop. Only meaningful in identity-refs mode (custom-
@@ -108,6 +124,7 @@ export function TryOn({ user, onSignIn }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(emptyLookFilters());
+  const [sort, setSort] = useState('newest');
   const [sheetOpen, setSheetOpen] = useState(false);
   const filterCount = countLookFilters(filters);
 
@@ -120,8 +137,9 @@ export function TryOn({ user, onSignIn }) {
   };
 
   const visibleItems = useMemo(
-    () => (filterCount === 0 ? items : items.filter(it => itemMatchesFilters(it, filters))),
-    [items, filters, filterCount],
+    () => (filterCount === 0 ? items : items.filter(it => itemMatchesFilters(it, filters)))
+      .slice().sort(byTime(sort, it => it.createdAt?.toMillis?.() ?? 0)),
+    [items, filters, filterCount, sort],
   );
 
   useEffect(() => {
@@ -231,6 +249,7 @@ export function TryOn({ user, onSignIn }) {
         backgroundDesc: backgroundDesc.trim(),
         customPhotoBlob: customBlob,
         removeCustomBg: customBlob ? removeCustomBg : false,
+        entryFrom,
       });
       // Race the request against a short timeout — long enough to catch
       // synchronous validation errors, short enough that we don't make
@@ -259,6 +278,15 @@ export function TryOn({ user, onSignIn }) {
 
   return (
     <div className="page tryon-entry">
+      {borrowedNote && (
+        <button
+          type="button"
+          className="tryon-borrowed-note"
+          onClick={() => setBorrowedNote(false)}
+        >
+          <Bookmark size={13} strokeWidth={1.9} /> {t('borrowedToWishlist')}
+        </button>
+      )}
       <div className="tryon-entry-head">
         {fitsChip('tryon-fits-top')}
         <h1 className="page-h1">{t('tryOnPick')}</h1>
@@ -396,6 +424,20 @@ export function TryOn({ user, onSignIn }) {
                           <Check size={14} strokeWidth={2.4} />
                         </span>
                       )}
+                      {/* Where the piece came from. The grid mixes three
+                          things now — owned, wishlist, and pieces lifted off
+                          someone else's item — and they look identical once
+                          cropped. Owned stays unmarked; it is the default. */}
+                      {it.kind === 'wishlist' && (
+                        <span
+                          className="item-card-origin"
+                          title={it.sourceItemId ? t('originBorrowed') : t('originWishlist')}
+                        >
+                          {it.sourceItemId
+                            ? <UserRound size={12} strokeWidth={1.9} />
+                            : <Bookmark size={12} strokeWidth={1.9} />}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -407,6 +449,9 @@ export function TryOn({ user, onSignIn }) {
 
       {sheetOpen && (
         <LookFilterSheet
+          sortValue={sort}
+          onSortChange={setSort}
+          sortOptions={TIME_SORT}
           filters={filters}
           onToggle={toggleFilter}
           onClear={() => setFilters(emptyLookFilters())}

@@ -10,7 +10,7 @@ import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { AlertModal } from '../components/AlertModal.jsx';
 import { matchCloset } from '../utils/itemMatch.js';
 import {
-  LookFilterSheet, emptyLookFilters, countLookFilters,
+  LookFilterSheet, emptyLookFilters, countLookFilters, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
@@ -30,6 +30,7 @@ export function OutfitLink({ user, onSignIn }) {
   const [selected, setSelected] = useState(new Set());
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sort, setSort] = useState('newest');
   const [saving, setSaving] = useState(false);
   const [seeded, setSeeded] = useState(false);
   const filterCount = countLookFilters(filters);
@@ -207,8 +208,9 @@ export function OutfitLink({ user, onSignIn }) {
   // Closet grid filtered by tag chips only (no text search — same as the
   // closet itself; the closed tag vocab sidesteps cross-language search).
   const visibleCloset = useMemo(() => {
-    if (filterCount === 0) return closet;
-    return closet.filter(it => {
+    const byNewest = (list) => list.slice().sort(byTime(sort, it => it.createdAt?.toMillis?.() ?? 0));
+    if (filterCount === 0) return byNewest(closet);
+    return byNewest(closet.filter(it => {
       const tg = it.tags || {};
       for (const [dim, sel] of Object.entries(filters)) {
         if (!sel.length) continue;
@@ -218,8 +220,8 @@ export function OutfitLink({ user, onSignIn }) {
         if (!ok) return false;
       }
       return true;
-    });
-  }, [closet, filters, filterCount]);
+    }));
+  }, [closet, filters, filterCount, sort]);
 
   // We were PUSHED here from the outfit detail (its live subscription already
   // reflects the new links), so pop back to it instead of pushing another
@@ -439,6 +441,9 @@ export function OutfitLink({ user, onSignIn }) {
 
       {sheetOpen && (
         <LookFilterSheet
+          sortValue={sort}
+          onSortChange={setSort}
+          sortOptions={TIME_SORT}
           filters={filters}
           onToggle={toggleFilter}
           onClear={() => setFilters(emptyLookFilters())}

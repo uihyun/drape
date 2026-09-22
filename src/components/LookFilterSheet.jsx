@@ -117,10 +117,30 @@ export function lookMatches(look, filters, closetById = {}) {
 // `extras` (optional) lets a surface add non-taxonomy chip sections after
 // the shared dims — e.g. closet's For-sale + Owned/Wishlist. Each:
 //   { key, labelKey, options: [{ value, labelKey }] }
+// Shared time-only sort. Most lists (try-on history, outfits, boards) have no
+// meaningful order beyond recency, and "newest" there means most recently MADE
+// — not a newer garment, which is what it means in the closet.
+export const TIME_SORT = [
+  { value: 'newest', labelKey: 'sortNewest' },
+  { value: 'oldest', labelKey: 'sortOldest' },
+];
+
+// `at` pulls each doc's own timestamp, so callers point it at createdAt, date
+// or updatedAt as their list requires.
+export function byTime(sort, at) {
+  return (a, b) => {
+    const av = at(a) || 0;
+    const bv = at(b) || 0;
+    return sort === 'oldest' ? av - bv : bv - av;
+  };
+}
+
 export function LookFilterSheet({
   filters, onToggle, onClear, onClose, count, resultCount, extras = [],
-  // Optional single-select sort section (Closet uses it; try-on history
-  // doesn't). sortOptions: [{ value, labelKey }].
+  // Optional single-select sort section. The sheet is titled "Sort & filter"
+  // everywhere, so a screen that renders it without sortOptions promises
+  // something it doesn't have — five of six did exactly that.
+  // sortOptions: [{ value, labelKey }].
   sortValue, onSortChange, sortOptions = [],
 }) {
   const { t } = useLocale();

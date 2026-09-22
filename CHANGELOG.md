@@ -13,6 +13,37 @@ Conventions:
 
 ## Unreleased — server only
 
+**Try-on works on a piece you don't own.** The rail button on someone else's
+item page pointed at `/tryon?items=<their id>`, but the builder's grid is
+`subscribeMyCloset` — the id was never in it, so the user landed on a try-on
+screen with nothing selected and no explanation. Tapping it now copies the
+piece into their wishlist first (`createFromExistingPhoto`, the same path the
+analyze flow uses for a garment spotted on someone else) and tries *that* on. A
+one-line dismissible receipt says the piece was saved: quietly gaining a closet
+item is the sort of thing people notice later and distrust.
+
+The borrowed copy records where it came from (`sourceItemId` / `sourceUserId`),
+because the builder grid now mixes three things that look identical once
+cropped. Owned pieces stay unmarked — a small corner badge distinguishes a
+wishlist save from a piece borrowed off someone else's item.
+
+**"Sort & filter" now sorts on all six surfaces, not one.** The sheet was
+renamed everywhere but only the closet passed `sortOptions`; the other five
+promised a control that wasn't rendered. Try-on history, outfits, boards,
+outfit-linking and the try-on picker now pass a shared newest/oldest option
+built from one exported `TIME_SORT` + `byTime` pair, so the promise and the
+control can't drift apart again. Outfits sort on the look's own date where it
+has one, falling back to creation time.
+
+**Try-on entry-path tracking.** Every link into the builder tags itself
+(`?from=item`, `from=stylist`, `from=outfit_look`, …). The page logs
+`tryon_enter` on mount and `tryon_start` carries the same `from` key, so the
+open-but-never-generated half of the funnel is measurable per door. The path is
+also stamped on the generation doc (clamped server-side to a known list) and
+ranked in a new admin panel — GA answers "who bounced", the doc answers "which
+door actually produces try-ons".
+
+
 **Sharing was broken on 99% of items for four months.** `ShareButton` passed
 the category label as the Web Share `text` alongside the `url`, and iOS's share
 sheet plus several Web Share targets flatten those two into one string with no

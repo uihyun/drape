@@ -107,7 +107,10 @@ async function collectAll(days = ALL_DAYS) {
     if (bucketOf(uid) === 'real' && (prof[uid].createdAt || '') >= cutDay) bump(trends.signups, prof[uid].createdAt);
   });
 
-  const tryon = { ready: 0, failed: 0, pending: 0, total: 0, variantReq: 0, variantRet: 0 };
+  // `entry` = which door the try-on was started from (stamped by tryon.js).
+  // Real accounts only: seeded generations carry no entry path and would bury
+  // the real signal under 'other'.
+  const tryon = { ready: 0, failed: 0, pending: 0, total: 0, variantReq: 0, variantRet: 0, entry: {} };
   // Selling lives inside outfits now, so "how many listings" says almost
   // nothing on its own — what matters is whether a listing is ever REACHABLE
   // (linked to a public outfit) and whether anyone talks to the seller.
@@ -166,7 +169,13 @@ async function collectAll(days = ALL_DAYS) {
     else tryon.pending++;
     tryon.variantReq += Number(x.variantsRequested) || 0;
     tryon.variantRet += Number(x.variantsReturned) || 0;
-    if (bucketOf(uid) === 'real') bump(trends.tryons, dayKey(x.createdAt));
+    if (bucketOf(uid) === 'real') {
+      bump(trends.tryons, dayKey(x.createdAt));
+      const from = x.entryFrom || 'unknown';
+      const e = (tryon.entry[from] ||= { total: 0, ready: 0 });
+      e.total++;
+      if (x.status === 'ready') e.ready++;
+    }
     (Array.isArray(x.itemIds) ? x.itemIds : []).forEach((iid) => {
       if (iid) topCount[iid] = (topCount[iid] || 0) + 1;
     });
@@ -346,6 +355,9 @@ async function computeOverview(days = ALL_DAYS) {
     totals,
     tryon: {
       ...tryon,
+      entry: Object.entries(tryon.entry)
+        .map(([from, e]) => ({ from, ...e }))
+        .sort((a, b) => b.total - a.total),
       successRate: tryon.total ? tryon.ready / tryon.total : 0,
       avgVariantYield: tryon.variantReq ? tryon.variantRet / tryon.variantReq : 0,
     },
