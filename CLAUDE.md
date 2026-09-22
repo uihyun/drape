@@ -88,6 +88,16 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   Its 8.x line peers on `firebase@^12` and the web SDK is on 11. The 7.5.0 peer
   is `@capacitor/core: >=7.0.0`, so it runs on 8 unchanged.
   `@capacitor-community/apple-sign-in` has no 8.x at all, same open peer.
+- **Share passes EITHER `url` OR a self-contained `text`, never both.**
+  `shareLink` drops `text` whenever a `url` is present, because iOS's share
+  sheet and several Web Share targets flatten the two into one string with no
+  separator. That welded the category label onto every shared item link
+  (".../i/dt_…_hgykmvAccessory" — a dead link) on 2,365 of 2,387 items from
+  2026-05-23 to 2026-09-21, and appended the whole notes paragraph on outfits.
+  So: a LINK share passes `url` and puts anything descriptive in `title`; a
+  MESSAGE share (invites, where the code must survive and nothing reads
+  `?invite=` yet) writes the link into `text` and omits `url`. Same trap on
+  `shareOrDownloadImage`, whose `url` is a file:// URI.
 - **Store assets live in `resources/app-store/`, not on the Desktop.** Captures,
   the recovered shipped decks, the current poster decks, the look photos the
   hero slides are cut from, and the per-locale listing copy. The renderer is

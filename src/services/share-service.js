@@ -42,11 +42,25 @@ function downloadBlobAsFile(blob, filename) {
 
 // Share a link (no image attached). Returns true if a share UI was actually
 // presented; false if we fell back to copying to the clipboard.
+// Two shapes, and picking the wrong one is how a share breaks:
+//
+//   LINK share    → pass `url`. `text` is dropped.
+//   MESSAGE share → pass everything inside `text`, including the link. No `url`.
+//
+// Why: iOS's share sheet and several Web Share targets flatten `text` and `url`
+// into one string with NO separator. A shared item came out as
+// ".../i/dt_1780436782555_hgykmvAccessory" — the category label welded to the
+// id, a dead link, on 2,365 of 2,387 items for four months. Outfits appended
+// their whole notes paragraph.
+//
+// So anything that must survive (an invite code) goes in `text` with the link
+// written into it, and anything decorative is simply not worth sending.
 export async function shareLink({ title, text, url }) {
+  const body = url ? undefined : text;
   if (isNativeApp()) {
     const { Share } = await import('@capacitor/share');
     try {
-      await Share.share({ title, text, url, dialogTitle: title || 'Share' });
+      await Share.share({ title, text: body, url, dialogTitle: title || 'Share' });
       return true;
     } catch (err) {
       if (err?.message?.toLowerCase?.().includes('canceled')) return false;
@@ -55,7 +69,7 @@ export async function shareLink({ title, text, url }) {
   }
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
-      await navigator.share({ title, text, url });
+      await navigator.share({ title, text: body, url });
       return true;
     } catch (err) {
       if (err.name === 'AbortError') return false;
@@ -73,6 +87,9 @@ export async function shareLink({ title, text, url }) {
 // Save / share an image. On native we write to the cache dir then invoke the
 // native share sheet (iOS users pick "Save Image" to put it in Photos). On web
 // we trigger the standard download anchor.
+// Same rule as shareLink: on native the `url` here is a file:// URI for the
+// attachment, so a `text` alongside it risks the same welding — and a category
+// label next to a photo of the item says nothing anyway.
 export async function shareOrDownloadImage({ blob, filename, title, text }) {
   if (isNativeApp()) {
     const [{ Filesystem, Directory }, { Share }] = await Promise.all([
@@ -88,7 +105,7 @@ export async function shareOrDownloadImage({ blob, filename, title, text }) {
     try {
       await Share.share({
         title,
-        text,
+        text: undefined,
         url: writeRes.uri,
         dialogTitle: title || 'Share image',
       });

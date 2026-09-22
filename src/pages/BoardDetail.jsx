@@ -179,7 +179,6 @@ export function BoardDetail({ user, onSignIn }) {
           <ShareButton
             className="outfit-action-icon"
             title={board.name || t('untitledBoard')}
-            text=""
             url={`${publicOrigin()}/boards/${board.id}`}
             label=""
           />

@@ -13,6 +13,35 @@ Conventions:
 
 ## Unreleased — server only
 
+**Sharing was broken on 99% of items for four months.** `ShareButton` passed
+the category label as the Web Share `text` alongside the `url`, and iOS's share
+sheet plus several Web Share targets flatten those two into one string with no
+separator. A shared sneaker came out as
+`https://drape.nyc/i/dt_1780436780749_23o45nFootwear` — a dead link, because
+`Footwear` was welded to the id. 2,365 of 2,387 items (every one with a
+category) and 704 of 713 outfits, which appended their entire notes paragraph.
+Shipped 2026-05-23, found by the owner 2026-09-21.
+
+The payload was wrong even before the platform mangled it: `text` is a message
+body, and the category is visible the moment the link opens. Fixed in
+`share-service.js` so every call site is covered at once, present and future —
+`text` is dropped whenever there's a `url`, and the contract is written into the
+file: a LINK share passes `url` with anything descriptive in `title`; a MESSAGE
+share puts everything including the link into `text` and omits `url`.
+
+Two more instances the audit turned up. The **invite** share passed the invite
+code in `text` next to `brandOrigin()` — same welding, and the naive fix would
+have been worse than the bug: dropping `text` would have silently deleted the
+code from every invite, and nothing reads `?invite=` yet, so the recipient types
+it by hand. Invites are now message shares with the link inside the text. And
+`shareOrDownloadImage` passed the same useless category next to a `file://` URI
+for the attachment.
+
+Verified by intercepting `navigator.share` on production — payload is now
+`{title, url}` with no `text` — and by reading the compiled native path in the
+shipped chunk, which is byte-identical across web, `ios/App/App/public` and
+`android/app/src/main/assets/public`.
+
 **Admin sees the selling funnel and the quota pressure.** The overview had
 "listings" and nothing else about commerce — a count that says almost nothing
 once selling lives inside outfits rather than a storefront. Two new panels.

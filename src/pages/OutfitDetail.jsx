@@ -684,7 +684,6 @@ export function OutfitDetail({ user, onSignIn }) {
           <ShareButton
             className="outfit-action-icon"
             title={outfit.caption || t('untitledOutfit')}
-            text={outfit.notes || ''}
             url={`${publicOrigin()}/s/${outfit.id}`}
             label=""
           />

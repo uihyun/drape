@@ -67,8 +67,12 @@ export function TryOn({ user, onSignIn }) {
   // whole point of the nudge is to invite, not to hunt through Settings.
   const doInvite = async () => {
     const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
+    // MESSAGE share, not a link share: the invite CODE has to survive, and the
+    // recipient types it in by hand (nothing reads ?invite= yet). So the link
+    // goes inside the text and `url` is omitted — one field, nothing to weld.
+    const msg = `${t('inviteShareText')}${codeLine}\n${brandOrigin()}`;
     try {
-      await shareLink({ title: t('inviteShareTitle'), text: `${t('inviteShareText')}${codeLine}`, url: brandOrigin() });
+      await shareLink({ title: t('inviteShareTitle'), text: msg });
     } catch (err) { console.warn('invite share failed', err?.message); }
   };
   // The fits pill (tiny "invite for more" + ring + N/5), tappable → invite share.

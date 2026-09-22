@@ -326,7 +326,6 @@ export function ItemDetail({ user, onSignIn }) {
         blob,
         filename,
         title: item.name || t('untitledItem'),
-        text: item.tags?.category ? t(`taxonomy.categories.${item.tags.category}`) : '',
       });
     } catch (e) {
       console.warn('save failed', e?.message);
@@ -393,7 +392,6 @@ export function ItemDetail({ user, onSignIn }) {
         <ShareButton
           className="item-rail-btn item-rail-share"
           title={item.name || t('untitledItem')}
-          text={item.tags?.category ? t(`taxonomy.categories.${item.tags.category}`) : ''}
           url={`${publicOrigin()}/i/${item.id}`}
           label=""
         />

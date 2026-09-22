@@ -9,6 +9,11 @@ import { useLocale } from '../hooks/useLocale.jsx';
 // confirmation that anything happened.
 // Pass label="" explicitly for an icon-only button (the text span is
 // dropped); omit label to show the default "Share" text.
+//
+// Do NOT pass `text` alongside a `url`. shareLink drops it anyway — iOS and
+// several Web Share targets glue the two into one string with no separator,
+// which welded a category label onto every shared item link for four months.
+// `title` is where the descriptive bit goes.
 export function ShareButton({ title, text, url, className = '', label }) {
   const { t } = useLocale();
   const [copied, setCopied] = useState(false);
