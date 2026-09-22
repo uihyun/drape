@@ -4,6 +4,7 @@ import { auth, analytics, logEvent, setUserId, setUserProp, logScreen } from './
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
 import { PushService } from './services/push-service.js';
+import { InviteLink } from './services/invite-link.js';
 import { getHomeRoute, getHomePref, closetHasItems, noteStartedOnTrends } from './services/homePref.js';
 import { ProfileService } from './services/profile-service.js';
 import { useLocale, currentLang } from './hooks/useLocale.jsx';
@@ -81,6 +82,19 @@ const Support = page(() => import('./pages/Support.jsx'), 'Support');
 const Admin = page(() => import('./pages/Admin.jsx'), 'Admin');
 
 // OotdDetail removed — /ootd/:id now redirects to the unified /o/:id.
+// `/join/CODE` — the invite link. On native the OS opens the app here directly
+// (AASA /join/* + the Android intent-filter); on web it is a plain page load.
+// Either way the code goes into the stash and this component only decides where
+// to drop the person.
+function JoinRedirect({ isLoggedIn, authReady }) {
+  const { code } = useParams();
+  const stashed = useRef(false);
+  if (!stashed.current) { stashed.current = true; InviteLink.captureCode(code); }
+  if (!authReady) return <div className="loading"><div className="spinner" /></div>;
+  if (isLoggedIn) return <Navigate to="/settings?invite=1" replace />;
+  return <Navigate to="/landing" replace />;
+}
+
 function OotdRedirect() {
   const { outfitId } = useParams();
   return <Navigate to={`/o/${outfitId}`} replace />;
@@ -323,6 +337,19 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
     if (pending) { logEvent(analytics, 'notification_open', { route: pending }); navigate(pending, { replace: true }); }
   }, [authReady, navigate]);
 
+  // Cold start from an invite link. main.jsx stashed the code before React
+  // mounted; send the user to the field that applies it. Signed-in only —
+  // signed out, Settings is a wall with no invite row, so the stash just waits
+  // (it survives sign-up, which is the common case for an invite).
+  const invitePushed = useRef(false);
+  useEffect(() => {
+    if (!authReady || invitePushed.current) return;
+    if (!user || user.isAnonymous) return;
+    if (!InviteLink.getPending()) return;
+    invitePushed.current = true;
+    navigate('/settings?invite=1', { replace: true });
+  }, [authReady, user, navigate]);
+
   // Universal Link (iOS) / App Link (Android) deep link → route to the content
   // IN-APP. The OS opens the app for a tapped web.app content URL (associated-
   // domains / assetlinks); without this the app would just sit on home. Take the
@@ -335,6 +362,9 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
       const { App: CapApp } = await import('@capacitor/app');
       const handle = await CapApp.addListener('appUrlOpen', ({ url }) => {
         try {
+          // The app is already running, so main.jsx's boot capture is long
+          // done — an invite link arriving now would otherwise be dropped.
+          if (InviteLink.captureFromUrl(url)) { navigate('/settings?invite=1'); return; }
           const u = new URL(url);
           if (u.protocol === 'drape:') {
             // Custom scheme (drape://import?url=…) — the "path" parses as
@@ -426,6 +456,11 @@ function AppShell({ user, authReady, handleSignIn, handleSignOut }) {
           <Route path="/welcome" element={isLoggedIn ? <Navigate to="/profile" replace /> : <Welcome />} />
           {/* Public marketing page — the drape.nyc domain points here. */}
           <Route path="/landing" element={<Landing />} />
+          {/* Invite link target. Stash the code, then hand the person off:
+              signed in goes to the field that applies it, everyone else to the
+              landing page (the signup funnel — Settings is a wall with no
+              invite row, and the stash survives sign-up). */}
+          <Route path="/join/:code" element={<JoinRedirect isLoggedIn={isLoggedIn} authReady={authReady} />} />
           {/* QR bridge: phone scans → its store; desktop → landing (Get.jsx). */}
           <Route path="/get" element={<Get />} />
           <Route path="/profile" element={<Profile user={user} authReady={authReady} onSignIn={handleSignIn} />} />

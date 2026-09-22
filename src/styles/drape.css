@@ -7187,3 +7187,10 @@ input:disabled, textarea:disabled, select:disabled {
   color: var(--text-secondary);
   font-size: 0.8rem;
 }
+
+/* Invite code arrived in the link and was filled in for the user. The ring is
+   what makes "we already typed it, just press apply" readable at a glance. */
+.settings-invite-code-input.is-prefilled {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}

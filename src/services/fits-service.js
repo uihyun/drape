@@ -2,8 +2,24 @@
 // from users/{uid}; this service holds the write actions (invite redemption).
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
+import { brandOrigin } from './platform-service.js';
 
 export const FitsService = {
+  // The invite message, built in ONE place. Settings and the out-of-fits nudge
+  // both send it, and the two copies had already drifted apart by the time the
+  // link gained a code — the same per-call-site duplication that welded a
+  // category label onto every shared item link for four months.
+  //
+  // It is a MESSAGE share (see shareLink): the code must survive, so it goes in
+  // the text, and the link carries it as well. `/join/CODE` deep-links into the
+  // app onto the field that applies it; the typed code is the fallback for
+  // anyone who does not have the app yet.
+  inviteMessage(code, t) {
+    const codeLine = code ? `\n${t('inviteShareCode', { code })}` : '';
+    const link = code ? `${brandOrigin()}/join/${code}` : brandOrigin();
+    return `${t('inviteShareText')}${codeLine}\n${link}`;
+  },
+
   // Mint (if missing) + fetch the caller's own invite code.
   async getInviteCode() {
     const { data } = await httpsCallable(functions, 'getInviteCode')({});

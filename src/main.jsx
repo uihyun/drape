@@ -4,6 +4,11 @@ import App from './App.jsx'
 import { LocaleProvider } from './hooks/useLocale.jsx'
 import { AIService } from './services/ai-service.js'
 import { isNativeApp } from './services/platform-service.js'
+import { InviteLink } from './services/invite-link.js'
+
+// Invite deep link: stash `?invite=CODE` and scrub it from the URL before
+// React mounts, so no route ever sees the code and analytics never logs it.
+InviteLink.capture();
 
 // PWA service worker — web only. Inside the Capacitor native app the SW
 // caching layer is redundant and conflicts with the capacitor:// origin.

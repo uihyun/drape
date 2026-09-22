@@ -15,7 +15,7 @@ import { useLocale } from '../hooks/useLocale.jsx';
 import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 import { analytics, logEvent } from '../firebase.js';
 import { shareLink } from '../services/share-service.js';
-import { brandOrigin } from '../services/platform-service.js';
+import { FitsService } from '../services/fits-service.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -66,11 +66,7 @@ export function TryOn({ user, onSignIn }) {
   // Invite directly from here (opens the share sheet with the user's code) — the
   // whole point of the nudge is to invite, not to hunt through Settings.
   const doInvite = async () => {
-    const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
-    // MESSAGE share, not a link share: the invite CODE has to survive, and the
-    // recipient types it in by hand (nothing reads ?invite= yet). So the link
-    // goes inside the text and `url` is omitted — one field, nothing to weld.
-    const msg = `${t('inviteShareText')}${codeLine}\n${brandOrigin()}`;
+    const msg = FitsService.inviteMessage(fits.inviteCode, t);
     try {
       await shareLink({ title: t('inviteShareTitle'), text: msg });
     } catch (err) { console.warn('invite share failed', err?.message); }

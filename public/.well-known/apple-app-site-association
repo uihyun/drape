@@ -2,18 +2,41 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["WG75TG59NJ.com.uihyun.drape"],
+        "appIDs": [
+          "WG75TG59NJ.com.uihyun.drape"
+        ],
         "components": [
-          { "/": "/s/*", "comment": "shared outfit" },
-          { "/": "/o/*", "comment": "outfit detail" },
-          { "/": "/i/*", "comment": "item detail" },
-          { "/": "/u/*", "comment": "public profile" },
-          { "/": "/boards/*", "comment": "board detail" }
+          {
+            "/": "/s/*",
+            "comment": "shared outfit"
+          },
+          {
+            "/": "/o/*",
+            "comment": "outfit detail"
+          },
+          {
+            "/": "/i/*",
+            "comment": "item detail"
+          },
+          {
+            "/": "/u/*",
+            "comment": "public profile"
+          },
+          {
+            "/": "/boards/*",
+            "comment": "board detail"
+          },
+          {
+            "/": "/join/*",
+            "comment": "invite link. A path, not root+?invite=, because Android intent-filters cannot match on a query: root would open the app for every drape.nyc visit and existing users would never see the landing page."
+          }
         ]
       }
     ]
   },
   "webcredentials": {
-    "apps": ["WG75TG59NJ.com.uihyun.drape"]
+    "apps": [
+      "WG75TG59NJ.com.uihyun.drape"
+    ]
   }
 }

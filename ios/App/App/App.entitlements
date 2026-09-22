@@ -12,6 +12,9 @@
 	<array>
 		<string>applinks:drape-9e532.web.app</string>
 		<string>applinks:drape-9e532.firebaseapp.com</string>
+		<!-- Invite links (/join/CODE). The brand domain serves the same
+		     Firebase site, so the AASA is already published there. -->
+		<string>applinks:drape.nyc</string>
 	</array>
 </dict>
 </plist>

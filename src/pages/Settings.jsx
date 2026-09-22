@@ -4,8 +4,8 @@ import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2,
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
-import { brandOrigin } from '../services/platform-service.js';
 import { FitsService } from '../services/fits-service.js';
+import { InviteLink } from '../services/invite-link.js';
 import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
 import { AlertModal } from '../components/AlertModal.jsx';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
@@ -564,15 +564,27 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   // Fits: invite-to-earn + redeem-a-code live compactly under Account (the daily
   // balance itself is shown in the try-on UI, not here, to keep Settings short).
   const fits = useFits(user);
-  const [codeInput, setCodeInput] = useState('');
+  // Arrived from an invite link — the code is already in hand, so fill the
+  // field instead of making the person read it off a chat bubble.
+  const [codeInput, setCodeInput] = useState(() => InviteLink.getPending() || '');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemMsg, setRedeemMsg] = useState(null);
+  const codeRef = useRef(null);
+  const fromLink = !!InviteLink.getPending();
+  // The row is gated on `fits.loaded && !fits.redeemed`, so it does not exist
+  // on first paint — scrolling before it mounts scrolls to nothing.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (scrolled || !fromLink || !codeRef.current) return;
+    setScrolled(true);
+    codeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Focus without opening the keyboard over the field on mobile: the caret
+    // and the highlight are what say "this is the thing to press".
+    codeRef.current.focus({ preventScroll: true });
+  }, [fromLink, scrolled, fits.loaded, fits.redeemed]);
+
   const onInvite = async () => {
-    const codeLine = fits.inviteCode ? `\n${t('inviteShareCode', { code: fits.inviteCode })}` : '';
-    // MESSAGE share, not a link share: the invite CODE has to survive, and the
-    // recipient types it in by hand (nothing reads ?invite= yet). So the link
-    // goes inside the text and `url` is omitted — one field, nothing to weld.
-    const msg = `${t('inviteShareText')}${codeLine}\n${brandOrigin()}`;
+    const msg = FitsService.inviteMessage(fits.inviteCode, t);
     try {
       await shareLink({ title: t('inviteShareTitle'), text: msg });
     } catch (err) { console.warn('invite share failed', err?.message); }
@@ -586,7 +598,15 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
     try {
       await FitsService.redeemInvite(codeInput);
       setRedeemMsg(t('inviteRedeemed')); setCodeInput('');
-    } catch (err) { setRedeemMsg(REDEEM_MSG[err?.reason] || t('inviteInvalidCode')); }
+      // Redeemed once ever — keeping the stash would re-fill the field on the
+      // next visit to Settings and invite a second, doomed attempt.
+      InviteLink.clearPending();
+    } catch (err) {
+      // 'already_redeemed' and 'self_referral' are also terminal for this
+      // code; only a transient failure is worth keeping it around for.
+      if (err?.reason === 'already_redeemed' || err?.reason === 'self_referral') InviteLink.clearPending();
+      setRedeemMsg(REDEEM_MSG[err?.reason] || t('inviteInvalidCode'));
+    }
     finally { setRedeeming(false); }
   };
 
@@ -641,10 +661,14 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
 
       {fits.loaded && !fits.redeemed && (
         <div className="settings-row settings-row-inputrow">
-          <span className="settings-row-label">{t('inviteEnterCode')}</span>
+          <span className="settings-row-label">
+            {t('inviteEnterCode')}
+            {fromLink && <span className="settings-row-sub">{t('inviteFromLink')}</span>}
+          </span>
           <span className="settings-invite-redeem">
             <input
-              className="settings-invite-code-input"
+              ref={codeRef}
+              className={`settings-invite-code-input${fromLink ? ' is-prefilled' : ''}`}
               value={codeInput}
               onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
               placeholder={t('inviteCodeLabel')}

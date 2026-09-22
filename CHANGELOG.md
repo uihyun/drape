@@ -13,6 +13,39 @@ Conventions:
 
 ## Unreleased — server only
 
+**Invite links carry the code.** The invite share handed over a bare
+`drape.nyc` link plus a code in the message text, so the recipient had to read
+six characters off a chat bubble and retype them into Settings. The link is now
+`drape.nyc/join/CODE`: with the app installed the OS opens it (AASA `/join/*` +
+an Android intent-filter on the brand host, and `applinks:drape.nyc` added to
+the entitlements — the brand domain serves the same Firebase site, so the AASA
+was already published there), and the app lands on the Settings row with the
+code filled in, the field scrolled to centre and focused, ringed in accent.
+Without the app the same link is the landing page and the typed code still
+works.
+
+A path rather than archelier's root + `?ref=`: an Android intent-filter cannot
+match on a query, so root would hand *every* `drape.nyc` visit to the app and
+existing users would never see the landing page again. archelier had links
+already in the wild and no choice; drape's invite links carried no code at all,
+so the shape was still free.
+
+The code is stashed in `localStorage` rather than redeemed on sight — redemption
+is a once-ever server call and the person may not have an account yet, so it
+survives sign-up. Cleared on success and on the two terminal errors
+(`already_redeemed`, `self_referral`) but kept on a transient one. Capture runs
+at boot (`main.jsx`) *and* on `appUrlOpen`, because a link that arrives while
+the app is already running is past boot; `?invite=CODE` is still read as a
+fallback. New `invite_link_opened` event: the URL is scrubbed before analytics
+sees it, so without it there is no way to separate "nobody tapped the link" from
+"tapped it and never applied the code".
+
+Also: the invite message was built in two places (Settings and the out-of-fits
+nudge) and they had already drifted. Now one `FitsService.inviteMessage` — the
+same per-call-site duplication that welded a category label onto every shared
+item link for four months.
+
+
 **The landing page was still selling the feed.** drape.nyc's third step and the
 second hero phone both showed `/lp/feed.webp`, a June capture of a screen no one
 can reach — the feed has been behind `config/app.feedMode: 'trends'` since

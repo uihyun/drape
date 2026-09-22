@@ -30,6 +30,12 @@
                 <data android:scheme="https" android:host="drape-9e532.web.app" android:pathPrefix="/i/" />
                 <data android:scheme="https" android:host="drape-9e532.web.app" android:pathPrefix="/u/" />
                 <data android:scheme="https" android:host="drape-9e532.web.app" android:pathPrefix="/boards/" />
+                <!-- Invite links live on the brand domain (that is where the
+                     signup funnel is) and under a PATH, not root + ?invite=:
+                     an intent-filter cannot match a query, so root would hand
+                     every drape.nyc visit to the app and existing users would
+                     never reach the landing page again. -->
+                <data android:scheme="https" android:host="drape.nyc" android:pathPrefix="/join/" />
             </intent-filter>
             <!-- Share-to-drape (SPEC-1.6 §A): images and links/text from any
                  app's share sheet land in MainActivity.handleShare → /import. -->

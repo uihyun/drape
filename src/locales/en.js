@@ -38,6 +38,7 @@ export const en = {
   inviteFriends: 'Invite friends',
   inviteEarnFits: '+10 try-ons for both of you',
   inviteEnterCode: 'Enter invite code',
+  inviteFromLink: 'Filled in from your invite link',
   inviteCodeLabel: 'Invite code',
   inviteCodeApply: 'Apply',
   inviteYourCode: 'Your invite code',

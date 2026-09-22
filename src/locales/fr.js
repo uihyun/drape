@@ -42,6 +42,7 @@ export const fr = {
   inviteFriends: 'Inviter des amis',
   inviteEarnFits: '+10 essayages pour vous deux',
   inviteEnterCode: 'Saisir un code d’invitation',
+  inviteFromLink: "Rempli depuis votre lien d'invitation",
   inviteCodeLabel: 'Code d’invitation',
   inviteCodeApply: 'Appliquer',
   inviteYourCode: 'Votre code d’invitation',

@@ -39,6 +39,7 @@ export const ja = {
   inviteFriends: '友達を招待',
   inviteEarnFits: '二人とも +10試着',
   inviteEnterCode: '招待コードを入力',
+  inviteFromLink: '招待リンクから自動入力しました',
   inviteCodeLabel: '招待コード',
   inviteCodeApply: '適用',
   inviteYourCode: 'あなたの招待コード',
