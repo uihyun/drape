@@ -6358,6 +6358,13 @@ input[type="search"]::-webkit-search-decoration {
      to whatever vertical room is left and never overflow / get clipped on any
      screen. */
   height: 100%;
+  /* …but only up to about one phone's height. The hero is `flex: 1 1 auto`, so
+     on a tablet or an unfolded foldable it inherits an enormous amount of
+     leftover space; the two phones are pinned to `top: 0` and `bottom: 0` of
+     this box, so an 1100px box parks them at opposite ends of the screen with
+     a white canyon between. The cap is the phone cap (460px) over its 88%
+     height, plus room for the stagger. */
+  max-height: 540px;
   width: 100%;
   max-width: 440px;
   margin: 0 auto;

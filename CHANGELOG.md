@@ -13,6 +13,23 @@ Conventions:
 
 ## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — 22 Sep 2026
 
+**iPad and foldables get the real screen.** The iOS target was
+`TARGETED_DEVICE_FAMILY = "1"` — iPhone only — so on an iPad the app ran in
+compatibility mode: a phone-sized window letterboxed in black with a 2x blur
+button. It is `"1,2"` now, and the layout needed nothing, because the CSS
+already answers this: under 640px a phone gets the full bleed, past it `.main`
+settles into the same 540px centred column the web has always used. Android was
+already correct (resizeable, `screenSize|screenLayout` in `configChanges`) —
+verified on an emulator forced to 1066dp, not inferred from the manifest.
+
+The welcome screen was the one thing that broke at that width. `.lp-visual` took
+`height: 100%` of a `flex: 1 1 auto` hero, so on a tablet the box grew to over
+1000px while the two phone mockups stayed pinned to its `top: 0` and `bottom: 0`
+— they ended up at opposite ends of the screen with a white canyon between them.
+The comment directly above that rule already warned about exactly this. Capped at
+540px, which is one phone plus the stagger; phones are untouched because their
+hero never gets that tall.
+
 iOS build 18, Android versionCode 22. Both stores were on 2.1.1, so the store
 notes cover only this round. Most of what follows had already been live on web
 for days; the native build is what finally carries it to phones — which is also
