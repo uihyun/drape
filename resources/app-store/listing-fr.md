@@ -109,20 +109,20 @@ Mises à jour internes de la plateforme et quelques finitions.
 **What's New** (≤4000) — 2.2.0:
 
 ```
-• Demandez à un styliste si un look vous irait. L'essayage montre le rendu ; le verdict dit s'il vous ressemble, sur n'importe quel look croisé dans l'app.
-• Les pièces en vente affichent leur prix directement dans le look porté. Ouvrez la pièce et écrivez au vendeur.
-• Essayez n'importe quelle pièce que vous voyez, pas seulement les vôtres. Elle est enregistrée dans votre liste d'envies.
-• Les liens d'invitation remplissent le code pour vous : plus besoin de recopier six caractères.
-• Tri du plus récent au plus ancien sur tous les écrans avec filtre : looks, tableaux, essayages et votre dressing.
-• Corrigé : les liens partagés de pièces et de looks étaient cassés. Ils fonctionnent de nouveau.
+• Demandez à un styliste si un look vous irait, pas seulement s'il vous va.
+• Les pièces en vente affichent leur prix dans le look, et vous pouvez écrire au vendeur.
+• Essayez n'importe quelle pièce vue dans l'app, pas seulement les vôtres. Elle est enregistrée dans vos envies.
+• Les liens d'invitation remplissent le code pour vous.
+• Tri du plus récent au plus ancien sur tout écran avec filtre.
+• Corrigé : les liens partagés de pièces et de looks étaient cassés.
 ```
 
 **Nouveautés** (Play, ≤500) — 2.2.0:
 
 ```
-• Demandez à un styliste si un look que vous croisez vous irait.
-• Les pièces en vente affichent leur prix dans le look, et vous pouvez écrire au vendeur.
-• Essayez n'importe quelle pièce vue dans l'app : elle est enregistrée dans vos envies.
+• Demandez à un styliste si un look vous irait.
+• Les pièces en vente affichent leur prix dans le look — écrivez au vendeur.
+• Essayez n'importe quelle pièce vue dans l'app.
 • Les liens d'invitation remplissent le code pour vous.
-• Tri du plus récent au plus ancien sur tout écran avec filtre, et les liens partagés fonctionnent de nouveau.
+• Tri sur tout écran avec filtre, et les liens partagés fonctionnent de nouveau.
 ```
