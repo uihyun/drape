@@ -48,8 +48,13 @@ describe('bump / emptyTrends', () => {
     bump(m, '2026-06-30'); bump(m, '2026-06-30'); bump(m, null); bump(m, '');
     expect(m).toEqual({ '2026-06-30': 2 });
   });
-  it('emptyTrends has the five metric maps', () => {
-    expect(Object.keys(emptyTrends()).sort()).toEqual(['boards', 'items', 'ootds', 'signups', 'tryons']);
+  // Exact, not a subset: a key added here but never charted in Admin.jsx is a
+  // series nobody sees, which is how the stylist went unmeasured for weeks.
+  it('emptyTrends has every charted metric map', () => {
+    expect(Object.keys(emptyTrends()).sort()).toEqual([
+      'boards', 'items', 'listings', 'ootds', 'outfits',
+      'signups', 'stylistRecs', 'tryons', 'verdicts',
+    ]);
   });
 });
 

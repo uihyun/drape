@@ -25,25 +25,35 @@ const pct = (x) => `${Math.round((x || 0) * 100)}%`;
 // ── Inline SVG line chart with axes ─────────────────────────────────────
 const mmdd = (day) => { const p = (day || '').split('-'); return p.length === 3 ? `${+p[1]}/${+p[2]}` : day; };
 
-function AxisChart({ title, series, color = 'var(--accent)' }) {
+function AxisChart({ title, series, series2, label, label2, hint, color = 'var(--accent)', color2 = 'var(--accent-strong, #7a5c3e)' }) {
   const data = series || [];
+  const data2 = series2 || [];
   const total = data.reduce((s, d) => s + d.count, 0);
   // Geometry in a fixed viewBox; scales responsively (meet) so axis text stays legible.
   const W = 560; const H = 200; const PL = 38; const PR = 10; const PT = 14; const PB = 24;
   const plotW = W - PL - PR; const plotH = H - PT - PB;
-  const max = Math.max(1, ...data.map((d) => d.count));
+  // One scale for both lines or the comparison lies.
+  const max = Math.max(1, ...data.map((d) => d.count), ...data2.map((d) => d.count));
   const niceMax = max <= 4 ? max : Math.ceil(max / 5) * 5;
   const x = (i) => PL + (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
   const y = (c) => PT + plotH - (c / niceMax) * plotH;
   const pts = data.map((d, i) => `${x(i).toFixed(1)},${y(d.count).toFixed(1)}`).join(' ');
+  const pts2 = data2.map((d, i) => `${x(i).toFixed(1)},${y(d.count).toFixed(1)}`).join(' ');
   const yticks = [0, niceMax / 2, niceMax];
   const xidx = data.length <= 1 ? [0] : [0, Math.floor((data.length - 1) / 2), data.length - 1];
 
   return (
     <div className="adm-card">
       <div className="adm-card-head">
-        <span>{title}</span>
-        <span className="adm-muted">{fmt(total)} total</span>
+        <span className={hint ? 'adm-hinted' : undefined} title={hint}>{title}</span>
+        {data2.length > 0 ? (
+          <span className="adm-legend">
+            <span style={{ color }}>■ {label} {fmt(total)}</span>
+            <span style={{ color: color2 }}>■ {label2} {fmt(data2.reduce((s, d) => s + d.count, 0))}</span>
+          </span>
+        ) : (
+          <span className="adm-muted">{fmt(total)} total</span>
+        )}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="adm-chart" role="img" preserveAspectRatio="xMidYMid meet">
         {yticks.map((t, i) => (
@@ -52,10 +62,11 @@ function AxisChart({ title, series, color = 'var(--accent)' }) {
             <text x={PL - 6} y={y(t) + 3} textAnchor="end" className="adm-axis">{fmt(Math.round(t))}</text>
           </g>
         ))}
-        {data.length > 1 && <polygon points={`${PL},${PT + plotH} ${pts} ${W - PR},${PT + plotH}`} fill={color} opacity="0.08" />}
+        {data.length > 1 && data2.length === 0 && <polygon points={`${PL},${PT + plotH} ${pts} ${W - PR},${PT + plotH}`} fill={color} opacity="0.08" />}
         {data.length > 1
           ? <polyline points={pts} fill="none" stroke={color} strokeWidth="2" />
           : data.length === 1 && <circle cx={x(0)} cy={y(data[0].count)} r="3" fill={color} />}
+        {data2.length > 1 && <polyline points={pts2} fill="none" stroke={color2} strokeWidth="2" strokeDasharray="4 3" />}
         {xidx.map((i) => (
           <text key={i} x={x(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle'} className="adm-axis">{mmdd(data[i]?.day)}</text>
         ))}
@@ -137,7 +148,7 @@ function FeaturesCard({ from, to }) {
   const byEvent = Object.fromEntries((rows || []).map((r) => [r.event, r]));
   return (
     <>
-      <h3 className="adm-h3">Feature adoption <span className="adm-muted">(GA events, {from} → {to})</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="GA event counts for the features worth watching. Events, not users — one person can fire the same event many times.">Feature adoption</span> <span className="adm-muted">(GA events, {from} → {to})</span></h3>
       {err && <div className="adm-err">{err}</div>}
       {rows && (
         <div className="adm-tablewrap" style={{ marginBottom: 16 }}>
@@ -179,7 +190,7 @@ function ScreensCard({ from, to }) {
 
   return (
     <>
-      <h3 className="adm-h3">Where users spend time <span className="adm-muted">(GA screen engagement, {from} → {to}){busy && <Loader2 size={13} className="spin" style={{ marginLeft: 6 }} />}</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="GA screen engagement. Ranked by total time, which is what says a screen earns its place, rather than by views.">Where users spend time</span> <span className="adm-muted">(GA screen engagement, {from} → {to}){busy && <Loader2 size={13} className="spin" style={{ marginLeft: 6 }} />}</span></h3>
       {err && <div className="adm-err">{err}</div>}
       {rows && !err && (
         <div className="adm-tablewrap">
@@ -274,7 +285,7 @@ function Overview() {
         </button>
       </div>
 
-      <h3 className="adm-h3">Totals <span className="adm-muted">(all time{data.totalsAsOf ? ` · snapshot ${data.totalsAsOf}` : ''})</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="All-time counts across every collection. A nightly snapshot, so it can lag the live number by up to a day.">Totals</span> <span className="adm-muted">(all time{data.totalsAsOf ? ` · snapshot ${data.totalsAsOf}` : ''})</span></h3>
       <div className="adm-tiles">
         <Tile label="real users" value={fmt(t.users)} sub={`${fmt(t.active7)} active 7d · ${fmt(t.active30)} 30d`} />
         <Tile label="items" value={fmt(t.items)} />
@@ -286,7 +297,7 @@ function Overview() {
 
       {data.activation && (
         <>
-          <h3 className="adm-h3">Activation funnel <span className="adm-muted">(real users, ever — the split GA can't do)</span></h3>
+          <h3 className="adm-h3"><span className="adm-hinted" title="Of the real users who ever signed up, how many did each thing at least once. Ever, not in the range - GA cannot answer this because it has no notion of our account buckets.">Activation funnel</span> <span className="adm-muted">(real users, ever — the split GA can't do)</span></h3>
           <div className="adm-tiles">
             <Tile label="signed up" value={fmt(data.activation.signed)} />
             <Tile label="added an item" value={fmt(data.activation.item)} sub={pct(data.activation.item / (data.activation.signed || 1))} />
@@ -416,7 +427,7 @@ function Overview() {
         const maxW = Math.max(1, ...ps.weeks.map((w) => Math.max(w.realPublic, w.seed)));
         return (
           <>
-            <h3 className="adm-h3">Persona sunset <span className="adm-muted">(real public outfits/week decide when the bots retire)</span></h3>
+            <h3 className="adm-h3"><span className="adm-hinted" title="When the seeded personas can be retired, measured in real public outfits per week.">Persona sunset</span> <span className="adm-muted">(real public outfits/week decide when the bots retire)</span></h3>
             <div className="adm-tiles">
               <Tile label="phase" value={phaseLabel}
                 sub={ps.phase === 'sunset' ? 'turn the extras bots OFF' : ps.phase === 'taper' ? 'halve bot posting probability' : 'bots carry the feed'} />
@@ -459,7 +470,7 @@ function Overview() {
 
       {gaTotals && (
         <>
-          <h3 className="adm-h3">Acquisition funnel <span className="adm-muted">(GA, {range.from} → {range.to})</span></h3>
+          <h3 className="adm-h3"><span className="adm-hinted" title="Landing visitors to installs to app users to signups, for the picked range. Each step is a different GA population, so read the drops as direction, not as exact conversion.">Acquisition funnel</span> <span className="adm-muted">(GA, {range.from} → {range.to})</span></h3>
           <div className="adm-tiles">
             <Tile label="landing visitors" value={fmt(gaTotals.landing)} sub="web (marketing traffic)" />
             <Tile label="app installs" value={fmt(gaTotals.installs)} sub={`first_open · ${gaTotals.landing ? pct(gaTotals.installs / gaTotals.landing) : '—'} of visitors`} />
@@ -469,9 +480,44 @@ function Overview() {
         </>
       )}
 
+      {gaFunnel?.geo?.length > 0 && (() => {
+        const geo = gaFunnel.geo;
+        const max = Math.max(1, ...geo.map((r) => r.installs));
+        return (
+          <>
+            <h3 className="adm-h3">
+              <span className="adm-hinted" title="first_open events by country, split by store. GA's install signal, not the store consoles' — close enough to see which markets are moving, and the only one readable from here.">
+                Where installs come from
+              </span>{' '}
+              <span className="adm-muted">(GA, {range.from} → {range.to})</span>
+            </h3>
+            <div className="adm-tablewrap" style={{ marginBottom: 14 }}>
+              <table className="adm-table">
+                <thead><tr><th>country</th><th>installs</th><th></th><th>iOS</th><th>Android</th></tr></thead>
+                <tbody>
+                  {geo.map((r) => (
+                    <tr key={r.country}>
+                      <td>{r.country}</td>
+                      <td>{fmt(r.installs)}</td>
+                      <td style={{ width: '38%' }}>
+                        <div className="adm-bar" style={{ minWidth: 70 }}>
+                          <span style={{ width: `${Math.round((r.installs / max) * 100)}%` }} />
+                        </div>
+                      </td>
+                      <td>{fmt(r.ios)}</td>
+                      <td className="adm-muted">{fmt(r.android)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        );
+      })()}
+
       {gaChannels?.acquisition?.length > 0 && (
         <>
-          <h3 className="adm-h3">Acquisition channels <span className="adm-muted">(first touch — what brought each new user, {range.from} → {range.to})</span></h3>
+          <h3 className="adm-h3"><span className="adm-hinted" title="First touch: what brought each new user in the first place, not what they clicked most recently.">Acquisition channels</span> <span className="adm-muted">(first touch — what brought each new user, {range.from} → {range.to})</span></h3>
           <div className="adm-tablewrap" style={{ marginBottom: 14 }}>
             <table className="adm-table">
               <thead><tr><th>source</th><th>medium</th><th>new users</th><th></th><th>active</th></tr></thead>
@@ -516,7 +562,7 @@ function Overview() {
 
       <ScreensCard from={range.from} to={range.to} />
 
-      <h3 className="adm-h3">Activity over time <span className="adm-muted">({range.from} → {range.to})</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="Daily series on one shared date axis, so every chart below lines up and can be compared directly.">Activity over time</span> <span className="adm-muted">({range.from} → {range.to})</span></h3>
       <div className="adm-tiles">
         <Tile label="signups" value={fmt(win('signups'))} sub="in range" />
         <Tile label="items added" value={fmt(win('items'))} sub="in range" />
@@ -525,19 +571,30 @@ function Overview() {
         <Tile label="boards" value={fmt(win('boards'))} sub="in range" />
       </div>
       <div className="adm-grid">
-        <AxisChart title="Signups" series={slice(data.trends.signups, range.from, range.to)} />
-        <AxisChart title="Items added" series={slice(data.trends.items, range.from, range.to)} />
-        <AxisChart title="Try-ons" series={slice(data.trends.tryons, range.from, range.to)} />
-        <AxisChart title="OOTDs" series={slice(data.trends.ootds, range.from, range.to)} />
-        <AxisChart title="Boards" series={slice(data.trends.boards, range.from, range.to)} />
-        <AxisChart title="Landing visitors / day (web)" series={gaDaily.map((r) => ({ day: r.day, count: r.landing }))} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="App installs / day (first_open)" series={gaDaily.map((r) => ({ day: r.day, count: r.installs }))} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="App active users / day (iOS+Android)" series={gaDaily.map((r) => ({ day: r.day, count: r.appUsers }))} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="Actions per app user / day" series={perUser} color="var(--accent-strong, #7a5c3e)" />
-        <AxisChart title="App engagement min / day" series={gaDaily.map((r) => ({ day: r.day, count: Math.round(r.appEngagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="Signups" hint="New real-user profiles created that day. Seed and dev accounts excluded." series={slice(data.trends.signups, range.from, range.to)} />
+        <AxisChart title="Items added" hint="Closet items created that day, by real users." series={slice(data.trends.items, range.from, range.to)} />
+        <AxisChart title="Try-ons" hint="Try-on generations started that day, including the ones that failed." series={slice(data.trends.tryons, range.from, range.to)} />
+        <AxisChart title="OOTDs" hint="Outfits logged against a calendar date." series={slice(data.trends.ootds, range.from, range.to)} />
+        {/* Undated outfits (builder / photo analysis). Separate from OOTDs —
+            same collection, different act. */}
+        <AxisChart title="Outfits" hint="Outfits with no date - built in the outfit builder or analysed from a photo." series={slice(data.trends.outfits, range.from, range.to)} />
+        <AxisChart title="Boards" hint="Mood boards created that day." series={slice(data.trends.boards, range.from, range.to)} />
+        <AxisChart title="Stylist recs" hint="Style me requests. One per call, whether it was free or paid for with a fit." series={slice(data.trends.stylistRecs, range.from, range.to)} />
+        <AxisChart title="Verdicts" hint="Would this suit me, asked on someone else&apos;s outfit. Cached per outfit + persona + language, so repeats do not count twice." series={slice(data.trends.verdicts, range.from, range.to)} />
+        {/* By listedAt: when a piece went up for sale, not when it was added. */}
+        <AxisChart title="Items listed for sale" hint="Counted by listedAt - when a piece went up for sale, not when it was added to the closet." series={slice(data.trends.listings, range.from, range.to)} />
+        <AxisChart title="Landing visitors / day (web)" hint="GA4 active users on the web platform. Mostly drape.nyc traffic, not people using the product." series={gaDaily.map((r) => ({ day: r.day, count: r.landing }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App installs / day (first_open)" hint="GA4 first_open events. The nearest thing to a download count without opening either store console." series={gaDaily.map((r) => ({ day: r.day, count: r.installs }))} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App active users / day"
+          hint="GA4 daily active users, split by store. Daily uniques do not add up to the range total - the same person on two days counts once in the range."
+          label="iOS" label2="Android"
+          series={gaDaily.map((r) => ({ day: r.day, count: r.ios || 0 }))}
+          series2={gaDaily.map((r) => ({ day: r.day, count: r.android || 0 }))} />
+        <AxisChart title="Actions per app user / day" hint="App events divided by app active users. A rough engagement depth: how much the people who opened it actually did." series={perUser} color="var(--accent-strong, #7a5c3e)" />
+        <AxisChart title="App engagement min / day" hint="GA4 userEngagementDuration for iOS + Android, in minutes. Time in the foreground, not time with the app installed." series={gaDaily.map((r) => ({ day: r.day, count: Math.round(r.appEngagementSec / 60) }))} color="var(--accent-strong, #7a5c3e)" />
       </div>
 
-      <h3 className="adm-h3">Try-on health <span className="adm-muted">(all time)</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="Whether the generation pipeline is working: how many finished, how many failed, and how many variants came back per variant asked for.">Try-on health</span> <span className="adm-muted">(all time)</span></h3>
       <div className="adm-tiles">
         <Tile label="ready" value={fmt(data.tryon.ready)} />
         <Tile label="failed" value={fmt(data.tryon.failed)} />
@@ -545,7 +602,7 @@ function Overview() {
         <Tile label="variant yield" value={pct(data.tryon.avgVariantYield)} sub="returned / requested" />
       </div>
 
-      <h3 className="adm-h3">Buckets (real / seed / dev)</h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="Every account sorted into real users, seeded personas and our own dev accounts. Most numbers on this page are real-only; this is where you check that split is right.">Buckets (real / seed / dev)</span></h3>
       <div className="adm-tablewrap">
         <table className="adm-table">
           <thead><tr><th>bucket</th><th>accounts</th><th>active</th><th>items</th><th>OOTDs</th><th>boards</th><th>try-ons</th></tr></thead>
@@ -822,7 +879,7 @@ function ModelsCard() {
   const SIZES = [['imageCropSize', 'cutout size'], ['imageTryonSize', 'try-on size']];
   return (
     <>
-      <h3 className="adm-h3">AI models <span className="adm-muted">(live in ≤5 min, no deploy — blank = built-in default)</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="The live model ids. Editable here and picked up within five minutes without a functions deploy; blank falls back to the built-in default.">AI models</span> <span className="adm-muted">(live in ≤5 min, no deploy — blank = built-in default)</span></h3>
       {err && <div className="adm-err">{err}</div>}
       {msg && <div className="adm-muted" style={{ marginBottom: 8 }}>✓ {msg}</div>}
       <div className="adm-cfgcard">
@@ -887,7 +944,7 @@ function TrendsCuration() {
   const pool = data.looksPool || [];
   return (
     <>
-      <h3 className="adm-h3">Trends curation <span className="adm-muted">(auto-rotates every Monday from this week's public looks. Feature/cover/hide overrides THIS week only; next issue re-picks itself.)</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="This week&apos;s Trends issue. Overrides apply to the current week only - next Monday it re-picks itself.">Trends curation</span> <span className="adm-muted">(auto-rotates every Monday from this week's public looks. Feature/cover/hide overrides THIS week only; next issue re-picks itself.)</span></h3>
       {err && <div className="adm-err">{err}</div>}
       <div className="adm-gallery">
         {pool.map((p) => {
@@ -1041,7 +1098,7 @@ function ConfigTab() {
       {err && <div className="adm-err">{err}</div>}
       {msg && <div className="adm-muted" style={{ marginBottom: 10 }}>✓ {msg}</div>}
 
-      <h3 className="adm-h3">Announcement banner <span className="adm-muted">(shows in-app to everyone until each user dismisses it — new id re-shows)</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="The in-app notice. Shows to everyone until each person dismisses it; a new id makes it show again.">Announcement banner</span> <span className="adm-muted">(shows in-app to everyone until each user dismisses it — new id re-shows)</span></h3>
       <div className="adm-cfgcard">
         <div className="adm-cfgrow">
           <label className="adm-cfginline">
@@ -1067,7 +1124,7 @@ function ConfigTab() {
         </div>
       </div>
 
-      <h3 className="adm-h3">Onboarding flow <span className="adm-muted">({stepsRemote ? 'server override active' : 'app defaults shown'} · applies without an app release)</span></h3>
+      <h3 className="adm-h3"><span className="adm-hinted" title="The onboarding deck copy, server-overridable so it changes without an app release.">Onboarding flow</span> <span className="adm-muted">({stepsRemote ? 'server override active' : 'app defaults shown'} · applies without an app release)</span></h3>
       {steps.map((s, i) => (
         <div className="adm-cfgcard" key={i}>
           <div className="adm-cfgrow">
@@ -1216,6 +1273,10 @@ const ADMIN_CSS = `
 .adm-topname{display:flex;flex-direction:column;min-width:140px;flex:0 0 180px}
 .adm-topname strong{font-size:13px}
 .adm-bar{flex:1;height:8px;background:var(--surface-elevated);border-radius:6px;overflow:hidden}
+/* Every chart and panel title carries a title= explaining what it actually
+   counts. The dotted underline is the only cue that hovering is worth it. */
+.adm-hinted{border-bottom:1px dotted var(--border);cursor:help}
+.adm-legend{display:flex;gap:10px;font-size:11px;white-space:nowrap}
 .adm-bar span{display:block;height:100%;background:var(--accent)}
 .adm-count{font-weight:700;width:46px;text-align:right}
 .adm-userhead{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px}

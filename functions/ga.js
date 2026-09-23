@@ -153,30 +153,63 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
           // range totals (no date dim) — daily uniques don't sum to range uniques
           { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: web },
           { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: app },
+          // Same DAU split per store. Two filtered reports rather than a
+          // `platform` dimension on the combined one, so the existing parsing
+          // above keeps its shape and the indices below never shift.
+          mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'iOS' } } } }),
+          mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'Android' } } } }),
+          // Where installs come from. first_open by country, which is the only
+          // download signal GA has — the stores' own console numbers are the
+          // authority, this is the one we can read without leaving the page.
+          {
+            dateRanges: range,
+            dimensions: [{ name: 'country' }, { name: 'platform' }],
+            metrics: [{ name: 'eventCount' }],
+            dimensionFilter: firstOpen,
+            orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+            limit: 40,
+          },
         ],
       }),
     });
     const json = await res.json();
     if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
-    const [rWeb, rOpen, rApp, tWeb, tApp] = json.reports || [];
+    const [rWeb, rOpen, rApp, tWeb, tApp, rIos, rAnd, rGeo] = json.reports || [];
     const day = (v) => v.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
     const map = {};
     const put = (rep, fn) => (rep?.rows || []).forEach((r) => {
       const d = day(r.dimensionValues[0].value);
-      map[d] = map[d] || { day: d, landing: 0, installs: 0, appUsers: 0, appEngagementSec: 0 };
+      map[d] = map[d] || { day: d, landing: 0, installs: 0, appUsers: 0, appEngagementSec: 0, ios: 0, android: 0 };
       fn(map[d], r.metricValues);
     });
     put(rWeb, (o, m) => { o.landing = +m[0].value; });
     put(rOpen, (o, m) => { o.installs = +m[0].value; });
     put(rApp, (o, m) => { o.appUsers = +m[0].value; o.appEngagementSec = Math.round(+m[1].value); });
+    put(rIos, (o, m) => { o.ios = +m[0].value; });
+    put(rAnd, (o, m) => { o.android = +m[0].value; });
     const daily = Object.values(map).sort((a, b) => a.day.localeCompare(b.day));
+
+    // Installs per country, folded across platforms with the split kept so a
+    // market that is Android-only (or iOS-only) is visible rather than averaged
+    // away. Ordered by total, biggest first.
+    const geoMap = {};
+    (rGeo?.rows || []).forEach((r) => {
+      const c = r.dimensionValues[0].value || '(unknown)';
+      const plat = r.dimensionValues[1].value;
+      const n = +r.metricValues[0].value;
+      const g = (geoMap[c] ||= { country: c, installs: 0, ios: 0, android: 0 });
+      g.installs += n;
+      if (plat === 'iOS') g.ios += n;
+      else if (plat === 'Android') g.android += n;
+    });
+    const geo = Object.values(geoMap).sort((a, b) => b.installs - a.installs).slice(0, 12);
     const totals = {
       landing: +(tWeb?.rows?.[0]?.metricValues?.[0]?.value || 0),
       installs: daily.reduce((s, r) => s + r.installs, 0),
       appUsers: +(tApp?.rows?.[0]?.metricValues?.[0]?.value || 0),
     };
-    reportCache.set(key, { at: Date.now(), rows: { daily, totals } });
-    return { rows: { daily, totals }, cached: false };
+    reportCache.set(key, { at: Date.now(), rows: { daily, totals, geo } });
+    return { rows: { daily, totals, geo }, cached: false };
   }
 
   const body = kind === 'daily'

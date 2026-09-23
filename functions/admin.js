@@ -147,6 +147,9 @@ async function collectAll(days = ALL_DAYS) {
       if (bucketOf(uid) === 'real') sellerSet.add(uid);
       const cur = x.currency || '?';
       marketplace.byCurrency[cur] = (marketplace.byCurrency[cur] || 0) + 1;
+      // listedAt, not createdAt: the question is when someone decided to sell
+      // a piece, which is usually long after they photographed it.
+      if (bucketOf(uid) === 'real') bump(trends.listings, dayKey(x.listedAt));
     }
   });
 
@@ -209,6 +212,12 @@ async function collectAll(days = ALL_DAYS) {
       rec.ootd++;
       if (x.isPublic === false) rec.ootdPriv++;
       if (bucket === 'real') bump(trends.ootds, dayKey(x.createdAt));
+    } else if (bucket === 'real') {
+      // Undated outfits — built in the outfit builder or analysed from a photo.
+      // Kept as its own series rather than folded into OOTDs: they are made in
+      // different places for different reasons, and summing them hid the fact
+      // that one of the two was flat.
+      bump(trends.outfits, dayKey(x.createdAt));
     }
     if ((x.isPublic === true || x.isListed === true) && bucket === 'real') {
       linking.publicOutfits++;
@@ -223,6 +232,23 @@ async function collectAll(days = ALL_DAYS) {
       }
     }
   });
+  // Stylist. `stylistUsage()` answers "is the daily cap the right number" from
+  // today's counters; these two answer "is anyone using it at all" over time,
+  // which the overview could not see.
+  (await windowed('stylistRecs', cutTs)).forEach((d) => {
+    const x = d.data();
+    if (x.userId && bucketOf(x.userId) === 'real') bump(trends.stylistRecs, dayKey(x.createdAt));
+  });
+
+  // Verdicts live under outfits/{id}/verdicts/{uid}_{persona}_{lang} — a
+  // collection group, and the only place the asker's uid appears is the doc id.
+  // Unfiltered on purpose: a collection-group `where` needs an index enabled
+  // for that scope, and this collection is small.
+  (await db.collectionGroup('verdicts').get()).forEach((d) => {
+    const uid = d.id.split('_')[0];
+    if (uid && bucketOf(uid) === 'real') bump(trends.verdicts, dayKey(d.data().createdAt));
+  });
+
   marketplace.sellers = sellerSet.size;
   delete marketplace.listedItemIds;   // a Set doesn't serialise over onCall
 
@@ -316,7 +342,11 @@ async function computeOverview(days = ALL_DAYS) {
           items: trends.items,
           tryons: trends.tryons,
           ootds: trends.ootds,
+          outfits: trends.outfits,
           boards: trends.boards,
+          stylistRecs: trends.stylistRecs,
+          verdicts: trends.verdicts,
+          listings: trends.listings,
         }),
       };
     }
@@ -369,7 +399,11 @@ async function computeOverview(days = ALL_DAYS) {
       items: trends.items,
       tryons: trends.tryons,
       ootds: trends.ootds,
+      outfits: trends.outfits,
       boards: trends.boards,
+      stylistRecs: trends.stylistRecs,
+      verdicts: trends.verdicts,
+      listings: trends.listings,
     }),
   };
 }
