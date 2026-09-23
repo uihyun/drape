@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — 22 Sep 2026
+## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — submitted 23 Sep 2026
 
 **Android tablets and foldables stopped looking broken; iPad is deferred.**
 Android was already right — resizeable, `screenSize|screenLayout` in

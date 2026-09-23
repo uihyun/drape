@@ -392,7 +392,8 @@ per-version field, so later builds are not asked again.
 
 ## Submission log
 
-**2.2.0 — 22 Sep 2026.** iOS build 18 / Android versionCode 22. Unlike 2.1.1,
+**2.2.0 — submitted to both stores 23 Sep 2026, in review.** iOS build 18 /
+Android versionCode 22. Unlike 2.1.1,
 both stores are in the SAME place this time — App Store 2.1.1 went live 19 Sep
 (verified with the itunes lookup below) and Play shipped 21 — so the release
 notes are one round of changes, not a catch-up, and the Play block is the usual
@@ -403,6 +404,11 @@ Screenshots are unchanged from 2.1.0: the decks still show the closet, calendar,
 try-on, stylist and Trends, and nothing in this release alters those screens.
 The marketplace is deliberately NOT in the deck — with a handful of live
 listings, a slide promising a market would oversell it.
+
+Shipped iPhone-only on purpose. iPad support is one line in `project.pbxproj`
+and was verified working on a simulator, but it would have made an iPad
+screenshot set a submission requirement; deferred rather than hold the release.
+See PROGRESS.md.
 
 **2.1.1 — submitted to both stores 17 Sep 2026.** iOS build 17 / Android
 versionCode 21. The stores are NOT in the

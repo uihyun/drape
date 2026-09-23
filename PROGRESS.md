@@ -2,13 +2,14 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-09-22 (2.2.0 built; both stores on 2.1.1)
+## Snapshot — 2026-09-23 (2.2.0 in review on both stores)
 
 **2.1.1 cleared both stores** — App Store 19 Sep, Play before it. The
 two-year-old gap where production served 1.5.0 is closed: app users finally have
 the stylist, Trends and the five locales.
 
-**2.2.0 is built and ready to submit.** iOS build 18, Android versionCode 22.
+**2.2.0 went to both stores 23 Sep and is in review.** iOS build 18, Android
+versionCode 22.
 Stylist verdicts, selling surfaced inside outfits, try-on on a piece you don't
 own, invite links that carry the code, sort on every filter surface, and the
 share fix. Screenshots unchanged from 2.1.0 — nothing in this release alters a
