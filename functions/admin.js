@@ -139,6 +139,11 @@ async function collectAll(days = ALL_DAYS) {
       userId: uid || '',
     };
     if (bucketOf(uid) === 'real') bump(trends.items, dayKey(x.createdAt));
+    // Counted outside the forSale branch on purpose: "Remove from sale" sets
+    // forSale:false but keeps listedAt, so gating on the current flag erases
+    // every listing that has since been taken down — including the only one
+    // this account ever had.
+    if (x.listedAt && bucketOf(uid) === 'real') bump(trends.listings, dayKey(x.listedAt));
     if (x.forSale) {
       // Listings stay all-accounts (a seeded listing is still a listing a user
       // can open), but the seller count is about real people.
@@ -147,9 +152,6 @@ async function collectAll(days = ALL_DAYS) {
       if (bucketOf(uid) === 'real') sellerSet.add(uid);
       const cur = x.currency || '?';
       marketplace.byCurrency[cur] = (marketplace.byCurrency[cur] || 0) + 1;
-      // listedAt, not createdAt: the question is when someone decided to sell
-      // a piece, which is usually long after they photographed it.
-      if (bucketOf(uid) === 'real') bump(trends.listings, dayKey(x.listedAt));
     }
   });
 

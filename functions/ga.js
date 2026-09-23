@@ -153,28 +153,45 @@ exports.adminScreenEngagement = onCall({ cors: true, timeoutSeconds: 60, memory:
           // range totals (no date dim) — daily uniques don't sum to range uniques
           { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: web },
           { dateRanges: range, metrics: [{ name: 'activeUsers' }], dimensionFilter: app },
-          // Same DAU split per store. Two filtered reports rather than a
-          // `platform` dimension on the combined one, so the existing parsing
-          // above keeps its shape and the indices below never shift.
-          mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'iOS' } } } }),
-          mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'Android' } } } }),
-          // Where installs come from. first_open by country, which is the only
-          // download signal GA has — the stores' own console numbers are the
-          // authority, this is the one we can read without leaving the page.
-          {
-            dateRanges: range,
-            dimensions: [{ name: 'country' }, { name: 'platform' }],
-            metrics: [{ name: 'eventCount' }],
-            dimensionFilter: firstOpen,
-            orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
-            limit: 40,
-          },
         ],
       }),
     });
     const json = await res.json();
     if (json.error) throw new HttpsError('internal', 'GA_QUERY_FAILED', json.error.message);
-    const [rWeb, rOpen, rApp, tWeb, tApp, rIos, rAnd, rGeo] = json.reports || [];
+    const [rWeb, rOpen, rApp, tWeb, tApp] = json.reports || [];
+
+    // batchRunReports takes at most FIVE requests — the five above are the
+    // funnel itself and must not be crowded out. The per-store split and the
+    // country breakdown go in a second call, and a failure there degrades to
+    // empty rather than blanking the whole panel.
+    let rIos, rAnd, rGeo;
+    try {
+      const res2 = await fetch(`https://analyticsdata.googleapis.com/v1beta/${PROPERTY}:batchRunReports`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          requests: [
+            mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'iOS' } } } }),
+            mk({ metrics: [{ name: 'activeUsers' }], dimensionFilter: { filter: { fieldName: 'platform', stringFilter: { value: 'Android' } } } }),
+            // The only download signal GA has. The store consoles are the
+            // authority; this is the one readable without leaving the page.
+            {
+              dateRanges: range,
+              dimensions: [{ name: 'country' }, { name: 'platform' }],
+              metrics: [{ name: 'eventCount' }],
+              dimensionFilter: firstOpen,
+              orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+              limit: 40,
+            },
+          ],
+        }),
+      });
+      const json2 = await res2.json();
+      if (json2.error) console.warn('GA split/geo report failed:', json2.error.message);
+      else [rIos, rAnd, rGeo] = json2.reports || [];
+    } catch (e) {
+      console.warn('GA split/geo report failed:', e?.message);
+    }
     const day = (v) => v.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
     const map = {};
     const put = (rep, fn) => (rep?.rows || []).forEach((r) => {
