@@ -25,7 +25,17 @@ const pct = (x) => `${Math.round((x || 0) * 100)}%`;
 // ── Inline SVG line chart with axes ─────────────────────────────────────
 const mmdd = (day) => { const p = (day || '').split('-'); return p.length === 3 ? `${+p[1]}/${+p[2]}` : day; };
 
-function AxisChart({ title, series, series2, label, label2, hint, color = 'var(--accent)', color2 = 'var(--accent-strong, #7a5c3e)' }) {
+// The legend has to be the line, not a coloured square: two lines that differ
+// by dash pattern are unreadable from a swatch that has no dashes.
+function LineSwatch({ color, dashed }) {
+  return (
+    <svg width="18" height="8" aria-hidden="true" style={{ verticalAlign: 'middle' }}>
+      <line x1="0" y1="4" x2="18" y2="4" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 3' : undefined} />
+    </svg>
+  );
+}
+
+function AxisChart({ title, series, series2, label, label2, hint, color = 'var(--accent)', color2 = '#B4763C' }) {
   const data = series || [];
   const data2 = series2 || [];
   const total = data.reduce((s, d) => s + d.count, 0);
@@ -48,8 +58,8 @@ function AxisChart({ title, series, series2, label, label2, hint, color = 'var(-
         <span className={hint ? 'adm-hinted' : undefined} title={hint}>{title}</span>
         {data2.length > 0 ? (
           <span className="adm-legend">
-            <span style={{ color }}>■ {label} {fmt(total)}</span>
-            <span style={{ color: color2 }}>■ {label2} {fmt(data2.reduce((s, d) => s + d.count, 0))}</span>
+            <span><LineSwatch color={color} /> {label} {fmt(total)}</span>
+            <span><LineSwatch color={color2} dashed /> {label2} {fmt(data2.reduce((s, d) => s + d.count, 0))}</span>
           </span>
         ) : (
           <span className="adm-muted">{fmt(total)} total</span>
@@ -580,7 +590,7 @@ function Overview() {
         <AxisChart title="Outfits" hint="Outfits with no date - built in the outfit builder or analysed from a photo." series={slice(data.trends.outfits, range.from, range.to)} />
         <AxisChart title="Boards" hint="Mood boards created that day." series={slice(data.trends.boards, range.from, range.to)} />
         <AxisChart title="Stylist recs" hint="Style me requests. One per call, whether it was free or paid for with a fit." series={slice(data.trends.stylistRecs, range.from, range.to)} />
-        <AxisChart title="Verdicts" hint="Would this suit me, asked on someone else&apos;s outfit. Cached per outfit + persona + language, so repeats do not count twice." series={slice(data.trends.verdicts, range.from, range.to)} />
+        <AxisChart title="Stylist verdicts" hint="A stylist judging whether a look on someone ELSE would suit you - the question try-on cannot answer. Asked from an outfit page. Cached per outfit + persona + language, so repeats do not count twice." series={slice(data.trends.verdicts, range.from, range.to)} />
         {/* By listedAt: when a piece went up for sale, not when it was added. */}
         <AxisChart title="Items listed for sale" hint="Counted by listedAt - when a piece went up for sale, not when it was added to the closet." series={slice(data.trends.listings, range.from, range.to)} />
         <AxisChart title="Landing visitors / day (web)" hint="GA4 active users on the web platform. Mostly drape.nyc traffic, not people using the product." series={gaDaily.map((r) => ({ day: r.day, count: r.landing }))} color="var(--accent-strong, #7a5c3e)" />
