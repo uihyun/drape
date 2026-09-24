@@ -11,6 +11,60 @@ Conventions:
 
 ---
 
+## Unreleased — admin only
+
+Web + functions only; nothing here reaches the app, and 2.2.0 was already in
+review when it landed.
+
+**The stylist had no chart.** The activity row was signups / items / try-ons /
+OOTDs / boards and stopped there, so the feature this release is built around
+was invisible over time — as were three others the aggregation already walked
+past. Added: **Stylist recs** (`stylistRecs`), **Stylist verdicts** (a
+collection group over `outfits/{id}/verdicts`, where the asker's uid exists only
+in the doc id), **Outfits** with no date, and **Items listed for sale**. Outfits
+are kept separate from OOTDs rather than summed: same collection, different act,
+and adding them hid that one of the two was flat.
+
+The `emptyTrends` test still asserts the exact key set rather than a subset. A
+key added server-side but never charted is a series nobody sees, which is
+precisely how the stylist went unmeasured.
+
+**Two of those read zero, for two different reasons.** `Items listed for sale`
+was inside the `if (x.forSale)` branch, so it only counted what is on sale
+*right now* — but "Remove from sale" deliberately keeps `listedAt`, so every
+listing ever taken down had been erased. Nine items have a `listedAt` and none
+is currently for sale, so the chart read zero while the data sat there. Counted
+on `listedAt` now. Stylist recs and verdicts read zero honestly: 16 recs and 1
+verdict exist and every one belongs to `uihyunkei` or `uhzdev`, both in the
+`DEV` set, and these series are real-users-only like all the others.
+
+**A five-request cap blanked every GA chart.** `batchRunReports` takes at most
+five requests; adding the per-store split and the country breakdown took the
+funnel batch to eight, so the call errored and landing visitors, installs,
+active users and engagement all rendered empty. The five funnel reports have
+their batch back and the two additions moved to a second call whose failure
+degrades to empty rows instead of taking the panel down.
+
+**DAU is split by store**, iOS against Android on one shared scale — two lines
+on separate charts with separate scales would make the comparison a lie. New
+**installs by country** table from `first_open`, split per store so an
+Android-only market shows up instead of being averaged away.
+
+**Every chart and panel title says what it counts.** 27 of them, and they state
+what is *excluded*, which is the part that actually misleads: seed accounts,
+daily uniques not summing to range uniques, events rather than users, verdicts
+cached per outfit + persona + language. The first attempt used the native
+`title=`, which needs a steady second of hover — and this page re-renders under
+the pointer, which cancels the browser's pending tooltip, so it gave a help
+cursor and nothing else. Drawn with `::after` on `data-hint` instead.
+
+Also: the iOS/Android legend was two squares in `--accent` (#2E4A3A) and
+`--accent-strong` (#233A2D), indistinguishable, and a square cannot show the
+dash pattern that is the only thing separating the lines anyway. Android has its
+own hue and the legend draws the actual line.
+
+---
+
 ## 2.2.0 — the verdict, selling inside outfits, and a month of bugs — submitted 23 Sep 2026
 
 **Android tablets and foldables stopped looking broken; iPad is deferred.**

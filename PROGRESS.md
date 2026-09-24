@@ -15,6 +15,19 @@ own, invite links that carry the code, sort on every filter surface, and the
 share fix. Screenshots unchanged from 2.1.0 — nothing in this release alters a
 screen in the deck.
 
+**The admin page can now see the stylist.** Its activity charts stopped at
+boards, so the feature 2.2.0 is built around had no time series — nor did
+undated outfits, listings, or verdicts. All four added, plus DAU split by store
+and an installs-by-country table, and every chart and panel title carries a
+hint saying what it counts and what it leaves out.
+
+Worth knowing before reading those charts: **Stylist recs and Verdicts will sit
+at zero for a while and that is correct.** 16 recs and 1 verdict exist, all from
+`uihyunkei` / `uhzdev`, and both uids are in the `DEV` set in
+`functions/admin-helpers.js` — every series on that page is real-users-only.
+The stylist only became reachable by app users on 19 Sep with 2.1.1, so real
+data starts after 2.2.0 clears.
+
 **Deferred: iPad (universal) support.** It is one line —
 `TARGETED_DEVICE_FAMILY` `"1"` → `"1,2"` in `ios/App/App.xcodeproj/project.pbxproj`,
 four build configs — and it was tried in this session and verified on an iPad
