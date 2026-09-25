@@ -21,7 +21,7 @@ const ADMIN_EMAILS = ['uihyunkei@gmail.com'];
 
 // Pure aggregation helpers live in a firebase-free module so they're unit-
 // testable (tests/admin-helpers.test.js).
-const { DEV, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset } = require('./admin-helpers.js');
+const { DEV, usageDepth, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset } = require('./admin-helpers.js');
 
 function assertAdmin(request) {
   if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -98,7 +98,9 @@ async function collectAll(days = ALL_DAYS) {
     classify(uid, { email: id[uid]?.email, src: prof[uid]?.src });
 
   const u = {};
-  const touch = (uid) => (u[uid] ||= { items: 0, ootd: 0, ootdPriv: 0, board: 0, tryon: 0, outfits: 0 });
+  const touch = (uid) => (u[uid] ||= { items: 0, ootd: 0, ootdPriv: 0, board: 0, tryon: 0, tryonReady: 0, outfits: 0 });
+  const activeDays = {};   // uid → Set of days they created something (usage depth)
+  const markDay = (uid, ts) => { const k = dayKey(ts); if (k) (activeDays[uid] ||= new Set()).add(k); };
 
   const trends = emptyTrends();
   // Signups come from the profile/auth creation date (real users only).
@@ -132,6 +134,7 @@ async function collectAll(days = ALL_DAYS) {
     const uid = x.userId;
     if (!uid) return;
     touch(uid).items++;
+    markDay(uid, x.createdAt);
     itemMeta[d.id] = {
       name: x.name || '',
       croppedUrl: x.croppedUrl || x.originalUrl || '',
@@ -160,6 +163,7 @@ async function collectAll(days = ALL_DAYS) {
     const uid = x.userId;
     if (!uid) return;
     touch(uid).board++;
+    markDay(uid, x.createdAt);
     if (bucketOf(uid) === 'real') bump(trends.boards, dayKey(x.createdAt));
   });
 
@@ -168,8 +172,9 @@ async function collectAll(days = ALL_DAYS) {
     const uid = x.userId;
     if (!uid) return;
     touch(uid).tryon++;
+    markDay(uid, x.createdAt);
     tryon.total++;
-    if (x.status === 'ready') tryon.ready++;
+    if (x.status === 'ready') { tryon.ready++; u[uid].tryonReady++; }
     else if (x.status === 'failed') tryon.failed++;
     else tryon.pending++;
     tryon.variantReq += Number(x.variantsRequested) || 0;
@@ -203,6 +208,7 @@ async function collectAll(days = ALL_DAYS) {
     if (!uid) return;
     const rec = touch(uid);
     rec.outfits++;
+    markDay(uid, x.createdAt);
     const bucket = bucketOf(uid);
     const wk = weekKey(dayKey(x.createdAt));
     if (wk && bucket !== 'dev') {
@@ -269,7 +275,7 @@ async function collectAll(days = ALL_DAYS) {
   const buckets = { real: [], seed: [], dev: [] };
   allUids.forEach((uid) => buckets[bucketOf(uid)].push(uid));
 
-  return { id, prof, u, buckets, trends, tryon, marketplace, linking, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
+  return { id, prof, u, activeDays, buckets, trends, tryon, marketplace, linking, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
 }
 
 // Recently-active real users (lastActiveAt within `days`).
@@ -320,6 +326,7 @@ async function computeOverview(days = ALL_DAYS) {
     if (s?.totals) {
       return {
         activation: s.activation || null,
+        depth: s.depth || null,
         generatedAt: new Date().toISOString(),
         window: { days, from: data.windowFrom },
         totalsAsOf: s.day,
@@ -381,6 +388,7 @@ async function computeOverview(days = ALL_DAYS) {
   });
   return {
     activation: act,
+    depth: usageDepth(data.u, data.activeDays, buckets.real),
     generatedAt: new Date().toISOString(),
     personaSunset: personaSunset(data.outfitWeekly, new Date().toISOString().slice(0, 10)),
     summary,
@@ -766,6 +774,7 @@ exports.dailyAdminSnapshot = onSchedule(
       // Windowed adminOverview loads serve these from the latest snapshot
       // instead of a full-corpus pass — keep them complete here.
       activation: overview.activation,
+      depth: overview.depth,
       tryon: overview.tryon,
       marketplace: overview.marketplace,
       source: 'dailyAdminSnapshot',

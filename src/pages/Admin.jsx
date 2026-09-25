@@ -318,6 +318,42 @@ function Overview() {
         </>
       )}
 
+      {data.depth && (() => {
+        const D = data.depth;
+        const LABEL = {
+          items: 'closet items', tryonReady: 'try-ons (ready)', ootd: 'OOTDs',
+          savedLooks: 'saved looks (undated)', board: 'boards', days: 'active days*',
+        };
+        const cols = D.rows[0]?.steps.length || 0;
+        return (
+          <>
+            <h3 className="adm-h3"><span className="adm-hinted" tabIndex={0} data-hint="Of the real users (seed personas and dev accounts excluded), how many reached each count. The activation funnel stops at 'at least once'; this is what a threshold such as the review-prompt gate has to be sized against.">Usage depth</span> <span className="adm-muted">(real users, ever — {fmt(D.users)} accounts{data.totalsAsOf ? ` · snapshot ${data.totalsAsOf}` : ''})</span></h3>
+            <div className="adm-tablewrap">
+              <table className="adm-table">
+                <thead><tr><th></th><th colSpan={cols}>users who reached at least…</th></tr></thead>
+                <tbody>
+                  {D.rows.map((r) => (
+                    <tr key={r.key}>
+                      <td>{LABEL[r.key] || r.key}</td>
+                      {r.steps.map((s) => (
+                        <td key={s.n}>
+                          <span className="adm-muted">≥{s.n}</span> <b>{fmt(s.users)}</b>
+                          <div className="adm-muted">{pct(D.users ? s.users / D.users : 0)}</div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="adm-note adm-muted">
+              * Days on which the user created something (item, try-on, outfit, board) — a floor on
+              the days they opened the app, since a browse-only day leaves nothing behind.
+            </p>
+          </>
+        );
+      })()}
+
       {data.linking && (() => {
         const L = data.linking; const M = data.marketplace;
         const share = (n, d) => pct(d ? n / d : 0);

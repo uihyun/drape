@@ -16,6 +16,18 @@ Conventions:
 Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
 the apps only with the next native build.
 
+**The review prompt asked the wrong people, and kept asking.** It fired on the
+3rd try-on seen, every 90 days forever. Sized against real users (24 Sep: ≥3
+try-ons reached 10 people, ≥2 reaches 18; 20 users have ≥10 items and 17 of
+them ≥20), the gate is now: opened the app on **3+ distinct days** AND (**2+
+try-ons seen** OR **10+ closet items**), at most **twice ever**, 90 days apart.
+Neither OS reports whether someone rated, so capping our own asks is what
+stands in for "don't ask people who already reviewed"; a device asked under the
+old rule counts that as one. Open days are counted on mount and on
+`visibilitychange` (a native app resumes far more than it cold-starts) and
+start from zero on update. New trigger: a closet piece finishing its cutout
+while you watch — the only place the items branch fires. Native only.
+
 **Trying on someone else's piece stacked up wishlist copies.** Every tap of
 Try on in ItemDetail made a fresh `dt_*` wishlist item and re-ran `processItem`
 on it, so one tee became three copies, each a slightly different re-crop. The
@@ -68,6 +80,15 @@ sub-tab header 1.25rem → 1rem. Tap padding on the tabs is unchanged.
 ---
 
 ## Unreleased — admin only
+
+**Usage depth.** The activation funnel stops at "did it once". A new table
+under it counts real users (seed + dev excluded) at ≥1/2/3/5/10 for closet
+items, ready try-ons, OOTDs, undated saved looks, boards, and active days —
+what a threshold like the review gate has to be sized against. Active days are
+days the user *created* something, so a floor on days they opened the app.
+`usageDepth` lives in `admin-helpers.js` (tested); it needs the full pass, so
+windowed loads read it from the nightly `adminStats` snapshot like
+`activation`. First reading: OOTDs 31 → 8 from once to twice.
 
 Web + functions only; nothing here reaches the app, and 2.2.0 was already in
 review when it landed.

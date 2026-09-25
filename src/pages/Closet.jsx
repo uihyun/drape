@@ -13,6 +13,7 @@ import { useFlipGrid } from '../hooks/useFlipGrid.js';
 import { ClosetZoomHint } from '../components/ClosetZoomHint.jsx';
 import { usageBucket, elapsedLabel } from '../utils/elapsed.js';
 import { loadFilters, saveFilters } from '../services/filterStore.js';
+import { maybeAskForReview } from '../services/rate-service.js';
 import { closetWarm } from '../services/uiCache.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
@@ -127,8 +128,17 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
   useEffect(() => {
     if (!authReady) return;
     if (!user) { setItems([]); return; }
+    const prevStatus = new Map();
     return ItemService.subscribeMyCloset(user.uid, (list) => {
       setItems(list);
+      // A piece finishing its cutout while you watch is the closet's delight
+      // moment — the only place the review gate's "10+ items" branch fires.
+      const justReady = list.some(it => it.status === 'ready' && prevStatus.has(it.id)
+        && prevStatus.get(it.id) !== 'ready');
+      list.forEach(it => prevStatus.set(it.id, it.status));
+      if (justReady && !user.isAnonymous) {
+        maybeAskForReview({ items: list.filter(it => it.status === 'ready').length });
+      }
       if (!user.isAnonymous) closetWarm.set(user.uid, list); // keep warm cache fresh
     }, { pageSize: closetLimit });
   }, [user, authReady, closetLimit]);

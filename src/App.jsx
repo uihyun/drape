@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useParams, u
 import { auth, analytics, logEvent, setUserId, setUserProp, logScreen } from './firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthService } from './services/auth-service.js';
+import { trackOpenDays } from './services/rate-service.js';
 import { PushService } from './services/push-service.js';
 import { InviteLink } from './services/invite-link.js';
 import { getHomeRoute, getHomePref, closetHasItems, noteStartedOnTrends } from './services/homePref.js';
@@ -115,6 +116,7 @@ export default function App() {
     // Register the push-tap handler early so a cold-start tap deep-links to the
     // right thread (before auth/ensureRegistered runs).
     PushService.initTapHandler();
+    const stopOpenDays = trackOpenDays();
     // App mounted OK → reset the chunk-reload guard so a future deploy can
     // recover a stale lazy chunk again later in this session.
     try { sessionStorage.removeItem(RELOAD_KEY); } catch { /* ignore */ }
@@ -128,6 +130,7 @@ export default function App() {
         await Keyboard.setAccessoryBarVisible({ isVisible: false });
       } catch { /* web / plugin missing — no-op */ }
     })();
+    return stopOpenDays;
   }, []);
 
   useEffect(() => {

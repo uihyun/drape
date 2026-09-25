@@ -99,13 +99,15 @@ export function GenerationDetail({ user }) {
   }, [gen?.outfitRefId]);
 
   // Rating nudge: viewing a READY result is the earned-delight moment.
-  // recordReadyTryon dedupes by gen id; maybeAskForReview enforces the
-  // 3-try-on minimum + 90-day cooldown + native-only, so this is safe to
+  // recordReadyTryon dedupes by gen id; maybeAskForReview enforces the whole
+  // gate (days / try-ons / items / cooldown / native-only), so this is safe to
   // fire on every ready view.
   useEffect(() => {
     if (!gen?.id || effectiveTryonStatus(gen) !== 'ready') return;
     const n = recordReadyTryon(gen.id);
-    maybeAskForReview({ readyTryons: n });
+    let items = 0;
+    try { items = Number(localStorage.getItem(`drape:itemCount:${gen.userId}`)) || 0; } catch { /* private mode */ }
+    maybeAskForReview({ readyTryons: n, items });
   }, [gen?.id, gen?.status]);
 
   // If we're watching a pending try-on, schedule a re-render at the stuck

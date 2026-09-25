@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  classify, dayKey, buildTrends, summarizeBuckets, bump, emptyTrends,
+  classify, dayKey, buildTrends, summarizeBuckets, bump, emptyTrends, usageDepth,
   weekKey, personaSunset,
 } from '../functions/admin-helpers.js';
 
@@ -151,5 +151,23 @@ describe('personaSunset — phase from completed-week streaks', () => {
     const out = personaSunset(weekly, TODAY);
     expect(out.sunsetStreak).toBe(4);
     expect(out.phase).toBe('sunset');
+  });
+});
+
+describe('usageDepth', () => {
+  it('counts real users at or above each step, only the uids passed', () => {
+    const u = {
+      a: { items: 12, tryonReady: 2, ootd: 1, outfits: 4, board: 0 },
+      b: { items: 3, tryonReady: 0, ootd: 0, outfits: 0, board: 1 },
+      seed: { items: 99, tryonReady: 99 },
+    };
+    const days = { a: new Set(['2026-09-01', '2026-09-02', '2026-09-03']), b: new Set(['2026-09-01']) };
+    const d = usageDepth(u, days, ['a', 'b', 'c']);
+    const row = (k) => Object.fromEntries(d.rows.find((r) => r.key === k).steps.map((s) => [s.n, s.users]));
+    expect(d.users).toBe(3);
+    expect(row('items')).toMatchObject({ 1: 2, 3: 2, 10: 1, 20: 0 });
+    expect(row('tryonReady')).toMatchObject({ 1: 1, 2: 1, 3: 0 });
+    expect(row('savedLooks')).toMatchObject({ 1: 1, 3: 1, 5: 0 });
+    expect(row('days')).toMatchObject({ 1: 2, 3: 1, 5: 0 });
   });
 });

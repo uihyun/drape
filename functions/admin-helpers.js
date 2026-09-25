@@ -135,4 +135,30 @@ function summarizeBuckets({ u, buckets }) {
   return out;
 }
 
-module.exports = { DEV, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset, SUNSET_RULES };
+// Usage depth — how far past "tried it once" real users go. The activation
+// funnel answers ≥1; this answers ≥2 / ≥3 / ≥10, which is what a threshold (the
+// review-prompt gate, a nudge, a paywall) actually has to be sized against.
+// `activeDays` is distinct days a user CREATED something — a floor on the days
+// they opened the app, since browsing-only days leave no doc behind.
+const DEPTH = [
+  ['items', [1, 3, 5, 10, 20]],
+  ['tryonReady', [1, 2, 3, 5, 10]],
+  ['ootd', [1, 2, 3, 5, 10]],
+  ['savedLooks', [1, 2, 3, 5, 10]],
+  ['board', [1, 2, 3, 5, 10]],
+  ['days', [1, 2, 3, 5, 7]],
+];
+function usageDepth(u, activeDays, realUids) {
+  const rows = DEPTH.map(([key, steps]) => {
+    const vals = realUids.map((uid) => {
+      const c = u[uid] || {};
+      if (key === 'days') return activeDays[uid]?.size || 0;
+      if (key === 'savedLooks') return Math.max(0, (c.outfits || 0) - (c.ootd || 0));
+      return c[key] || 0;
+    });
+    return { key, steps: steps.map((n) => ({ n, users: vals.filter((v) => v >= n).length })) };
+  });
+  return { users: realUids.length, rows };
+}
+
+module.exports = { DEV, usageDepth, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset, SUNSET_RULES };
