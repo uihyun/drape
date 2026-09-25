@@ -161,7 +161,7 @@ export function OutfitList({ user, onSignIn, embedded = false }) {
       )}
 
       {/* Tabs + shared tag-filter button (applies to every tab). */}
-      <div className="closet-header" style={{ marginBottom: '1.25rem' }}>
+      <div className="closet-header" style={{ marginBottom: '1rem' }}>
         <nav className="filter-chips filter-chips--text" role="tablist" style={{ margin: 0 }}>
           {['mine', 'saved', 'analyzed'].map(key => (
             <button

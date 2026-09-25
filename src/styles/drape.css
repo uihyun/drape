@@ -2489,8 +2489,10 @@ body.is-native {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding-bottom: 0.55rem;
-  margin-bottom: 1rem;
+  /* Tighter than the 0.9rem-sub-tab era — the row's text is 0.78rem now and
+     the old gaps left it floating. */
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.85rem;
   border-bottom: 1px solid var(--border);
 }
 .closet-search-btn {
@@ -5787,7 +5789,7 @@ input[type="search"]::-webkit-search-decoration {
   border-bottom: 1px solid var(--border);
   /* No top margin — when stuck, the row sits flush under the notch filler so
      no sliver of scrolling content shows through (mirrors .feed-top). */
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   /* Auto-hiding sticky tab row: once the identity header scrolls past, the
      tabs stick under the notch; useHideOnScroll slides them up on scroll-down
      and back on scroll-up (the full header only returns at the very top). The

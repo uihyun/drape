@@ -51,6 +51,11 @@ phone media query is gone. BoardList and OutfitList use the same class and
 shrink with it. Note `.profile-tab`'s own 0.82rem phone rule sits before its
 base rule and never applies.
 
+With the smaller text the old gaps left the row floating, so the spacing came
+down too: `.profile-tabs` bottom margin 1rem → 0.75rem (every profile section),
+`.closet-filter-row` 0.55rem/1rem → 0.45rem/0.85rem, and the Outfits/Boards
+sub-tab header 1.25rem → 1rem. Tap padding on the tabs is unchanged.
+
 ---
 
 ## Unreleased — admin only
