@@ -235,7 +235,8 @@ async function deleteItem(itemId) {
   // (~1s of dead time that would otherwise stall the delete). Fire it off
   // and swallow errors; orphans are pruned by a scheduled function later.
   for (const path of [it.originalPath, it.croppedPath]) {
-    if (!path) continue;
+    // Only our own files — a borrowed piece points at the owner's cutout.
+    if (!path || path.split('/')[1] !== it.userId) continue;
     deleteObject(ref(storage, path)).catch(() => { /* already gone / ignore */ });
   }
 }
@@ -386,10 +387,23 @@ async function createFromDetected({ blob, detected, sourceLabel = '', shopUrl = 
  *  side — so the client never has to fetch the photo cross-origin (the
  *  firebasestorage download endpoint doesn't return CORS headers, which was
  *  breaking the blob-fetch path). */
-async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = false, source = null }) {
+async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = false, source = null, cropped = null }) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   if (!photoPath || !photoUrl) throw new Error('NO_SOURCE_PHOTO');
+  // Borrowing the same piece twice (e.g. tapping try-on again while the first
+  // copy was still cropping) must not add another wishlist copy — reuse the
+  // one we already have. A failed copy doesn't count; make a fresh one.
+  if (source?.itemId) {
+    const existing = await getDocs(query(
+      collection(db, ITEMS),
+      where('userId', '==', user.uid),
+      where('sourceItemId', '==', source.itemId),
+      limit(5),
+    ));
+    const keep = existing.docs.find(d => d.data().status !== 'failed');
+    if (keep) return { id: keep.id, reused: true };
+  }
   const id = `dt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   await setDoc(doc(db, ITEMS, id), {
     userId: user.uid,
@@ -405,7 +419,11 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
     // even if the source OOTD is later deleted.
     originalUrl: photoUrl,
     originalPath: photoPath,
-    status: 'processing',
+    // Borrowed from an item that already has a clean cutout: point at that
+    // cutout as-is. Re-running processItem on it only produced a slightly
+    // different re-render (and a 10-30s wait) of the exact same piece.
+    ...(cropped ? { croppedUrl: cropped.url, croppedPath: cropped.path, processedAt: serverTimestamp() } : {}),
+    status: cropped ? 'ready' : 'processing',
     tags: {
       category: detected.category || null,
       subcategory: detected.subcategory || null,
@@ -420,6 +438,10 @@ async function createFromExistingPhoto({ photoUrl, photoPath, detected, owned = 
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  if (cropped) {
+    logEvent(analytics, 'item_add', { source: 'borrowed_item' });
+    return { id };
+  }
   const processFn = httpsCallable(functions, 'processItem');
   processFn({
     itemId: id,

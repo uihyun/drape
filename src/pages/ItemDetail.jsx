@@ -275,7 +275,11 @@ export function ItemDetail({ user, onSignIn }) {
   const remove = async () => {
     if (!confirm(t('confirmDeleteItem'))) return;
     await ItemService.deleteItem(item.id);
-    navigate('/profile/closet');
+    // Back to the exact closet tab we came from (?cv=wishlist / usage / …) —
+    // swipes between items replace history, so -1 is the closet. A fixed
+    // '/profile/closet' dropped the tab and landed on All every time.
+    if (window.history.length > 1) navigate(-1);
+    else navigate(`/profile/closet${item.kind === 'wishlist' ? '?cv=wishlist' : ''}`);
   };
 
   // Replace the source photo. Uploads through CameraService.compressImage
@@ -405,7 +409,7 @@ export function ItemDetail({ user, onSignIn }) {
               if (!user || user.isAnonymous) { onSignIn?.(); return; }
               setBorrowing(true);
               try {
-                const { id: newId } = await ItemService.createFromExistingPhoto({
+                const { id: newId, reused } = await ItemService.createFromExistingPhoto({
                   photoUrl: item.croppedUrl || item.originalUrl,
                   photoPath: item.croppedPath || item.originalPath,
                   detected: {
@@ -418,12 +422,18 @@ export function ItemDetail({ user, onSignIn }) {
                   },
                   owned: false,
                   source: { itemId: item.id, userId: item.userId },
+                  // Reuse the owner's cutout when it exists — no re-crop.
+                  cropped: item.croppedUrl && item.croppedPath
+                    ? { url: item.croppedUrl, path: item.croppedPath }
+                    : null,
                 });
                 logEvent(analytics, 'item_tryon_open', {
                   owner: 'other', borrowed: true,
                   for_sale: !!(item.forSale && item.priceAsking > 0),
                 });
-                navigate(`/tryon?items=${newId}&borrowed=1&from=item_borrowed`);
+                // Already borrowed earlier → no "saved to your wishlist" note:
+                // nothing new was saved this time.
+                navigate(`/tryon?items=${newId}${reused ? '' : '&borrowed=1'}&from=item_borrowed`);
               } catch (e) {
                 console.warn('borrow for try-on failed', e?.message);
                 setBorrowing(false);

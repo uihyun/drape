@@ -1946,9 +1946,11 @@ body.is-native {
   padding: 0.2rem 0;
   border-radius: 0;
   color: var(--text-muted);
-  /* Match the section tabs above (.profile-tab) — these sub-tabs sit one level
-     down, so they must never read larger than their parent row. */
-  font-size: 0.9rem;
+  /* Same size as the section tabs above (.profile-tab, 0.78rem) — these
+     sub-tabs sit one level down, so they must never read larger than the
+     parent row. */
+  font-size: 0.78rem;
+  letter-spacing: -0.005em;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -1978,11 +1980,6 @@ body.is-native {
      so the structure matches the Lekondo capture. */
   opacity: 0.4;
   cursor: not-allowed;
-}
-/* Phone: match the section tabs' shrunk size (.profile-tab is 0.82rem here)
-   so the sub-tab row never reads larger than the parent tabs above it. */
-@media (max-width: 480px) {
-  .filter-chips--text .chip { font-size: 0.82rem; }
 }
 
 /* Try-on filter chip overrides — defined here (after .filter-chips) so

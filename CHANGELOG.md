@@ -11,6 +11,48 @@ Conventions:
 
 ---
 
+## Unreleased — borrowed try-on duplicates, deletion safety, closet tabs
+
+Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
+the apps only with the next native build.
+
+**Trying on someone else's piece stacked up wishlist copies.** Every tap of
+Try on in ItemDetail made a fresh `dt_*` wishlist item and re-ran `processItem`
+on it, so one tee became three copies, each a slightly different re-crop. The
+try-on picker also hid anything not `ready`, so the new copy was invisible for
+the 10–30s crop — people read that as "nothing happened" and tapped again.
+- `createFromExistingPhoto` looks up an existing copy by
+  `userId + sourceItemId` and returns it (`{ id, reused: true }`). A `failed`
+  copy doesn't count; a fresh one is made instead.
+- ItemDetail passes the owner's cutout as `cropped: { url, path }`. When present
+  the copy is created `ready` pointing at that cutout, with no `processItem`
+  call. No cutout on the source → the old crop path. (`tryon.js` reads
+  `croppedPath` as admin, so pointing at another user's file works.)
+- A reused copy drops `borrowed=1`, so "Saved to your wishlist" doesn't claim a
+  save that didn't happen.
+- TryOn shows `processing`/`uploading` items as the closet's spinner card, sorts
+  a pending `createdAt` as now (top), and locks Start with `t('processing')`
+  while a selected piece is still cropping.
+
+**Deleting a borrowed copy could delete the owner's photos.** A borrowed copy's
+`originalPath`/`croppedPath` point at `items/{ownerUid}/…`. Client
+`deleteItem` and account deletion (`deleteItemAndStorage`, which runs as admin)
+now only delete paths whose second segment is the item's own `userId`. This was
+true of every borrowed copy ever made, not just the new ready-on-create ones.
+
+**Deleting an item dropped you on the All tab.** `remove` went to a fixed
+`/profile/closet`. It now goes back in history (item swipes use `replace`, so
+-1 is the closet tab you came from, `?cv=wishlist` included) and falls back to
+the closet with `?cv=wishlist` for wishlist items.
+
+**Closet sub-tabs read larger than the tabs above them.** `.filter-chips--text
+.chip` goes from 0.9rem (0.82rem on phones) to `.profile-tab`'s 0.78rem, and the
+phone media query is gone. BoardList and OutfitList use the same class and
+shrink with it. Note `.profile-tab`'s own 0.82rem phone rule sits before its
+base rule and never applies.
+
+---
+
 ## Unreleased — admin only
 
 Web + functions only; nothing here reaches the app, and 2.2.0 was already in

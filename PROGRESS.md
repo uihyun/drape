@@ -44,6 +44,21 @@ narrow column on white. That is a design call, not a render setting.
 
 Android needs nothing for this; it already works on tablets and foldables.
 
+**24 Sep — borrowed try-on fixes (web + `deleteAccount` deployed; native on
+the next build).** Try on for someone else's piece now reuses the existing
+wishlist copy and the owner's cutout instead of stacking re-cropped duplicates;
+the picker shows still-cropping pieces; deletes never touch another user's
+storage paths; deleting an item returns to the closet tab you came from; closet
+sub-tabs match the section tabs' size. Detail in CHANGELOG. Done from the extras
+session and handed over here. Two duplicate copies left over from the bug sit in
+the owner's wishlist (`dt_1790296191244_sqj4x3`, `dt_1790296736510_jm2zcd`;
+the one to keep is `dt_1790296182753_2etl9p`) pending an owner call.
+
+The extras bot now posts OOTDs the way an owner does: `items/dt_*` created and
+cropped, then linked through `itemIds`/`pieceLinks`/`coverUrl`, with wear log.
+Deleting a bot post deletes its linked items. First one:
+`outfits/kxdKaVIxes3EmV0SEC6J`.
+
 The share bug is the lesson worth keeping from this round: it was fixed and
 deployed to web on 21 Sep, and 2.1.1 users kept hitting it anyway, because the
 native app serves bundled assets (no `server.url` in `capacitor.config.json`).

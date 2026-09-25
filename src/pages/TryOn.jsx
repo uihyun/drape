@@ -20,6 +20,7 @@ import { FitsService } from '../services/fits-service.js';
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
 const MAX_TRYON_ITEMS = 6;
+const isProcessing = (it) => it?.status === 'processing' || it?.status === 'uploading';
 
 // Small circular gauge of the DAILY allowance (사주핑 energy-ring style): a track
 // ring + an accent arc filling remaining/max, drawn from 12 o'clock. The ring is
@@ -134,15 +135,21 @@ export function TryOn({ user, onSignIn }) {
 
   const visibleItems = useMemo(
     () => (filterCount === 0 ? items : items.filter(it => itemMatchesFilters(it, filters)))
-      .slice().sort(byTime(sort, it => it.createdAt?.toMillis?.() ?? 0)),
+      // A just-created doc has a pending serverTimestamp (null locally) —
+      // treat it as "now" so the new piece sorts to the top, not the bottom.
+      .slice().sort(byTime(sort, it => it.createdAt?.toMillis?.() ?? Date.now())),
     [items, filters, filterCount, sort],
   );
 
   useEffect(() => {
     if (!user || user.isAnonymous) return;
     IdentityService.getMyRefs().then(setRefs);
+    // Processing items stay in the grid (as a spinner card) instead of being
+    // hidden until ready: a piece borrowed on the way here takes ~10-30s to
+    // crop, and an invisible-then-suddenly-there item read as "nothing
+    // happened" — people tapped try-on again and got a second copy.
     const unsub = ItemService.subscribeMyCloset(user.uid, list => {
-      setItems(list.filter(i => i.status === 'ready'));
+      setItems(list.filter(i => i.status === 'ready' || isProcessing(i)));
     });
     return unsub;
   }, [user]);
@@ -206,6 +213,9 @@ export function TryOn({ user, onSignIn }) {
       </div>
     );
   }
+
+  // Selected but not cropped yet (e.g. just borrowed) — wait for the cutout.
+  const selectedProcessing = !outfitRefId && items.some(it => selected.has(it.id) && isProcessing(it));
 
   const toggleItem = (id) => {
     if (!selected.has(id) && selected.size >= MAX_TRYON_ITEMS) {
@@ -404,17 +414,23 @@ export function TryOn({ user, onSignIn }) {
             <div className="closet-grid">
               {visibleItems.map(it => {
                 const isSel = selected.has(it.id);
+                const proc = isProcessing(it);
                 return (
                   <button
                     key={it.id}
                     type="button"
-                    className={`item-card builder-pickable ${isSel ? 'selected' : ''}`}
+                    className={`item-card builder-pickable ${isSel ? 'selected' : ''} ${proc ? 'processing' : ''}`}
                     onClick={() => toggleItem(it.id)}
                   >
                     <div className="item-card-image">
                       {it.croppedUrl || it.originalUrl
                         ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
                         : <div className="item-card-skeleton" />}
+                      {proc && (
+                        <span className="item-card-loading" aria-label={t('processing')}>
+                          <span className="spinner spinner-sm" />
+                        </span>
+                      )}
                       {isSel && (
                         <span className="item-card-check">
                           <Check size={14} strokeWidth={2.4} />
@@ -473,10 +489,12 @@ export function TryOn({ user, onSignIn }) {
             type="button"
             className="btn btn-primary"
             onClick={submit}
-            disabled={submitting || (!outfitRefId && selected.size === 0)}
+            disabled={submitting || selectedProcessing || (!outfitRefId && selected.size === 0)}
           >
             <Sparkles size={16} strokeWidth={1.8} />
             {submitting ? t('generating')
+              // A picked piece is still being cropped — try-on needs the cutout.
+              : selectedProcessing ? t('processing')
               : (outfitRefId || selected.size === 0 ? t('startTryOn')
                 : selected.size === 1 ? t('startTryOnItem')
                   : t('startTryOnItems', { n: selected.size }))}
