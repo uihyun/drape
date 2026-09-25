@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Plus, Trash2, Sparkles, Eye, Calendar as CalIcon, Check, X, AlertTriangle } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
 import { ItemService } from '../services/item-service.js';
@@ -20,6 +20,7 @@ const PRESS_HOLD_MS = 450;
 export function BoardEditor({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const location = useLocation();
   const { boardId } = useParams();
   const isNew = !boardId;
 
@@ -189,7 +190,10 @@ export function BoardEditor({ user, onSignIn }) {
     if (isNew) { navigate('/profile/boards'); return; }
     if (!confirm(t('confirmDeleteBoard'))) return;
     await BoardService.deleteBoard(boardId);
-    navigate('/profile/boards');
+    // Skip the (now deleted) detail and land on the ?bt= tab we came from.
+    // Only when the detail itself had a list behind it — else -2 leaves the app.
+    if (location.state?.detailHasBack) navigate(-2);
+    else navigate('/profile/boards', { replace: true });
   };
 
   return (

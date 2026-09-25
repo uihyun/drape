@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
 import { db, analytics, logEvent } from '../firebase.js';
@@ -17,6 +17,7 @@ import { SwipeHint } from '../components/SwipeHint.jsx';
 import { OnboardHint } from '../components/OnboardHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { saveFilters } from '../services/filterStore.js';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
@@ -34,6 +35,7 @@ export function OutfitDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { outfitId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   // "Would this suit me?" — only meaningful on someone else's look.
   // Seeded from the session cache so leaving and coming back doesn't lose the
   // answer; keyed by persona, so switching stylists asks the new one fresh.
@@ -173,7 +175,15 @@ export function OutfitDetail({ user, onSignIn }) {
   const remove = async () => {
     if (!confirm(t('confirmDeleteOutfit'))) return;
     await OutfitService.deleteOutfit(outfit.id);
-    navigate('/profile/outfits');
+    // Land the calendar on the deleted look's month — a swipe from the
+    // calendar can cross months, and its remembered cursor has a TTL.
+    const [y, m] = (outfit.date || '').split('-').map(Number);
+    if (y && m) saveFilters(`calendar:${outfit.userId}`, { y, m: m - 1 });
+    // Back to wherever we opened it (calendar / ?ot= tab): swipes replace
+    // history, so -1 is that list. A fixed path dropped the tab.
+    if (location.key !== 'default') navigate(-1);
+    else navigate(outfit.date ? '/profile/calendar'
+      : `/profile/outfits${isAnalyzed ? '?ot=analyzed' : ''}`);
   };
 
   const openEdit = () => {

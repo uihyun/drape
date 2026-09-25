@@ -45,6 +45,15 @@ true of every borrowed copy ever made, not just the new ready-on-create ones.
 -1 is the closet tab you came from, `?cv=wishlist` included) and falls back to
 the closet with `?cv=wishlist` for wishlist items.
 
+**Deleting an outfit or board dropped the tab too.** Same fix, other tabs.
+OutfitDetail `remove` goes back (calendar, or the `?ot=` Mine / Saved / Analyzed
+tab); a dated look also sets the calendar's remembered month to its date, since
+a swipe can cross months and that cursor has a 30-min TTL. Boards are deleted
+from BoardEditor, one step past the deleted detail, so it goes back two — only
+when BoardDetail says it had a list behind it (`state.detailHasBack`), else
+`/profile/boards`. "Can we go back" is `location.key !== 'default'` now, not
+`history.length > 1` (which counts pages outside the app and could exit it).
+
 **Closet sub-tabs read larger than the tabs above them.** `.filter-chips--text
 .chip` goes from 0.9rem (0.82rem on phones) to `.profile-tab`'s 0.78rem, and the
 phone media query is gone. BoardList and OutfitList use the same class and

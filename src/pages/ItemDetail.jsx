@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Sparkles, Loader2, MoreHorizontal, Pencil, Trash2, Layers, Image as ImageIcon, Download, Flag, ExternalLink, ShoppingBag, Check, Bookmark } from 'lucide-react';
 import { db, analytics, logEvent } from '../firebase.js';
@@ -35,6 +35,7 @@ export function ItemDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { itemId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const swipe = useSwipeNavigate();
   const [item, setItem] = useState(undefined); // undefined=loading, null=deleted/unavailable
   const [editing, setEditing] = useState(false);
@@ -278,7 +279,7 @@ export function ItemDetail({ user, onSignIn }) {
     // Back to the exact closet tab we came from (?cv=wishlist / usage / …) —
     // swipes between items replace history, so -1 is the closet. A fixed
     // '/profile/closet' dropped the tab and landed on All every time.
-    if (window.history.length > 1) navigate(-1);
+    if (location.key !== 'default') navigate(-1);
     else navigate(`/profile/closet${item.kind === 'wishlist' ? '?cv=wishlist' : ''}`);
   };
 

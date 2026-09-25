@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Edit3, Eye, EyeOff, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
@@ -24,6 +24,7 @@ export function BoardDetail({ user, onSignIn }) {
   const { t } = useLocale();
   const { boardId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const swipe = useSwipeNavigate();
   const [board, setBoard] = useState(undefined); // undefined=loading, null=not-found
   const [author, setAuthor] = useState(null);
@@ -125,7 +126,7 @@ export function BoardDetail({ user, onSignIn }) {
           <span className="outfit-byline-handle">{author?.handle ? `@${author.handle}` : ''}</span>
         </Link>
         {isOwner && (
-          <Link to={`/boards/${board.id}/edit`} className="btn-edit">
+          <Link to={`/boards/${board.id}/edit`} state={{ detailHasBack: location.key !== 'default' }} className="btn-edit">
             <Edit3 size={14} strokeWidth={1.6} /> {t('edit')}
           </Link>
         )}
