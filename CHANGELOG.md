@@ -11,10 +11,12 @@ Conventions:
 
 ---
 
-## Unreleased — borrowed try-on duplicates, deletion safety, closet tabs
+## 2.2.1 — one tap, one try-on; deletes that stay put; closet tabs — built 27 Sep 2026
 
-Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
-the apps only with the next native build.
+iOS build 19, Android versionCode 23. Everything below was already live on web
+(and the server halves — duplicate-request lock, account-deletion paths, Trends
+— on functions) from 24–27 Sep; this build carries the client halves to the
+apps. Store notes: `resources/app-store/listing-*.md` → 2.2.1.
 
 **Deleting a piece added from an outfit deleted the outfit's photo.** "+ add
 to closet" in OutfitLink (and the analyze flow) creates items whose

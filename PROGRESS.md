@@ -44,6 +44,11 @@ narrow column on white. That is a design call, not a render setting.
 
 Android needs nothing for this; it already works on tablets and foldables.
 
+**27 Sep — 2.2.1 built.** iOS build 19 / Android versionCode 23. AAB at
+`resources/app-store/builds/drape-2.2.1-23.aab` (upload-key signed, SHA-1
+4F:27…F5:DE); iOS archived from Xcode by the owner. Release notes in
+`listing-*.md` → 2.2.1. Carries the client halves of everything since 24 Sep.
+
 **27 Sep — duplicate try-on charges fixed.** User `IQJhGEJmuTdRmDw2XASDngWIUM33`
 (@minje) lost fits to one tap firing three `virtualTryOn` calls (two 14 ms
 apart). Client ref guard + server transactional lock per identical request;
