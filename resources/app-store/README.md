@@ -130,3 +130,11 @@ tab. Calendar is not a candidate: it looks minor on views (263 across 90 days)
 but has the second-widest *reach* of any tab — 68 users against closet's 71,
 more than try-on's 53. Few views per user is what a daily logging feature looks
 like when it is working, not a sign nobody goes there.
+
+## Pasting release notes
+
+`npm run notes` (or `npm run notes -- 2.2.1`) gathers one version's notes from
+all five `listing-*.md` files into a single page with a copy button and a
+character count per block (App Store ≤4000, Play ≤500 — over the limit shows
+red). It writes `builds/release-notes-<v>.html` and opens it. The listing files
+stay the source of truth; the page is regenerated, never edited.

@@ -21,7 +21,8 @@
     "check:fast": "node scripts/check.mjs --fast",
     "cap:sync": "npm run build && cap sync",
     "cap:open:ios": "cap open ios",
-    "cap:open:android": "cap open android"
+    "cap:open:android": "cap open android",
+    "notes": "node scripts/release-notes.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
