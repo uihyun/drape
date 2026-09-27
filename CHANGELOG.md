@@ -16,7 +16,26 @@ Conventions:
 Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
 the apps only with the next native build.
 
-**Trends put seed looks ahead of real people's.** The weekly auto-pick sorted
+**One tap could start three try-ons and spend three fits.** A user reported
+their first try burning three fits and the same result appearing twice. The
+logs agree: 27 Sep 01:07 UTC, one `virtualTryOn` call, then two more that
+passed auth **14 ms apart** while the first was still running — three charges,
+`fitDailyUsed` 5 after three kept results. `disabled={submitting}` only lands
+on the next render, so taps within one frame all got through.
+- Client: a synchronous `useRef` in-flight guard on TryOn `submit` and
+  GenerationDetail `regen`.
+- Server (can't trust the client): `virtualTryOn` claims a per-request lock in
+  a transaction on `users/{uid}/private/tryonLock` (server-only, no rules
+  change), keyed by a hash of the request (sorted itemIds, outfitRefId,
+  background, prompt, custom photo, regenerateOf). A second identical call
+  while the first runs gets `{ generationId: <running>, duplicate: true }` —
+  no Generation doc, no charge. Held 200s (> the 180s ceiling), released in a
+  `finally` the moment the run ends.
+- Verified live on the aake dev account: two identical calls fired together →
+  one generation, the second answered `duplicate`, one fit charged, lock empty
+  afterwards.
+
+ The weekly auto-pick sorted
 newest-first across everyone, and seeds post ~70× more public looks (4 real in
 the newest 300 on 27 Sep), so a real look lost to any fresher seed one — and
 one from early in the week could fall out of the newest-60 pool entirely. Now

@@ -27,7 +27,30 @@ const { GoogleGenAI } = require('@google/genai');
 // Auth is the function's service-account (ADC); no API key. Free ≤1000/mo.
 const visionApi = require('@google-cloud/vision');
 const { removeBackground } = require('@imgly/background-removal-node');
+const crypto = require('crypto');
 const { reserveFit, refundFit } = require('./fits.js');
+
+// ── Duplicate-request guard ───────────────────────────────────────────
+// One tap once produced three calls (27 Sep: two of them 14ms apart) and
+// charged three fits for one try-on. The client now guards synchronously, but
+// the server can't trust that: a second call with the SAME request while the
+// first is still running returns the running generation instead of starting
+// (and charging) another. Claimed in a transaction on a server-only doc, so
+// two calls landing in the same millisecond still serialize. Held for longer
+// than the 180s function ceiling, released as soon as the run ends.
+const INFLIGHT_MS = 200 * 1000;
+function requestSig({ itemIds, outfitRefId, backgroundDesc, prompt, customPhotoPath, removeCustomBg, regenerateOf }) {
+  const hex = crypto.createHash('sha1').update(JSON.stringify([
+    Array.isArray(itemIds) ? [...itemIds].sort() : [],
+    outfitRefId || null,
+    (backgroundDesc || '').trim(),
+    prompt || '',
+    customPhotoPath || null,
+    !!removeCustomBg,
+    regenerateOf || null,
+  ])).digest('hex').slice(0, 16);
+  return `s_${hex}`;  // field-path safe (never starts with a digit)
+}
 
 let _visionClient = null;
 function visionClient() {
@@ -502,288 +525,314 @@ exports.virtualTryOn = onCall(
     const scene = (!customPhotoPath && !!(backgroundDesc && backgroundDesc.trim()))
       || (!!customPhotoPath && !removeCustomBg);
     const genRef = db.collection('generations').doc();
-    await genRef.set({
-      userId: uid,
-      itemIds: Array.isArray(itemIds) ? itemIds : [],
-      outfitRefId: outfitRefId || null,
-      entryFrom: ENTRY_PATHS.has(entryFrom) ? entryFrom : 'other',
-      title: (title || '').slice(0, 80),
-      identityRefCount: referenceCount,
-      customPhotoPath: customPhotoPath || null,
-      scene,
-      modelTier: 'pro',
-      modelId,
-      prompt: prompt || null,
-      regenerateOf: regenerateOf || null,
-      status: 'pending',
-      rating: 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+
+    const lockRef = db.collection('users').doc(uid).collection('private').doc('tryonLock');
+    const sig = requestSig({ itemIds, outfitRefId, backgroundDesc, prompt, customPhotoPath, removeCustomBg, regenerateOf });
+    const runningId = await db.runTransaction(async (txn) => {
+      const snap = await txn.get(lockRef);
+      const cur = snap.exists ? snap.data()[sig] : null;
+      if (cur && Date.now() - cur.at < INFLIGHT_MS) return cur.genId;
+      txn.set(lockRef, { [sig]: { genId: genRef.id, at: Date.now() } }, { merge: true });
+      return null;
     });
-
-    // ── Load reference image(s) ────────────────────────────────────────
-    let referenceParts = [];
-    if (customPhotoPath) {
-      referenceParts = [await downloadAsInlineData(bucket, customPhotoPath)];
-    } else {
-      for (const ref of identityRefs) {
-        referenceParts.push(await downloadAsInlineData(bucket, ref.path));
-      }
+    if (runningId) {
+      // Not a try-on — no Generation doc, no charge. Hand back the one running.
+      console.info('virtualTryOn duplicate request, returning running', runningId);
+      return { generationId: runningId, variantUrls: [], duplicate: true };
     }
+    const releaseLock = () => db.runTransaction(async (txn) => {
+      const snap = await txn.get(lockRef);
+      if (snap.exists && snap.data()[sig]?.genId === genRef.id) {
+        txn.update(lockRef, { [sig]: admin.firestore.FieldValue.delete() });
+      }
+    }).catch((e) => console.warn('tryon lock release failed:', e?.message));
 
-    // ── Load garment input ─────────────────────────────────────────────
-    // Two sources: (a) the user's own item crops (itemIds), ownership-checked;
-    // (b) a public outfit's worn-look photo (outfitRefId) — re-create the
-    // whole look. Only ONE mode is active per call.
-    const items = [];
-    let outfitRefPart = null;
-    // Outfit-ref try-ons carry no itemIds (they copy a photo, not closet
-    // pieces) and skip their own analysis — so without help they'd have nothing
-    // for the look/tag filter to match. Denormalize the borrowed outfit's
-    // already-analyzed style + pieces onto the generation so it stays
-    // searchable (no extra Gemini call).
-    let refStyle = null, refPieces = null;
-    if (isOutfitRef) {
-      const oSnap = await db.collection('outfits').doc(outfitRefId).get();
-      if (!oSnap.exists) {
-        await genRef.update({ status: 'failed', errors: ['outfit missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('not-found', 'outfit missing');
-      }
-      const o = oSnap.data();
-      if (Array.isArray(o.style) && o.style.length) refStyle = o.style;
-      if (Array.isArray(o.pieces) && o.pieces.length) refPieces = o.pieces;
-      // Only public outfits can be borrowed (your own private ones too).
-      if (!o.isPublic && o.userId !== uid) {
-        await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('permission-denied', 'outfit not public');
-      }
-      // Use the FULL worn photo (scene intact), NOT the person-cutout. The
-      // cutout is a person on a white/transparent plate — visually identical
-      // to the user's identity refs (also white-bg cutouts), so feeding it
-      // makes the model confuse "person to copy clothes FROM" with "person to
-      // keep the identity OF": it keeps the identity's own clothes or copies
-      // the wrong face. A full scene photo reads clearly as "someone else
-      // wearing the look" — which is why analyzed posts (no cutout) already
-      // work. Try each source as a storage PATH first, then as a download URL
-      // (seed/older OOTDs may carry only the URL); the cutout is the last
-      // resort.
-      const sources = [
-        [o.photoPath, o.photoUrl],
-        [o.sourcePhotoPath, o.sourcePhotoUrl],
-        [o.coverPath, o.coverUrl],
-        [o.photoCutPath, o.photoCutUrl],
-      ];
-      for (const [p, u] of sources) {
-        try {
-          if (p) { outfitRefPart = await downloadAsInlineData(bucket, p); break; }
-          if (u) { outfitRefPart = await fetchAsInlineData(u); break; }
-        } catch (e) {
-          console.warn('outfit-ref source load failed, trying next:', e?.message);
-        }
-      }
-      if (!outfitRefPart) {
-        await genRef.update({ status: 'failed', errors: ['outfit has no usable photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        throw new HttpsError('failed-precondition', 'outfit has no photo');
-      }
-    } else {
-      const itemDocs = await Promise.all(
-        itemIds.map(id => db.collection('items').doc(id).get())
-      );
-      for (const snap of itemDocs) {
-        if (!snap.exists) {
-          await genRef.update({ status: 'failed', errors: ['item missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-          throw new HttpsError('not-found', 'item missing');
-        }
-        const data = snap.data();
-        if (data.userId !== uid) {
-          await genRef.update({ status: 'failed', errors: ['not your item'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-          throw new HttpsError('permission-denied', 'not your item');
-        }
-        if (data.status !== 'ready' || !data.croppedPath) {
-          await genRef.update({ status: 'failed', errors: ['item not processed yet'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-          throw new HttpsError('failed-precondition', 'item not processed yet');
-        }
-        items.push({ id: snap.id, ...data });
-      }
-    }
-
-    const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
-
-    // Outfit-ref: blur the (other person's) face in the look photo so it can't
-    // override the user's identity refs. Done before the parts are assembled.
-    if (isOutfitRef && outfitRefPart) {
-      console.info('outfit-ref: neutralizing source face before generation');
-      const rawBuf = Buffer.from(outfitRefPart.inlineData.data, 'base64');
-      const blurred = await blurOutfitFace(rawBuf);
-      outfitRefPart = { inlineData: { data: blurred.toString('base64'), mimeType: 'image/jpeg' } };
-    }
-
-    // ── Build prompt parts ─────────────────────────────────────────────
-    const parts = [...referenceParts];
-    if (isOutfitRef) {
-      parts.push(outfitRefPart);
-    } else {
-      for (const it of items) {
-        parts.push(await downloadAsInlineData(bucket, it.croppedPath));
-      }
-    }
-    const promptMode = isOutfitRef
-      ? 'outfit-ref'
-      : (customPhotoPath ? 'custom-photo' : 'identity-refs');
-    parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) + ANATOMY_GUARD });
-
-    // ── Reserve a fit (daily free first, then bonus) ───────────────────
-    // Done AFTER validation so a bad request never burns a fit, and BEFORE the
-    // expensive generation. `resource-exhausted` → mark this pending doc failed
-    // and rethrow so the client shows the out-of-fits prompt. Refunded below if
-    // every variant fails. The client also pre-checks, so this is the backstop.
-    let fitCharged = null;
     try {
-      fitCharged = await db.runTransaction((txn) => reserveFit(txn, uid));
-    } catch (err) {
-      if (err?.code === 'resource-exhausted') {
-        await genRef.update({ status: 'failed', errors: ['out_of_fits'], updatedAt: admin.firestore.FieldValue.serverTimestamp() }).catch(() => {});
-      }
-      throw err;
-    }
-    await genRef.update({ fitCharged }).catch(() => {});
-
-    // ── Run N variants in parallel ─────────────────────────────────────
-    // Relax safety to BLOCK_ONLY_HIGH: at the default MEDIUM threshold the
-    // image model over-refuses ordinary fashion photos of people (esp. young
-    // women in skirts/dresses) and, instead of erroring, silently returns one
-    // of the INPUT photos unchanged — which surfaced as "the try-on just shows
-    // my reference photo". This is legitimate styling content; loosen it so
-    // the model actually generates.
-    const safetySettings = [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-    ];
-    // One generate + normalize pass. Returns the finished 3:4 buffer plus
-    // `gridly` — true when the segmented figure box is wide (a contact-sheet of
-    // several people rather than one). The caller retries on `gridly`.
-    const generateVariant = async (idx) => {
-      // 1K output — the result is normalized to 900x1200 downstream, so 2K
-      // would just be downscaled away; 1K covers it, at lower cost + faster.
-      const res = await aiImg.models.generateContent({
-        model: modelId,
-        contents: parts,
-        config: { safetySettings, imageConfig: { imageSize: MODELS.imageTryonSize } },
+      await genRef.set({
+        userId: uid,
+        itemIds: Array.isArray(itemIds) ? itemIds : [],
+        outfitRefId: outfitRefId || null,
+        entryFrom: ENTRY_PATHS.has(entryFrom) ? entryFrom : 'other',
+        title: (title || '').slice(0, 80),
+        identityRefCount: referenceCount,
+        customPhotoPath: customPhotoPath || null,
+        scene,
+        modelTier: 'pro',
+        modelId,
+        prompt: prompt || null,
+        regenerateOf: regenerateOf || null,
+        status: 'pending',
+        rating: 0,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
-      const img = extractImage(res);
-      if (!img) return null;
-      // Normalize EVERY variant (except custom-photo) to a fixed 3:4
-      // canvas so every result card renders at the same size:
-      //   - default identity-refs (no backgroundDesc) → Gemini paints
-      //     the figure on a plain white catalog backdrop. trim strips
-      //     that padding, then resize fit:contain pads back into 900x1200
-      //     with white — figure fills the canvas vertically.
-      //   - backgroundDesc set → Gemini paints a real scene. trim is a
-      //     no-op on a varied edge; fit:cover scales to fill 900x1200
-      //     and side-crops the scene (figure is centered, stays in
-      //     frame). fit:contain would leave white bars top+bottom
-      //     because the scene was 1:1 instead of 3:4.
-      // Custom-photo mode: skip both — preserve the real photo aspect
-      // and background.
-      let buf = Buffer.from(img.data, 'base64');
-      let gridly = false;
-      // Normalize unless we're in custom-photo mode AND the user
-      // wants the original scene preserved. removeCustomBg=true
-      // opts custom-photo into the same segmentation+white-card
-      // pipeline as the identity-refs default.
-      const shouldNormalize = !customPhotoPath || removeCustomBg;
-      if (shouldNormalize) {
-        const hasScene = !customPhotoPath && !!(backgroundDesc && backgroundDesc.trim());
-        try {
-          if (hasScene) {
-            // Real scene — keep Gemini's backdrop, just fit to
-            // the 3:4 canvas via cover crop.
-            buf = await sharp(buf)
-              .resize({ width: 900, height: 1200, fit: 'cover' })
-              .png().toBuffer();
-          } else {
-            // No-scene mode: figure size must be consistent across
-            // variants, but color-trim fails when Gemini draws a
-            // gradient / cast shadow in its catalog backdrop (it
-            // stops at the first non-matching pixel, leaving a
-            // few-cm margin above the head and below the feet).
-            // Solution: run segmentation on the Gemini output to
-            // get a semantic figure mask, trim transparent edges
-            // (always accurate, no threshold guesswork), then
-            // composite the trimmed figure centered on a 900x1200
-            // white card.
-            const blob = new Blob([buf], { type: img.mimeType || 'image/png' });
-            const cutoutBlob = await removeBackground(blob, {
-              output: { format: 'image/png' },
-            });
-            const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
-            const bbox = await alphaBBox(cutout);
-            // Wide mask ⇒ Gemini returned a contact-sheet of figures, not one
-            // person. Signal a retry (the segmentation bbox is free here).
-            gridly = looksLikeGrid(bbox);
-            // Center the figure on a white 3:4 card via its alpha bbox
-            // (robust to faint artifacts that color-trim would mis-include).
-            buf = await figureOnWhiteCard(cutout, 900, 1200, bbox);
+
+      // ── Load reference image(s) ────────────────────────────────────────
+      let referenceParts = [];
+      if (customPhotoPath) {
+        referenceParts = [await downloadAsInlineData(bucket, customPhotoPath)];
+      } else {
+        for (const ref of identityRefs) {
+          referenceParts.push(await downloadAsInlineData(bucket, ref.path));
+        }
+      }
+
+      // ── Load garment input ─────────────────────────────────────────────
+      // Two sources: (a) the user's own item crops (itemIds), ownership-checked;
+      // (b) a public outfit's worn-look photo (outfitRefId) — re-create the
+      // whole look. Only ONE mode is active per call.
+      const items = [];
+      let outfitRefPart = null;
+      // Outfit-ref try-ons carry no itemIds (they copy a photo, not closet
+      // pieces) and skip their own analysis — so without help they'd have nothing
+      // for the look/tag filter to match. Denormalize the borrowed outfit's
+      // already-analyzed style + pieces onto the generation so it stays
+      // searchable (no extra Gemini call).
+      let refStyle = null, refPieces = null;
+      if (isOutfitRef) {
+        const oSnap = await db.collection('outfits').doc(outfitRefId).get();
+        if (!oSnap.exists) {
+          await genRef.update({ status: 'failed', errors: ['outfit missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('not-found', 'outfit missing');
+        }
+        const o = oSnap.data();
+        if (Array.isArray(o.style) && o.style.length) refStyle = o.style;
+        if (Array.isArray(o.pieces) && o.pieces.length) refPieces = o.pieces;
+        // Only public outfits can be borrowed (your own private ones too).
+        if (!o.isPublic && o.userId !== uid) {
+          await genRef.update({ status: 'failed', errors: ['outfit not public'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('permission-denied', 'outfit not public');
+        }
+        // Use the FULL worn photo (scene intact), NOT the person-cutout. The
+        // cutout is a person on a white/transparent plate — visually identical
+        // to the user's identity refs (also white-bg cutouts), so feeding it
+        // makes the model confuse "person to copy clothes FROM" with "person to
+        // keep the identity OF": it keeps the identity's own clothes or copies
+        // the wrong face. A full scene photo reads clearly as "someone else
+        // wearing the look" — which is why analyzed posts (no cutout) already
+        // work. Try each source as a storage PATH first, then as a download URL
+        // (seed/older OOTDs may carry only the URL); the cutout is the last
+        // resort.
+        const sources = [
+          [o.photoPath, o.photoUrl],
+          [o.sourcePhotoPath, o.sourcePhotoUrl],
+          [o.coverPath, o.coverUrl],
+          [o.photoCutPath, o.photoCutUrl],
+        ];
+        for (const [p, u] of sources) {
+          try {
+            if (p) { outfitRefPart = await downloadAsInlineData(bucket, p); break; }
+            if (u) { outfitRefPart = await fetchAsInlineData(u); break; }
+          } catch (e) {
+            console.warn('outfit-ref source load failed, trying next:', e?.message);
           }
-        } catch (e) {
-          console.warn('try-on normalize skipped:', e?.message);
+        }
+        if (!outfitRefPart) {
+          await genRef.update({ status: 'failed', errors: ['outfit has no usable photo'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          throw new HttpsError('failed-precondition', 'outfit has no photo');
+        }
+      } else {
+        const itemDocs = await Promise.all(
+          itemIds.map(id => db.collection('items').doc(id).get())
+        );
+        for (const snap of itemDocs) {
+          if (!snap.exists) {
+            await genRef.update({ status: 'failed', errors: ['item missing'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+            throw new HttpsError('not-found', 'item missing');
+          }
+          const data = snap.data();
+          if (data.userId !== uid) {
+            await genRef.update({ status: 'failed', errors: ['not your item'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+            throw new HttpsError('permission-denied', 'not your item');
+          }
+          if (data.status !== 'ready' || !data.croppedPath) {
+            await genRef.update({ status: 'failed', errors: ['item not processed yet'], updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+            throw new HttpsError('failed-precondition', 'item not processed yet');
+          }
+          items.push({ id: snap.id, ...data });
         }
       }
-      return { buf, gridly };
-    };
 
-    const runs = Array.from({ length: n }, async (_, idx) => {
+      const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
+
+      // Outfit-ref: blur the (other person's) face in the look photo so it can't
+      // override the user's identity refs. Done before the parts are assembled.
+      if (isOutfitRef && outfitRefPart) {
+        console.info('outfit-ref: neutralizing source face before generation');
+        const rawBuf = Buffer.from(outfitRefPart.inlineData.data, 'base64');
+        const blurred = await blurOutfitFace(rawBuf);
+        outfitRefPart = { inlineData: { data: blurred.toString('base64'), mimeType: 'image/jpeg' } };
+      }
+
+      // ── Build prompt parts ─────────────────────────────────────────────
+      const parts = [...referenceParts];
+      if (isOutfitRef) {
+        parts.push(outfitRefPart);
+      } else {
+        for (const it of items) {
+          parts.push(await downloadAsInlineData(bucket, it.croppedPath));
+        }
+      }
+      const promptMode = isOutfitRef
+        ? 'outfit-ref'
+        : (customPhotoPath ? 'custom-photo' : 'identity-refs');
+      parts.push({ text: tryOnPrompt(items, prompt, backgroundDesc, referenceCount, promptMode) + ANATOMY_GUARD });
+
+      // ── Reserve a fit (daily free first, then bonus) ───────────────────
+      // Done AFTER validation so a bad request never burns a fit, and BEFORE the
+      // expensive generation. `resource-exhausted` → mark this pending doc failed
+      // and rethrow so the client shows the out-of-fits prompt. Refunded below if
+      // every variant fails. The client also pre-checks, so this is the backstop.
+      let fitCharged = null;
       try {
-        // The image model intermittently returns a contact-sheet of several
-        // figures instead of one; regenerate when we detect that (up to 3 tries).
-        // A clean single-figure result breaks out on the first pass, so normal
-        // runs pay no extra latency. Keep the last attempt if all came back grid.
-        let out = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          const r = await generateVariant(idx);
-          if (!r) { if (attempt === 2 && !out) return { idx, ok: false, error: 'no image returned' }; continue; }
-          out = r;
-          if (!r.gridly) break;
-          console.warn('try-on grid retry', idx, 'attempt', attempt + 1);
-        }
-        if (!out) return { idx, ok: false, error: 'no image returned' };
-        const buf = out.buf;
-        const path = `generations/${uid}/${genRef.id}/${idx}.png`;
-        await bucket.file(path).save(buf, {
-          metadata: { contentType: 'image/png', cacheControl: 'public,max-age=31536000,immutable' },
-        });
-        await bucket.file(path).makePublic().catch(() => {});
-        return { idx, ok: true, url: bucketUrl(bucket.name, path), path };
+        fitCharged = await db.runTransaction((txn) => reserveFit(txn, uid));
       } catch (err) {
-        console.warn('try-on variant failed', idx, err.message);
-        return { idx, ok: false, error: err.message };
+        if (err?.code === 'resource-exhausted') {
+          await genRef.update({ status: 'failed', errors: ['out_of_fits'], updatedAt: admin.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+        }
+        throw err;
       }
-    });
+      await genRef.update({ fitCharged }).catch(() => {});
 
-    const results = await Promise.all(runs);
-    const variantUrls = results.filter(r => r.ok).map(r => r.url);
-    const variantPaths = results.filter(r => r.ok).map(r => r.path);
+      // ── Run N variants in parallel ─────────────────────────────────────
+      // Relax safety to BLOCK_ONLY_HIGH: at the default MEDIUM threshold the
+      // image model over-refuses ordinary fashion photos of people (esp. young
+      // women in skirts/dresses) and, instead of erroring, silently returns one
+      // of the INPUT photos unchanged — which surfaced as "the try-on just shows
+      // my reference photo". This is legitimate styling content; loosen it so
+      // the model actually generates.
+      const safetySettings = [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+      ];
+      // One generate + normalize pass. Returns the finished 3:4 buffer plus
+      // `gridly` — true when the segmented figure box is wide (a contact-sheet of
+      // several people rather than one). The caller retries on `gridly`.
+      const generateVariant = async (idx) => {
+        // 1K output — the result is normalized to 900x1200 downstream, so 2K
+        // would just be downscaled away; 1K covers it, at lower cost + faster.
+        const res = await aiImg.models.generateContent({
+          model: modelId,
+          contents: parts,
+          config: { safetySettings, imageConfig: { imageSize: MODELS.imageTryonSize } },
+        });
+        if (idx === 0 && res?.usageMetadata) console.info('tryon image tokens:', res.usageMetadata.candidatesTokenCount, 'total:', res.usageMetadata.totalTokenCount);
+        const img = extractImage(res);
+        if (!img) return null;
+        // Normalize EVERY variant (except custom-photo) to a fixed 3:4
+        // canvas so every result card renders at the same size:
+        //   - default identity-refs (no backgroundDesc) → Gemini paints
+        //     the figure on a plain white catalog backdrop. trim strips
+        //     that padding, then resize fit:contain pads back into 900x1200
+        //     with white — figure fills the canvas vertically.
+        //   - backgroundDesc set → Gemini paints a real scene. trim is a
+        //     no-op on a varied edge; fit:cover scales to fill 900x1200
+        //     and side-crops the scene (figure is centered, stays in
+        //     frame). fit:contain would leave white bars top+bottom
+        //     because the scene was 1:1 instead of 3:4.
+        // Custom-photo mode: skip both — preserve the real photo aspect
+        // and background.
+        let buf = Buffer.from(img.data, 'base64');
+        let gridly = false;
+        // Normalize unless we're in custom-photo mode AND the user
+        // wants the original scene preserved. removeCustomBg=true
+        // opts custom-photo into the same segmentation+white-card
+        // pipeline as the identity-refs default.
+        const shouldNormalize = !customPhotoPath || removeCustomBg;
+        if (shouldNormalize) {
+          const hasScene = !customPhotoPath && !!(backgroundDesc && backgroundDesc.trim());
+          try {
+            if (hasScene) {
+              // Real scene — keep Gemini's backdrop, just fit to
+              // the 3:4 canvas via cover crop.
+              buf = await sharp(buf)
+                .resize({ width: 900, height: 1200, fit: 'cover' })
+                .png().toBuffer();
+            } else {
+              // No-scene mode: figure size must be consistent across
+              // variants, but color-trim fails when Gemini draws a
+              // gradient / cast shadow in its catalog backdrop (it
+              // stops at the first non-matching pixel, leaving a
+              // few-cm margin above the head and below the feet).
+              // Solution: run segmentation on the Gemini output to
+              // get a semantic figure mask, trim transparent edges
+              // (always accurate, no threshold guesswork), then
+              // composite the trimmed figure centered on a 900x1200
+              // white card.
+              const blob = new Blob([buf], { type: img.mimeType || 'image/png' });
+              const cutoutBlob = await removeBackground(blob, {
+                output: { format: 'image/png' },
+              });
+              const cutout = Buffer.from(await cutoutBlob.arrayBuffer());
+              const bbox = await alphaBBox(cutout);
+              // Wide mask ⇒ Gemini returned a contact-sheet of figures, not one
+              // person. Signal a retry (the segmentation bbox is free here).
+              gridly = looksLikeGrid(bbox);
+              // Center the figure on a white 3:4 card via its alpha bbox
+              // (robust to faint artifacts that color-trim would mis-include).
+              buf = await figureOnWhiteCard(cutout, 900, 1200, bbox);
+            }
+          } catch (e) {
+            console.warn('try-on normalize skipped:', e?.message);
+          }
+        }
+        return { buf, gridly };
+      };
 
-    // Nothing generated → refund the reserved fit (don't charge for a failure).
-    if (variantUrls.length === 0) await refundFit(uid, fitCharged);
+      const runs = Array.from({ length: n }, async (_, idx) => {
+        try {
+          // The image model intermittently returns a contact-sheet of several
+          // figures instead of one; regenerate when we detect that (up to 3 tries).
+          // A clean single-figure result breaks out on the first pass, so normal
+          // runs pay no extra latency. Keep the last attempt if all came back grid.
+          let out = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const r = await generateVariant(idx);
+            if (!r) { if (attempt === 2 && !out) return { idx, ok: false, error: 'no image returned' }; continue; }
+            out = r;
+            if (!r.gridly) break;
+            console.warn('try-on grid retry', idx, 'attempt', attempt + 1);
+          }
+          if (!out) return { idx, ok: false, error: 'no image returned' };
+          const buf = out.buf;
+          const path = `generations/${uid}/${genRef.id}/${idx}.png`;
+          await bucket.file(path).save(buf, {
+            metadata: { contentType: 'image/png', cacheControl: 'public,max-age=31536000,immutable' },
+          });
+          await bucket.file(path).makePublic().catch(() => {});
+          return { idx, ok: true, url: bucketUrl(bucket.name, path), path };
+        } catch (err) {
+          console.warn('try-on variant failed', idx, err.message);
+          return { idx, ok: false, error: err.message };
+        }
+      });
 
-    await genRef.update({
-      status: variantUrls.length > 0 ? 'ready' : 'failed',
-      variantUrls,
-      variantPaths,
-      variantsRequested: n,
-      variantsReturned: variantUrls.length,
-      errors: results.filter(r => !r.ok).map(r => r.error),
-      // Borrowed look's tags → keeps outfit-ref try-ons in the look/tag filter.
-      ...(refStyle ? { style: refStyle } : {}),
-      ...(refPieces ? { pieces: refPieces } : {}),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      const results = await Promise.all(runs);
+      const variantUrls = results.filter(r => r.ok).map(r => r.url);
+      const variantPaths = results.filter(r => r.ok).map(r => r.path);
 
-    return { generationId: genRef.id, variantUrls };
+      // Nothing generated → refund the reserved fit (don't charge for a failure).
+      if (variantUrls.length === 0) await refundFit(uid, fitCharged);
+
+      await genRef.update({
+        status: variantUrls.length > 0 ? 'ready' : 'failed',
+        variantUrls,
+        variantPaths,
+        variantsRequested: n,
+        variantsReturned: variantUrls.length,
+        errors: results.filter(r => !r.ok).map(r => r.error),
+        // Borrowed look's tags → keeps outfit-ref try-ons in the look/tag filter.
+        ...(refStyle ? { style: refStyle } : {}),
+        ...(refPieces ? { pieces: refPieces } : {}),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { generationId: genRef.id, variantUrls };
+    } finally {
+      await releaseLock();
+    }
   }
 );
 

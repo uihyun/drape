@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Sparkles, Wand2, Upload, X, SlidersHorizontal, Bookmark, UserRound } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
@@ -119,6 +119,10 @@ export function TryOn({ user, onSignIn }) {
   const [customPreview, setCustomPreview] = useState(null);
   const [removeCustomBg, setRemoveCustomBg] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // `disabled={submitting}` only lands on the next render, so two taps in
+  // one frame both got through — one tap once started three try-ons and
+  // spent three fits. The ref flips synchronously.
+  const inFlight = useRef(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(emptyLookFilters());
   const [sort, setSort] = useState('newest');
@@ -240,6 +244,8 @@ export function TryOn({ user, onSignIn }) {
     // Fits gate — pre-check for instant feedback; the server enforces the real
     // limit (this can be stale across devices, so the catch below also handles it).
     if (fits.loaded && fits.total <= 0) { setOutOfFits(true); return; }
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSubmitting(true);
     setError(null);
     // Kick off in the background so the user can browse other tabs while
@@ -279,7 +285,7 @@ export function TryOn({ user, onSignIn }) {
         logEvent(analytics, 'out_of_fits', { source: 'submit' });
       }
       else setError(err.message);
-    } finally { setSubmitting(false); }
+    } finally { inFlight.current = false; setSubmitting(false); }
   };
 
   return (

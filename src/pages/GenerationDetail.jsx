@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { RefreshCw, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
@@ -34,6 +34,7 @@ export function GenerationDetail({ user }) {
   const swipe = useSwipeNavigate(); // swipe hero left/right → prev/next try-on in the list you came from
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const regenInFlight = useRef(false);   // same-frame double tap — see TryOn.submit
   // Regenerate spends a fit like any try-on — show the balance where the
   // spending happens (the builder's meter isn't visible from here).
   const fits = useFits(user);
@@ -153,6 +154,8 @@ export function GenerationDetail({ user }) {
   // new detail page; otherwise drop the user onto /profile/tryon where
   // the pending card shows up via the live subscription.
   const regen = async () => {
+    if (regenInFlight.current) return;
+    regenInFlight.current = true;
     setRegenerating(true);
     try {
       const promise = GenerationService.startTryOn({
@@ -178,7 +181,7 @@ export function GenerationDetail({ user }) {
       }
     } catch (err) {
       console.warn('regen failed', err.message);
-    } finally { setRegenerating(false); }
+    } finally { regenInFlight.current = false; setRegenerating(false); }
   };
 
   const remove = async () => {

@@ -44,6 +44,13 @@ narrow column on white. That is a design call, not a render setting.
 
 Android needs nothing for this; it already works on tablets and foldables.
 
+**27 Sep — duplicate try-on charges fixed.** User `IQJhGEJmuTdRmDw2XASDngWIUM33`
+(@minje) lost fits to one tap firing three `virtualTryOn` calls (two 14 ms
+apart). Client ref guard + server transactional lock per identical request;
+verified live. Two of their five charges that day were duplicates; the owner
+topped up `fitBonus` by hand. Web + functions deployed; the client guard
+reaches the apps with 2.2.1, the server guard already covers them.
+
 **27 Sep — Trends favours real people, with a bar.** The weekly auto-pick
 now fills with real users' public looks before seed ones, if they pass
 `featurable()` (whole outfit, clean cutout, unreported). Seeds post ~70× more

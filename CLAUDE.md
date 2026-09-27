@@ -13,7 +13,7 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
 
 - **Item registration must feel instant.** `createItem()` returns as soon as the original is in Storage + the doc is at `status='processing'`. Never await the crop / tag work from the client.
 - **Identity refs go into every try-on call.** Don't strip them to save tokens — face/body preservation is the product's reason to exist.
-- **Every try-on writes a Generation doc, including failures.** That table is the feedback-loop training data for an eventual self-hosted model (brief §8).
+- **Every try-on writes a Generation doc, including failures.** That table is the feedback-loop training data for an eventual self-hosted model (brief §8). A *duplicate request* is not a try-on: an identical call while one is still running returns the running generation (`duplicate: true`) with no doc and no charge — the lock is `users/{uid}/private/tryonLock`, claimed in a transaction. Keep that server-side guard even though the client guards too; one tap once spent three fits.
 - **Auto-tag output is sanitized against the closed vocab** (`sanitizeTags` in `functions/items.js`). Don't loosen that — a hallucinated tag silently breaks search/filter.
 - **OOTD doc ids are not constrained.** Multiple OOTDs per day is supported — `OotdService.upsertOotd({ id?, date, ... })` creates auto-id when no `id`, updates the given one when set. Pick the calendar representative via `isCalendarRep: true` (set by `setCalendarRepresentative`); fallback is most-recent `createdAt`.
 - **Marketplace currency lives on the item.** Stamped from the seller's `profile.location.country` at list time and rendered via `utils/currency.js`. Never derive currency from the viewer's locale.
