@@ -234,9 +234,13 @@ async function deleteItem(itemId) {
   // already-missing file 404s and Firebase retries it with backoff
   // (~1s of dead time that would otherwise stall the delete). Fire it off
   // and swallow errors; orphans are pruned by a scheduled function later.
+  // Only files this item created, which always live under its own folder.
+  // A borrowed piece points at the owner's cutout, and a piece added from an
+  // outfit points at that OUTFIT's photo (ootds/{uid}/…, analyzed/{uid}/…) —
+  // the same uid, so a uid check alone deleted the outfit's photo.
+  const ownDir = `items/${it.userId}/${itemId}/`;
   for (const path of [it.originalPath, it.croppedPath]) {
-    // Only our own files — a borrowed piece points at the owner's cutout.
-    if (!path || path.split('/')[1] !== it.userId) continue;
+    if (!path || !path.startsWith(ownDir)) continue;
     deleteObject(ref(storage, path)).catch(() => { /* already gone / ignore */ });
   }
 }

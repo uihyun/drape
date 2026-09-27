@@ -16,6 +16,15 @@ Conventions:
 Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
 the apps only with the next native build.
 
+**Deleting a piece added from an outfit deleted the outfit's photo.** "+ add
+to closet" in OutfitLink (and the analyze flow) creates items whose
+`originalPath` is the OUTFIT's photo (`ootds/{uid}/…`, `analyzed/{uid}/…`).
+The 24 Sep uid check still let `deleteItem` remove it — same uid. Client
+delete now touches only paths under the item's own folder
+(`items/{uid}/{itemId}/`). 41 items were in that state; a check of all 115 real
+outfit photo paths found none missing yet. Account deletion keeps the uid
+check — there every file of that user goes anyway.
+
 **One tap could start three try-ons and spend three fits.** A user reported
 their first try burning three fits and the same result appearing twice. The
 logs agree: 27 Sep 01:07 UTC, one `virtualTryOn` call, then two more that
