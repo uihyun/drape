@@ -127,17 +127,11 @@ Nous avons également réparé les liens partagés, cassés depuis un moment. D�
 **What's New** (≤4000) — 2.2.1:
 
 ```
-Essayer une pièce du dressing de quelqu'un d'autre est plus rapide : elle s'ouvre tout de suite, et l'essayer à nouveau n'ajoute plus de copie à votre liste d'envies. Une pièce encore en préparation apparaît dans votre liste d'essayage au lieu de disparaître un instant, et un double appui rapide ne consomme plus qu'un seul essayage.
-
-Quand vous supprimez quelque chose, vous revenez là où vous étiez : le même onglet du dressing, le même mois du calendrier, la même liste de tenues ou de planches.
-
-Les onglets de votre profil sont aussi un peu plus nets.
+Essayer les pièces du dressing des autres est désormais plus rapide et plus fluide. Nous avons aussi corrigé quelques petits bugs.
 ```
 
 **Nouveautés** (Play, ≤500) — 2.2.1:
 
 ```
-Essayer une pièce du dressing de quelqu'un d'autre l'ouvre tout de suite, et l'essayer à nouveau n'ajoute plus de copie à votre liste d'envies. Un double appui rapide ne consomme plus qu'un seul essayage.
-
-Quand vous supprimez quelque chose, vous revenez là où vous étiez : le même onglet du dressing, le même mois du calendrier, la même liste de tenues ou de planches.
+Essayer les pièces du dressing des autres est désormais plus rapide et plus fluide. Nous avons aussi corrigé quelques petits bugs.
 ```

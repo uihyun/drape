@@ -142,17 +142,11 @@ We also fixed shared links, which had been quietly broken for a while. Sorry abo
 **What's New** (≤4000) — 2.2.1:
 
 ```
-Trying on a piece from someone else's closet is quicker now: it opens straight away, and trying it again no longer adds another copy to your wishlist. A piece that's still being prepared shows up in your try-on list instead of vanishing for a moment, and a quick double tap can't use up more than one try-on anymore.
-
-When you delete something, you land back where you were — the same closet tab, the same month in your calendar, the same list of outfits or boards.
-
-The tabs on your profile are a little tidier, too.
+Trying on pieces from other people's closets is now faster and smoother. We also fixed a few small bugs.
 ```
 
 **What's new** (Play, ≤500) — 2.2.1:
 
 ```
-Trying on a piece from someone else's closet opens straight away, and trying it again no longer adds another copy to your wishlist. A quick double tap can't use up more than one try-on anymore.
-
-When you delete something, you land back where you were — the same closet tab, calendar month, or list of outfits or boards.
+Trying on pieces from other people's closets is now faster and smoother. We also fixed a few small bugs.
 ```

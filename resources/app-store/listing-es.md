@@ -153,17 +153,11 @@ También hemos arreglado los enlaces compartidos, que llevaban un tiempo rotos. 
 **What's New** (≤4000) — 2.2.1:
 
 ```
-Probarte una prenda del armario de otra persona ahora es más rápido: se abre al instante, y si vuelves a probártela ya no se añade otra copia a tu lista de deseos. Una prenda que todavía se está preparando aparece en tu lista de pruebas en lugar de desaparecer un momento, y un doble toque rápido ya no gasta más de una prueba.
-
-Cuando borras algo, vuelves a donde estabas: la misma pestaña del armario, el mismo mes del calendario, la misma lista de looks o tableros.
-
-Además, las pestañas de tu perfil se ven un poco más ordenadas.
+Probarte prendas del armario de otras personas ahora es más rápido y fluido. También corregimos algunos errores pequeños.
 ```
 
 **Novedades** (Play, ≤500) — 2.2.1:
 
 ```
-Probarte una prenda del armario de otra persona se abre al instante, y si vuelves a probártela ya no se añade otra copia a tu lista de deseos. Un doble toque rápido ya no gasta más de una prueba.
-
-Cuando borras algo, vuelves a donde estabas: la misma pestaña del armario, el mismo mes del calendario o la misma lista de looks o tableros.
+Probarte prendas del armario de otras personas ahora es más rápido y fluido. También corregimos algunos errores pequeños.
 ```
