@@ -108,6 +108,21 @@ function msOf(v) {
   return Number.isFinite(t) ? t : 0;
 }
 
+// Is a real user's public look good enough to headline Trends unasked? Built
+// from signals every OOTD already carries — no model call here:
+//  - the AI read finished and found 2+ pieces: a whole outfit, not a
+//    close-up of one garment or a photo with no clothes to speak of;
+//  - the person cutout succeeded (processOotdPhoto keeps it only when the mask
+//    covers 2–95% of the frame), i.e. a clear subject in a usable photo;
+//  - nobody has reported it and moderation hasn't unlisted it.
+function featurable(x) {
+  return !!x.analyzedAt
+    && Array.isArray(x.style) && x.style.length > 0
+    && Array.isArray(x.pieces) && x.pieces.length >= 2
+    && x.photoCutStatus === 'ready'
+    && !x.reportCount && !x.moderationFlag && x.isListed !== false;
+}
+
 const top = (map, n) => Object.entries(map)
   .sort((a, b) => b[1] - a[1]).slice(0, n)
   .map(([key, count]) => ({ key, count }));
@@ -209,9 +224,19 @@ async function computeTrends() {
   const thisWeek = weekKey(new Date().toISOString().slice(0, 10));
 
   const poolMap = new Map();
-  const pubSnap = await db().collection('outfits')
-    .where('isPublic', '==', true).orderBy('createdAt', 'desc').limit(60).get();
-  pubSnap.forEach((d) => {
+  // The newest-60 pool alone isn't enough: seeds post ~70x more public looks
+  // than real users (4 real in the newest 300, 27 Sep), so a real look from
+  // early in the week falls out of it. The whole issue week is read too.
+  const [pubSnap, weekSnap] = await Promise.all([
+    db().collection('outfits')
+      .where('isPublic', '==', true).orderBy('createdAt', 'desc').limit(60).get(),
+    db().collection('outfits')
+      .where('isPublic', '==', true)
+      .where('createdAt', '>=', admin.firestore.Timestamp.fromMillis(windowStartMs))
+      .orderBy('createdAt', 'desc').limit(500).get(),
+  ]);
+  [...pubSnap.docs, ...weekSnap.docs].forEach((d) => {
+    if (poolMap.has(d.id)) return;
     const x = d.data();
     const img = x.photoUrl || x.photoCutUrl || null;
     if (!img) return;
@@ -222,6 +247,7 @@ async function computeTrends() {
       userId: x.userId,
       createdMs: msOf(x.createdAt),
       seed: !real.has(x.userId),
+      featurable: featurable(x),
       hidden: hidden.has(d.id),
     });
   });
@@ -230,13 +256,19 @@ async function computeTrends() {
   const staleIssue = curation.issueWeek !== thisWeek;
   const liveFeatured = featuredIds.filter((id) => poolMap.get(id) && !poolMap.get(id).hidden);
   if (staleIssue || liveFeatured.length === 0) {
-    // Auto-pick: this week's public looks, newest first, at most 2 per
-    // closet so one prolific poster can't take the whole slate.
+    // Auto-pick: this week's public looks, REAL USERS FIRST (owner,
+    // 2026-09-27 — a real person's look outranks a seed persona's, however
+    // new the seed's is) but only one that passes `featurable`: priority for
+    // real people, not a free pass for any photo. A real look that fails isn't
+    // auto-picked at all — admin can still feature it by hand. Then newest
+    // first, at most 2 per closet so one prolific poster can't take the slate.
+    const realFirst = (a, b) => (a.seed - b.seed) || (b.createdMs - a.createdMs);
+    const eligible = (p) => !p.hidden && (p.seed || p.featurable);
     const perUser = {};
     const picked = [];
     [...poolMap.values()]
-      .filter((p) => !p.hidden && p.createdMs >= windowStartMs && p.createdMs < windowEndMs)
-      .sort((a, b) => b.createdMs - a.createdMs)
+      .filter((p) => eligible(p) && p.createdMs >= windowStartMs && p.createdMs < windowEndMs)
+      .sort(realFirst)
       .forEach((p) => {
         if (picked.length >= LOOKS_MAX) return;
         perUser[p.userId] = (perUser[p.userId] || 0) + 1;
@@ -246,8 +278,8 @@ async function computeTrends() {
     // Thin week → widen to the most recent public looks regardless of date.
     if (picked.length < 4) {
       [...poolMap.values()]
-        .filter((p) => !p.hidden && !picked.includes(p.id))
-        .sort((a, b) => b.createdMs - a.createdMs)
+        .filter((p) => eligible(p) && !picked.includes(p.id))
+        .sort(realFirst)
         .forEach((p) => { if (picked.length < LOOKS_FLOOR) picked.push(p.id); });
     }
     featuredIds = picked;

@@ -16,6 +16,22 @@ Conventions:
 Deployed to web + `functions:deleteAccount` on 24 Sep. The client half reaches
 the apps only with the next native build.
 
+**Trends put seed looks ahead of real people's.** The weekly auto-pick sorted
+newest-first across everyone, and seeds post ~70× more public looks (4 real in
+the newest 300 on 27 Sep), so a real look lost to any fresher seed one — and
+one from early in the week could fall out of the newest-60 pool entirely. Now
+real users' looks come first (then newest, still ≤2 per closet), in the
+thin-week widening too, and the pool also reads the whole issue week.
+
+Priority, not a free pass: a real look is auto-picked only if it is
+`featurable` — AI read finished with 2+ pieces (a whole outfit, not one
+garment), the person cutout succeeded (`photoCutStatus: 'ready'`, i.e. a clear
+subject), and no reports / moderation flag. One that fails isn't auto-picked
+at all; admin can still feature it by hand. Of today's 4 real public looks, 3
+pass (the fourth read as a single piece). Built from fields every OOTD already
+has — no model call in `trends.js`. Functions only; takes effect at the next
+issue (Mon 28 Sep).
+
 **The review prompt asked the wrong people, and kept asking.** It fired on the
 3rd try-on seen, every 90 days forever. Sized against real users (24 Sep: ≥3
 try-ons reached 10 people, ≥2 reaches 18; 20 users have ≥10 items and 17 of

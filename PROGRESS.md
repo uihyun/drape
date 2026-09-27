@@ -44,6 +44,15 @@ narrow column on white. That is a design call, not a render setting.
 
 Android needs nothing for this; it already works on tablets and foldables.
 
+**27 Sep — Trends favours real people, with a bar.** The weekly auto-pick
+now fills with real users' public looks before seed ones, if they pass
+`featurable()` (whole outfit, clean cutout, unreported). Seeds post ~70× more
+public looks, so until now a real look almost never made the slate. First issue
+under the rule is Mon 28 Sep. Also since 24 Sep: the review prompt's new gate
+(3 open days + 2 try-ons or 10 items, twice ever — ships with 2.2.1), an admin
+**Usage depth** table, and delete-returns-to-your-tab across calendar /
+outfits / boards.
+
 **24 Sep — borrowed try-on fixes (web + `deleteAccount` deployed; native on
 the next build).** Try on for someone else's piece now reuses the existing
 wishlist copy and the owner's cutout instead of stacking re-cropped duplicates;
