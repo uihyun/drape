@@ -15,7 +15,7 @@
 //   - Firebase project has Cloud Messaging API enabled
 //   - iOS: APNs auth key (.p8) uploaded in Firebase console
 //   - Android: google-services.json under android/app/ at build time
-// See CAPACITOR_SETUP.md §6 for the full checklist.
+// See CREDENTIALS.md §2 for the full checklist.
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');

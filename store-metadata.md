@@ -1,7 +1,7 @@
 # drape — App Store Connect metadata (paste-ready)
 
 Single source for the ASC text fields + the **App Review 메모 (Review Notes)** body.
-Keep in sync with `APP_STORE_SUBMISSION.md` (the how-to) and the in-app legal copy.
+Keep in sync with the in-app legal copy.
 
 Contact: hello@uhzlab.com
 - **Support URL** (ASC field): `https://drape-9e532.web.app/support.html`

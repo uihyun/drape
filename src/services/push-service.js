@@ -16,7 +16,7 @@
 //  - Firebase Console: enable Cloud Messaging API (Project settings → Cloud Messaging)
 //  - iOS: upload APNs auth key (.p8) to Firebase, enable Push capability in Xcode
 //  - Android: google-services.json under android/app/, Firebase project linked
-// See CAPACITOR_SETUP.md §6 for the manual checklist.
+// See CREDENTIALS.md §2 for the manual checklist.
 
 import { Capacitor } from '@capacitor/core';
 import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';

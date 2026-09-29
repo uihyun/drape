@@ -1291,7 +1291,7 @@ photos, and wearLog is a built-in seller trust signal.
 2. iOS: Apple Developer → Keys → APNs key (.p8) → upload to Firebase Cloud Messaging (Team ID `WG75TG59NJ`). Xcode: add Push Notifications + Background Modes (Remote notifications) capabilities.
 3. Android: download `google-services.json` from Firebase, drop under `android/app/`. Confirm `google-services` Gradle plugin applied.
 4. `npx cap sync ios && npx cap sync android`, then run on a real device (simulator can't receive push).
-Full checklist: CAPACITOR_SETUP.md §8-3.
+Full checklist: CREDENTIALS.md §2.
 
 ### Deferred to future cycles
 - Like notifications, follow notifications, weekly digest, OOTD
@@ -1374,7 +1374,7 @@ during their first end-to-end DM test.
 - Push notification user actions: APNs key upload to Firebase, iOS
   Xcode capability flip, Android google-services.json, real-device
   test. Code paths all written (functions/messages.js,
-  push-service.js); just keys outstanding. See CAPACITOR_SETUP.md §8-3.
+  push-service.js); just keys outstanding. See CREDENTIALS.md §2.
 - Push for like / follow / digest / dormant OOTD reminder — same
   Firestore trigger pattern as DM, different events.
 - Per-user notification settings UI (/settings/notifications).
