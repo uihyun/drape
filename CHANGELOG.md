@@ -27,7 +27,15 @@ Conventions:
   icon under it magnifies slightly. The first deploy only blurred the bar,
   which is invisible on a white page — the lens is where the glass reads.
   Bar slimmed to 56px (icons 20px, + disc 42px). Reduced motion keeps the
-  rim but drops the swell. The + is a narrow ink-disc column so the four labels get
+  rim but drops the swell.
+- Second tuning pass (owner: "more see-through, more like a droplet"): bar
+  fill 80% → 62% with blur 24 → 32px and saturate 200%, so photos show
+  through as soft colour while text behind stays unreadable. The lens is now
+  clear in the middle with a thick-glass bright rim (radial gradient), a top
+  specular and bottom caustic, a white halo, swells to 1.55× tall while held,
+  and squash-stretches sideways as it travels between tabs (`scale` animates
+  separately from the `transform` slide). Content under it magnifies 1.14×.
+  Long-press callout / text selection disabled on the tabs. The + is a narrow ink-disc column so the four labels get
   the width; labels scale down with the viewport so クローゼット / スタイリスト
   fit at 360px. Checked in all five languages at 360 and 390px.
 - Stylist and Settings moved down from the Profile header, which now keeps
