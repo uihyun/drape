@@ -58,18 +58,6 @@ export function MobileTabBar({ user, onSignIn }) {
   });
   const pillSlot = pressSlot ?? activeSlot;
   const pillCol = pillSlot > 2 ? pillSlot - 1 : pillSlot;
-  // While the lens travels between slots it stretches sideways and settles
-  // back (squash-and-stretch), which is what sells it as a droplet.
-  const [moving, setMoving] = useState(false);
-  const prevPill = useRef(pillSlot);
-  useEffect(() => {
-    const from = prevPill.current;
-    prevPill.current = pillSlot;
-    if (from < 0 || pillSlot < 0 || from === pillSlot) return undefined;
-    setMoving(true);
-    const id = setTimeout(() => setMoving(false), 460);
-    return () => clearTimeout(id);
-  }, [pillSlot]);
   const feedMode = getFeedMode() === 'feed';
 
   // Guests hit the shared SignInModal (same as every other gated action) —
@@ -95,7 +83,7 @@ export function MobileTabBar({ user, onSignIn }) {
         aria-label="primary"
         style={{ '--nav-col': pillCol, '--nav-past-center': pillSlot > 2 ? 1 : 0 }}
       >
-        {pillSlot >= 0 && <span className={`floating-nav-pill${lens ? ' lens' : ''}${moving ? ' moving' : ''}`} aria-hidden="true" />}
+        {pillSlot >= 0 && <span className={`floating-nav-pill${lens ? ' lens' : ''}`} aria-hidden="true" />}
         <Link
           to={feedMode ? '/feed' : '/trends'}
           data-tour="nav-trends"
