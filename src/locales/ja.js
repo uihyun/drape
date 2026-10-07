@@ -26,7 +26,6 @@ export const ja = {
   navMe: 'マイページ',
   navHome: 'ホーム',
   navProfile: 'プロフィール',
-  navCloset: 'クローゼット',
   invite: '招待',
   inviteShareTitle: 'drape を試してみて',
   // ── try-on "fits" ──
@@ -555,6 +554,8 @@ export const ja = {
   sortMostWorn: 'よく着る順',
   sortLeastWorn: '忘れた服から',
   navTrends: 'トレンド',
+  navStylist: 'スタイリスト',
+  navSettings: '設定',
   trendsTitle: 'トレンド',
   trendsKicker: 'drapeの一週間',
   trendsHeadline: '今週のムードは{style}。',

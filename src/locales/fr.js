@@ -555,6 +555,8 @@ export const fr = {
   sortMostWorn: 'Les plus portées',
   sortLeastWorn: 'Les oubliées d’abord',
   navTrends: 'Tendances',
+  navStylist: 'Styliste',
+  navSettings: 'Réglages',
   trendsTitle: 'Tendances',
   trendsKicker: 'La semaine chez drape',
   trendsHeadline: '{style} a la cote.',

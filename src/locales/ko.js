@@ -24,7 +24,6 @@ export const ko = {
   navMe: '내 정보',
   navHome: '홈',
   navProfile: '프로필',
-  navCloset: '옷장',
   invite: '초대',
   inviteShareTitle: 'drape 써봐',
   // ── try-on "fits" ──
@@ -553,6 +552,8 @@ export const ko = {
   sortMostWorn: '많이 입은 순',
   sortLeastWorn: '잊힌 옷 먼저',
   navTrends: '트렌드',
+  navStylist: '스타일리스트',
+  navSettings: '설정',
   trendsTitle: '트렌드',
   trendsKicker: 'drape의 한 주',
   trendsHeadline: '이번 주의 무드, {style}.',

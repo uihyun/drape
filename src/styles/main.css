@@ -2774,12 +2774,9 @@ body.is-native {
   flex-direction: row;
   align-items: center;
 }
-/* Mobile: lift the banner above the bottom tab bar (56px) so it doesn't
-   cover the Create / Feed / My / Settings buttons. */
-@media (max-width: 768px) {
-  .pending-banner {
-    bottom: calc(56px + 0.75rem + env(safe-area-inset-bottom, 0px));
-  }
+/* Lift the banner above the bottom glass bar (shown on every viewport). */
+.pending-banner {
+  bottom: var(--nav-reserve);
 }
 
 /* Toast snackbar — 짧게 떴다 사라지는 알림 (e.g. "피드에 올렸어요"). 모달
@@ -2813,10 +2810,8 @@ body.is-native {
   from { transform: translate(-50%, 12px); opacity: 0; }
   to   { transform: translate(-50%, 0);    opacity: 1; }
 }
-@media (max-width: 768px) {
-  .toast-snackbar {
-    bottom: calc(56px + 0.75rem + env(safe-area-inset-bottom, 0px));
-  }
+.toast-snackbar {
+  bottom: var(--nav-reserve);
 }
 @keyframes pendingBannerIn {
   /* Keep the X centering throughout the animation — using transform
@@ -5588,57 +5583,10 @@ body.is-native {
   font-weight: 600;
 }
 
-/* Mobile tab bar — Room AI 식 하단 4탭. 데스크탑에서는 숨김. */
-.mobile-tabbar {
-  display: none;
-}
 @media (max-width: 768px) {
-  .mobile-tabbar {
-    display: flex;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(56px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: var(--background);
-    border-top: 1px solid var(--border);
-    z-index: 40;
-    /* iOS WKWebView 스크롤 중 다른 element 의 transform/transition 이
-       활성일 때 position:fixed 가 렌더링 글리치로 한순간 de-anchor 되는
-       이슈 방지. translateZ(0) 로 자기 GPU composited layer 강제 — 다른
-       paint work 와 독립 렌더. */
-    transform: translateZ(0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-  .mobile-tabbar-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.125rem;
-    padding: 0;
-    border: 0;
-    background: none;
-    font-size: 0.6875rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mobile-tabbar-item.active {
-    color: var(--primary);
-    font-weight: 600;
-  }
-  .mobile-tabbar-item .material-icons {
-    font-size: 22px;
-  }
-
   /* main / legal 컨텐츠가 탭바에 가리지 않게 padding-bottom. */
-  .main,
   .legal-content {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--nav-reserve);
   }
 
   /* Floating CTA (Continue / Generate) — 탭바 위에 떠있는 버튼. 컨테이너

@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Compass, TrendingUp, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon } from 'lucide-react';
+import { Compass, TrendingUp, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon, Wand2, Settings as SettingsIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { getFeedMode } from '../services/appConfig.js';
 import { AddItemSheet } from './AddItemSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
 
-// Lekondo-style bottom nav: three separate white circular pills floating
-// over the content (Feed / + / Closet). Not a single bar — each button
-// is its own circle with its own shadow, so the page peeks through the
-// gaps between them. Labels tell the truth about the product (GA 2026-07:
-// the closet IS the main surface, ~40:1 engagement over the feed) — the
-// old "Home"→feed naming implied the opposite.
+// One glass bar, five slots: Trends · Stylist · (+) · Closet · Settings
+// (owner, 2026-10-07 — replaced the three separate Lekondo circles).
+// Stylist and Settings came down from the Profile header: the stylist is
+// the feature we want used, and a bar slot is where people look. A 5th slot
+// for notifications/DMs was rejected on data — nearly nobody gets either yet.
+// The glass is CSS (backdrop-filter), not native Liquid Glass, so iOS and
+// Android render the same thing.
 export function MobileTabBar({ user, onSignIn }) {
   const { t } = useLocale();
   const location = useLocation();
@@ -21,17 +22,28 @@ export function MobileTabBar({ user, onSignIn }) {
   const { sheetStyle: createSheetStyle, handleProps: createHandleProps } = useSheetDrag(() => setSheetOpen(false));
 
   const isLoggedIn = user && !user.isAnonymous;
-  const onHome = location.pathname === '/' || location.pathname.startsWith('/feed') || location.pathname.startsWith('/trends');
-  const onProfile = location.pathname.startsWith('/profile') || location.pathname.startsWith('/u/');
+  const path = location.pathname;
+  const onHome = path === '/' || path.startsWith('/feed') || path.startsWith('/trends');
+  const onStylist = path.startsWith('/stylist');
+  // Only your own closet. /u/:handle is someone else's page — lighting
+  // "Closet" there would say you're looking at your own.
+  const onProfile = path.startsWith('/profile');
+  const onSettings = path.startsWith('/settings');
+  // Slot index the sliding pill sits under (2 is the + button, never "active").
+  const activeSlot = onHome ? 0 : onStylist ? 1 : onProfile ? 3 : onSettings ? 4 : -1;
+  // The + column is narrower than the four labelled ones, so the pill moves in
+  // label-column steps and jumps the + column once it's past it.
+  const pillCol = activeSlot > 2 ? activeSlot - 1 : activeSlot;
+  const feedMode = getFeedMode() === 'feed';
 
   // Guests hit the shared SignInModal (same as every other gated action) —
   // bouncing to /welcome mid-flow read as a hard eject, not a prompt.
   const gate = () => { if (onSignIn) onSignIn(); else navigate('/welcome'); };
 
-  const go = (path) => () => {
+  const go = (to) => () => {
     setSheetOpen(false);
     if (!isLoggedIn) { gate(); return; }
-    navigate(path);
+    navigate(to);
   };
 
   const openAddItem = () => {
@@ -42,18 +54,30 @@ export function MobileTabBar({ user, onSignIn }) {
 
   return (
     <>
-      <nav className="floating-nav" aria-label="primary">
+      <nav
+        className="floating-nav"
+        aria-label="primary"
+        style={{ '--nav-col': pillCol, '--nav-past-center': activeSlot > 2 ? 1 : 0 }}
+      >
+        {activeSlot >= 0 && <span className="floating-nav-pill" aria-hidden="true" />}
         <Link
-          to={getFeedMode() === 'feed' ? '/feed' : '/trends'}
+          to={feedMode ? '/feed' : '/trends'}
           data-tour="nav-trends"
           className={`floating-nav-btn${onHome ? ' active' : ''}`}
-          aria-label={getFeedMode() === 'feed' ? t('navFeed') : t('navTrends')}
+          aria-current={onHome ? 'page' : undefined}
         >
-          <span className="floating-nav-icon">
-            {getFeedMode() === 'feed'
-              ? <Compass size={22} strokeWidth={1.6} />
-              : <TrendingUp size={22} strokeWidth={1.6} />}
-          </span>
+          {feedMode ? <Compass size={22} strokeWidth={1.6} /> : <TrendingUp size={22} strokeWidth={1.6} />}
+          <span className="floating-nav-label">{feedMode ? t('navFeed') : t('navTrends')}</span>
+        </Link>
+
+        <Link
+          to="/stylist"
+          data-tour="stylist"
+          className={`floating-nav-btn${onStylist ? ' active' : ''}`}
+          aria-current={onStylist ? 'page' : undefined}
+        >
+          <Wand2 size={22} strokeWidth={1.6} />
+          <span className="floating-nav-label">{t('navStylist')}</span>
         </Link>
 
         <button
@@ -63,8 +87,8 @@ export function MobileTabBar({ user, onSignIn }) {
           onClick={() => setSheetOpen(true)}
           aria-label={t('create')}
         >
-          <span className="floating-nav-icon floating-nav-icon--center">
-            <Plus size={28} strokeWidth={2.2} />
+          <span className="floating-nav-plus">
+            <Plus size={26} strokeWidth={2.2} />
           </span>
         </button>
 
@@ -72,11 +96,20 @@ export function MobileTabBar({ user, onSignIn }) {
           to="/profile"
           data-tour="nav-profile"
           className={`floating-nav-btn${onProfile ? ' active' : ''}`}
-          aria-label={t('navCloset')}
+          aria-current={onProfile ? 'page' : undefined}
         >
-          <span className="floating-nav-icon">
-            <Shirt size={22} strokeWidth={1.6} />
-          </span>
+          <Shirt size={22} strokeWidth={1.6} />
+          <span className="floating-nav-label">{t('navCloset')}</span>
+        </Link>
+
+        <Link
+          to="/settings"
+          data-tour="settings"
+          className={`floating-nav-btn${onSettings ? ' active' : ''}`}
+          aria-current={onSettings ? 'page' : undefined}
+        >
+          <SettingsIcon size={22} strokeWidth={1.6} />
+          <span className="floating-nav-label">{t('navSettings')}</span>
         </Link>
       </nav>
 

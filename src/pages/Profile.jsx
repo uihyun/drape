@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Settings as SettingsIcon, MapPin, MessageSquare, Wand2 } from 'lucide-react';
+import { Bell, MapPin, MessageSquare } from 'lucide-react';
 import { HomeFlipAsk } from '../components/HomeFlipAsk.jsx';
 import { getHomePref, setHomePref, hintSeen, markHintSeen, HINT_HOME_FLIP, startedOnTrends } from '../services/homePref.js';
 import { useMessagePresence } from '../hooks/useUnreadMessages.js';
@@ -173,20 +173,10 @@ export function Profile({ user, authReady, onSignIn }) {
           )}
           <span className="profile-handle">{handle}</span>
         </span>
+        {/* Stylist and Settings live in the bottom bar now (2026-10-07). */}
         <div className="profile-topbar-actions">
-          <Link
-            to="/stylist"
-            data-tour="stylist"
-            className="icon-btn"
-            aria-label={t('stylistTitle')}
-          >
-            <Wand2 size={20} strokeWidth={1.6} />
-          </Link>
           <InboxIconLink user={user} t={t} />
           <NotifIconLink user={user} t={t} />
-          <Link to="/settings" data-tour="settings" className="icon-btn" aria-label={t('settings')}>
-            <SettingsIcon size={20} strokeWidth={1.6} />
-          </Link>
         </div>
       </header>
       <section className="profile-identity">

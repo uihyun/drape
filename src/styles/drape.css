@@ -43,6 +43,11 @@ a:focus:not(:focus-visible) {
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Bottom glass bar geometry. --nav-reserve is what scrolling content and
+     anything pinned to the bottom (toasts, banners) must clear. */
+  --nav-h: 4rem;
+  --nav-gap: 0.75rem;
+  --nav-reserve: calc(var(--nav-h) + var(--nav-gap) + 1rem + var(--safe-bottom));
 }
 body.is-native {
   /* Clear the notch/Dynamic Island with a tight floor and no extra buffer —
@@ -111,7 +116,7 @@ body.is-native {
 .page {
   max-width: 600px;
   margin: 0 auto;
-  padding: 0 1rem 6.5rem;
+  padding: 0 1rem var(--nav-reserve);
 }
 .page-h1 {
   font-size: 1.6rem;
@@ -1472,73 +1477,105 @@ body.is-native {
   color: var(--text-primary); cursor: pointer;
 }
 
-/* ── Floating nav (Lekondo: three separate white circles) ──────────── */
-/* Not a single bar — each button is its own circle with its own shadow,
-   so the page peeks through the gaps. The center "+" sits higher than
-   the side pills to visually claim the create action. Visible on every
-   viewport: desktop is treated as "a wide phone", not a separate UI. */
+/* ── Bottom nav: one glass bar, five slots ────────────────────────── */
+/* Trends · Stylist · (+) · Closet · Settings (2026-10-07; replaced the three
+   separate Lekondo circles). Glass is backdrop-filter, so WKWebView and the
+   Android WebView render the same bar — native Liquid Glass can't wrap HTML,
+   and SVG-filter refraction only works in Chromium, so it's left out on
+   purpose. Visible on every viewport: desktop is "a wide phone". */
 .floating-nav {
+  --nav-pad: 0.35rem;
+  --nav-center: 3.25rem;
   position: fixed;
   left: 50%;
+  bottom: calc(var(--safe-bottom) + var(--nav-gap));
   transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  width: min(calc(100% - 1rem), 30rem);
+  height: var(--nav-h);
+  padding: var(--nav-pad);
+  display: grid;
+  /* The + only needs its disc; the four labelled slots share the rest so
+     long labels (クローゼット, スタイリスト) fit at 360px. */
+  grid-template-columns: 1fr 1fr var(--nav-center) 1fr 1fr;
+  align-items: stretch;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 0 0 0.5px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   z-index: 100;
+}
+/* No blur support → near-opaque, so labels never sit on unreadable content. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .floating-nav { background: rgba(255, 255, 255, 0.96); }
+}
+/* The selected-tab pill slides between slots (Hinge-style). One element,
+   moved by the label-column index the component writes to --nav-col. */
+.floating-nav-pill {
+  position: absolute;
+  top: var(--nav-pad);
+  bottom: var(--nav-pad);
+  left: var(--nav-pad);
+  width: calc((100% - 2 * var(--nav-pad) - var(--nav-center)) / 4);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transform: translateX(calc(var(--nav-col, 0) * 100% + var(--nav-past-center, 0) * var(--nav-center)));
+  transition: transform 0.32s cubic-bezier(0.3, 1.3, 0.5, 1);
   pointer-events: none;
 }
+@media (prefers-reduced-motion: reduce) {
+  .floating-nav-pill { transition: none; }
+}
 .floating-nav-btn {
-  pointer-events: auto;
-  display: inline-flex;
+  position: relative;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.15rem;
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: none;
   font-family: inherit;
-  color: var(--text-secondary);
-  padding: 0;
-}
-.floating-nav-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 999px;
-  background: #fff;
   color: var(--text-primary);
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, color 0.2s ease;
+}
+.floating-nav-btn:active { transform: scale(0.94); }
+.floating-nav-btn.active { color: var(--accent); }
+.floating-nav-label {
+  max-width: 100%;
+  /* Shrinks with the viewport on narrow phones so 6-character katakana
+     labels fit at 360px; never larger than 0.66rem. */
+  font-size: min(0.66rem, 2.75vw);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.floating-nav-btn.active .floating-nav-label { font-weight: 600; }
+/* Center "+": a solid ink disc so the create action reads first on glass. */
+.floating-nav-plus {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
 }
-.floating-nav-icon img { width: 100%; height: 100%; object-fit: cover; }
-.floating-nav-btn:active .floating-nav-icon { transform: scale(0.94); }
-.floating-nav-btn.active .floating-nav-icon {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12), 0 0 0 2px var(--accent);
-  color: var(--accent);
-}
-.floating-nav-btn.active { color: var(--accent); font-weight: 600; }
-/* Labels were removed from the bar (2026-09-16) — the three glyphs carry
-   it, and aria-label keeps screen readers whole. Kept for any surface that
-   still renders one. */
-.floating-nav-label {
-  font-size: 0.7rem;
-  margin-top: 0.3rem;
-  letter-spacing: -0.01em;
-}
-/* Center "+" is bigger and sits a little higher so it reads as the
-   primary action. No label under it. */
-.floating-nav-btn--center { margin-bottom: 0.55rem; }
-.floating-nav-icon--center {
-  width: 64px;
-  height: 64px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04);
-}
-.main { padding-bottom: 6.5rem; }
+.main { padding-bottom: var(--nav-reserve); }
 
 /* ── Create sheet (the floating + opens this) ──────────────────────── */
 .create-sheet-overlay {

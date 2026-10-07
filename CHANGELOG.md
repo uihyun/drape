@@ -11,6 +11,33 @@ Conventions:
 
 ---
 
+## Unreleased — glass tab bar
+
+**Bottom nav is one glass bar with five labelled slots: Trends · Stylist ·
+(+) · Closet · Settings.** Replaces the three separate Lekondo circles.
+- Glass is CSS (`backdrop-filter: blur(24px) saturate(180%)` over 72% white,
+  hairline highlight, soft shadow), so WKWebView and the Android WebView draw
+  the same bar. Native Liquid Glass can't wrap HTML, and SVG-filter refraction
+  only works in Chromium, so it's left out on purpose. No-blur browsers get a
+  near-opaque fill.
+- The selected tab sits on a pill that slides between slots (off under
+  reduced motion). The + is a narrow ink-disc column so the four labels get
+  the width; labels scale down with the viewport so クローゼット / スタイリスト
+  fit at 360px. Checked in all five languages at 360 and 390px.
+- Stylist and Settings moved down from the Profile header, which now keeps
+  only the inbox (when there are threads) and the notification bell. A
+  Notifications/Messages tab was considered and rejected on data: in the last
+  30 days, 17 notifications reached 2 real users and none were opened, and
+  there are no DM threads.
+- Closet is highlighted only on your own `/profile` — it used to light up on
+  anyone's `/u/:handle` page.
+- `--nav-reserve` replaces the flat `6.5rem` bottom padding on `.main` /
+  `.page` and the stale 56px offsets on the toast, pending banner and legal
+  pages; the dead `.mobile-tabbar` CSS is gone. Duplicate `navCloset` keys
+  removed from en/ko/ja.
+- Onboarding Tour copy still describes the old layout (its stylist/settings
+  steps now point at the bar slots) — rewritten in the next pass.
+
 ## Unreleased — personal color
 
 **Personal color as a stated preference.** The stylist page's "My style" panel

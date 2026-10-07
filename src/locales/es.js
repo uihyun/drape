@@ -556,6 +556,8 @@ export const es = {
   sortMostWorn: 'Más usadas',
   sortLeastWorn: 'Olvidadas primero',
   navTrends: 'Tendencias',
+  navStylist: 'Estilista',
+  navSettings: 'Ajustes',
   trendsTitle: 'Tendencias',
   trendsKicker: 'La semana en drape',
   trendsHeadline: '{style} está en su momento.',
