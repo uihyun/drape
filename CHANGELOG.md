@@ -30,10 +30,24 @@ Conventions:
   rim but drops the swell.
 - Second tuning pass: bar fill 80% → 62% with blur 24 → 32px and saturate
   200%, so photos show through as soft colour while text behind stays
-  unreadable. Long-press callout / text selection disabled on the tabs. A
-  droplet squash-stretch lens was tried in the same pass and reverted the
-  same day — on device it moved erratically; the lens is back to the simpler
-  swell-on-press version above. The + is a narrow ink-disc column so the four labels get
+  unreadable. Long-press callout / text selection disabled on the tabs.
+- Droplet motion, done right. The first droplet attempt (reverted) moved
+  erratically for two reasons, both measured by sampling the pill's position
+  through a tap:
+  - The pill's slide sat on `transform` while the droplet size sat on the
+    individual `scale` property. CSS applies `scale` AFTER `transform`, so
+    the 1.16× lens multiplied the slide distance: the swollen pill parked
+    about 45px right of its tab and slid back as it shrank. Position now
+    lives on `translate`, which is applied before `scale` and isn't scaled.
+  - The press position was cleared on a 260ms timer after the finger lifted.
+    If the route changed later than that, the pill went back to the old tab
+    and then forward again. It is now cleared only when the route actually
+    changes, or the touch is cancelled (1.5s backstop).
+  Now the lens stretches sideways only while travelling (0.42s, the same
+  duration as the slide), with no-overshoot ease-out. A trace of
+  Stylist → Settings shows 213 → 290 → 318 → 330 → 334 → 335px against a
+  335px target: one direction, no bounce. `animationend` ends the stretch,
+  with a 600ms backstop for reduced motion. The + is a narrow ink-disc column so the four labels get
   the width; labels scale down with the viewport so クローゼット / スタイリスト
   fit at 360px. Checked in all five languages at 360 and 390px.
 - Stylist and Settings moved down from the Profile header, which now keeps

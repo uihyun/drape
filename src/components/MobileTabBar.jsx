@@ -31,33 +31,59 @@ export function MobileTabBar({ user, onSignIn }) {
   const onSettings = path.startsWith('/settings');
   // Slot index the sliding pill sits under (2 is the + button, never "active").
   const activeSlot = onHome ? 0 : onStylist ? 1 : onProfile ? 3 : onSettings ? 4 : -1;
-  // The + column is narrower than the four labelled ones, so the pill moves in
-  // label-column steps and jumps the + column once it's past it.
-  // Liquid-glass lens (Hinge / iOS 26): while a finger is down on a tab, and
-  // for a beat after the active tab changes, the pill swells past the bar's
-  // edges and turns into a clear lens with a bright rim. At rest it's a flat
-  // grey pill. pressSlot lets the lens jump under the finger before the route
-  // changes, which is what makes it feel like it follows the touch.
+  // Liquid-glass lens (Hinge / iOS 26). At rest the pill is flat grey. While
+  // a finger is down it swells into a clear lens; while it TRAVELS to another
+  // tab it also stretches sideways like a droplet, and the stretch is timed to
+  // the slide so it lands exactly as the slide does — no overshoot, no bounce.
+  //
+  // pressSlot moves the pill under the finger before the route changes. It is
+  // cleared only when the route actually changes (or the touch is cancelled):
+  // clearing it on a timer after pointer-up sent the pill back to the old tab
+  // and forward again whenever navigation took longer than the timer.
   const [pressSlot, setPressSlot] = useState(null);
-  const [lens, setLens] = useState(false);
-  const lensTimer = useRef(null);
-  const prevSlot = useRef(activeSlot);
+  const [pressing, setPressing] = useState(false);
+  const pressSafety = useRef(null);
+  const prevActive = useRef(activeSlot);
   useEffect(() => {
-    if (prevSlot.current === activeSlot) return undefined;
-    prevSlot.current = activeSlot;
+    if (prevActive.current === activeSlot) return;
+    prevActive.current = activeSlot;
+    clearTimeout(pressSafety.current);
     setPressSlot(null);
-    setLens(true);
-    clearTimeout(lensTimer.current);
-    lensTimer.current = setTimeout(() => setLens(false), 420);
-    return () => clearTimeout(lensTimer.current);
   }, [activeSlot]);
+  useEffect(() => () => clearTimeout(pressSafety.current), []);
   const press = (slot) => ({
-    onPointerDown: () => { clearTimeout(lensTimer.current); setPressSlot(slot); setLens(true); },
-    onPointerUp: () => { lensTimer.current = setTimeout(() => { setLens(false); setPressSlot(null); }, 260); },
-    onPointerCancel: () => { setLens(false); setPressSlot(null); },
+    onPointerDown: () => { clearTimeout(pressSafety.current); setPressSlot(slot); setPressing(true); },
+    onPointerUp: () => {
+      setPressing(false);
+      // A tap that never navigates (rare) mustn't leave the pill parked there.
+      pressSafety.current = setTimeout(() => setPressSlot(null), 1500);
+    },
+    onPointerCancel: () => { setPressing(false); setPressSlot(null); },
   });
   const pillSlot = pressSlot ?? activeSlot;
+  // The + column is narrower than the four labelled ones, so the pill moves in
+  // label-column steps and jumps the + column once it's past it.
   const pillCol = pillSlot > 2 ? pillSlot - 1 : pillSlot;
+  // One droplet run per move. Two identical keyframe names alternate so a move
+  // that starts mid-run restarts the animation instead of being ignored;
+  // animationend (not a timer) ends it, so it can't outlive the slide.
+  const [moveRun, setMoveRun] = useState(0);
+  const [moving, setMoving] = useState(false);
+  const prevPill = useRef(pillSlot);
+  const moveSafety = useRef(null);
+  useEffect(() => {
+    const from = prevPill.current;
+    prevPill.current = pillSlot;
+    if (from < 0 || pillSlot < 0 || from === pillSlot) return;
+    setMoveRun((n) => n + 1);
+    setMoving(true);
+    // Backstop: with reduced motion (or a backgrounded tab) no animation runs,
+    // so animationend never fires and the lens would stay swollen.
+    clearTimeout(moveSafety.current);
+    moveSafety.current = setTimeout(() => setMoving(false), 600);
+  }, [pillSlot]);
+  useEffect(() => () => clearTimeout(moveSafety.current), []);
+  const lens = pressing || moving;
   const feedMode = getFeedMode() === 'feed';
 
   // Guests hit the shared SignInModal (same as every other gated action) —
@@ -83,7 +109,13 @@ export function MobileTabBar({ user, onSignIn }) {
         aria-label="primary"
         style={{ '--nav-col': pillCol, '--nav-past-center': pillSlot > 2 ? 1 : 0 }}
       >
-        {pillSlot >= 0 && <span className={`floating-nav-pill${lens ? ' lens' : ''}`} aria-hidden="true" />}
+        {pillSlot >= 0 && (
+          <span
+            className={`floating-nav-pill${lens ? ' lens' : ''}${moving ? ` moving run-${moveRun % 2}` : ''}`}
+            onAnimationEnd={() => setMoving(false)}
+            aria-hidden="true"
+          />
+        )}
         <Link
           to={feedMode ? '/feed' : '/trends'}
           data-tour="nav-trends"
