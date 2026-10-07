@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Compass, TrendingUp, Plus, X, Shirt, Sparkles, Grid3x3, ScanEye, Calendar as CalendarIcon, Wand2, Settings as SettingsIcon } from 'lucide-react';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
@@ -33,7 +33,31 @@ export function MobileTabBar({ user, onSignIn }) {
   const activeSlot = onHome ? 0 : onStylist ? 1 : onProfile ? 3 : onSettings ? 4 : -1;
   // The + column is narrower than the four labelled ones, so the pill moves in
   // label-column steps and jumps the + column once it's past it.
-  const pillCol = activeSlot > 2 ? activeSlot - 1 : activeSlot;
+  // Liquid-glass lens (Hinge / iOS 26): while a finger is down on a tab, and
+  // for a beat after the active tab changes, the pill swells past the bar's
+  // edges and turns into a clear lens with a bright rim. At rest it's a flat
+  // grey pill. pressSlot lets the lens jump under the finger before the route
+  // changes, which is what makes it feel like it follows the touch.
+  const [pressSlot, setPressSlot] = useState(null);
+  const [lens, setLens] = useState(false);
+  const lensTimer = useRef(null);
+  const prevSlot = useRef(activeSlot);
+  useEffect(() => {
+    if (prevSlot.current === activeSlot) return undefined;
+    prevSlot.current = activeSlot;
+    setPressSlot(null);
+    setLens(true);
+    clearTimeout(lensTimer.current);
+    lensTimer.current = setTimeout(() => setLens(false), 420);
+    return () => clearTimeout(lensTimer.current);
+  }, [activeSlot]);
+  const press = (slot) => ({
+    onPointerDown: () => { clearTimeout(lensTimer.current); setPressSlot(slot); setLens(true); },
+    onPointerUp: () => { lensTimer.current = setTimeout(() => { setLens(false); setPressSlot(null); }, 260); },
+    onPointerCancel: () => { setLens(false); setPressSlot(null); },
+  });
+  const pillSlot = pressSlot ?? activeSlot;
+  const pillCol = pillSlot > 2 ? pillSlot - 1 : pillSlot;
   const feedMode = getFeedMode() === 'feed';
 
   // Guests hit the shared SignInModal (same as every other gated action) —
@@ -57,26 +81,28 @@ export function MobileTabBar({ user, onSignIn }) {
       <nav
         className="floating-nav"
         aria-label="primary"
-        style={{ '--nav-col': pillCol, '--nav-past-center': activeSlot > 2 ? 1 : 0 }}
+        style={{ '--nav-col': pillCol, '--nav-past-center': pillSlot > 2 ? 1 : 0 }}
       >
-        {activeSlot >= 0 && <span className="floating-nav-pill" aria-hidden="true" />}
+        {pillSlot >= 0 && <span className={`floating-nav-pill${lens ? ' lens' : ''}`} aria-hidden="true" />}
         <Link
           to={feedMode ? '/feed' : '/trends'}
           data-tour="nav-trends"
-          className={`floating-nav-btn${onHome ? ' active' : ''}`}
+          {...press(0)}
+          className={`floating-nav-btn${onHome ? ' active' : ''}${lens && pillSlot === 0 ? ' under-lens' : ''}`}
           aria-current={onHome ? 'page' : undefined}
         >
-          {feedMode ? <Compass size={22} strokeWidth={1.6} /> : <TrendingUp size={22} strokeWidth={1.6} />}
+          {feedMode ? <Compass size={20} strokeWidth={1.7} /> : <TrendingUp size={20} strokeWidth={1.7} />}
           <span className="floating-nav-label">{feedMode ? t('navFeed') : t('navTrends')}</span>
         </Link>
 
         <Link
           to="/stylist"
           data-tour="stylist"
-          className={`floating-nav-btn${onStylist ? ' active' : ''}`}
+          {...press(1)}
+          className={`floating-nav-btn${onStylist ? ' active' : ''}${lens && pillSlot === 1 ? ' under-lens' : ''}`}
           aria-current={onStylist ? 'page' : undefined}
         >
-          <Wand2 size={22} strokeWidth={1.6} />
+          <Wand2 size={20} strokeWidth={1.7} />
           <span className="floating-nav-label">{t('navStylist')}</span>
         </Link>
 
@@ -88,27 +114,29 @@ export function MobileTabBar({ user, onSignIn }) {
           aria-label={t('create')}
         >
           <span className="floating-nav-plus">
-            <Plus size={26} strokeWidth={2.2} />
+            <Plus size={22} strokeWidth={2.2} />
           </span>
         </button>
 
         <Link
           to="/profile"
           data-tour="nav-profile"
-          className={`floating-nav-btn${onProfile ? ' active' : ''}`}
+          {...press(3)}
+          className={`floating-nav-btn${onProfile ? ' active' : ''}${lens && pillSlot === 3 ? ' under-lens' : ''}`}
           aria-current={onProfile ? 'page' : undefined}
         >
-          <Shirt size={22} strokeWidth={1.6} />
+          <Shirt size={20} strokeWidth={1.7} />
           <span className="floating-nav-label">{t('navCloset')}</span>
         </Link>
 
         <Link
           to="/settings"
           data-tour="settings"
-          className={`floating-nav-btn${onSettings ? ' active' : ''}`}
+          {...press(4)}
+          className={`floating-nav-btn${onSettings ? ' active' : ''}${lens && pillSlot === 4 ? ' under-lens' : ''}`}
           aria-current={onSettings ? 'page' : undefined}
         >
-          <SettingsIcon size={22} strokeWidth={1.6} />
+          <SettingsIcon size={20} strokeWidth={1.7} />
           <span className="floating-nav-label">{t('navSettings')}</span>
         </Link>
       </nav>

@@ -20,8 +20,14 @@ Conventions:
   the same bar. Native Liquid Glass can't wrap HTML, and SVG-filter refraction
   only works in Chromium, so it's left out on purpose. No-blur browsers get a
   near-opaque fill.
-- The selected tab sits on a pill that slides between slots (off under
-  reduced motion). The + is a narrow ink-disc column so the four labels get
+- The selected tab sits on a grey pill that slides between slots. While a
+  finger is down on a tab, and for ~0.4s after the tab changes, the pill
+  becomes a liquid-glass lens (Hinge / iOS 26): it swells past the bar's
+  edges, turns clear with a bright rim and a faint pink/cyan fringe, and the
+  icon under it magnifies slightly. The first deploy only blurred the bar,
+  which is invisible on a white page — the lens is where the glass reads.
+  Bar slimmed to 56px (icons 20px, + disc 42px). Reduced motion keeps the
+  rim but drops the swell. The + is a narrow ink-disc column so the four labels get
   the width; labels scale down with the viewport so クローゼット / スタイリスト
   fit at 360px. Checked in all five languages at 360 and 390px.
 - Stylist and Settings moved down from the Profile header, which now keeps
