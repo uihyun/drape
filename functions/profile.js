@@ -227,13 +227,14 @@ exports.updateProfile = onRequest(async (req, res) => {
                 update.stylePrefs = admin.firestore.FieldValue.delete();
                 result.stylePrefs = null;
             } else if (sp && typeof sp === 'object') {
-                const { STYLES, COLORS } = require('./taxonomy.js');
+                const { STYLES, COLORS, PERSONAL_COLORS } = require('./taxonomy.js');
                 const clean = {
                     likedStyles: (Array.isArray(sp.likedStyles) ? sp.likedStyles : [])
                         .filter((s) => STYLES.includes(s)).slice(0, 8),
                     avoidColors: (Array.isArray(sp.avoidColors) ? sp.avoidColors : [])
                         .filter((c) => COLORS.includes(c)).slice(0, 8),
                     note: typeof sp.note === 'string' ? sp.note.slice(0, 500) : '',
+                    personalColor: PERSONAL_COLORS.includes(sp.personalColor) ? sp.personalColor : null,
                 };
                 update.stylePrefs = clean;
                 result.stylePrefs = clean;

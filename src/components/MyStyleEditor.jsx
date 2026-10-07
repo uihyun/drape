@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ProfileService } from '../services/profile-service.js';
-import { STYLES, COLORS, COLOR_HEX } from '../services/taxonomy.js';
+import { STYLES, COLORS, COLOR_HEX, PERSONAL_COLORS } from '../services/taxonomy.js';
 
 // Stated style preferences. Lives on the stylist page (owner, 2026-09-16):
 // this setting exists FOR the stylist, so burying it in Settings hid it from
@@ -15,22 +15,25 @@ export function MyStyleEditor({ profile, onSaved }) {
   const [liked, setLiked] = useState(null);
   const [avoid, setAvoid] = useState(null);
   const [note, setNote] = useState(null);
+  // undefined = untouched; null = explicitly cleared (nothing selected means unknown).
+  const [personal, setPersonal] = useState(undefined);
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState(false);
 
   const likedV = liked ?? server.likedStyles ?? [];
   const avoidV = avoid ?? server.avoidColors ?? [];
   const noteV = note ?? server.note ?? '';
-  const dirty = liked != null || avoid != null || note != null;
+  const personalV = personal !== undefined ? personal : (server.personalColor ?? null);
+  const dirty = liked != null || avoid != null || note != null || personal !== undefined;
   const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   const save = async () => {
     setSaving(true);
     try {
       await ProfileService.updateStylePrefs({
-        likedStyles: likedV, avoidColors: avoidV, note: noteV.trim(),
+        likedStyles: likedV, avoidColors: avoidV, note: noteV.trim(), personalColor: personalV,
       });
-      setLiked(null); setAvoid(null); setNote(null);
+      setLiked(null); setAvoid(null); setNote(null); setPersonal(undefined);
       setFlash(true); setTimeout(() => setFlash(false), 1800);
       onSaved?.();
     } catch (e) {
@@ -52,6 +55,22 @@ export function MyStyleEditor({ profile, onSaved }) {
             onClick={() => setLiked(toggle(likedV, s))}
           >
             {t(`taxonomy.styles.${s}`)}
+          </button>
+        ))}
+      </div>
+
+      <p className="mystyle-label">{t('myStylePersonalColor')}</p>
+      <p className="mystyle-hint">{t('myStylePersonalColorHint')}</p>
+      <div className="mystyle-chips">
+        {PERSONAL_COLORS.map((pc) => (
+          <button
+            key={pc}
+            type="button"
+            className={`mystyle-chip${personalV === pc ? ' on' : ''}`}
+            aria-pressed={personalV === pc}
+            onClick={() => setPersonal(personalV === pc ? null : pc)}
+          >
+            {t(`personalColor.${pc}`)}
           </button>
         ))}
       </div>

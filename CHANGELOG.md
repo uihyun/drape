@@ -11,6 +11,26 @@ Conventions:
 
 ---
 
+## Unreleased — personal color
+
+**Personal color as a stated preference.** The stylist page's "My style" panel
+gains a single-select row: Spring / Summer / Autumn / Winter (ko 봄 웜 · 여름 쿨 ·
+가을 웜 · 겨울 쿨, ja イエベ春 · ブルベ夏 · イエベ秋 · ブルベ冬). Nothing selected
+means unknown — there is deliberately no "Not sure" chip; tapping the selected
+season again clears it. Saved as `stylePrefs.personalColor`, sanitized
+server-side against the new closed `PERSONAL_COLORS` enum (mirrored in both
+taxonomy files; anything else is stored as `null`). Recommendations and
+verdicts add one guidance line when it's set: favour that season's palette for
+what sits near the face (tops, outerwear, scarves), off-season colors fine
+away from it. A preference, never a ban — `avoidColors` stays the only hard
+color rule. The panel now also counts a saved season as "filled in" when
+deciding whether to open itself.
+
+Deliberately NOT a photo diagnosis: lighting, white balance, phone
+tone-mapping and makeup move skin undertone more than the gap between
+seasons, so an AI verdict from a selfie would flip with the lamp. Users who
+know theirs (many in KR/JP, from a paid consultation) state it.
+
 ## 2.2.1 — one tap, one try-on; deletes that stay put; closet tabs — built 27 Sep 2026
 
 iOS build 19, Android versionCode 23. Everything below was already live on web

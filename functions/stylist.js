@@ -34,6 +34,22 @@ const VERDICT_TOPUP = 10;
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
 const MAX_ITEMS = 150;          // inventory digest cap fed to the model
 
+// Personal color is STATED by the user (usually from a paid consultation) —
+// never read off a photo, where lighting moves undertone more than the gap
+// between seasons. It steers what sits near the face; it is not a ban, so it
+// rides alongside the stated prefs instead of joining avoidColors.
+const PERSONAL_COLOR_GUIDE = {
+  spring: 'warm, clear and light — coral, peach, warm beige, light camel, ivory',
+  summer: 'cool, soft and light — dusty pink, lavender, soft navy, grey-blue, off-white',
+  autumn: 'warm, muted and deep — camel, olive, rust, mustard, chocolate brown',
+  winter: 'cool, clear and high-contrast — black, pure white, navy, jewel tones',
+};
+function personalColorLine(stated) {
+  const guide = PERSONAL_COLOR_GUIDE[stated?.personalColor];
+  if (!guide) return '';
+  return `PERSONAL COLOR: they are a "${stated.personalColor}" (${guide}). Prefer these for what sits near the face — tops, outerwear, scarves. Off-season colors are fine away from the face (bottoms, shoes, bags); this is a preference, not a ban — only avoidColors is a hard rule.`;
+}
+
 // Personas are PROMPT LENSES, not people. Client renders them as illustrated,
 // explicitly-AI characters (house rule: no photoreal synthetic humans).
 // Four stylists, one closet, four visibly different answers. A "styling lens"
@@ -382,6 +398,7 @@ exports.styleVerdict = onCall(
       '- Never disparage the person, their body, or their wardrobe.',
       profile?.summary ? `THEIR STYLE PROFILE:\n${profile.summary}` : '',
       stated ? `THEIR STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      personalColorLine(stated),
       `THE OUTFIT THEY ARE LOOKING AT: ${JSON.stringify(look)}`,
       `STAY IN CHARACTER: you are ${persona.name}. Another stylist should reach a different call and say it differently.`,
     ].filter(Boolean).join('\n\n');
@@ -502,6 +519,7 @@ exports.styleRecommend = onCall(
       'Return JSON: {"outfits":[{"title":string,"itemIds":string[],"why":string,"confidence":number 0-1}]}',
       profile?.summary ? `USER STYLE PROFILE:\n${profile.summary}` : '',
       stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      personalColorLine(stated),
       // Restated at the end because the lens is one line at the top of a long
       // prompt and the taste blocks below it are far more specific. Without
       // this, four stylists converge on the same safe outfit.

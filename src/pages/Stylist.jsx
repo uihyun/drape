@@ -215,7 +215,8 @@ export function Stylist({ user, onSignIn }) {
       {persona && !choosing && (() => {
         const prefs = profile?.stylePrefs;
         const empty = !prefs || (!(prefs.likedStyles || []).length
-          && !(prefs.avoidColors || []).length && !(prefs.note || '').trim());
+          && !(prefs.avoidColors || []).length && !(prefs.note || '').trim()
+          && !prefs.personalColor);
         const open = styleOpen || empty;
         return (
           <section className="stylist-style">

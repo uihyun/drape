@@ -31,6 +31,10 @@ const COLORS = [
 
 const SEASONS = ['spring', 'summer', 'fall', 'winter'];
 
+// Personal color (퍼스널컬러) — the user's STATED season, never inferred from a
+// photo. Separate from SEASONS, which is garment seasonality.
+const PERSONAL_COLORS = ['spring', 'summer', 'autumn', 'winter'];
+
 const STYLES = [
   'minimal', 'classic', 'street', 'casual', 'preppy',
   'sporty', 'workwear', 'romantic', 'y2k', 'gorpcore', 'avant-garde',
@@ -44,6 +48,7 @@ module.exports = {
   SUBCATEGORIES,
   COLORS,
   SEASONS,
+  PERSONAL_COLORS,
   STYLES,
   FITS,
 };

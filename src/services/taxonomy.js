@@ -72,6 +72,10 @@ export const COLOR_HEX = {
 // trench works spring + fall) so the field on Item is `seasons: []`.
 export const SEASONS = ['spring', 'summer', 'fall', 'winter'];
 
+// Personal color (퍼스널컬러) — the user's STATED season, never inferred from a
+// photo. Separate from SEASONS, which is garment seasonality.
+export const PERSONAL_COLORS = ['spring', 'summer', 'autumn', 'winter'];
+
 // Style labels — adapted from Lekondo's "ontology" angle but kept small to
 // start. Add new ones from real user data, not speculatively.
 export const STYLES = [
