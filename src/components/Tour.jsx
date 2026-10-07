@@ -18,19 +18,24 @@ import { hintSeen, markHintSeen } from '../services/homePref.js';
 
 export const TOUR_KEY = 'drape_tour_v1';
 
-// `route` navigates before the step is measured. `pad` widens the hole for
-// controls whose visual weight is bigger than their box (the floating nav
-// pills carry a shadow well outside their bounds).
+// `route` navigates before the step is measured. `pad` widens the hole
+// around the target. Order follows the bottom bar left to right
+// (Trends · Stylist · Closet · Settings), with a stop on the stylist page
+// itself, and ends on the + (2026-10-07, after the bar replaced the Profile
+// header's stylist/settings icons).
 const STEPS = [
-  { target: '[data-tour="nav-trends"]',  route: '/trends',  body: 'tourTrends',     pad: 10 },
-  { target: '[data-tour="nav-profile"]', route: '/trends',  body: 'tourProfileNav', pad: 10 },
-  { target: '[data-tour="tabs"]',        route: '/profile', body: 'tourTabs',       pad: 6 },
-  { target: '[data-tour="tab-tryon"]',   route: '/profile', body: 'tourTryon',      pad: 6 },
-  { target: '[data-tour="stylist"]',     route: '/profile', body: 'tourStylist',    pad: 8 },
-  { target: '[data-tour="settings"]',    route: '/profile', body: 'tourSettings',   pad: 8 },
+  { target: '[data-tour="nav-trends"]',   route: '/trends',  body: 'tourTrends',          pad: 4 },
+  { target: '[data-tour="stylist"]',      route: '/trends',  body: 'tourStylist',         pad: 4 },
+  // The stylist's own intro (the same line as the onboarding deck's "Meet
+  // your stylist" card), shown on the picker so the first visit isn't cold.
+  { target: '[data-tour="stylist-pick"]', route: '/stylist', body: 'onboardStylistBody',  pad: 8 },
+  { target: '[data-tour="nav-profile"]',  route: '/profile', body: 'tourProfileNav',      pad: 4 },
+  { target: '[data-tour="tabs"]',         route: '/profile', body: 'tourTabs',            pad: 6 },
+  { target: '[data-tour="tab-tryon"]',    route: '/profile', body: 'tourTryon',           pad: 6 },
+  { target: '[data-tour="settings"]',     route: '/profile', body: 'tourSettings',        pad: 4 },
   // Last on purpose: the walkthrough ends holding the thing to do next, so the
   // closing tap lands on the button that starts the closet.
-  { target: '[data-tour="nav-create"]',  route: '/profile', body: 'tourCreate',     pad: 12 },
+  { target: '[data-tour="nav-create"]',   route: '/profile', body: 'tourCreate',          pad: 4 },
 ];
 
 // The target may not be mounted yet when a step begins (route change, sticky

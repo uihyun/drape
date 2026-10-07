@@ -159,7 +159,7 @@ export function Stylist({ user, onSignIn }) {
       {(!persona || choosing) ? (
         <>
           <p className="stylist-choose-title">{t('stylistChoose')}</p>
-          <div className="stylist-quad">
+          <div className="stylist-quad" data-tour="stylist-pick">
             {STYLIST_PERSONAS.map((p) => (
               <button
                 key={p.id}
@@ -180,7 +180,7 @@ export function Stylist({ user, onSignIn }) {
         /* The two-word tag is enough to pick between four faces; once you're
            inside with one of them it says nothing about how they'll style you.
            The bio is first person, so the card reads as the stylist talking. */
-        <button type="button" className="stylist-chosen" onClick={() => setChoosing(true)}>
+        <button type="button" className="stylist-chosen" data-tour="stylist-pick" onClick={() => setChoosing(true)}>
           <span className="stylist-chosen-top">
             <img src={personaMeta?.img} alt="" className="stylist-chosen-img" />
             <span className="stylist-chosen-meta">

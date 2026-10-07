@@ -61,8 +61,12 @@ Conventions:
   `.page` and the stale 56px offsets on the toast, pending banner and legal
   pages; the dead `.mobile-tabbar` CSS is gone. Duplicate `navCloset` keys
   removed from en/ko/ja.
-- Onboarding Tour copy still describes the old layout (its stylist/settings
-  steps now point at the bar slots) — rewritten in the next pass.
+- Onboarding Tour follows the new bar left to right: Trends → Stylist slot →
+  the stylist page itself (persona picker, or the chosen-stylist card; caption
+  is the onboarding deck's "Meet your stylist" line) → Closet → closet tabs →
+  try-on tab → Settings slot → ends on +. Hole padding cut from 10–12px (sized
+  for the old circles' shadows) to 4px. Still shown to new users only
+  (`drape_tour_v1` unchanged).
 
 ## Unreleased — personal color
 
