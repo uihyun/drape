@@ -154,6 +154,8 @@ export const ja = {
   boardMonthName: '{month}に着た服',
   boardRangeEmpty: 'まだ追加できる服がありません。カレンダーにコーデを記録して、クローゼットのアイテムをつなげてください。',
   boardRangeError: 'ボードを作れませんでした。もう一度お試しください。',
+  boardWaitExtract: 'まだ写真からアイテムを切り抜いています。少ししてからもう一度お試しください。',
+  pieceExtracting: '写真からこのアイテムを切り抜いています…',
   boardsEmpty: 'まだボードがありません。ダイアリー感覚で服を並べてみましょう。',
   untitledBoard: '名称未設定のボード',
   boardEditorTitle: 'ボード',

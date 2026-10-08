@@ -152,6 +152,8 @@ export const ko = {
   boardMonthName: '{month}에 입은 옷',
   boardRangeEmpty: '아직 담을 옷이 없어요. 캘린더에 코디를 기록하고 옷장 아이템을 연결해 주세요.',
   boardRangeError: '보드를 만들지 못했어요. 다시 시도해 주세요.',
+  boardWaitExtract: '아직 사진에서 아이템을 추출하는 중이에요. 잠시 후 다시 눌러 주세요.',
+  pieceExtracting: '사진에서 이 아이템을 오려내는 중…',
   boardsEmpty: '아직 보드가 없어요. 다이어리 꾸미듯 옷을 배치해 보세요.',
   untitledBoard: '이름 없는 보드',
   boardEditorTitle: '보드',

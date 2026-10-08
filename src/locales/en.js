@@ -152,6 +152,8 @@ export const en = {
   boardMonthName: 'Worn in {month}',
   boardRangeEmpty: 'Nothing to add yet — log outfits on the calendar and link your closet pieces to them.',
   boardRangeError: 'Couldn’t build that board. Try again.',
+  boardWaitExtract: 'Some pieces are still being cut out of the photo — try again in a minute.',
+  pieceExtracting: 'Cutting this piece out of the photo…',
   boardsEmpty: 'No boards yet. Start one to arrange clothes diary-style.',
   untitledBoard: 'Untitled board',
   boardEditorTitle: 'Board',

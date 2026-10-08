@@ -7579,3 +7579,10 @@ input:disabled, textarea:disabled, select:disabled {
    stays as is). maximum-scale=1 in index.html, so iOS won't zoom on focus. */
 .settings .page-input { font-size: 0.88rem; padding: 0.6rem 0.8rem; }
 .schat-backwx { margin-left: 0.35rem; font-size: 0.8rem; }
+.outfit-board-msg { margin: -0.25rem 0 0.75rem; font-size: 0.82rem; color: var(--text-secondary); text-align: center; }
+.stylist-savedacts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.stylist-savedacts .btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+/* A piece still being cut out of its source photo: blur the photo so it
+   doesn't read as the finished item, and say what's happening. */
+.analyze-match-card.is-proc img { filter: blur(3px) saturate(0.6); transform: scale(1.08); }
+.piece-extracting { margin: 0.2rem 0 0.35rem; font-size: 0.76rem; color: var(--accent); }

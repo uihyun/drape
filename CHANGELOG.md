@@ -11,6 +11,22 @@ Conventions:
 
 ---
 
+## Unreleased — boards wait for cutouts; stylist looks → boards
+
+- **"Make a board" waits for extraction.** Pieces just cut out of an outfit
+  photo stay `processing` for about 80s; a board made then pinned the whole
+  photo in every slot. Seen live on 8 Oct: board created 22:50:38, items ready
+  22:51:12–14. The button now refuses with "still being cut out — try again in
+  a minute" until every piece is ready.
+- **Board detail subscribes to its items live** instead of reading them once,
+  so a cutout swaps in the moment it lands. `BoardThumbnail`'s shared cache
+  only keeps finished items, so list cards stop showing a stale source photo.
+- **Extracting state on outfit pieces:** a linked piece still being cut out
+  is blurred, and the row says "Cutting this piece out of the photo…". Before,
+  five rows of the full outfit photo read as broken.
+- **Saved stylist looks → board:** "Make a board" / "Open board" on each saved
+  look. Same grid; `savedLooks.boardId` makes the second tap open it.
+
 ## Unreleased — settings: weather switch, °C/°F, collapsible cards
 
 - **Denser Settings:**

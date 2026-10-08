@@ -123,6 +123,7 @@ export function OutfitDetail({ user, onSignIn }) {
   }, [user?.uid, outfitId]);
 
   const [boardBusy, setBoardBusy] = useState(false);
+  const [boardMsg, setBoardMsg] = useState('');
 
   // That day's weather next to the date. The server snapshots it onto dated
   // outfits (what visitors see — the owner's place is private); the owner's
@@ -281,7 +282,12 @@ export function OutfitDetail({ user, onSignIn }) {
   // sourceOutfitId), so the second tap opens the board instead of making
   // another one.
   const boardIds = [...new Set([...(outfit.itemIds || []), ...linkedIdSet])].filter((id) => typeof id === 'string');
+  // Pieces just cut out of the photo are 'processing' for a minute or so; a
+  // board made then would pin the whole photo. Wait for every one.
+  const boardPending = boardIds.some((id) => itemsById[id] && itemsById[id].status !== 'ready');
   const openOrMakeBoard = async () => {
+    if (!outfit.boardId && boardPending) { setBoardMsg(t('boardWaitExtract')); return; }
+    setBoardMsg('');
     if (outfit.boardId) {
       const existing = await BoardService.getBoard(outfit.boardId).catch(() => null);
       if (existing) { navigate(`/boards/${existing.id}`); return; }
@@ -776,6 +782,8 @@ export function OutfitDetail({ user, onSignIn }) {
           )}
         </div>
       </div>
+
+      {boardMsg && <p className="outfit-board-msg">{boardMsg}</p>}
 
       {(outfit.tryOnCount || 0) > 0 && (
         <p className="outfit-tryon-count">

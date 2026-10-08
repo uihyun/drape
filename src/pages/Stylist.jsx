@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, X } from 'lucide-react';
+import { Bookmark, X, LayoutGrid, Loader2 } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { MyStyleEditor } from '../components/MyStyleEditor.jsx';
 import { StylistChat } from '../components/StylistChat.jsx';
+import { BoardService } from '../services/board-service.js';
 import { useFits } from '../hooks/useFits.js';
 import {
   StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona,
@@ -29,6 +30,8 @@ export function Stylist({ user, onSignIn }) {
   const [saved, setSaved] = useState([]);        // looks kept from past recs
   const [shown, setShown] = useState(PAGE);      // "show more" window
   const fits = useFits(user);      // shown once free chat messages are spent
+  const [boardBusy, setBoardBusy] = useState(null);   // saved-look id being turned into a board
+  const [boardNote, setBoardNote] = useState(null);   // { id, text } — e.g. still processing
 
   useEffect(() => {
     if (!user) return undefined;
@@ -75,6 +78,27 @@ export function Stylist({ user, onSignIn }) {
   };
 
   const thumbOf = (id) => closet?.[id]?.croppedUrl || closet?.[id]?.originalUrl || null;
+
+  // A saved stylist look → a board (2026-10-08): its closet pieces on the same
+  // clean grid as an outfit's board. Linked both ways via savedLook.boardId,
+  // so the second tap opens it. Pieces still being processed are waited for.
+  const lookToBoard = async (l) => {
+    if (l.boardId) {
+      const existing = await BoardService.getBoard(l.boardId).catch(() => null);
+      if (existing) { navigate(`/boards/${existing.id}`); return; }
+    }
+    const ids = (l.itemIds || []).filter((id) => closet?.[id] && !closet[id].isArchived);
+    if (ids.some((id) => closet[id].status !== 'ready')) { setBoardNote({ id: l.id, text: t('boardWaitExtract') }); return; }
+    setBoardBusy(l.id);
+    try {
+      const { id } = await BoardService.createBoard({ name: l.title || '', stickers: BoardService.gridStickers(ids) });
+      await StylistService.setLookBoard(user.uid, l.id, id);
+      logEvent(analytics, 'stylist_look_board', { persona: l.persona });
+      navigate(`/boards/${id}`);
+    } catch (e) {
+      console.warn('look board failed', e?.message);
+    } finally { setBoardBusy(null); }
+  };
 
   return (
     <div className="page stylist-page">
@@ -211,14 +235,30 @@ export function Stylist({ user, onSignIn }) {
                   ))}
                 </div>
                 {l.why && <p className="stylist-why">{l.why}</p>}
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  disabled={live.length < 2}
-                  onClick={() => tryOnLook(l.itemIds, 'saved')}
-                >
-                  {t(live.length < 2 ? 'stylistSavedGone' : 'stylistTryAgain')}
-                </button>
+                <div className="stylist-savedacts">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={live.length < 2}
+                    onClick={() => tryOnLook(l.itemIds, 'saved')}
+                  >
+                    {t(live.length < 2 ? 'stylistSavedGone' : 'stylistTryAgain')}
+                  </button>
+                  {live.length >= 2 && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary stylist-boardbtn"
+                      onClick={() => lookToBoard(l)}
+                      disabled={boardBusy === l.id}
+                      aria-label={t(l.boardId ? 'boardOpen' : 'boardFromOutfit')}
+                      title={t(l.boardId ? 'boardOpen' : 'boardFromOutfit')}
+                    >
+                      {boardBusy === l.id ? <Loader2 size={15} className="spin" /> : <LayoutGrid size={15} strokeWidth={1.8} />}
+                      {t(l.boardId ? 'boardOpen' : 'boardFromOutfit')}
+                    </button>
+                  )}
+                </div>
+                {boardNote?.id === l.id && <p className="stylist-guide">{boardNote.text}</p>}
               </article>
             );
           })}

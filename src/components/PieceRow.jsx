@@ -19,6 +19,10 @@ import { formatPrice } from '../utils/currency.js';
 export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
   const matches = matchCloset(piece, closet);
   const hasLinked = Array.isArray(linkedItems) && linkedItems.length > 0;
+  // A piece just cut out of the photo is 'processing' for a minute or so and
+  // has only the source photo to show — say so, or the whole outfit photo in
+  // every row reads as a bug.
+  const extracting = hasLinked && linkedItems.some((it) => it.status === 'processing' || it.status === 'uploading');
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedLocal, setSavedLocal] = useState(false);
@@ -62,6 +66,7 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
         )}
       </div>
       {piece.description && <p className="piece-match-desc">{piece.description}</p>}
+      {extracting && <p className="piece-extracting">{t('pieceExtracting')}</p>}
       {/* The item(s) actually linked to this piece take priority — once you've
           said "this is what I wore", the tag-match suggestions are noise. */}
       {hasLinked ? (
@@ -71,7 +76,7 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
               const cover = item.croppedUrl || item.originalUrl;
               const proc = item.status === 'processing' || item.status === 'uploading';
               return (
-                <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card is-linked" title={item.name || ''}>
+                <Link key={item.id} to={`/i/${item.id}`} className={`analyze-match-card is-linked${proc ? ' is-proc' : ''}`} title={item.name || ''}>
                   {cover
                     ? <img src={cover} alt={item.name || ''} loading="lazy" />
                     : <div className="item-card-skeleton" />}
@@ -117,6 +122,7 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
               <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
             )}
             {piece.description && <p className="piece-match-desc">{piece.description}</p>}
+      {extracting && <p className="piece-extracting">{t('pieceExtracting')}</p>}
             <div className="piece-wishlist-actions">
               {sale.findSimilar !== false && (
                 <a href={searchUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">

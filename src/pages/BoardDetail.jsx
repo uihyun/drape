@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { Edit3, Eye, EyeOff, Heart, Bookmark, Flag } from 'lucide-react';
 import { db } from '../firebase.js';
 import { BoardService } from '../services/board-service.js';
@@ -56,17 +56,22 @@ export function BoardDetail({ user, onSignIn }) {
 
   // Hydrate items used on the board (so we can show the same
   // "items on this board" row that the editor shows owners).
+  // Live, not one-shot: a board made while pieces were still being cut out
+  // of a photo showed the whole photo until you left and came back. With a
+  // subscription the cutout swaps in the moment the item flips to ready.
+  const stickerIdKey = Array.from(new Set((board?.stickers || []).map(s => s.itemId).filter(Boolean))).sort().join(',');
   useEffect(() => {
-    const ids = Array.from(new Set((board?.stickers || []).map(s => s.itemId).filter(Boolean)));
-    if (!ids.length) { setItems([]); return; }
-    let cancelled = false;
-    Promise.all(
-      ids.map(id => getDoc(doc(db, 'items', id))
-        .then(s => s.exists() ? { id: s.id, ...s.data() } : null)
-        .catch(() => null))
-    ).then(rows => { if (!cancelled) setItems(rows.filter(Boolean)); });
-    return () => { cancelled = true; };
-  }, [board?.id, (board?.stickers || []).length]);
+    const ids = stickerIdKey ? stickerIdKey.split(',') : [];
+    if (!ids.length) { setItems([]); return undefined; }
+    const map = new Map();
+    const apply = () => setItems(ids.map(id => map.get(id)).filter(Boolean));
+    const unsubs = ids.map(id => onSnapshot(
+      doc(db, 'items', id),
+      snap => { if (snap.exists()) map.set(id, { id: snap.id, ...snap.data() }); else map.delete(id); apply(); },
+      () => { map.delete(id); apply(); },
+    ));
+    return () => unsubs.forEach(u => u());
+  }, [stickerIdKey]);
 
   // Bookmark state for non-owners
   useEffect(() => {

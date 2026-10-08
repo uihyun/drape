@@ -157,6 +157,8 @@ export const es = {
   boardMonthName: 'Lo que usé en {month}',
   boardRangeEmpty: 'Aún no hay nada que añadir: registra tus outfits en el calendario y vincula las prendas de tu armario.',
   boardRangeError: 'No se pudo crear el tablero. Inténtalo de nuevo.',
+  boardWaitExtract: 'Todavía estamos recortando algunas prendas de la foto. Inténtalo de nuevo en un minuto.',
+  pieceExtracting: 'Recortando esta prenda de la foto…',
   boardsEmpty: 'Todavía no hay tableros. Crea uno para acomodar tu ropa tipo diario.',
   untitledBoard: 'Tablero sin título',
   boardEditorTitle: 'Tablero',

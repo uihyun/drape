@@ -77,6 +77,12 @@ async function saveLook(uid, { persona, title, why, itemIds, ask = '' }) {
   return ref.id;
 }
 
+// The board made from a saved look ("Make a board"), so a second tap opens
+// it instead of making another.
+async function setLookBoard(uid, lookId, boardId) {
+  await updateDoc(doc(db, 'users', uid, 'savedLooks', lookId), { boardId });
+}
+
 async function unsaveLook(uid, lookId) {
   await deleteDoc(doc(db, 'users', uid, 'savedLooks', lookId));
 }
@@ -140,7 +146,7 @@ async function lately() {
 }
 
 export const StylistService = {
-  recommend, verdict, rateRec, saveLook, unsaveLook, subscribeSavedLooks,
+  recommend, verdict, rateRec, saveLook, unsaveLook, setLookBoard, subscribeSavedLooks,
   chat, subscribeThread, listArchive, lately,
 };
 export default StylistService;

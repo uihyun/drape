@@ -157,6 +157,8 @@ export const fr = {
   boardMonthName: 'Porté en {month}',
   boardRangeEmpty: 'Rien à ajouter pour l’instant : notez vos tenues dans le calendrier et associez-y les pièces de votre dressing.',
   boardRangeError: 'Impossible de créer cette planche. Réessayez.',
+  boardWaitExtract: 'Certaines pièces sont encore en cours de détourage. Réessayez dans une minute.',
+  pieceExtracting: 'Détourage de cette pièce en cours…',
   boardsEmpty: 'Aucune planche pour l’instant. Créez-en une pour organiser vos vêtements comme un carnet.',
   untitledBoard: 'Planche sans titre',
   boardEditorTitle: 'Planche',

@@ -60,7 +60,9 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
     ).then(rows => {
       if (cancelled) return;
       const map = Object.fromEntries(rows.filter(Boolean));
-      for (const [id, it] of Object.entries(map)) itemCache.set(id, it);
+      // Only cache finished items: one still being cut out would otherwise
+      // keep showing its source photo on every card until a reload.
+      for (const [id, it] of Object.entries(map)) if (it?.status === 'ready') itemCache.set(id, it);
       // Merge onto any previously-fetched items so a transient miss never
       // empties an already-rendered thumbnail.
       setFetched(prev => ({ ...(prev || {}), ...map }));
