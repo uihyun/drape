@@ -572,7 +572,7 @@ export const en = {
   trendsEmpty: 'Trends are warming up — add pieces and try things on, and this board fills in.',
   tourTitle: 'Getting around drape',
   tourTrends: 'Trends is the front page — the styles, colours and brands moving this week, in a new issue every Monday.',
-  tourProfileNav: 'This button is your own closet: everything you own, your calendar, your try-ons.',
+  tourProfileNav: 'Your closet. Everything you own lives here, with your outfits, calendar, boards and try-ons in the tabs at the top.',
   tourTabs: 'Your closet splits across these tabs — outfits, calendar, the closet itself, boards and try-ons.',
   tourCreate: 'Start here: photograph a piece and drape cuts it out and tags it. A few items in, everything else works.',
   tourStylist: 'Your AI stylist lives here. It builds looks from the clothes you already own — so the closet comes first.',

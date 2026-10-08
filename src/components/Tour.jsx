@@ -22,23 +22,25 @@ import { hintSeen, markHintSeen } from '../services/homePref.js';
 export const TOUR_KEY = 'drape_tour_v2';
 
 // `route` navigates before the step is measured. `pad` widens the hole
-// around the target. Order follows the bottom bar left to right
-// (Trends · Stylist · Closet · Settings), with a stop on the stylist page
-// itself, and ends on the + (2026-10-07, after the bar replaced the Profile
-// header's stylist/settings icons).
+// around the target.
+//
+// Five steps, not eight (owner, 2026-10-08: "too long"). The bar is labelled
+// now, so a step that only says "this is Settings" or "this is the Stylist
+// tab" repeats what the label already says. What's left is what a label
+// can't explain: the front page, what the stylist actually does, the closet
+// (its tabs folded into the same caption), try-on, then the + to act on.
+// The cut copy keys (tourStylist, tourTabs, tourSettings) stay in the locale
+// files so a step can come back without re-translating.
 const STEPS = [
-  { target: '[data-tour="nav-trends"]',   route: '/trends',  body: 'tourTrends',          pad: 4 },
-  { target: '[data-tour="stylist"]',      route: '/trends',  body: 'tourStylist',         pad: 4 },
-  // The stylist's own intro (the same line as the onboarding deck's "Meet
-  // your stylist" card), shown on the picker so the first visit isn't cold.
-  { target: '[data-tour="stylist-pick"]', route: '/stylist', body: 'onboardStylistBody',  pad: 8 },
-  { target: '[data-tour="nav-profile"]',  route: '/profile', body: 'tourProfileNav',      pad: 4 },
-  { target: '[data-tour="tabs"]',         route: '/profile', body: 'tourTabs',            pad: 6 },
-  { target: '[data-tour="tab-tryon"]',    route: '/profile', body: 'tourTryon',           pad: 6 },
-  { target: '[data-tour="settings"]',     route: '/profile', body: 'tourSettings',        pad: 4 },
+  { target: '[data-tour="nav-trends"]',   route: '/trends',  body: 'tourTrends',         pad: 4 },
+  // The stylist's own intro (the onboarding deck's "Meet your stylist" line),
+  // shown on the picker so the first visit isn't cold.
+  { target: '[data-tour="stylist-pick"]', route: '/stylist', body: 'onboardStylistBody', pad: 8 },
+  { target: '[data-tour="nav-profile"]',  route: '/profile', body: 'tourProfileNav',     pad: 4 },
+  { target: '[data-tour="tab-tryon"]',    route: '/profile', body: 'tourTryon',          pad: 6 },
   // Last on purpose: the walkthrough ends holding the thing to do next, so the
   // closing tap lands on the button that starts the closet.
-  { target: '[data-tour="nav-create"]',   route: '/profile', body: 'tourCreate',          pad: 4 },
+  { target: '[data-tour="nav-create"]',   route: '/profile', body: 'tourCreate',         pad: 4 },
 ];
 
 // The target may not be mounted yet when a step begins (route change, sticky

@@ -68,6 +68,10 @@ Conventions:
   for the old circles' shadows) to 4px. Tour key bumped to `drape_tour_v2`
   so existing users see it once too — where things live changed for them
   most. `?tour=1` still replays it on demand.
+- Tour cut from 8 steps to 5 (owner: too long): Trends → stylist page →
+  Closet (caption now also names the tabs) → try-on tab → +. Dropped the
+  Stylist-slot, closet-tabs and Settings steps — the bar's labels already say
+  those. Their copy keys stay in the locales.
 
 ## Unreleased — personal color
 

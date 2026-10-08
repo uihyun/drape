@@ -575,7 +575,7 @@ export const fr = {
   trendsEmpty: 'Les tendances se mettent en place — ajoutez des pièces et faites des essayages, et ce tableau se remplira.',
   tourTitle: 'Se repérer dans drape',
   tourTrends: 'Tendances est la une — les styles, couleurs et marques qui montent cette semaine, dans un nouveau numéro chaque lundi.',
-  tourProfileNav: 'Ce bouton, c’est votre dressing : tout ce que vous possédez, votre calendrier, vos essayages.',
+  tourProfileNav: 'Votre dressing. Tout ce que vous possédez est ici, avec vos tenues, votre calendrier, vos planches et vos essayages dans les onglets du haut.',
   tourTabs: 'Votre dressing se répartit dans ces onglets — tenues, calendrier, dressing, planches et essayages.',
   tourCreate: 'Commencez ici : photographiez une pièce, drape la détoure et la tague. Quelques pièces suffisent pour que tout le reste fonctionne.',
   tourStylist: 'Votre styliste IA est ici. Il compose des looks avec les vêtements que vous avez déjà — le dressing passe donc en premier.',

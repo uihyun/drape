@@ -576,7 +576,7 @@ export const es = {
   trendsEmpty: 'Las tendencias se están calentando — agrega prendas y pruébate cosas, y este tablero se va a llenar.',
   tourTitle: 'Cómo moverte en drape',
   tourTrends: 'Tendencias es la portada — los estilos, colores y marcas de la semana, en una edición nueva cada lunes.',
-  tourProfileNav: 'Este botón es tu armario: todo lo que tienes, tu calendario y tus pruebas.',
+  tourProfileNav: 'Tu armario. Aquí está todo lo que tienes, y en las pestañas de arriba, tus looks, calendario, tableros y pruebas.',
   tourTabs: 'Tu armario se divide en estas pestañas — looks, calendario, armario, tableros y pruebas.',
   tourCreate: 'Empieza aquí: fotografía una prenda y drape la recorta y la etiqueta. Con unas cuantas, todo lo demás funciona.',
   tourStylist: 'Aquí vive tu estilista con IA. Arma looks con la ropa que ya tienes, así que primero llena el armario.',
