@@ -35,6 +35,8 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   topping up near midnight is a trap. Free is always spent before a top-up, and
   `refundStylistUse` is symmetric with what was granted (refunding a purchase
   also claws back the unused block).
+  The stylist chat (2026-10-08) is a third use on the same wallet:
+  `CHAT_QUOTA`, 10 messages/day free, then +10 per fit. One message = one use.
   Never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
 - **Five locales: en / ko / ja / es / fr.** Spanish is ONE neutral Spanish for
   every market (`tú`, never `vosotros`; vocabulary a reader in Madrid, Mexico
@@ -71,6 +73,25 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   only inbox + bell). A 5th slot for notifications/DMs was rejected on data —
   nearly nobody receives either yet; revisit when that changes. The Tour walks
   the bar; bump `TOUR_KEY` only when where things live changes, never for copy.
+- **The stylist is a chat; threads are server-written.**
+  `users/{uid}/stylistChats/{persona}_{YYYY-MM-DD}/messages`: one thread per
+  persona per local day; past days are the read-only archive. Rules allow
+  owner read only, and `stylistChat` writes both turns in one batch. Outfits
+  in a reply are closet ids validated by `cleanOutfits`. Any reply with
+  outfits also writes a `stylistRecs` doc, so thumbs and the admin charts keep
+  working. `styleRecommend` stays deployed for older app builds.
+- **Weather place is private and comes from the device or a search, never a
+  guess.** It is stored at `users/{uid}/private/weatherPlace`, never on the
+  world-readable profile.
+  - Asked once, the first time a weather screen opens. Rounded to ~1km on the
+    device before sending, so it stays "approximate location" for the store
+    labels.
+  - Declined → city search; nothing → no weather. A timezone guess showed LA
+    weather in Seattle, so don't add one back.
+  - City search runs on the server (`weatherSearch`) and merges Open-Meteo
+    with Nominatim, because Open-Meteo returns nothing for Hangul/Kanji.
+    Keep Nominatim server-side: it allows 1 req/s and needs a User-Agent.
+    North Korea is excluded.
 - **Personal color is stated, never inferred from a photo.** Lighting and
   phone processing move undertone more than the gap between seasons.
   `stylePrefs.personalColor` is a closed enum (`PERSONAL_COLORS`, mirrored in

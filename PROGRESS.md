@@ -2,6 +2,53 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Plan — "see it on me, live" (written 2026-10-08, not started)
+
+Prompted by a JEV demo from a same-named competitor (Stareon's "Drape: Outfit
+Planner", App Store id6761688732). Their app sells a real-time "Mirror" behind
+a subscription; 2.0.2 release notes, 23 Sep, say "see them on you in real time".
+
+**What JEV is.** TypeSafe AI's fast *decision* model. It is not an image
+model. In the demo it does two things:
+- routes the spoken request (whole outfit / one item / no change);
+- picks outfit candidates from the wardrobe.
+
+Measured in the demo: about 1.2 s and about $0.008 per 7 calls. The live video
+comes from a separate real-time model that isn't named. drape's stylist
+already plays the JEV role. The missing piece is real-time rendering.
+
+**Phase A: quick swap (buildable on today's stack).**
+- From one reference photo, the stylist chat's 1–2 looks (plus the user's
+  pick) are generated as try-ons *in parallel*, as soon as the reply lands.
+  Swiping between them then feels instant.
+- Same `virtualTryOn` (`gemini-3.1-flash-image`, identity refs always), same
+  fit charge per image, same Generation docs.
+- Open questions:
+  - Pre-generate before a tap, which spends fits on looks never viewed, or
+    on the first tap only?
+  - Does a lower `imageSize` for previews keep identity good enough?
+- Rough size: client gallery plus a "try all" fan-out; no new server.
+
+**Phase B: live mirror (spike first, then decide).**
+1. **1–2 day vendor spike.** Wire 2–3 real-time video try-on/edit APIs behind
+   a desktop-only test page (camera → WebRTC → model). Measure:
+   - cost per minute
+   - glass-to-glass latency
+   - identity fidelity against our still try-on (face/body preservation is
+     the product's reason to exist, see CLAUDE.md)
+   - garment accuracy from a cutout
+2. **Gating questions:**
+   - Can a per-minute cost sit inside the one-wallet economics, e.g.
+     N seconds per fit? A second currency is not allowed.
+   - How are live frames moderated? SafeSearch runs on stills today.
+   - Privacy copy: the camera stream goes to a third party.
+   - Generation docs record sessions, not frames; the per-try-on rule still
+     needs a session-level equivalent.
+3. **Phone UX:** full-body framing means the phone is propped up and the user
+   steps back. Desktop/tablet first, phone after.
+4. **Only then build:** the stylist chat drives the outfit choice (already
+   exists); the live view renders it.
+
 ## Snapshot — 2026-10-08 (web ahead of the apps; next native build pending)
 
 Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
@@ -21,6 +68,19 @@ blur in WKWebView, and scroll smoothness on a low-end Android closet grid.
 **Tour v2, five steps.** Trends → stylist page → Closet → try-on → +. The key
 was bumped to `drape_tour_v2`, so existing users see it once on their next
 open. Replay any time with `?tour=1`.
+
+**Weather, stylist chat, boards from outfits (8 Oct).**
+- **Weather** on calendar cells and outfit dates. The place comes from the
+  device location (asked once) or a city search. Next App Store submission:
+  add Coarse Location to the privacy labels.
+- **Stylist chat** replaces "Style me": one thread per persona per day, 10
+  free messages, and a day card with the weather and a "lately" line.
+- **Boards:** "Make a board" on outfits, plus worn-this-week/month boards.
+- **Not yet seen with real data:**
+  - the chat UI in a signed-in browser
+  - the first-run location prompt on a device
+  - the weather snapshot trigger. It fires once a user has a place and an
+    outfit is written.
 
 **Personal color.** A stated Spring/Summer/Autumn/Winter choice in the
 stylist's My style panel, steering near-face colours in recs and verdicts.
