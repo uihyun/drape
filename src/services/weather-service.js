@@ -163,5 +163,5 @@ export async function locate(lang = 'en') {
   }
 }
 
-export const WeatherService = { getDaily, tempUnit, formatTemp, skyOf, subscribePlace, savePlace, searchPlaces, locate };
+export const WeatherService = { getDaily, tempUnit, getUnitPref, setUnitPref, formatTemp, skyOf, subscribePlace, savePlace, searchPlaces, locate };
 export default WeatherService;

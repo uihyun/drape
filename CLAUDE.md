@@ -106,7 +106,9 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   scales independently. Also clear the press position only on a real route
   change, never on a timer after pointer-up.
 - **`npm run check` is the runtime-crash gate, not a linter.** It carries the
-  named-import audit, locale parity across all five languages, an undefined-CSS-var
+  named-import audit, a service-object member audit (`XService.fn` must exist
+  on the exported object — Settings crashed on that once), locale parity
+  across all five languages, an undefined-CSS-var
   scan, and eslint with `rules-of-hooks` + `no-undef` — every rule there exists
   because that exact class of bug shipped once. Add to it when a new class
   escapes; don't relax it.

@@ -13,6 +13,13 @@ Conventions:
 
 ## Unreleased — settings: weather switch, °C/°F, collapsible cards
 
+- **Hotfix (same day):** Settings crashed on open with `B.getUnitPref is not
+  a function`. `getUnitPref`/`setUnitPref` were exported as functions but left
+  off the `WeatherService` object. Fixed and redeployed. `npm run check` now
+  has a **service member audit** that fails when code calls `XService.fn` and
+  `fn` isn't on the exported object; it was verified to flag this exact
+  regression.
+
 - **Weather on/off** in Settings → Display, on by default (`profiles.weatherOn`,
   absent = on). Location is requested wherever weather is needed (calendar,
   stylist) and when the switch is turned on. A decline turns it **off**, so

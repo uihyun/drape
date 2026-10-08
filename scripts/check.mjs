@@ -73,6 +73,52 @@ function checkNamedImports() {
   else record('named-import audit', 'PASS', `${files.length} files`);
 }
 
+// ── 1b. Service-object member audit ────────────────────────────────────
+// `export const WeatherService = { a, b }` + a caller using
+// WeatherService.c: builds fine, crashes at runtime ("c is not a function").
+// Shipped once (2026-10-08): getUnitPref was exported as a function but left
+// off the WeatherService object, and Settings crashed on open.
+function checkServiceMembers() {
+  const files = listSrc();
+  const objects = {};
+  for (const f of files.filter((x) => x.startsWith('src/services/'))) {
+    const src = readFileSync(ROOT + f, 'utf8');
+    // One-line objects (`= { a, b };`) or multi-line ones whose members sit
+    // at two-space indent — either shorthand lists or inline methods/props.
+    for (const m of src.matchAll(/export const (\w+Service) = \{([^\n]*)\};/g)) {
+      objects[m[1]] = new Set(m[2].split(',').map((x) => x.trim().match(/^(\w+)/)?.[1]).filter(Boolean));
+    }
+    const lines = src.split('\n');
+    lines.forEach((line, i) => {
+      const head = line.match(/^export const (\w+Service) = \{\s*$/);
+      if (!head) return;
+      const keys = new Set();
+      for (let j = i + 1; j < lines.length && !/^\};?\s*$/.test(lines[j]); j += 1) {
+        const l = lines[j];
+        if (!/^  \S/.test(l)) continue;                       // only top-level members
+        const method = l.match(/^  (?:async\s+)?(?:get\s+)?(\w+)\s*(?:\(|:)/);
+        if (method) { keys.add(method[1]); continue; }
+        for (const part of l.split(',')) {                      // shorthand list line
+          const k = part.trim().match(/^(\w+)$/);
+          if (k) keys.add(k[1]);
+        }
+      }
+      objects[head[1]] = keys;
+    });
+  }
+  const misses = [];
+  for (const f of files) {
+    const src = readFileSync(ROOT + f, 'utf8');
+    for (const m of src.matchAll(/\b(\w+Service)\.(\w+)\b/g)) {
+      const keys = objects[m[1]];
+      if (keys && !keys.has(m[2])) misses.push(`${rel(f)}: ${m[1]}.${m[2]}`);
+    }
+  }
+  const uniq = [...new Set(misses)];
+  if (uniq.length) record('service member audit', 'FAIL', uniq.join('; '));
+  else record('service member audit', 'PASS', `${Object.keys(objects).length} service objects`);
+}
+
 // ── 2. Locale parity ───────────────────────────────────────────────────
 function checkLocaleParity() {
   const langs = ['en', 'ko', 'ja', 'es', 'fr'];
@@ -229,6 +275,7 @@ function checkHooksLint() {
 }
 
 checkNamedImports();
+checkServiceMembers();
 checkLocaleParity();
 checkCssVars();
 checkHooksLint();
