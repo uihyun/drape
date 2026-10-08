@@ -271,7 +271,7 @@ export const en = {
   createTryOn: 'Virtual try-on',
   langLabel: 'Language',
   display: 'Display',
-  calendarShowBg: 'Photo backgrounds',
+  calendarShowBg: 'Calendar photo backgrounds',
   remindersToggle: 'Friendly reminders',
   remindersHint: 'Occasional nudges — log an OOTD, try something on, tidy your closet — sent to your phone at a reasonable hour, every few days.',
   homeScreen: 'Home screen',

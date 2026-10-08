@@ -428,7 +428,7 @@ function ProfilePhotoRow({ profile, user, t }) {
 
   return (
     <div className="settings-photo-row">
-      <Avatar src={photoURL} name={profile?.displayName || user?.displayName} size={76} className="settings-photo-avatar" />
+      <Avatar src={photoURL} name={profile?.displayName || user?.displayName} size={60} className="settings-photo-avatar" />
       <div className="settings-photo-actions">
         <button
           type="button"

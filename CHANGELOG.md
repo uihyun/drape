@@ -13,6 +13,19 @@ Conventions:
 
 ## Unreleased — settings: weather switch, °C/°F, collapsible cards
 
+- **Denser Settings:**
+  - Title 1.6 → 1.35rem.
+  - Rows 0.85 → 0.65rem padding, 46px min height.
+  - Labels 0.95 → 0.88rem; field labels and inputs a step smaller.
+  - Avatar 76 → 60px.
+  - Card gaps tighter.
+  Inputs can shrink below 16px because `maximum-scale=1` prevents iOS
+  zoom-on-focus.
+- **"Photo backgrounds"** became "Calendar photo backgrounds" in all five
+  languages; it fits on one line at 360px.
+- **Archived stylist days** show that day's weather next to the date (the
+  weather the stylist saw when it answered).
+
 - **Hotfix (same day):** Settings crashed on open with `B.getUnitPref is not
   a function`. `getUnitPref`/`setUnitPref` were exported as functions but left
   off the `WeatherService` object. Fixed and redeployed. `npm run check` now

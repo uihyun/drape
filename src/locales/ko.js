@@ -271,7 +271,7 @@ export const ko = {
   createTryOn: '가상 피팅',
   langLabel: '언어',
   display: '화면',
-  calendarShowBg: '사진 배경',
+  calendarShowBg: '캘린더 사진 배경',
   remindersToggle: '리마인드 알림',
   remindersHint: 'OOTD 기록·트라이온·옷장 정리를 며칠에 한 번씩 부드럽게 알려드려요 — 적당한 시간에 폰으로.',
   homeScreen: '첫 화면',

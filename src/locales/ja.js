@@ -273,7 +273,7 @@ export const ja = {
   createTryOn: 'バーチャル試着',
   langLabel: '言語',
   display: '表示',
-  calendarShowBg: '写真の背景',
+  calendarShowBg: 'カレンダーの写真背景',
   remindersToggle: 'リマインド通知',
   remindersHint: 'OOTDの記録・試着・クローゼット整理を数日に一度やさしくお知らせ — 適切な時間にスマホへ。',
   homeScreen: '最初の画面',

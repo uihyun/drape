@@ -2974,16 +2974,16 @@ input[type="search"]::-webkit-search-decoration {
   padding: 0 1rem 1.5rem;
 }
 .settings-h1 {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 600;
   letter-spacing: -0.015em;
-  margin: 0.25rem 0 1.25rem;
+  margin: 0.25rem 0 1rem;
 }
 .settings-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   /* No overflow:hidden — the location autocomplete dropdown needs to
      escape the card boundary. Nothing inside the card relies on the
      rounded corners clipping its content. */
@@ -2992,26 +2992,27 @@ input[type="search"]::-webkit-search-decoration {
   /* 0.12em tracking blows out Korean syllables — they're already
      visually airy without it. Pull the spacing back so the label
      stays inside the card padding on every script. */
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: none;
   color: var(--text-muted);
-  padding: 0.9rem 1rem 0.55rem;
+  padding: 0.75rem 1rem 0.45rem;
 }
 /* Latin-only locales still benefit from a small caps look; opt-in. */
 :lang(en) .settings-h2 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
 }
 .settings-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 1rem;
   border-top: 1px solid var(--border);
-  min-height: 52px;
+  min-height: 46px;
+  gap: 0.75rem;
 }
 .settings-row:first-of-type { border-top: none; }
 .settings-row-col {
@@ -3095,11 +3096,11 @@ input[type="search"]::-webkit-search-decoration {
 .btn-danger:hover { background: #a83838; }
 .btn-danger:disabled { opacity: 0.6; cursor: default; }
 .settings-row-label {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: var(--text-primary);
 }
 .settings-row-value {
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
 }
 /* fits + invite-code rows */
@@ -3168,7 +3169,7 @@ input[type="search"]::-webkit-search-decoration {
   white-space: nowrap; text-transform: none;
 }
 .settings-label {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -3186,7 +3187,7 @@ input[type="search"]::-webkit-search-decoration {
   display: inline-flex;
   align-items: center;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 .settings-input {
   flex: 1;
@@ -3194,7 +3195,7 @@ input[type="search"]::-webkit-search-decoration {
   border: none;
   outline: none;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-primary);
   min-width: 0;
   resize: vertical;
@@ -3229,7 +3230,7 @@ input[type="search"]::-webkit-search-decoration {
   min-width: 96px;
 }
 .settings-static {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--text-primary);
   padding: 0.4rem 0;
 }
@@ -3240,7 +3241,7 @@ input[type="search"]::-webkit-search-decoration {
   margin-top: 1.25rem;
 }
 .settings-hint {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   line-height: 1.45;
   /* Match the surrounding card padding so the hint doesn't run flush
@@ -3261,7 +3262,7 @@ input[type="search"]::-webkit-search-decoration {
   border-radius: 10px;
   background: var(--surface);
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
   cursor: pointer;
   transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
@@ -5489,7 +5490,7 @@ input[type="search"]::-webkit-search-decoration {
   gap: 1rem;
   /* Match .settings-row's 1rem horizontal gutter so the avatar lines
      up with the form-field inputs underneath. */
-  padding: 0.5rem 1rem 1rem;
+  padding: 0.35rem 1rem 0.75rem;
 }
 .settings-photo-avatar { flex-shrink: 0; }
 .settings-photo-actions {
@@ -7551,9 +7552,9 @@ input:disabled, textarea:disabled, select:disabled {
 /* The header row owns the padding the bare h2 used to have, so the chevron
    lines up with the label and sits inside the same 1rem gutter as the rows
    (instead of floating high and hugging the card edge). */
-.settings-card-head { padding: 0.9rem 1rem 0.55rem; }
+.settings-card-head { padding: 0.75rem 1rem 0.45rem; }
 .settings-card-head .settings-h2 { margin: 0; padding: 0; }
-.settings-card.is-collapsed > .settings-card-head { padding-bottom: 0.9rem; }
+.settings-card.is-collapsed > .settings-card-head { padding-bottom: 0.75rem; }
 .settings-card-chev { color: var(--text-muted); transition: transform 0.2s ease; flex: 0 0 auto; }
 .settings-card.is-collapsed .settings-card-chev { transform: rotate(-90deg); }
 /* Two-option segmented control (°C / °F). */
@@ -7573,3 +7574,8 @@ input:disabled, textarea:disabled, select:disabled {
   cursor: pointer;
 }
 .settings-seg-btn.on { background: var(--accent); color: #fff; }
+
+/* Inputs inside Settings follow the denser type (the page-wide .page-input
+   stays as is). maximum-scale=1 in index.html, so iOS won't zoom on focus. */
+.settings .page-input { font-size: 0.88rem; padding: 0.6rem 0.8rem; }
+.schat-backwx { margin-left: 0.35rem; font-size: 0.8rem; }

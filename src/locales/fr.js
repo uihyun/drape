@@ -276,7 +276,7 @@ export const fr = {
   createTryOn: 'Essayage virtuel',
   langLabel: 'Langue',
   display: 'Affichage',
-  calendarShowBg: 'Fonds photo',
+  calendarShowBg: 'Fonds photo du calendrier',
   remindersToggle: 'Rappels amicaux',
   remindersHint: 'Quelques rappels — enregistrer un OOTD, essayer une pièce, ranger votre dressing — envoyés à une heure raisonnable, tous les quelques jours.',
   homeScreen: 'Écran d’accueil',

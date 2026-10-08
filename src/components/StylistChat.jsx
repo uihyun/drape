@@ -119,6 +119,7 @@ export function StylistChat({ user, persona, closet, saved, fits, weatherOn = tr
   // The message before each stylist reply — saved looks keep the ask.
   const askBefore = (i) => (list[i - 1]?.role === 'user' ? list[i - 1].text : '');
   const unit = WeatherService.tempUnit(wx.place);
+  const pastWx = !isToday ? (messages || []).find((m) => m.weather)?.weather : null;
   const outOfFree = quota.loaded && quota.remaining === 0 && quota.extra === 0;
 
   return (
@@ -144,6 +145,8 @@ export function StylistChat({ user, persona, closet, saved, fits, weatherOn = tr
         <button type="button" className="schat-back" onClick={() => setViewDay(today)}>
           <ChevronLeft size={16} /> {t('stylistBackToday')}
           <span className="schat-backday">{dayLabel(viewDay)}</span>
+          {/* That day's weather, as the stylist saw it when it answered. */}
+          {weatherOn && pastWx && <WeatherBadge day={pastWx} unit={unit} size={13} className="wx-badge schat-backwx" />}
         </button>
       )}
 

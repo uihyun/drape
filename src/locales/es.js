@@ -276,7 +276,7 @@ export const es = {
   createTryOn: 'Prueba virtual',
   langLabel: 'Idioma',
   display: 'Visualización',
-  calendarShowBg: 'Fondos de foto',
+  calendarShowBg: 'Fondos en el calendario',
   remindersToggle: 'Recordatorios amistosos',
   remindersHint: 'Avisos ocasionales — registra un OOTD, pruébate algo, ordena tu armario — enviados a tu teléfono a una hora razonable, cada pocos días.',
   homeScreen: 'Pantalla de inicio',
