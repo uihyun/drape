@@ -66,6 +66,16 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   every FLIP/transform effect on that element (cost us the closet pinch
   animation; `itemDrop` uses `backwards`). Same trap applies to any card the
   `useFlipGrid` hook animates.
+- **The bottom bar is the map: Trends · Stylist · (+) · Closet · Settings.**
+  Stylist and Settings live in the bar, not the Profile header (which keeps
+  only inbox + bell). A 5th slot for notifications/DMs was rejected on data —
+  nearly nobody receives either yet; revisit when that changes. The Tour walks
+  the bar; bump `TOUR_KEY` only when where things live changes, never for copy.
+- **Personal color is stated, never inferred from a photo.** Lighting and
+  phone processing move undertone more than the gap between seasons.
+  `stylePrefs.personalColor` is a closed enum (`PERSONAL_COLORS`, mirrored in
+  both taxonomy files) and steers near-face colours only — a preference, not a
+  ban; `avoidColors` stays the only hard colour rule.
 - **Bottom-bar pill: position on `translate`, size on `scale` — never
   `transform` with `scale`.** The individual `scale` property is applied AFTER
   `transform`, so a `translateX` in `transform` gets multiplied by the lens

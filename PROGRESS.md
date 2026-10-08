@@ -2,6 +2,47 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Snapshot — 2026-10-08 (web ahead of the apps; next native build pending)
+
+Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
+27 Sep). Everything below is **live on web only** and reaches the apps with the
+next build — bump the version in the three usual places first. Details are in
+CHANGELOG.md under the "Unreleased" headings.
+
+**Glass tab bar.** One five-slot bar — Trends · Stylist · (+) · Closet ·
+Settings — with labels, replacing the three floating circles. Stylist and
+Settings moved down out of the Profile header (it keeps inbox + bell). The
+glass is CSS, so both webviews draw the same thing. The lens swells while a tab
+is held and stretches sideways only while it travels, landing exactly on the
+tab. The first droplet attempt drifted ~45px and bounced; the cause and the
+rule are in CLAUDE.md. Not yet checked on a real device: the safe-area inset,
+blur in WKWebView, and scroll smoothness on a low-end Android closet grid.
+
+**Tour v2, five steps.** Trends → stylist page → Closet → try-on → +. The key
+was bumped to `drape_tour_v2`, so existing users see it once on their next
+open. Replay any time with `?tour=1`.
+
+**Personal color.** A stated Spring/Summer/Autumn/Winter choice in the
+stylist's My style panel, steering near-face colours in recs and verdicts.
+There is deliberately no photo diagnosis. The effect is weak on a narrow
+closet: the owner's 14-piece, mostly cool-neutral closet gave nearly the same
+picks for autumn and winter. Re-test on a closet with warm and cool tops
+before tuning the prompt.
+
+**Housekeeping (29 Sep).**
+- Deleted seven voda/archelier-only setup docs.
+- Rewrote CREDENTIALS.md for drape only.
+- The `ARCHELIER_UPLOAD_*` props in the global gradle.properties stay on
+  purpose, because voda still signs with them.
+- The `com.uihyun.drape.share` App ID is drape's share extension. Keep it.
+
+**Data points behind recent calls** (real users, last 30 days, read 7 Oct):
+- 17 notifications reached 2 people, and none were opened.
+- 0 marketplace DM threads.
+- 30 stylist recs came from 4 people.
+- Last week's Trends pool was 15 public looks, all seeds. That is why
+  `LOOKS_MAX` stays 10 for now.
+
 ## Snapshot — 2026-09-23 (2.2.0 in review on both stores)
 
 **2.1.1 cleared both stores** — App Store 19 Sep, Play before it. The
