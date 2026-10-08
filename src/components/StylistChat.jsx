@@ -151,7 +151,10 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
         {messages && list.length === 0 && isToday && (
           <div className="schat-msg schat-msg--stylist">
             <img src={persona.img} alt="" className="schat-avatar" />
-            <div className="schat-bubble"><p>{t('stylistChatEmpty')}</p></div>
+            <div className="schat-col">
+              <span className="schat-name">{persona.name}</span>
+              <div className="schat-bubble"><p>{t('stylistChatEmpty')}</p></div>
+            </div>
           </div>
         )}
         {list.map((m, i) => (m.role === 'user' ? (
@@ -159,15 +162,17 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
             <div className="schat-bubble"><p>{m.text}</p></div>
           </div>
         ) : (
+          // KakaoTalk-style: avatar + name at the TOP of the turn, then the
+          // reply and each look as their own bubbles stacked under the name.
           <div key={m.id} className="schat-msg schat-msg--stylist">
             <img src={persona.img} alt="" className="schat-avatar" />
-            <div className="schat-bubble">
+            <div className="schat-col">
               <span className="schat-name">{persona.name}</span>
-              <p>{m.text}</p>
+              <div className="schat-bubble"><p>{m.text}</p></div>
               {(m.outfits || []).map((o, k) => {
                 const isSaved = !!savedFor(o);
                 return (
-                  <div className="schat-look" key={k}>
+                  <div className="schat-bubble schat-look" key={k}>
                     <strong className="schat-looktitle">{o.title}</strong>
                     <div className="stylist-items">
                       {o.itemIds.map((id) => (
@@ -196,7 +201,7 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
                     const Icon = v === 'up' ? ThumbsUp : ThumbsDown;
                     const on = rated[m.recId] === v;
                     return (
-                      <button key={v} type="button" className={`outfit-action-icon${on ? ' thumb-on' : ''}`} aria-pressed={on} onClick={() => rate(m.recId, v)}>
+                      <button key={v} type="button" className={`schat-ratebtn${on ? ' on' : ''}`} aria-pressed={on} aria-label={v} onClick={() => rate(m.recId, v)}>
                         <Icon size={14} strokeWidth={on ? 2.2 : 1.7} />
                       </button>
                     );
@@ -209,9 +214,12 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
         {pending && (
           <div className="schat-msg schat-msg--stylist">
             <img src={persona.img} alt="" className="schat-avatar" />
-            <div className="schat-bubble schat-typing" aria-live="polite">
-              <span className="schat-dots"><i /><i /><i /></span>
-              <span className="schat-typinglabel">{t('stylistTyping', { name: persona.name })}</span>
+            <div className="schat-col">
+              <span className="schat-name">{persona.name}</span>
+              <div className="schat-bubble schat-typing" aria-live="polite">
+                <span className="schat-dots"><i /><i /><i /></span>
+                <span className="schat-typinglabel">{t('stylistTyping', { name: persona.name })}</span>
+              </div>
             </div>
           </div>
         )}
