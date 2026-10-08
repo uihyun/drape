@@ -11,6 +11,44 @@ Conventions:
 
 ---
 
+## Unreleased — stylist chat
+
+**The stylist is now a conversation.** It replaces the one-shot "Style me"
+button in the app. The user says where they're going, the mood, or a piece to
+build around. The stylist answers in its own voice and attaches 0–2 outfits
+from their closet. The layout follows posture's Darwin coach.
+- **Threads:** one per stylist per local day, at `users/{uid}/stylistChats/
+  {persona}_{YYYY-MM-DD}/messages`. Earlier days open read-only from
+  "Earlier conversations". The archive query uses a document-id prefix range,
+  so it needs no composite index. Rules give the owner read access and block
+  all client writes. Both turns are written in one batch by `stylistChat`.
+- **Context, all read on the server:**
+  - closet
+  - stated prefs (authoritative) and personal color
+  - try-on thumbs
+  - style profile
+  - today's weather: min/max/rain, with a dress-for-it hint; the user only
+    sees the mean
+  - the last 10 turns of today's thread
+  The reply is capped at 70 words. Outfits go through the shared
+  `cleanOutfits` (closet ids only, one wishlist piece at most, 2–6 pieces).
+  A message with outfits also writes a `stylistRecs` doc (`source: 'chat'`),
+  so 👍/👎, "already proposed" and the admin charts keep working.
+- **Quota:** a new `CHAT_QUOTA` on the same wallet. 10 free messages a day;
+  then 1 try-on buys 10 more (the verdict economics). Failures are refunded.
+- **Day card:** today's weather plus a "lately" line about how the user has
+  actually been dressing, in their language. It comes from the style profile.
+  The profile now also rebuilds when new outfits/OOTDs arrive or the language
+  changes, and it reads the pieces and temperature on each logged look.
+  `stylistLately` serves the line and is free; it reuses the TTL-guarded
+  profile.
+- **Quick chips** on an empty thread: today / work / date night / weekend.
+- **Persona check before shipping:** all four answered "오늘 뭐 입지? 저녁에
+  친구 만나" on one closet with distinct voices and picks (Noa calm/minimal,
+  Remy sneakers-first, Sol soft, Juno a dare). A follow-up turn used the
+  earlier context.
+- **`styleRecommend`** stays deployed for older app builds.
+
 ## Unreleased — weather
 
 **Weather on the calendar and on dated outfits; the stylist will use it.**

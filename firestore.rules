@@ -388,6 +388,18 @@ service cloud.firestore {
     // Looks the user saved off a stylist recommendation. Their own list,
     // their own writes — the payload is a copy of what the server already
     // handed them, so there is nothing to forge here.
+    // Stylist chat (2026-10-08): one thread per persona per day, messages
+    // under it. Server-only writes — both turns land in one batch from the
+    // stylistChat function, so a client can't forge an answer or a quota.
+    match /users/{userId}/stylistChats/{threadId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+      match /messages/{messageId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
+    }
+
     match /users/{userId}/savedLooks/{lookId} {
       allow read, write: if request.auth != null
         && request.auth.uid == userId

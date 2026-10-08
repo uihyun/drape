@@ -170,6 +170,9 @@ const stylistFns = require('./stylist.js');
 exports.styleRecommend = stylistFns.styleRecommend;
 // "Would this suit me?" on someone else's outfit — judgement, not description.
 exports.styleVerdict = stylistFns.styleVerdict;
+// Per-persona, per-day chat that replaced the one-shot recommender in the app.
+exports.stylistChat = stylistFns.stylistChat;
+exports.stylistLately = stylistFns.stylistLately;
 
 // ── Share-import (SPEC-1.6 §A: shared URL → og:image → analyze flow) ────
 const importFns = require('./import.js');

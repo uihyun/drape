@@ -7,6 +7,7 @@
 import {
   doc, updateDoc, serverTimestamp, deleteField,
   collection, addDoc, deleteDoc, onSnapshot, orderBy, query, limit,
+  limitToLast, getDocs, documentId, startAt, endAt,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase.js';
@@ -91,5 +92,55 @@ function subscribeSavedLooks(uid, cb, { max = 12 } = {}) {
   );
 }
 
-export const StylistService = { recommend, verdict, rateRec, saveLook, unsaveLook, subscribeSavedLooks };
+// ── Chat (2026-10-08) ────────────────────────────────────────────────
+// One thread per persona per local day: users/{uid}/stylistChats/
+// {persona}_{YYYY-MM-DD}/messages. The server writes both turns; the client
+// only reads. Day keys are the device's local date — the same date the
+// server derives from profiles.timezone, which the app syncs from the device.
+export function localDayKey(d = new Date()) {
+  return new Intl.DateTimeFormat('en-CA').format(d);
+}
+
+async function chat({ persona, text }) {
+  const call = httpsCallable(functions, 'stylistChat');
+  const { data } = await call({ persona, text, lang: currentLang() });
+  return data; // { dayKey, messages: [user, stylist], remaining, charged, extra, bought }
+}
+
+function subscribeThread(uid, persona, dayKey, cb) {
+  const q = query(
+    collection(db, 'users', uid, 'stylistChats', `${persona}_${dayKey}`, 'messages'),
+    orderBy('createdAt'),
+    limitToLast(80),
+  );
+  return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), () => cb([]));
+}
+
+// Past days with this stylist, newest first. A document-id range on the
+// "{persona}_" prefix — no composite index needed.
+async function listArchive(uid, persona, { exclude } = {}) {
+  const q = query(
+    collection(db, 'users', uid, 'stylistChats'),
+    orderBy(documentId()),
+    startAt(`${persona}_`),
+    endAt(`${persona}_\uf8ff`),
+  );
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((t) => t.dayKey && t.dayKey !== exclude)
+    .sort((a, b) => (a.dayKey < b.dayKey ? 1 : -1))
+    .slice(0, 60);
+}
+
+// The "lately" line (how they've been dressing), in the app language.
+async function lately() {
+  const { data } = await httpsCallable(functions, 'stylistLately')({ lang: currentLang() });
+  return data?.lately || '';
+}
+
+export const StylistService = {
+  recommend, verdict, rateRec, saveLook, unsaveLook, subscribeSavedLooks,
+  chat, subscribeThread, listArchive, lately,
+};
 export default StylistService;

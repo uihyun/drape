@@ -78,3 +78,26 @@ export function useStyleRecs(user) {
 }
 
 export const RECS_PER_DAY = DAILY_RECS;
+
+const DAILY_CHAT = 10; // mirrors CHAT_DAILY in functions/stylist.js
+
+// Live stylist-chat balance: free messages left today plus any topped-up
+// block. Display only — stylistChat enforces it.
+export function useStyleChatQuota(user) {
+  const [state, setState] = useState({ remaining: DAILY_CHAT, extra: 0, loaded: false });
+  useEffect(() => {
+    const uid = user?.uid || auth.currentUser?.uid;
+    if (!user || user.isAnonymous || !uid) {
+      setState({ remaining: DAILY_CHAT, extra: 0, loaded: false });
+      return;
+    }
+    return onSnapshot(doc(db, 'users', uid), (snap) => {
+      const u = snap.exists() ? snap.data() : {};
+      const usedToday = u.styleChatDayKey === todayKey() ? (u.styleChatUsed || 0) : 0;
+      setState({ remaining: Math.max(0, DAILY_CHAT - usedToday), extra: u.styleChatExtra || 0, loaded: true });
+    }, () => setState((s) => ({ ...s, loaded: true })));
+  }, [user?.uid]);   // eslint-disable-line react-hooks/exhaustive-deps
+  return state;
+}
+
+export const CHAT_PER_DAY = DAILY_CHAT;

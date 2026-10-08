@@ -151,25 +151,58 @@ async function loadInventory(uid) {
   return items;
 }
 
+// Model output → outfits we can render: only ids from THIS closet (a
+// hallucinated id would be a broken card), at most one wishlist piece, 2–6
+// pieces each. Shared by the one-shot recommender and the chat.
+function cleanOutfits(raw, inventory, max) {
+  const byId = new Map(inventory.map((i) => [i.id, i]));
+  return (Array.isArray(raw) ? raw : [])
+    .map((o) => {
+      const ids = [...new Set(Array.isArray(o?.itemIds) ? o.itemIds : [])].filter((id) => byId.has(id));
+      let wishlistUsed = 0;
+      const kept = ids.filter((id) => {
+        if (byId.get(id).kind !== 'wishlist') return true;
+        return ++wishlistUsed <= 1;
+      });
+      return {
+        title: String(o?.title || '').slice(0, 80),
+        itemIds: kept.slice(0, 6),
+        why: String(o?.why || '').slice(0, 300),
+        confidence: Math.max(0, Math.min(1, Number(o?.confidence) || 0.5)),
+      };
+    })
+    .filter((o) => o.itemIds.length >= 2)
+    .slice(0, max);
+}
+
 // ── Style profile (SPEC-1.6 §B) ─────────────────────────────────────────
 // users/{uid}/private/styleProfile — server-written compressed taste
 // portrait. Incremental on purpose: prompt = previous summary + deltas, so
 // cost stays flat as history grows. Refreshed lazily from styleRecommend
 // when stale; safe to call concurrently (last write wins, content converges).
-async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
+async function ensureStyleProfile(uid, genAI, { force = false, lang = null } = {}) {
   const ref = db().collection('users').doc(uid).collection('private').doc('styleProfile');
   const snap = await ref.get();
   const prev = snap.exists ? snap.data() : null;
   const fresh = prev?.updatedAt?.toMillis && (Date.now() - prev.updatedAt.toMillis() < PROFILE_TTL_MS);
-  if (fresh && !force) return prev;
+  // `lately` is shown to the user, so it must be in their language — a
+  // language switch rebuilds it even inside the TTL.
+  const wantLang = lang || prev?.latelyLang || 'en';
+  const langMoved = !!(prev && lang && prev.latelyLang !== lang);
+  if (fresh && !force && !langMoved) return prev;
 
   // Past the TTL, only pay for a re-summary if the inputs actually moved.
   // The TTL alone regenerated identical text for users who added nothing
   // (owner, 2026-09-16) — a wasted model call on every stylist run.
-  if (prev && !force) {
-    const latest = await db().collection('items').where('userId', '==', uid)
-      .orderBy('createdAt', 'desc').limit(1).get();
-    const lastItemMs = latest.empty ? 0 : (latest.docs[0].data().createdAt?.toMillis?.() || 0);
+  if (prev && !force && !langMoved) {
+    // New closet pieces OR new outfits/OOTDs count: "how you've been
+    // dressing" is mostly read off what they log, not what they own.
+    const [latest, latestLook] = await Promise.all([
+      db().collection('items').where('userId', '==', uid).orderBy('createdAt', 'desc').limit(1).get(),
+      db().collection('outfits').where('userId', '==', uid).orderBy('createdAt', 'desc').limit(1).get(),
+    ]);
+    const msOf = (snap) => (snap.empty ? 0 : (snap.docs[0].data().createdAt?.toMillis?.() || 0));
+    const lastItemMs = Math.max(msOf(latest), msOf(latestLook));
     const builtMs = prev.updatedAt?.toMillis?.() || 0;
     if (lastItemMs && lastItemMs < builtMs) {
       // Nothing new in the closet since the summary was written. Touch the
@@ -203,7 +236,10 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
     looks.push({
       styles: Array.isArray(x.style) ? x.style.filter((s) => s.level >= 4).map((s) => s.label) : [],
       colors: Array.isArray(x.palette) ? x.palette.slice(0, 2).map((p) => p.name) : [],
+      pieces: Array.isArray(x.pieces) ? x.pieces.slice(0, 5).map((p) => p.name || p.category).filter(Boolean) : [],
       isOotd: !!x.date,
+      date: x.date || null,
+      tempC: x.weather?.meanC != null ? Math.round(x.weather.meanC) : null,
     });
   });
   // Stated preferences beat inferred ones — the user said so explicitly.
@@ -215,7 +251,8 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   });
   const prompt = [
     'You maintain a compact style profile for a fashion app user. Update it from the data below.',
-    'Return JSON: {"summary": string (max 1500 chars, 3rd person, concrete: silhouettes, colors, moods they gravitate to and avoid; note owned-vs-wishlist gaps), "topStyles": string[] (max 5), "topColors": string[] (max 5), "avoidList": string[] (max 5)}.',
+    'Return JSON: {"summary": string (max 1500 chars, 3rd person, concrete: silhouettes, colors, moods they gravitate to and avoid; note owned-vs-wishlist gaps), "lately": string, "topStyles": string[] (max 5), "topColors": string[] (max 5), "avoidList": string[] (max 5)}.',
+    `"lately" is shown TO the user at the top of their stylist chat: 2 short sentences in ${langLabel(wantLang)}, second person, warm and specific, about how they have actually been dressing recently (read the RECENT LOOKS/OOTDS — the pieces, colours and moods that keep coming back, and how they dress for the temperature when tempC is there). Name real patterns, never generic praise, never criticise. If there are no recent looks, say what their closet leans toward instead.`,
     'Weigh signals: stated preferences (highest), thumbs on try-ons, what they log as daily outfits, then closet composition.',
     prev?.summary ? `PREVIOUS SUMMARY:\n${prev.summary}` : 'PREVIOUS SUMMARY: (none — first build)',
     stated ? `STATED PREFERENCES (authoritative): ${JSON.stringify(stated).slice(0, 1200)}` : '',
@@ -235,6 +272,8 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   }
   const doc = {
     summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 2000) : (prev?.summary || ''),
+    lately: typeof parsed.lately === 'string' ? parsed.lately.slice(0, 400) : (prev?.lately || ''),
+    latelyLang: wantLang,
     topStyles: Array.isArray(parsed.topStyles) ? parsed.topStyles.slice(0, 5).map(String) : [],
     topColors: Array.isArray(parsed.topColors) ? parsed.topColors.slice(0, 5).map(String) : [],
     avoidList: Array.isArray(parsed.avoidList) ? parsed.avoidList.slice(0, 5).map(String) : [],
@@ -545,24 +584,7 @@ exports.styleRecommend = onCall(
 
     // Closed-world validation — the same discipline as sanitizeTags: a
     // hallucinated item id must die here, not render as a broken card.
-    const byId = new Map(inventory.map((i) => [i.id, i]));
-    const outfits = (Array.isArray(parsed.outfits) ? parsed.outfits : [])
-      .map((o) => {
-        const ids = [...new Set(Array.isArray(o.itemIds) ? o.itemIds : [])].filter((id) => byId.has(id));
-        let wishlistUsed = 0;
-        const kept = ids.filter((id) => {
-          if (byId.get(id).kind !== 'wishlist') return true;
-          return ++wishlistUsed <= 1;
-        });
-        return {
-          title: String(o.title || '').slice(0, 80),
-          itemIds: kept.slice(0, 6),
-          why: String(o.why || '').slice(0, 300),
-          confidence: Math.max(0, Math.min(1, Number(o.confidence) || 0.5)),
-        };
-      })
-      .filter((o) => o.itemIds.length >= 2)
-      .slice(0, 3);
+    const outfits = cleanOutfits(parsed.outfits, inventory, 3);
     if (!outfits.length) {
       await refundStylistUse(uid, res, REC_QUOTA);
       throw new HttpsError('internal', 'STYLIST_EMPTY');
@@ -582,5 +604,199 @@ exports.styleRecommend = onCall(
       recId: recRef.id, persona: personaKey, outfits,
       remaining: freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
     };
+  },
+);
+
+// ── Stylist chat (owner, 2026-10-08) ────────────────────────────────────
+// Replaces the one-shot "Style me" button in the app: the user talks — where
+// they're going, the mood, a piece they want to build around — and the
+// stylist answers in its own voice with 0–2 outfits from their closet.
+// Modelled on posture's Darwin coach.
+//  - One thread per persona per local day: users/{uid}/stylistChats/
+//    {persona}_{YYYY-MM-DD}, messages under it. Past days are the archive.
+//  - Server-only writes (rules: owner read, no client writes), both turns in
+//    one batch, so a client can't forge answers or reset its quota.
+//  - Context is read here, never trusted from the client: closet, stated
+//    prefs (authoritative), thumbs, style profile, today's weather (min/max/
+//    rain — the user only sees the mean), and the last turns of today's thread.
+//  - Outfits are ids the client renders from its own closet, validated by
+//    cleanOutfits. Any message with outfits also writes a stylistRecs doc,
+//    so 👍/👎, "already proposed", and the admin charts keep working.
+//  - Quota: CHAT_QUOTA on the same wallet — 10 messages a day free, then one
+//    try-on buys 10 more (the verdict economics: a chat turn is a Flash text
+//    call, not an image).
+// styleRecommend stays deployed: older app builds still call it.
+const CHAT_DAILY = 10;
+const CHAT_TOPUP = 10;
+const CHAT_QUOTA = {
+  dayKey: 'styleChatDayKey', usedKey: 'styleChatUsed', extraKey: 'styleChatExtra',
+  daily: CHAT_DAILY, topup: CHAT_TOPUP,
+};
+const CHAT_HISTORY = 10;          // turns of today's thread fed back in
+const CHAT_MAX_TEXT = 400;
+const CHAT_REPLY_MAX_WORDS = 70;
+const { getPlace, fetchDay, weatherLine } = require('./weather.js');
+
+exports.stylistChat = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    if (request.auth.token?.firebase?.sign_in_provider === 'anonymous') {
+      throw new HttpsError('permission-denied', 'SIGN_IN_REQUIRED');
+    }
+    const personaKey = PERSONAS[request.data?.persona] ? request.data.persona : 'noa';
+    const persona = PERSONAS[personaKey];
+    const text = typeof request.data?.text === 'string' ? request.data.text.trim().slice(0, CHAT_MAX_TEXT) : '';
+    if (!text) throw new HttpsError('invalid-argument', 'EMPTY');
+    const lang = ['en', 'ko', 'ja', 'es', 'fr'].includes(request.data?.lang) ? request.data.lang : 'en';
+
+    const profRef = db().collection('profiles').doc(uid);
+    const profDoc = await profRef.get();
+    const tz = (profDoc.exists && profDoc.data().timezone) || 'America/New_York';
+    const day = dayKey(tz);
+    const threadRef = db().collection('users').doc(uid).collection('stylistChats').doc(`${personaKey}_${day}`);
+
+    const [inventory, recentGens, historySnap, place] = await Promise.all([
+      loadInventory(uid),
+      db().collection('generations').where('userId', '==', uid)
+        .orderBy('createdAt', 'desc').limit(30).get(),
+      threadRef.collection('messages').orderBy('createdAt', 'desc').limit(CHAT_HISTORY).get()
+        .catch(() => ({ docs: [] })),
+      getPlace(db(), uid).catch(() => null),
+    ]);
+    const stated = (profDoc.exists && profDoc.data().stylePrefs) || null;
+    const loved = [];
+    const disliked = [];
+    recentGens.forEach((d) => {
+      const g = d.data();
+      const v = g.feedback || (g.liked ? 'up' : null);
+      const ids = (Array.isArray(g.itemIds) ? g.itemIds : []).slice(0, 4);
+      if (v && ids.length) (v === 'up' ? loved : disliked).push(ids);
+    });
+    const owned = inventory.filter((i) => i.kind === 'owned').length;
+    const history = historySnap.docs.map((d) => d.data()).reverse();
+
+    const res = await reserveStylistUse(uid, CHAT_QUOTA);
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    let profile = null;
+    let weather = null;
+    try {
+      [profile, weather] = await Promise.all([
+        ensureStyleProfile(uid, genAI, { lang }),
+        place ? fetchDay(place, day).catch(() => null) : null,
+      ]);
+    } catch (e) {
+      await refundStylistUse(uid, res, CHAT_QUOTA);
+      throw e;
+    }
+
+    const langName = langLabel(lang);
+    const transcript = history.map((m) => {
+      const who = m.role === 'user' ? 'User' : persona.name;
+      const looks = (m.outfits || []).map((o) => `[outfit "${o.title}": ${o.itemIds.join(', ')}]`).join(' ');
+      return `${who}: ${m.text}${looks ? ` ${looks}` : ''}`;
+    }).join('\n');
+
+    const model = genAI.getGenerativeModel({
+      model: (await getModels()).vision,
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+    const prompt = [
+      `You are ${persona.name}, a personal fashion stylist inside the drape app, chatting with the user.`,
+      `LENS: ${persona.lens}`,
+      `SIGNATURE (apply to every outfit you propose): ${persona.signature}`,
+      `YOU REFUSE: ${persona.refuses}`,
+      `VOICE: ${persona.voice}`,
+      `TITLE STYLE: ${persona.titles}`,
+      `Example of your voice: "${persona.example}"`,
+      'This is a conversation, not a form. Answer what they actually said. When they want something to wear — an occasion, a mood, a piece to build around, "what should I wear" — propose 1 or 2 outfits from their closet. When they are just talking, asking a question, or reacting to an earlier look, answer without new outfits (outfits: []). Never more than 2 outfits.',
+      `Return JSON: {"reply": string, "outfits": [{"title": string, "itemIds": string[], "why": string}]}`,
+      `- "reply": in ${langName}, in YOUR voice, at most ${CHAT_REPLY_MAX_WORDS} words. Talk to them, don't list the pieces (the app shows the outfit cards right under your reply).`,
+      '- Outfits use ONLY item ids from the closet below, 2–6 ids forming one wearable look, at most one wishlist item per outfit and only if it completes the look.',
+      `- "title" and "why" in ${langName}, your title style; "why" is ONE sentence, HARD LIMIT 18 WORDS, about why it works on THIS person today.`,
+      '- Never disparage the user, their body, or anything in their closet.',
+      owned < 3 ? 'THEIR CLOSET HAS FEWER THAN 3 OWNED PIECES — you cannot build outfits yet. Say so warmly and tell them to add a few pieces; outfits: [].' : '',
+      weather ? weatherLine(weather, place) : 'WEATHER: unknown — do not guess it; dress for the season.',
+      `TODAY: ${day}`,
+      profile?.summary ? `USER STYLE PROFILE:\n${profile.summary}` : '',
+      stated ? `STATED PREFERENCES (authoritative — never contradict these): ${JSON.stringify(stated).slice(0, 800)}` : '',
+      personalColorLine(stated),
+      loved.length ? `THEY RATED THESE COMBINATIONS 👍 (lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
+      disliked.length ? `THEY RATED THESE 👎 (do NOT repeat them or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
+      `CLOSET (id + tags): ${JSON.stringify(inventory).slice(0, 8000)}`,
+      transcript ? `EARLIER TODAY IN THIS CONVERSATION (don't re-propose the same outfit unless asked):\n${transcript}` : 'This is the first message today.',
+      `User: ${text}`,
+      `STAY IN CHARACTER: you are ${persona.name}. Within their stated preferences, both the outfits and the words must be recognisably yours.`,
+    ].filter(Boolean).join('\n\n');
+
+    let parsed;
+    try {
+      const r = await model.generateContent(prompt);
+      parsed = JSON.parse(r.response.text());
+    } catch (e) {
+      await refundStylistUse(uid, res, CHAT_QUOTA);
+      console.error('stylistChat failed:', e?.message);
+      throw new HttpsError('internal', 'STYLIST_ERROR');
+    }
+    const reply = String(parsed?.reply || '').trim().slice(0, 900);
+    if (!reply) {
+      await refundStylistUse(uid, res, CHAT_QUOTA);
+      throw new HttpsError('internal', 'STYLIST_EMPTY');
+    }
+    const outfits = owned >= 3
+      ? cleanOutfits(parsed.outfits, inventory, 2).map(({ confidence, ...o }) => o)
+      : [];
+
+    const now = Date.now();
+    let recId = null;
+    if (outfits.length) {
+      const recRef = db().collection('stylistRecs').doc();
+      recId = recRef.id;
+      await recRef.set({
+        userId: uid, persona: personaKey, ask: text.slice(0, 200), lang, outfits,
+        charged: res.charged, profileRev: profile?.rev || 0, source: 'chat',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    const userMsg = { role: 'user', text, createdAt: now };
+    const stylistMsg = {
+      role: 'stylist', text: reply, outfits, recId, createdAt: now + 1,
+      weather: weather ? { code: weather.code, meanC: weather.meanC } : null,
+    };
+    const batch = db().batch();
+    const msgs = threadRef.collection('messages');
+    const userRef = msgs.doc();
+    const replyRef = msgs.doc();
+    batch.set(userRef, userMsg);
+    batch.set(replyRef, stylistMsg);
+    batch.set(threadRef, {
+      persona: personaKey, dayKey: day,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      messageCount: admin.firestore.FieldValue.increment(2),
+      ...(history.length ? {} : { firstMessage: text.slice(0, 140), startedAt: admin.firestore.FieldValue.serverTimestamp() }),
+    }, { merge: true });
+    await batch.commit();
+
+    return {
+      dayKey: day,
+      messages: [{ id: userRef.id, ...userMsg }, { id: replyRef.id, ...stylistMsg }],
+      remaining: res.freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+    };
+  },
+);
+
+// The "lately" line at the top of the chat, in the user's language. Free —
+// it's the style profile the chat builds anyway, refreshed only when stale
+// and only when the closet or their logged outfits actually moved.
+exports.stylistLately = onCall(
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+    const lang = ['en', 'ko', 'ja', 'es', 'fr'].includes(request.data?.lang) ? request.data.lang : 'en';
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    const p = await ensureStyleProfile(uid, genAI, { lang }).catch(() => null);
+    return { lately: p?.latelyLang === lang ? (p.lately || '') : '' };
   },
 );
