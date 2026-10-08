@@ -24,7 +24,7 @@ function ymd(d) {
   return `${y}-${m}-${da}`;
 }
 
-export function Calendar({ user, onSignIn, embedded = false, showBackground = false }) {
+export function Calendar({ user, onSignIn, embedded = false, showBackground = false, weatherOn = true }) {
   const { t } = useLocale();
   const navigate = useNavigate();
   const today = new Date();
@@ -116,9 +116,9 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
   // blank.
   // The first visit asks for the device location (once); declined → a city
   // search; neither → no weather rather than a guessed city's.
-  const wxState = useWeatherPlace(user, { autoLocate: true });
+  const wxState = useWeatherPlace(user, { autoLocate: true, enabled: weatherOn });
   const wxPlace = wxState.place;
-  const wx = useDailyWeather(wxPlace, monthStart, monthEnd);
+  const wx = useDailyWeather(weatherOn ? wxPlace : null, monthStart, monthEnd);
   const wxUnit = WeatherService.tempUnit(wxPlace);
   const [wxPicking, setWxPicking] = useState(false);
 
@@ -145,7 +145,7 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
         </button>
       </div>
 
-      {wxPlace === null && !wxState.locating && (
+      {weatherOn && wxPlace === null && !wxState.locating && (
         wxPicking ? (
           <div className="calendar-wxpick"><WeatherPlacePicker wx={wxState} showWhy onDone={() => setWxPicking(false)} /></div>
         ) : (

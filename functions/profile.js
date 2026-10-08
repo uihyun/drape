@@ -214,6 +214,12 @@ exports.updateProfile = onRequest(async (req, res) => {
         }
         // Calendar day-cell look (cutout vs full photo) — public-readable so a
         // visitor's PublicCalendar renders the owner's chosen style too.
+        // Weather on/off (calendar + location requests). Absent = on. Set false
+        // automatically when the user declines the location request.
+        if (typeof data.weatherOn === 'boolean') {
+            update.weatherOn = data.weatherOn;
+            result.weatherOn = data.weatherOn;
+        }
         if (typeof data.calendarShowBackground === 'boolean') {
             update.calendarShowBackground = data.calendarShowBackground;
             result.calendarShowBackground = data.calendarShowBackground;

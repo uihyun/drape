@@ -11,6 +11,23 @@ Conventions:
 
 ---
 
+## Unreleased — settings: weather switch, °C/°F, collapsible cards
+
+- **Weather on/off** in Settings → Display, on by default (`profiles.weatherOn`,
+  absent = on). Location is requested wherever weather is needed (calendar,
+  stylist) and when the switch is turned on. A decline turns it **off**, so
+  nothing nags. Turning it back on asks again; if the phone still blocks
+  location, it points to the phone's settings and offers the city search.
+  The weather city now lives under this switch, not in the Profile card.
+- **°C / °F** segmented choice, per device (`drape:wx:unit`). It defaults to
+  the place's country (°F in the US). Calendar, stylist and outfit dates all
+  follow it.
+- **Every Settings card folds** with a chevron. The open/closed state is
+  remembered per device (`drape:settings:collapsed`).
+- **Shorter Display copy:** "Show photo backgrounds on the calendar" plus a
+  two-line explanation became "Photo backgrounds". The weather rows are
+  "Weather", "Temperature" and "Weather city", with no explanation paragraph.
+
 ## Unreleased — boards from what you wore
 
 - **"Make a board" on an outfit** (owner, grid icon in the action row). It

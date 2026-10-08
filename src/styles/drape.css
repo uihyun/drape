@@ -7539,3 +7539,33 @@ input:disabled, textarea:disabled, select:disabled {
   display: inline-block; margin: -0.25rem 0 0.75rem;
   font-size: 0.85rem; color: var(--accent); text-decoration: none;
 }
+
+/* Collapsible Settings cards. */
+.settings-card-head {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; text-align: left; cursor: pointer;
+  color: inherit;
+}
+.settings-card-head .settings-h2 { margin: 0; }
+.settings-card-chev { color: var(--text-muted); transition: transform 0.2s ease; flex: 0 0 auto; }
+.settings-card.is-collapsed .settings-card-chev { transform: rotate(-90deg); }
+.settings-card:not(.is-collapsed) > .settings-card-head { margin-bottom: 1rem; }
+/* Two-option segmented control (°C / °F). */
+.settings-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-hover);
+  border-radius: 999px;
+  padding: 2px;
+  background: var(--surface);
+}
+.settings-seg-btn {
+  min-width: 2.75rem;
+  padding: 0.3rem 0.7rem;
+  border: none; border-radius: 999px;
+  background: none;
+  font: inherit; font-size: 0.85rem; color: var(--text-secondary);
+  cursor: pointer;
+}
+.settings-seg-btn.on { background: var(--primary); color: #fff; }

@@ -80,10 +80,18 @@ export function getDaily(place, start, end) {
 
 // ── Display ──────────────────────────────────────────────────────────
 
-// °F for US places, °C everywhere else — decided by where the weather is,
-// the same way marketplace currency follows the item, not the viewer.
+// °C / °F: the user's choice if they made one (Settings → Display, per
+// device like the home-screen pref), otherwise °F for US places and °C
+// everywhere else.
+const UNIT_KEY = 'drape:wx:unit';
+export function getUnitPref() {
+  try { const v = localStorage.getItem(UNIT_KEY); return v === 'C' || v === 'F' ? v : null; } catch { return null; }
+}
+export function setUnitPref(unit) {
+  try { localStorage.setItem(UNIT_KEY, unit); } catch { /* ignore */ }
+}
 export function tempUnit(place) {
-  return place?.country === 'US' ? 'F' : 'C';
+  return getUnitPref() || (place?.country === 'US' ? 'F' : 'C');
 }
 
 export function formatTemp(c, unit) {

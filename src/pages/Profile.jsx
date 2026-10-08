@@ -242,7 +242,7 @@ export function Profile({ user, authReady, onSignIn }) {
 
       <div className="profile-tabcontent" role="tabpanel">
         {activeTab === 'outfits' && <OutfitList user={user} onSignIn={onSignIn} embedded />}
-        {activeTab === 'calendar' && <Calendar user={user} onSignIn={onSignIn} embedded showBackground={!!profile?.calendarShowBackground} />}
+        {activeTab === 'calendar' && <Calendar user={user} onSignIn={onSignIn} embedded showBackground={!!profile?.calendarShowBackground} weatherOn={profile?.weatherOn !== false} />}
         {activeTab === 'closet' && <Closet user={user} authReady={authReady} onSignIn={onSignIn} embedded />}
         {activeTab === 'boards' && <BoardList user={user} onSignIn={onSignIn} embedded />}
         {activeTab === 'tryon' && <TryOnHistory user={user} onSignIn={onSignIn} embedded />}

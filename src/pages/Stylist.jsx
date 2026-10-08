@@ -147,7 +147,7 @@ export function Stylist({ user, onSignIn }) {
         );
       })()}
       {persona && !choosing && personaMeta && (
-        <StylistChat key={persona} user={user} persona={personaMeta} closet={closet} saved={saved} fits={fits} />
+        <StylistChat key={persona} user={user} persona={personaMeta} closet={closet} saved={saved} fits={fits} weatherOn={profile?.weatherOn !== false} />
       )}
 
       {/* Saved looks — the stylist's picks the user kept. The comment is

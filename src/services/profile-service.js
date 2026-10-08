@@ -155,6 +155,11 @@ export const ProfileService = {
   // Calendar day-cell style (cutout vs full photo). Stored on the public
   // profile so the owner's choice applies to their own calendar AND to
   // visitors viewing it (PublicCalendar reads the same field).
+  // Weather on/off. Absent on the profile = on.
+  async updateWeatherOn(on) {
+    return authedFetch(UPDATE_FN_URL, { weatherOn: !!on });
+  },
+
   async updateCalendarBackground(showBackground) {
     return authedFetch(UPDATE_FN_URL, { calendarShowBackground: !!showBackground });
   },

@@ -229,9 +229,7 @@ export function OutfitDetail({ user, onSignIn }) {
     ? (() => { const [y, m, d] = outfit.date.split('-').map(Number); return new Date(y, m - 1, d); })()
     : (outfit.createdAt?.toDate?.() || (outfit.createdAt ? new Date(outfit.createdAt) : null));
   const wxDay = outfit.weather || (wxDate ? liveWx[wxDate] : null);
-  const wxUnit = outfit.weather
-    ? (outfit.weather.country === 'US' ? 'F' : 'C')
-    : WeatherService.tempUnit(myPlace);
+  const wxUnit = WeatherService.tempUnit(outfit.weather ? { country: outfit.weather.country } : myPlace);
   const dateLabel = dateObj
     ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
     : '';

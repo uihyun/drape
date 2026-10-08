@@ -18,7 +18,7 @@ import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
 const CHIPS = ['stylistChipToday', 'stylistChipWork', 'stylistChipDate', 'stylistChipWeekend'];
 const latelyMemo = new Map(); // `${uid}:${lang}` → text, per app session
 
-export function StylistChat({ user, persona, closet, saved, fits }) {
+export function StylistChat({ user, persona, closet, saved, fits, weatherOn = true }) {
   const { t, lang } = useLocale();
   const navigate = useNavigate();
   const uid = user.uid;
@@ -33,7 +33,7 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
   const [lately, setLately] = useState(() => latelyMemo.get(`${uid}:${lang}`) || '');
   const [wxOpen, setWxOpen] = useState(false);
   const quota = useStyleChatQuota(user);
-  const wx = useWeatherPlace(user, { autoLocate: true });
+  const wx = useWeatherPlace(user, { autoLocate: true, enabled: weatherOn });
   const todayWx = useDailyWeather(wx.place, today, today)[today];
   const endRef = useRef(null);
   const isToday = viewDay === today;
@@ -127,13 +127,13 @@ export function StylistChat({ user, persona, closet, saved, fits }) {
         <div className="schat-day">
           <div className="schat-dayhead">
             <span className="schat-daylabel">{t('stylistToday')}</span>
-            {todayWx && (
+            {weatherOn && todayWx && (
               <span className="schat-daywx">
                 <WeatherBadge day={todayWx} unit={unit} size={13} />
                 {wx.place?.label && <span className="schat-dayplace">{wx.place.label}</span>}
               </span>
             )}
-            {wx.place === null && !wx.locating && (
+            {weatherOn && wx.place === null && !wx.locating && (
               <button type="button" className="schat-wxset" onClick={() => setWxOpen(!wxOpen)}>{t('wxSetCity')}</button>
             )}
           </div>

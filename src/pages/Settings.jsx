@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, LogOut, ChevronRight, Trash2, AlertTriangle, X, Upload, Share2, Loader2, TrendingUp, Shirt } from 'lucide-react';
+import { Camera, LogOut, ChevronRight, ChevronDown, Trash2, AlertTriangle, X, Upload, Share2, Loader2, TrendingUp, Shirt } from 'lucide-react';
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
@@ -13,6 +13,7 @@ import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
 import { WeatherPlacePicker } from '../components/WeatherPlacePicker.jsx';
 import { useWeatherPlace } from '../hooks/useWeather.js';
+import { WeatherService } from '../services/weather-service.js';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { getHomePref, setHomePref } from '../services/homePref.js';
@@ -49,7 +50,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 
       <ProfileSection profile={profile} user={user} t={t} />
       <IdentitySection user={user} t={t} />
-      <DisplaySection profile={profile} t={t} />
+      <DisplaySection profile={profile} user={user} t={t} />
       <AccountSection
         user={user}
         profile={profile}
@@ -64,6 +65,34 @@ export function Settings({ user, onSignIn, onSignOut }) {
   );
 }
 
+// Every Settings card folds (owner, 2026-10-08), and the open/closed state
+// comes back the same next time — per device, it's a view preference.
+const COLLAPSE_KEY = 'drape:settings:collapsed';
+function readCollapsed() {
+  try { return JSON.parse(localStorage.getItem(COLLAPSE_KEY) || '{}') || {}; } catch { return {}; }
+}
+function SettingsCard({ id, title, className = 'settings-card', children }) {
+  const [collapsed, setCollapsed] = useState(() => !!readCollapsed()[id]);
+  const toggle = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      const all = readCollapsed();
+      if (next) all[id] = true; else delete all[id];
+      localStorage.setItem(COLLAPSE_KEY, JSON.stringify(all));
+    } catch { /* storage blocked — still toggles for this visit */ }
+  };
+  return (
+    <section className={`${className}${collapsed ? ' is-collapsed' : ''}`}>
+      <button type="button" className="settings-card-head" onClick={toggle} aria-expanded={!collapsed}>
+        <h2 className="settings-h2">{title}</h2>
+        <ChevronDown size={18} strokeWidth={1.8} className="settings-card-chev" />
+      </button>
+      {!collapsed && children}
+    </section>
+  );
+}
+
 // Calendar day-cell look: segmented cutout (figure on the card) vs the full
 // OOTD photo with its background. Stored on the profile so it follows the
 // account and applies to visitors' view of the calendar too. Optimistic —
@@ -72,7 +101,7 @@ export function Settings({ user, onSignIn, onSignOut }) {
 // app looks to me" switch, and a whole section for a single control read as a
 // bigger decision than it is. localStorage-backed (per device) so the
 // cold-start router can read it synchronously; see services/homePref.
-function DisplaySection({ profile, t }) {
+function DisplaySection({ profile, user, t }) {
   const [home, setHome] = useState(() => getHomePref() || 'profile');
   const pickHome = (v) => { setHome(v); setHomePref(v); };
   const serverVal = !!profile?.calendarShowBackground;
@@ -90,8 +119,7 @@ function DisplaySection({ profile, t }) {
     }
   };
   return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('display')}</h2>
+    <SettingsCard id="display" className="settings-card" title={t('display')}>
 
       <div className="settings-row">
         <span className="settings-row-label">{t('homeScreen')}</span>
@@ -128,8 +156,72 @@ function DisplaySection({ profile, t }) {
           <span className="settings-switch-knob" />
         </button>
       </div>
-      <p className="settings-hint">{t('calendarShowBgHint')}</p>
-    </section>
+
+      <WeatherSetting profile={profile} user={user} t={t} />
+    </SettingsCard>
+  );
+}
+
+// Weather on/off (owner, 2026-10-08). On by default. Turning it on asks for
+// the location (if there's no place yet); a decline anywhere turns it off and
+// this is where it comes back — with a pointer to the phone's settings when
+// the OS still blocks location, and a city search as the alternative.
+function WeatherSetting({ profile, user, t }) {
+  const serverOn = profile?.weatherOn !== false;
+  const [pending, setPending] = useState(null);
+  const on = pending == null ? serverOn : pending;
+  useEffect(() => { if (pending != null && serverOn === pending) setPending(null); }, [serverOn, pending]);
+  const wx = useWeatherPlace(user);
+  // Shows the effective unit (their pick, else by country) until they pick.
+  const [unitPick, setUnit] = useState(() => WeatherService.getUnitPref());
+  const unit = unitPick || WeatherService.tempUnit(wx.place);
+  const toggle = async () => {
+    const next = !on;
+    setPending(next);
+    try {
+      await ProfileService.updateWeatherOn(next);
+      if (next && !wx.place) await wx.locate();
+    } catch (e) {
+      console.warn('weather toggle save failed:', e?.message);
+      setPending(null);
+    }
+  };
+  return (
+    <>
+      <div className="settings-row">
+        <span className="settings-row-label">{t('wxToggle')}</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={t('wxToggle')}
+          className={`settings-switch${on ? ' on' : ''}`}
+          onClick={toggle}
+        >
+          <span className="settings-switch-knob" />
+        </button>
+      </div>
+      {on && (
+        <div className="settings-row">
+          <span className="settings-row-label">{t('wxUnit')}</span>
+          <div className="settings-seg" role="radiogroup" aria-label={t('wxUnit')}>
+            {['C', 'F'].map((u) => (
+              <button key={u} type="button" role="radio" aria-checked={unit === u}
+                className={`settings-seg-btn${unit === u ? ' on' : ''}`}
+                onClick={() => { WeatherService.setUnitPref(u); setUnit(u); }}>
+                °{u}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {on && wx.place !== undefined && (
+        <div className="settings-row settings-row-col">
+          <label className="settings-label">{t('wxCityLabel')}</label>
+          <WeatherPlacePicker wx={wx} />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -137,8 +229,7 @@ function DangerSection({ t }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   return (
-    <section className="settings-card settings-danger">
-      <h2 className="settings-h2">{t('dangerZone')}</h2>
+    <SettingsCard id="dangerZone" className="settings-card settings-danger" title={t('dangerZone')}>
       <button
         type="button"
         className="settings-row settings-row-action settings-row-danger"
@@ -156,7 +247,7 @@ function DangerSection({ t }) {
           onDeleted={() => navigate('/welcome', { replace: true })}
         />
       )}
-    </section>
+    </SettingsCard>
   );
 }
 
@@ -169,7 +260,6 @@ function ProfileSection({ profile, user, t }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [okMsg, setOkMsg] = useState(null);
-  const wx = useWeatherPlace(user);
 
   // Server-truth snapshot for the dirty-check on the single Save button.
   const original = {
@@ -232,8 +322,7 @@ function ProfileSection({ profile, user, t }) {
   };
 
   return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('profile')}</h2>
+    <SettingsCard id="profile" className="settings-card" title={t('profile')}>
 
       <ProfilePhotoRow profile={profile} user={user} t={t} />
 
@@ -272,10 +361,7 @@ function ProfileSection({ profile, user, t }) {
           placeholder={t('locationPlaceholder')}
         />
       </div>
-      <div className="settings-row settings-row-col">
-        <label className="settings-label">{t('wxCityLabel')}</label>
-        {wx.place !== undefined && <WeatherPlacePicker wx={wx} showWhy={!wx.place} />}
-      </div>
+
       <FieldRow
         label={t('instagram')}
         value={instagram}
@@ -298,7 +384,7 @@ function ProfileSection({ profile, user, t }) {
           {busy ? t('saving') : t('save')}
         </button>
       </div>
-    </section>
+    </SettingsCard>
   );
 }
 
@@ -494,8 +580,7 @@ function IdentitySection({ user, t }) {
   };
 
   return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('identityRefsTitle')}</h2>
+    <SettingsCard id="identityRefsTitle" className="settings-card" title={t('identityRefsTitle')}>
       <p className="settings-hint">{t('identityRefsHint', { max: IdentityService.MAX_IDENTITY_REFS })}</p>
       {refs.length > 0 && (
         <p className="settings-hint identity-refs-primary-hint">
@@ -563,7 +648,7 @@ function IdentitySection({ user, t }) {
           <img src={previewUrl} alt="" onClick={e => e.stopPropagation()} />
         </div>
       )}
-    </section>
+    </SettingsCard>
   );
 }
 
@@ -636,8 +721,7 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   };
 
   return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('account')}</h2>
+    <SettingsCard id="account" className="settings-card" title={t('account')}>
 
       <div className="settings-row">
         <span className="settings-row-label">{t('signedInAs')}</span>
@@ -724,14 +808,13 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
         </span>
         <ChevronRight size={16} strokeWidth={1.5} className="muted" />
       </button>
-    </section>
+    </SettingsCard>
   );
 }
 
 function LegalSection({ t }) {
   return (
-    <section className="settings-card">
-      <h2 className="settings-h2">{t('legal')}</h2>
+    <SettingsCard id="legal" className="settings-card" title={t('legal')}>
       <Link to="/privacy" className="settings-row settings-row-action">
         <span className="settings-row-label">{t('privacyPolicy')}</span>
         <ChevronRight size={16} strokeWidth={1.5} className="muted" />
@@ -744,7 +827,7 @@ function LegalSection({ t }) {
         <span className="settings-row-label">{t('support')}</span>
         <ChevronRight size={16} strokeWidth={1.5} className="muted" />
       </Link>
-    </section>
+    </SettingsCard>
   );
 }
 
