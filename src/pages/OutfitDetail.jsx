@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages } from 'lucide-react';
+import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages, LayoutGrid } from 'lucide-react';
 import { db, analytics, logEvent } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
+import { BoardService } from '../services/board-service.js';
 import { ProfileService } from '../services/profile-service.js';
 import { ItemService } from '../services/item-service.js';
 import { dropFromFeedCaches, verdictWarm, rememberVerdict } from '../services/uiCache.js';
@@ -120,6 +121,8 @@ export function OutfitDetail({ user, onSignIn }) {
       () => setBookmarked(false),
     );
   }, [user?.uid, outfitId]);
+
+  const [boardBusy, setBoardBusy] = useState(false);
 
   // That day's weather next to the date. The server snapshots it onto dated
   // outfits (what visitors see — the owner's place is private); the owner's
@@ -274,6 +277,30 @@ export function OutfitDetail({ user, onSignIn }) {
   const pieceLinks = (outfit.pieceLinks && typeof outfit.pieceLinks === 'object') ? outfit.pieceLinks : {};
   const itemsById = Object.fromEntries(items.map(it => [it.id, it]));
   const linkedIdSet = new Set(Object.values(pieceLinks).flat());
+  // "Make a board" (2026-10-08): this outfit's closet pieces — the ones it was
+  // built from plus anything linked under a detected piece — laid out on a
+  // clean grid. The outfit and the board point at each other (boardId /
+  // sourceOutfitId), so the second tap opens the board instead of making
+  // another one.
+  const boardIds = [...new Set([...(outfit.itemIds || []), ...linkedIdSet])].filter((id) => typeof id === 'string');
+  const openOrMakeBoard = async () => {
+    if (outfit.boardId) {
+      const existing = await BoardService.getBoard(outfit.boardId).catch(() => null);
+      if (existing) { navigate(`/boards/${existing.id}`); return; }
+    }
+    setBoardBusy(true);
+    try {
+      const { id } = await BoardService.createBoard({
+        name: outfit.caption || dateLabel || '',
+        stickers: BoardService.gridStickers(boardIds),
+        sourceOutfitId: outfit.id,
+      });
+      await OutfitService.updateOutfit(outfit.id, { boardId: id });
+      navigate(`/boards/${id}`);
+    } catch (e) {
+      console.warn('make board failed', e?.message);
+    } finally { setBoardBusy(false); }
+  };
   const unmappedItems = items.filter(it => !linkedIdSet.has(it.id));
   // When the per-piece breakdown is on screen the linked items live there, so
   // the flat list only carries the leftovers ("Other items"). Otherwise (no
@@ -725,6 +752,18 @@ export function OutfitDetail({ user, onSignIn }) {
               onClick={() => { if (!user || user.isAnonymous) { onSignIn?.(); return; } setReporting(true); }}
             >
               <Flag size={17} strokeWidth={1.7} />
+            </button>
+          )}
+          {isOwner && boardIds.length > 0 && (
+            <button
+              type="button"
+              className="outfit-action-icon"
+              onClick={openOrMakeBoard}
+              disabled={boardBusy}
+              aria-label={t(outfit.boardId ? 'boardOpen' : 'boardFromOutfit')}
+              title={t(outfit.boardId ? 'boardOpen' : 'boardFromOutfit')}
+            >
+              {boardBusy ? <Loader2 size={17} className="spin" /> : <LayoutGrid size={17} strokeWidth={1.7} />}
             </button>
           )}
           {isOwner && !isAnalyzed && (

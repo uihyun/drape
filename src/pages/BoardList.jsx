@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, SlidersHorizontal, Lock } from 'lucide-react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Plus, SlidersHorizontal, Lock, Loader2 } from 'lucide-react';
 import { BoardService } from '../services/board-service.js';
+import { OutfitService } from '../services/outfit-service.js';
 import { ItemService } from '../services/item-service.js';
 import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
 import { boardRatioWeight } from '../data/boardBackgrounds.js';
@@ -18,7 +19,8 @@ import { loadFilters, saveFilters } from '../services/filterStore.js';
 // from other profiles. Same Mine/Saved shape as OutfitList so the
 // profile shell's Boards tab reads consistently.
 export function BoardList({ user, onSignIn, embedded = false }) {
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
+  const navigate = useNavigate();
   const { cols, ref: gridRef } = usePinchColumns('boards', { min: 1, max: 3, def: 2 });
   // Tab in the URL (?bt=) so back-navigation keeps mine/saved.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,6 +40,55 @@ export function BoardList({ user, onSignIn, embedded = false }) {
     () => Object.fromEntries(items.map(i => [i.id, i])),
     [items],
   );
+  // "Everything I wore this week / this month" (2026-10-08): the closet
+  // pieces from that period's OOTDs, gridded onto one board. One board per
+  // period — pressing again adds only what's new and leaves the user's own
+  // arrangement alone.
+  const [rangeBusy, setRangeBusy] = useState(null);
+  const [rangeMsg, setRangeMsg] = useState('');
+  const makeRangeBoard = async (kind) => {
+    if (!user || rangeBusy) return;
+    setRangeBusy(kind);
+    setRangeMsg('');
+    const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const now = new Date();
+    let from; let to; let key; let name;
+    if (kind === 'week') {
+      const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+      const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+      const fmt = (d) => d.toLocaleDateString(lang, { month: 'short', day: 'numeric' });
+      from = ymd(mon); to = ymd(sun); key = `week:${from}`;
+      name = t('boardWeekName', { range: `${fmt(mon)} – ${fmt(sun)}` });
+    } else {
+      const first = new Date(now.getFullYear(), now.getMonth(), 1);
+      const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      from = ymd(first); to = ymd(last); key = `month:${from.slice(0, 7)}`;
+      name = t('boardMonthName', { month: first.toLocaleDateString(lang, { year: 'numeric', month: 'long' }) });
+    }
+    try {
+      const byDate = await OutfitService.listMonth({ uid: user.uid, monthStart: from, monthEnd: to });
+      const worn = Object.values(byDate).flat();
+      const ids = [...new Set(worn.flatMap((o) => [
+        ...(o.itemIds || []),
+        ...Object.values(o.pieceLinks || {}).flat(),
+      ]))].filter((id) => itemsById[id] && itemsById[id].status === 'ready' && !itemsById[id].isArchived);
+      if (!ids.length) { setRangeMsg(t('boardRangeEmpty')); return; }
+      const existing = await BoardService.findRangeBoard(key);
+      if (existing) {
+        const have = new Set((existing.stickers || []).map((x) => x.itemId));
+        const add = ids.filter((id) => !have.has(id));
+        if (add.length) await BoardService.updateBoard(existing.id, { stickers: BoardService.addToGrid(existing.stickers || [], add) });
+        navigate(`/boards/${existing.id}`);
+      } else {
+        const { id } = await BoardService.createBoard({ name, stickers: BoardService.gridStickers(ids), rangeKey: key });
+        navigate(`/boards/${id}`);
+      }
+    } catch (e) {
+      console.warn('range board failed', e?.message);
+      setRangeMsg(t('boardRangeError'));
+    } finally { setRangeBusy(null); }
+  };
+
   const filterCount = countLookFilters(filters);
   const toggleFilter = (dim, value) => {
     setFilters(prev => {
@@ -177,6 +228,18 @@ export function BoardList({ user, onSignIn, embedded = false }) {
           </button>
         )}
       </div>
+
+      {tab === 'mine' && (
+        <div className="board-range-row">
+          {['week', 'month'].map((k) => (
+            <button key={k} type="button" className="board-range-btn" onClick={() => makeRangeBoard(k)} disabled={!!rangeBusy}>
+              {rangeBusy === k && <Loader2 size={13} className="spin" />}
+              {t(k === 'week' ? 'boardThisWeek' : 'boardThisMonth')}
+            </button>
+          ))}
+        </div>
+      )}
+      {rangeMsg && <p className="board-range-msg">{rangeMsg}</p>}
 
       {list === null ? (
         <div className="loading"><div className="spinner" /></div>

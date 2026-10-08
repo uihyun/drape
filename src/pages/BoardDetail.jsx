@@ -133,6 +133,10 @@ export function BoardDetail({ user, onSignIn }) {
       </header>
 
       {board.name && <h1 className="board-detail-title">{board.name}</h1>}
+      {/* Made from an outfit ("Make a board") — the way back to it. */}
+      {isOwner && board.sourceOutfitId && (
+        <Link to={`/o/${board.sourceOutfitId}`} className="board-source-link">{t('boardSourceOutfit')}</Link>
+      )}
 
       {/* Same asymmetric action bar as outfit detail: wide primary +
           compact icon row. */}

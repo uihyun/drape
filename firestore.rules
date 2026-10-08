@@ -140,7 +140,9 @@ service cloud.firestore {
                       // map of piece index -> [itemId] (linked worn pieces slotted under a detected piece)
                       'pieceLinks',
                       // per-post hero choice: 'full' (with background) | 'cut'
-                      'heroVariant'])
+                      'heroVariant',
+                      // the board made from this outfit's pieces ("Make a board")
+                      'boardId'])
       ) || (
         // Like / unlike — any signed-in user, only the likedBy + count keys.
         request.auth != null

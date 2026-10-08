@@ -11,6 +11,24 @@ Conventions:
 
 ---
 
+## Unreleased — boards from what you wore
+
+- **"Make a board" on an outfit** (owner, grid icon in the action row). It
+  takes the outfit's closet pieces (its `itemIds` plus anything linked under a
+  detected piece) and lays them out on a clean grid sized so every piece shows.
+  The outfit and board point at each other (`outfit.boardId` /
+  `board.sourceOutfitId`). A second tap opens the board instead of making
+  another, and the board links back with "View the outfit".
+  `boardId` was added to the outfit rules and the `updateOutfit` allowlist.
+- **"Worn this week" / "Worn this month"** on My boards. These collect the
+  closet pieces from that period's OOTDs onto one board per period
+  (`rangeKey` `week:<monday>` / `month:YYYY-MM`). Pressing again adds only new
+  pieces, into empty grid cells, and leaves the user's own arrangement alone.
+  If nothing is linked yet, a line says to log outfits and link pieces.
+- **Grid:** sized from the sticker geometry (60%-wide sticker, 3:4 canvas,
+  ~4:5 cutouts) for 1–4 columns. Verified for 1–12 pieces: inside the canvas,
+  no overlaps; appending keeps moved stickers in place.
+
 ## Unreleased — stylist chat
 
 **The stylist is now a conversation.** It replaces the one-shot "Style me"

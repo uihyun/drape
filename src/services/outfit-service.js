@@ -131,7 +131,7 @@ async function getOutfit(outfitId) {
 
 async function updateOutfit(outfitId, patch) {
   // Keep aligned with firestore.rules' allowed keys on /outfits/{id}.
-  const allowed = ['caption', 'notes', 'tags', 'itemIds', 'pieceLinks', 'coverUrl', 'isPublic', 'isListed', 'heroVariant'];
+  const allowed = ['caption', 'notes', 'tags', 'itemIds', 'pieceLinks', 'coverUrl', 'isPublic', 'isListed', 'heroVariant', 'boardId'];
   const safe = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowed.includes(k))
   );

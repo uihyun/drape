@@ -12,7 +12,7 @@ import { db, auth } from '../firebase.js';
 
 const BOARDS = 'boards';
 
-async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic = false, background = 'paper', ratio = 'portrait' } = {}) {
+async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic = false, background = 'paper', ratio = 'portrait', sourceOutfitId = null, rangeKey = null } = {}) {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
   const ref = await addDoc(collection(db, BOARDS), {
@@ -23,10 +23,81 @@ async function createBoard({ name = '', stickers = [], coverUrl = null, isPublic
     isPublic: !!isPublic,
     background: String(background).slice(0, 24),
     ratio: String(ratio).slice(0, 12),
+    // Where an auto-built board came from: an outfit ("Make a board"), or a
+    // week/month of worn outfits ('week:2026-10-05' / 'month:2026-10'). Set
+    // once at creation; a range board is refreshed in place, never duplicated.
+    ...(sourceOutfitId ? { sourceOutfitId: String(sourceOutfitId) } : {}),
+    ...(rangeKey ? { rangeKey: String(rangeKey).slice(0, 24) } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   return { id: ref.id };
+}
+
+// ── Auto-built boards (2026-10-08) ──────────────────────────────────
+// "Make a board" from an outfit's pieces, and "everything I wore this week /
+// this month". Items are laid out on a clean grid sized so every piece is
+// visible; the user can still drag them around afterwards in the editor.
+//
+// A sticker is 60% of the canvas wide at scale 1 (.board-sticker), on a
+// portrait 3:4 canvas, and cutouts run roughly 4:5 tall — so a scale that fits
+// a cell is the smaller of its width- and height-limited values.
+const STICKER_W = 0.6;
+const CUTOUT_ASPECT = 1.25;   // h / w of a typical cutout
+const CANVAS_ASPECT = 4 / 3;  // portrait board: h / w
+function gridCells(n) {
+  const cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : 4;
+  const rows = Math.max(1, Math.ceil(n / cols));
+  const cw = 0.9 / cols;
+  const ch = 0.9 / rows;
+  const scale = Math.max(0.15, Math.min(1.4,
+    (cw * 0.86) / STICKER_W,
+    (ch * 0.86) / (STICKER_W * CUTOUT_ASPECT / CANVAS_ASPECT),
+  ));
+  const cells = [];
+  for (let i = 0; i < n; i += 1) {
+    const r = Math.floor(i / cols);
+    const c = i % cols;
+    // Centre a short last row instead of leaving it flush-left.
+    const inRow = r === rows - 1 ? n - r * cols : cols;
+    const offset = ((cols - inRow) * cw) / 2;
+    cells.push({ x: 0.05 + offset + cw * (c + 0.5), y: 0.05 + ch * (r + 0.5), scale });
+  }
+  return cells;
+}
+
+export function gridStickers(itemIds) {
+  return gridCells(itemIds.length).map((cell, i) => ({
+    itemId: itemIds[i], x: cell.x, y: cell.y, scale: Number(cell.scale.toFixed(3)), rotation: 0, z: i + 1,
+  }));
+}
+
+// Add pieces to an existing board without moving what the user already
+// arranged: re-grid for the new total and give the newcomers the cells
+// nobody is sitting on.
+export function addToGrid(stickers, newIds) {
+  const total = stickers.length + newIds.length;
+  const cells = gridCells(total);
+  const free = cells.filter((c) => !stickers.some((s) => Math.abs(s.x - c.x) < 0.08 && Math.abs(s.y - c.y) < 0.08));
+  let z = Math.max(0, ...stickers.map((s) => s.z || 0));
+  const added = newIds.map((id, i) => {
+    const cell = free[i] || cells[(stickers.length + i) % cells.length];
+    z += 1;
+    return { itemId: id, x: cell.x, y: cell.y, scale: Number(cell.scale.toFixed(3)), rotation: 0, z };
+  });
+  return [...stickers, ...added];
+}
+
+async function findRangeBoard(rangeKey) {
+  const user = auth.currentUser;
+  if (!user) return null;
+  const snap = await getDocs(query(
+    collection(db, BOARDS),
+    where('userId', '==', user.uid),
+    where('rangeKey', '==', rangeKey),
+    limit(1),
+  ));
+  return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 
 async function getBoard(boardId) {
@@ -216,6 +287,9 @@ export const BoardService = {
   toggleBookmark,
   toggleLike,
   toggleSelfLike,
+  findRangeBoard,
+  gridStickers,
+  addToGrid,
 };
 
 export default BoardService;
