@@ -66,8 +66,16 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   every FLIP/transform effect on that element (cost us the closet pinch
   animation; `itemDrop` uses `backwards`). Same trap applies to any card the
   `useFlipGrid` hook animates.
+- **Bottom-bar pill: position on `translate`, size on `scale` — never
+  `transform` with `scale`.** The individual `scale` property is applied AFTER
+  `transform`, so a `translateX` in `transform` gets multiplied by the lens
+  size: the swollen pill drifted ~45px off its tab and slid back as it shrank
+  (the first droplet attempt, reverted 2026-10-07). `translate` is applied
+  before `scale` and isn't scaled. Same rule for any element that slides and
+  scales independently. Also clear the press position only on a real route
+  change, never on a timer after pointer-up.
 - **`npm run check` is the runtime-crash gate, not a linter.** It carries the
-  named-import audit, locale parity across all four languages, an undefined-CSS-var
+  named-import audit, locale parity across all five languages, an undefined-CSS-var
   scan, and eslint with `rules-of-hooks` + `no-undef` — every rule there exists
   because that exact class of bug shipped once. Add to it when a new class
   escapes; don't relax it.

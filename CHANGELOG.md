@@ -65,8 +65,9 @@ Conventions:
   the stylist page itself (persona picker, or the chosen-stylist card; caption
   is the onboarding deck's "Meet your stylist" line) → Closet → closet tabs →
   try-on tab → Settings slot → ends on +. Hole padding cut from 10–12px (sized
-  for the old circles' shadows) to 4px. Still shown to new users only
-  (`drape_tour_v1` unchanged).
+  for the old circles' shadows) to 4px. Tour key bumped to `drape_tour_v2`
+  so existing users see it once too — where things live changed for them
+  most. `?tour=1` still replays it on demand.
 
 ## Unreleased — personal color
 

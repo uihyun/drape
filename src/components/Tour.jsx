@@ -16,7 +16,10 @@ import { X } from 'lucide-react';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { hintSeen, markHintSeen } from '../services/homePref.js';
 
-export const TOUR_KEY = 'drape_tour_v1';
+// v2 (2026-10-07): the bottom bar was rebuilt and Stylist/Settings moved out
+// of the Profile header, so everyone — not just new accounts — sees the tour
+// once more. Bump again only when where things live changes, not for copy.
+export const TOUR_KEY = 'drape_tour_v2';
 
 // `route` navigates before the step is measured. `pad` widens the hole
 // around the target. Order follows the bottom bar left to right
