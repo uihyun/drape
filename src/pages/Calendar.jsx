@@ -9,6 +9,10 @@ import { OotdSheet } from '../components/OotdSheet.jsx';
 import { OnboardHint } from '../components/OnboardHint.jsx';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useWeatherPlace, useDailyWeather } from '../hooks/useWeather.js';
+import { WeatherBadge } from '../components/WeatherIcon.jsx';
+import { WeatherPlacePicker } from '../components/WeatherPlacePicker.jsx';
+import { WeatherService } from '../services/weather-service.js';
 
 function monthDays(year, month0) {
   return new Date(year, month0 + 1, 0).getDate();
@@ -107,6 +111,16 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
     while (arr.length % 7 !== 0) arr.push(null);
     return arr;
   }, [firstWeekday, days]);
+  // Weather: one icon + the day's mean in each cell's corner. Past days are
+  // what actually happened, the next two weeks are forecast, further out is
+  // blank.
+  // The first visit asks for the device location (once); declined → a city
+  // search; neither → no weather rather than a guessed city's.
+  const wxState = useWeatherPlace(user, { autoLocate: true });
+  const wxPlace = wxState.place;
+  const wx = useDailyWeather(wxPlace, monthStart, monthEnd);
+  const wxUnit = WeatherService.tempUnit(wxPlace);
+  const [wxPicking, setWxPicking] = useState(false);
 
   if (!user || user.isAnonymous) {
     return (
@@ -130,6 +144,14 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
           <ChevronRight size={20} strokeWidth={1.6} />
         </button>
       </div>
+
+      {wxPlace === null && !wxState.locating && (
+        wxPicking ? (
+          <div className="calendar-wxpick"><WeatherPlacePicker wx={wxState} showWhy onDone={() => setWxPicking(false)} /></div>
+        ) : (
+          <button type="button" className="calendar-wxprompt" onClick={() => setWxPicking(true)}>{t('wxSetCity')}</button>
+        )
+      )}
 
       {/* One-time try-on nudge, only once there's a look to try (the 2026-08
           funnel review: most users never discover try-on exists). */}
@@ -180,6 +202,7 @@ export function Calendar({ user, onSignIn, embedded = false, showBackground = fa
               aria-label={`${dateStr}${entries.length ? ' (logged)' : ''}`}
             >
               <span className="calendar-day-num">{d}</span>
+              <WeatherBadge day={wx[dateStr]} unit={wxUnit} size={9} className="calendar-wx" />
               {/* While the cutout is still being made, show a spinner instead
                   of the with-background photo, so the cell lands on its final
                   look (cutout OR original) in one step, not bg→cutout. */}

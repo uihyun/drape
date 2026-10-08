@@ -37,6 +37,9 @@ PODS:
   - CapacitorFirebaseMessaging (7.5.0):
     - Capacitor
     - FirebaseMessaging (~> 11.7.0)
+  - CapacitorGeolocation (8.2.2):
+    - Capacitor
+    - IONGeolocationLib (= 2.1.0)
   - CapacitorKeyboard (8.0.5):
     - Capacitor
   - CapacitorShare (8.0.1):
@@ -133,6 +136,7 @@ PODS:
   - GTMSessionFetcher/Core (3.5.0)
   - IONCameraLib (2.0.0)
   - IONFilesystemLib (1.1.2)
+  - IONGeolocationLib (2.1.0)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -152,6 +156,7 @@ DEPENDENCIES:
   - "CapacitorFirebaseAnalytics (from `../../node_modules/@capacitor-firebase/analytics`)"
   - "CapacitorFirebaseAuthentication (from `../../node_modules/@capacitor-firebase/authentication`)"
   - "CapacitorFirebaseMessaging (from `../../node_modules/@capacitor-firebase/messaging`)"
+  - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
@@ -178,6 +183,7 @@ SPEC REPOS:
     - GTMSessionFetcher
     - IONCameraLib
     - IONFilesystemLib
+    - IONGeolocationLib
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
@@ -203,6 +209,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor-firebase/authentication"
   CapacitorFirebaseMessaging:
     :path: "../../node_modules/@capacitor-firebase/messaging"
+  CapacitorGeolocation:
+    :path: "../../node_modules/@capacitor/geolocation"
   CapacitorKeyboard:
     :path: "../../node_modules/@capacitor/keyboard"
   CapacitorShare:
@@ -224,6 +232,7 @@ SPEC CHECKSUMS:
   CapacitorFirebaseAnalytics: 6a50d1bf1869d93af9bb27f31f338e94724233f0
   CapacitorFirebaseAuthentication: 53725bd30dcca0e455b42565593b77c6c5d93fa3
   CapacitorFirebaseMessaging: 1ac12c0dab16d1e4edcf9cb878620507ac868a4e
+  CapacitorGeolocation: 327f18983c8f8a55e191fcf7dee80b9294f1ab78
   CapacitorKeyboard: b6b0744890cdb1d9a96e2cafcc9253fdcc55de3b
   CapacitorShare: 0c58305114538568059bfc07111f22dcb9cb2a82
   CapacitorSplashScreen: 7bf61c2001557ff9e195e601c6b87344480d3c65
@@ -245,10 +254,11 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   IONCameraLib: 729cae576e1a952602ce750a9790b6dc7d7e2e95
   IONFilesystemLib: 21a63377696b2d8fab5632ecfb7d2ac67bddb68a
+  IONGeolocationLib: 6a7b6f76063fb1b01cfb14fae7d0f526e3c9b271
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
 
-PODFILE CHECKSUM: e8ebb1e8342bfab81d6738e00b2c2d7f1fac1e1d
+PODFILE CHECKSUM: 646be2cb88bd011273bfcc4b7b81ceaad80ea32a
 
 COCOAPODS: 1.16.2

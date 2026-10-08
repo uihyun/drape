@@ -63,6 +63,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Weather: asked once, the first time weather is needed. The app rounds
+         to ~1km before sending; on Android 12+ the user can pick approximate. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Firebase Analytics merges in the AD_ID permission; we don't use the
          advertising ID (analytics only, matching iOS WithoutAdIdSupport). Strip

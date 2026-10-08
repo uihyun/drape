@@ -257,12 +257,32 @@ exports.updateProfile = onRequest(async (req, res) => {
             result.remindersOptOut = data.remindersOptOut;
         }
 
-        if (Object.keys(update).length === 0) {
+        // Where the user's weather comes from (calendar, outfit dates, the
+        // stylist). PRIVATE — profiles/{uid} is world-readable, so the
+        // coordinates live under users/{uid}/private and are rounded to ~1km.
+        // Set from the profile city or a city search; never from GPS.
+        let privateWrite = null;
+        if (data.weatherPlace !== undefined) {
+            const { cleanPlace } = require('./weather.js');
+            const place = data.weatherPlace === null ? null : cleanPlace(data.weatherPlace);
+            if (data.weatherPlace !== null && !place) {
+                res.status(400).json({ error: 'INVALID_PLACE' });
+                return;
+            }
+            privateWrite = db.collection('users').doc(decoded.uid).collection('private').doc('weatherPlace')
+                [place ? 'set' : 'delete'](...(place ? [{ ...place, updatedAt: admin.firestore.FieldValue.serverTimestamp() }] : []));
+            result.weatherPlace = place;
+        }
+
+        if (Object.keys(update).length === 0 && !privateWrite) {
             res.status(400).json({ error: 'NO_FIELDS' });
             return;
         }
 
-        await db.collection('profiles').doc(decoded.uid).set(update, { merge: true });
+        if (Object.keys(update).length) {
+            await db.collection('profiles').doc(decoded.uid).set(update, { merge: true });
+        }
+        if (privateWrite) await privateWrite;
         res.json(result);
     } catch (err) {
         console.error('updateProfile failed:', err);

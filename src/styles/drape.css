@@ -7298,3 +7298,93 @@ input:disabled, textarea:disabled, select:disabled {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
+
+/* ── Weather (Open-Meteo) ──────────────────────────────────────────── */
+.wx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+/* Calendar cell corner, opposite the day number. */
+.calendar-wx {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.56rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  z-index: 1;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+.calendar-wxprompt {
+  display: block;
+  margin: 0 auto 0.6rem;
+  background: none;
+  border: none;
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.calendar-wxpick { margin: 0 0 0.75rem; }
+.wxpick { position: relative; display: flex; flex-direction: column; gap: 0.4rem; }
+.wxpick-spin { position: absolute; right: 0.75rem; top: 0.85rem; color: var(--text-muted); }
+.wxpick-results {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.wxpick-results button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.8rem;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.wxpick-results button:active { background: var(--surface-elevated); }
+.wxpick-name { font-size: 0.9rem; color: var(--text-primary); }
+.wxpick-sub { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+.wxpick-cancel {
+  align-self: flex-start;
+  background: none; border: none; padding: 0;
+  font: inherit; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;
+}
+.wxpick-current { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--text-primary); }
+.wxpick-change {
+  margin-left: auto;
+  background: none; border: none; padding: 0;
+  font: inherit; font-size: 0.8rem; color: var(--accent); cursor: pointer;
+}
+.outfit-wx { margin-left: 0.5rem; font-size: 0.78rem; }
+.wxpick-why { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--text-secondary); }
+.wxpick-locate {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-hover);
+  background: var(--surface);
+  font: inherit; font-size: 0.88rem; color: var(--text-primary);
+  cursor: pointer;
+}
+.wxpick-locate:disabled { opacity: 0.6; }
+.wxpick-denied { margin: 0; font-size: 0.78rem; color: var(--text-secondary); }
+.wxpick-search { position: relative; }

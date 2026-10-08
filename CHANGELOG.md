@@ -11,6 +11,54 @@ Conventions:
 
 ---
 
+## Unreleased — weather
+
+**Weather on the calendar and on dated outfits; the stylist will use it.**
+- **Source:** Open-Meteo (free, no key). The forecast API covers about the
+  last 6 weeks through 16 days ahead; the archive API covers everything older.
+  We measured that the forecast API returns nulls more than ~52 days back, so
+  ranges are split between the two APIs.
+- **Where it shows:**
+  - Calendar cells: an icon and the day's mean temperature.
+  - Outfit/OOTD detail: the same next to the date.
+  - High/low and rain are kept for the stylist, not shown.
+  - °F for US places, °C elsewhere, decided by where the weather is.
+- **Where the place comes from:** the device location, asked once the first
+  time a weather screen opens. A timezone guess was rejected: 94% of real users
+  have a timezone, but `America/Los_Angeles` would show LA weather in Seattle.
+  The city list wasn't enough either: only 5 of 255 real users ever set a
+  profile city.
+  - **Declined:** a worldwide city search. If the user doesn't search, no
+    weather is shown.
+  - **Rounding:** coordinates are rounded to ~1km on the device before they
+    are sent, so it stays "approximate location" for the store labels.
+  - **Labelling:** the server reverse-geocodes to the city ("Seattle", not a
+    street).
+  - **Storage:** `users/{uid}/private/weatherPlace`, never the world-readable
+    profile.
+  - **Changing it:** Settings → Weather city.
+- **City search** runs on the server and merges two geocoders.
+  - Open-Meteo returns nothing for native-script input ("춘천", "東京").
+  - Nominatim matches native names but only the official form ("춘천시"),
+    and allows 1 req/s, so bare Hangul and kanji queries also try the
+    시/市 suffix.
+  - Verified on 21 queries across all five app languages, including accents
+    and exonyms (Nueva York, Pékin, Bogotá). North Korea is excluded.
+- **`onOutfitWeather` trigger:** snapshots the day's weather onto an outfit
+  once it has a date on or before today. This is what visitors see on a
+  public OOTD, because the owner's place is private.
+- **Native:** `@capacitor/geolocation` 8.2.2,
+  `NSLocationWhenInUseUsageDescription`, and Android coarse/fine location.
+  **Next App Store submission: add "Coarse Location — App Functionality" to
+  the privacy labels.**
+- **Fix:** OutfitDetail showed the previous day's date west of Greenwich,
+  because `new Date('YYYY-MM-DD')` parses as UTC.
+- **City list:** 21 cities added, taken from real users' timezones (Kolkata,
+  Moscow, Lagos, Tehran, Bogotá, …).
+- **Cleanup:** removed orphaned `ios/App/App/{en,ja,ko}.lproj/InfoPlist.strings`.
+  They said "archelier" but were never in the Xcode project, so they never
+  shipped.
+
 ## Unreleased — glass tab bar
 
 **Bottom nav is one glass bar with five labelled slots: Trends · Stylist ·

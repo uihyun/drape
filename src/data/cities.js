@@ -195,6 +195,31 @@ export const CITIES = [
   { id: 'saopaulo-br',       country: 'BR', names: { en: 'São Paulo',      ko: '상파울루',    ja: 'サンパウロ' } },
   { id: 'riodejaneiro-br',   country: 'BR', names: { en: 'Rio de Janeiro', ko: '리우데자네이루', ja: 'リオデジャネイロ' } },
   { id: 'buenosaires-ar',    country: 'AR', names: { en: 'Buenos Aires',   ko: '부에노스아이레스', ja: 'ブエノスアイレス' } },
+
+  // ── Added 2026-10-08 from where real users actually sign in from ──
+  // (their device timezones, which name a city — every one not already
+  // listed above). Add more the same way: from users, not speculatively.
+  { id: 'kolkata-in',        country: 'IN', names: { en: 'Kolkata',        ko: '콜카타',      ja: 'コルカタ' } },
+  { id: 'karachi-pk',        country: 'PK', names: { en: 'Karachi',        ko: '카라치',      ja: 'カラチ' } },
+  { id: 'dhaka-bd',          country: 'BD', names: { en: 'Dhaka',          ko: '다카',        ja: 'ダッカ' } },
+  { id: 'kuching-my',        country: 'MY', names: { en: 'Kuching',        ko: '쿠칭',        ja: 'クチン' } },
+  { id: 'moscow-ru',         country: 'RU', names: { en: 'Moscow',         ko: '모스크바',    ja: 'モスクワ' } },
+  { id: 'tehran-ir',         country: 'IR', names: { en: 'Tehran',         ko: '테헤란',      ja: 'テヘラン' } },
+  { id: 'jerusalem-il',      country: 'IL', names: { en: 'Jerusalem',      ko: '예루살렘',    ja: 'エルサレム' } },
+  { id: 'amman-jo',          country: 'JO', names: { en: 'Amman',          ko: '암만',        ja: 'アンマン' } },
+  { id: 'muscat-om',         country: 'OM', names: { en: 'Muscat',         ko: '무스카트',    ja: 'マスカット' } },
+  { id: 'lagos-ng',          country: 'NG', names: { en: 'Lagos',          ko: '라고스',      ja: 'ラゴス' } },
+  { id: 'algiers-dz',        country: 'DZ', names: { en: 'Algiers',        ko: '알제',        ja: 'アルジェ' } },
+  { id: 'casablanca-ma',     country: 'MA', names: { en: 'Casablanca',     ko: '카사블랑카',  ja: 'カサブランカ' } },
+  { id: 'gaborone-bw',       country: 'BW', names: { en: 'Gaborone',       ko: '가보로네',    ja: 'ハボローネ' } },
+  { id: 'monterrey-mx',      country: 'MX', names: { en: 'Monterrey',      ko: '몬테레이',    ja: 'モンテレイ' } },
+  { id: 'tijuana-mx',        country: 'MX', names: { en: 'Tijuana',        ko: '티후아나',    ja: 'ティフアナ' } },
+  { id: 'managua-ni',        country: 'NI', names: { en: 'Managua',        ko: '마나과',      ja: 'マナグア' } },
+  { id: 'santodomingo-do',   country: 'DO', names: { en: 'Santo Domingo',  ko: '산토도밍고',  ja: 'サントドミンゴ' } },
+  { id: 'bogota-co',         country: 'CO', names: { en: 'Bogotá',         ko: '보고타',      ja: 'ボゴタ' } },
+  { id: 'caracas-ve',        country: 'VE', names: { en: 'Caracas',        ko: '카라카스',    ja: 'カラカス' } },
+  { id: 'lapaz-bo',          country: 'BO', names: { en: 'La Paz',         ko: '라파스',      ja: 'ラパス' } },
+  { id: 'manaus-br',         country: 'BR', names: { en: 'Manaus',         ko: '마나우스',    ja: 'マナウス' } },
 ];
 
 const BY_ID = new Map(CITIES.map(c => [c.id, c]));

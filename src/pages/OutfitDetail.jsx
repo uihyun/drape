@@ -17,6 +17,9 @@ import { SwipeHint } from '../components/SwipeHint.jsx';
 import { OnboardHint } from '../components/OnboardHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useWeatherPlace, useDailyWeather } from '../hooks/useWeather.js';
+import { WeatherBadge } from '../components/WeatherIcon.jsx';
+import { WeatherService } from '../services/weather-service.js';
 import { saveFilters } from '../services/filterStore.js';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
@@ -118,6 +121,15 @@ export function OutfitDetail({ user, onSignIn }) {
     );
   }, [user?.uid, outfitId]);
 
+  // That day's weather next to the date. The server snapshots it onto dated
+  // outfits (what visitors see — the owner's place is private); the owner's
+  // own view falls back to a live fetch until the snapshot lands, and for
+  // future-dated outfits, which never get one.
+  const ownView = !!(user && outfit && outfit.userId === user.uid);
+  const wxDate = outfit?.date && !outfit?.weather ? outfit.date : null;
+  const myPlace = useWeatherPlace(ownView && wxDate ? user : null).place;
+  const liveWx = useDailyWeather(ownView && wxDate ? myPlace : null, wxDate, wxDate);
+
   if (outfit === undefined) return <div className="loading"><div className="spinner" /></div>;
   if (outfit === null) return (
     <div className="empty-state empty-state-card">
@@ -207,9 +219,16 @@ export function OutfitDetail({ user, onSignIn }) {
 
   // A dated outfit (worn-on day) shows its date; undated saved outfits fall
   // back to created date.
+  // `new Date('YYYY-MM-DD')` parses as UTC midnight, which is the previous
+  // evening anywhere west of Greenwich — a US user saw yesterday's date on
+  // every OOTD. Build it as a local date instead.
   const dateObj = outfit.date
-    ? new Date(outfit.date)
+    ? (() => { const [y, m, d] = outfit.date.split('-').map(Number); return new Date(y, m - 1, d); })()
     : (outfit.createdAt?.toDate?.() || (outfit.createdAt ? new Date(outfit.createdAt) : null));
+  const wxDay = outfit.weather || (wxDate ? liveWx[wxDate] : null);
+  const wxUnit = outfit.weather
+    ? (outfit.weather.country === 'US' ? 'F' : 'C')
+    : WeatherService.tempUnit(myPlace);
   const dateLabel = dateObj
     ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
     : '';
@@ -342,6 +361,7 @@ export function OutfitDetail({ user, onSignIn }) {
       {(dateLabel || tr.canTranslate) && (
         <div className="outfit-date-row">
           <span className="outfit-date">{dateLabel}</span>
+          {outfit.date && <WeatherBadge day={wxDay} unit={wxUnit} size={13} className="wx-badge outfit-wx" />}
           <TranslateToggle tr={tr} />
         </div>
       )}

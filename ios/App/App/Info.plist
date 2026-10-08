@@ -59,6 +59,8 @@
     <true/>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>drape saves your try-on results and outfit images to your Photos when you tap Save.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>drape uses your approximate location to show your local weather, and your stylist takes it into account when picking outfits.</string>
     <key>NSCameraUsageDescription</key>
     <string>drape uses the camera to photograph your clothes and outfits for your closet and virtual try-on.</string>
     <key>NSPhotoLibraryUsageDescription</key>

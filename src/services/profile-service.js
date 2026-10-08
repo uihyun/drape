@@ -145,6 +145,13 @@ export const ProfileService = {
     return authedFetch(UPDATE_FN_URL, { location });
   },
 
+  // Where weather comes from — {lat, lon, label, country, tz, cityId} or
+  // null. Stored privately (users/{uid}/private/weatherPlace), not on the
+  // world-readable profile.
+  async updateWeatherPlace(place) {
+    return authedFetch(UPDATE_FN_URL, { weatherPlace: place });
+  },
+
   // Calendar day-cell style (cutout vs full photo). Stored on the public
   // profile so the owner's choice applies to their own calendar AND to
   // visitors viewing it (PublicCalendar reads the same field).

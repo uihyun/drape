@@ -159,6 +159,12 @@ const messageFns = require('./messages.js');
 exports.onMessageCreated = messageFns.onMessageCreated;
 exports.cleanupOldThreads = messageFns.cleanupOldThreads;
 
+// ── Weather (Open-Meteo): snapshot onto dated outfits ───────────────
+const weatherFns = require('./weather.js');
+exports.onOutfitWeather = weatherFns.onOutfitWeather;
+exports.weatherSearch = weatherFns.weatherSearch;
+exports.weatherLocate = weatherFns.weatherLocate;
+
 // ── Stylist (SPEC-1.6: style profile + persona recommendations) ─────────
 const stylistFns = require('./stylist.js');
 exports.styleRecommend = stylistFns.styleRecommend;

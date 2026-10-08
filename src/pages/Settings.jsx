@@ -11,6 +11,8 @@ import { AlertModal } from '../components/AlertModal.jsx';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
 import { LocationInput } from '../components/LocationInput.jsx';
+import { WeatherPlacePicker } from '../components/WeatherPlacePicker.jsx';
+import { useWeatherPlace } from '../hooks/useWeather.js';
 import { DeleteAccountModal } from '../components/DeleteAccountModal.jsx';
 import { useLocale, LANG_LABELS, SUPPORTED_LANGS } from '../hooks/useLocale.jsx';
 import { getHomePref, setHomePref } from '../services/homePref.js';
@@ -167,6 +169,7 @@ function ProfileSection({ profile, user, t }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
   const [okMsg, setOkMsg] = useState(null);
+  const wx = useWeatherPlace(user);
 
   // Server-truth snapshot for the dirty-check on the single Save button.
   const original = {
@@ -268,6 +271,10 @@ function ProfileSection({ profile, user, t }) {
           onChange={setLocation}
           placeholder={t('locationPlaceholder')}
         />
+      </div>
+      <div className="settings-row settings-row-col">
+        <label className="settings-label">{t('wxCityLabel')}</label>
+        {wx.place !== undefined && <WeatherPlacePicker wx={wx} showWhy={!wx.place} />}
       </div>
       <FieldRow
         label={t('instagram')}
