@@ -142,7 +142,7 @@ stay the source of truth; the page is regenerated, never edited.
 ## Store header + Play feature graphic (2.3.0)
 
 `store-header-2.3.0/`:
-- `appstore-header-3840x1646.jpg` — the App Store product-page header.
+- `appstore-header-3840x1646.png` — the App Store product-page header.
 - `play-feature-graphic-1024x500.png` — the Play feature graphic.
 
 **Photos.** Six recent public OOTDs from seed accounts only, picked by the
