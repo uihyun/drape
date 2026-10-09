@@ -13,6 +13,12 @@ Conventions:
 
 ## Unreleased — link pieces right on the outfit page
 
+- **The item page's Boards row shows the whole board shrunk down**, as the
+  board list does, instead of one sticker as a "cover". A backfilled cover
+  had made a five-piece outfit board show up as a pair of sunglasses. The
+  tile keeps the board's aspect (3:4), so the bottom row isn't cropped.
+  `coverUrl` is still set for share previews, admin and moderation.
+
 - **Third pass:**
   - **Covers were missing on everything the new flows made.** Boards from an
     outfit, a saved look, or a week/month, and outfits linked per piece, were

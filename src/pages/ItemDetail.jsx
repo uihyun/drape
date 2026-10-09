@@ -707,10 +707,11 @@ export function ItemDetail({ user, onSignIn }) {
               <span className="item-used-in-label">{t('usedInBoards')}</span>
               <div className="item-used-in-row">
                 {usedIn.boards.map(b => (
-                  <Link key={b.id} to={`/boards/${b.id}`} className="item-used-in-card">
-                    {b.coverUrl
-                      ? <img src={b.coverUrl} alt="" loading="lazy" />
-                      : <BoardThumbnail board={b} />}
+                  <Link key={b.id} to={`/boards/${b.id}`} className="item-used-in-card item-used-in-card--board">
+                    {/* The whole board shrunk down, like the board list — one
+                        sticker as a "cover" said nothing about which board it
+                        was (a pair of sunglasses for a five-piece outfit). */}
+                    <BoardThumbnail board={b} className="item-used-in-board" />
                   </Link>
                 ))}
               </div>
