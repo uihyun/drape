@@ -160,18 +160,28 @@ export default function App() {
     return () => { alive = false; };
   }, [authReady, user?.uid]);
 
-  // Capture the user's timezone + language (once per session) so the scheduled
-  // reminder push fires at their local evening, in their language. Cheap merge;
-  // guarded so it doesn't write on every render/launch.
+  // Keep profiles.timezone + lang current: the reminder push fires at local
+  // evening in that language, and every daily counter (try-on fits, stylist
+  // chat threads and quotas) resets at midnight in that zone. Synced whenever
+  // the device zone differs from the last value sent, checked on launch and
+  // on every return to the foreground, so a traveller's "today" moves with
+  // them instead of staying in the zone the session started in.
   useEffect(() => {
-    if (!authReady || !user || user.isAnonymous) return;
+    if (!authReady || !user || user.isAnonymous) return undefined;
     const key = `drape:reminderCtx:${user.uid}`;
-    try { if (sessionStorage.getItem(key)) return; } catch { /* ignore */ }
-    let tz = '';
-    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { /* ignore */ }
-    ProfileService.syncReminderContext(tz, currentLang())
-      .then(() => { try { sessionStorage.setItem(key, '1'); } catch { /* ignore */ } })
-      .catch(err => console.warn('reminder ctx sync failed:', err?.message));
+    const sync = () => {
+      let tz = '';
+      try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { /* ignore */ }
+      const sig = `${tz}|${currentLang()}`;
+      try { if (localStorage.getItem(key) === sig) return; } catch { /* ignore */ }
+      ProfileService.syncReminderContext(tz, currentLang())
+        .then(() => { try { localStorage.setItem(key, sig); } catch { /* ignore */ } })
+        .catch(err => console.warn('reminder ctx sync failed:', err?.message));
+    };
+    sync();
+    const onVis = () => { if (document.visibilityState === 'visible') sync(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
   }, [authReady, user?.uid]);
 
   // Animated cold-start splash — skip on the marketing host (drape.nyc) so the

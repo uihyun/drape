@@ -21,6 +21,22 @@ release deepens the 2.x "your stylist" direction rather than starting a new
 one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
 **Coarse Location — App Functionality** to the App Store privacy labels.
 
+### fits / stylist counters: "today" is the server's today
+
+- **Bug:** the remaining-count displays used the device's timezone. The
+  server counts in `profiles.timezone`, which was synced only once per
+  session, so after crossing a zone mid-session the meter could show a reset
+  the server hadn't made, or the stylist chat could open an empty "today"
+  thread while the reply landed in another day's.
+- **Fix:**
+  - `useFits`, `useStyleRecs` and `useStyleChatQuota` now read
+    `profiles.timezone` and compute the day key exactly like `fits.js` /
+    `stylist.js`, falling back to New York when it's unset. They derive the
+    count at render time, not in the snapshot callback.
+  - `App.jsx` re-syncs timezone and language whenever they differ from the
+    last value sent. It checks on launch and on every return to the
+    foreground, instead of once per session.
+
 ### admin: try-on entry paths count only tracked try-ons
 
 The table dropped the "before tracking shipped" row: 330 try-ons from before

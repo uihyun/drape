@@ -110,7 +110,8 @@ function subscribeSavedLooks(uid, cb, { max = 12 } = {}) {
 // One thread per persona per local day: users/{uid}/stylistChats/
 // {persona}_{YYYY-MM-DD}/messages. The server writes both turns; the client
 // only reads. Day keys are the device's local date — the same date the
-// server derives from profiles.timezone, which the app syncs from the device.
+// server derives from profiles.timezone, which App.jsx re-syncs whenever the
+// device zone changes (launch + every return to the foreground).
 export function localDayKey(d = new Date()) {
   return new Intl.DateTimeFormat('en-CA').format(d);
 }
