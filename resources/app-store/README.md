@@ -138,3 +138,26 @@ all five `listing-*.md` files into a single page with a copy button and a
 character count per block (App Store ≤4000, Play ≤500 — over the limit shows
 red). It writes `builds/release-notes-<v>.html` and opens it. The listing files
 stay the source of truth; the page is regenerated, never edited.
+
+## Store header + Play feature graphic (2.3.0)
+
+`store-header-2.3.0/`:
+- `appstore-header-3840x1646.jpg` — the App Store product-page header.
+- `play-feature-graphic-1024x500.png` — the Play feature graphic.
+
+**Photos.** Six recent public OOTDs from seed accounts only, picked by the
+owner on 2026-10-09; no real users' photos. The outfit ids are b6j146lV…,
+9mdzdevL…, WRerOqxE…, 8d6lPGwn… and two seed looks from the Trends pool.
+They alternate women and men, and light and dark tones. A saturated sky-blue
+knit was swapped out because it pulled every eye in an otherwise
+black/cream/brown strip.
+
+**Cropping.** Each panel is cropped around the person's head and upper torso,
+found with a local background-removal mask, so a shoulder bag or an
+outstretched arm doesn't pull the crop.
+
+**Text.**
+- No wordmark on the App Store header: Apple sets the icon, which is the
+  wordmark, plus the name and the Get button on it.
+- The Play graphic carries the wordmark on an ink panel, because it can be
+  shown on its own.
