@@ -161,3 +161,29 @@ Probarte prendas del armario de otras personas ahora es más rápido y fluido. T
 ```
 Probarte prendas del armario de otras personas ahora es más rápido y fluido. También corregimos algunos errores pequeños.
 ```
+
+**What's New** (≤4000) — 2.3.0:
+
+```
+Un nuevo diseño y una estilista con quien conversar.
+
+- Una barra más simple: Tendencias, Estilista, Armario y Ajustes.
+- Chatea con tu estilista: elige looks de tu armario y guarda la conversación de cada día.
+- El clima en tu calendario y tus outfits, y tu estilista te viste para él.
+- Agrega o vincula cada prenda desde un outfit.
+- Convierte un outfit, una semana o un mes en un tablero.
+- Las pruebas y el chat ahora usan créditos: 50 gratis al día, las mismas 5 pruebas de siempre.
+```
+
+**Novedades** (Play, ≤500) — 2.3.0:
+
+```
+Un nuevo diseño y una estilista con quien conversar.
+
+- Una barra más simple: Tendencias, Estilista, Armario y Ajustes.
+- Chatea con tu estilista: elige looks de tu armario y guarda la conversación de cada día.
+- El clima en tu calendario y tus outfits, y tu estilista te viste para él.
+- Agrega o vincula cada prenda desde un outfit.
+- Convierte un outfit, una semana o un mes en un tablero.
+- Las pruebas y el chat ahora usan créditos: 50 gratis al día, las mismas 5 pruebas de siempre.
+```

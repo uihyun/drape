@@ -135,3 +135,29 @@ Essayer les pièces du dressing des autres est désormais plus rapide et plus fl
 ```
 Essayer les pièces du dressing des autres est désormais plus rapide et plus fluide. Nous avons aussi corrigé quelques petits bugs.
 ```
+
+**What's New** (≤4000) — 2.3.0:
+
+```
+Un nouveau look, et un styliste avec qui discuter.
+
+- Une barre plus simple : Tendances, Styliste, Dressing, Réglages.
+- Votre styliste choisit des tenues dans votre dressing, et chaque conversation est gardée.
+- La météo sur votre calendrier et vos tenues, et votre styliste s’y adapte.
+- Ajoutez ou liez chaque pièce depuis une tenue.
+- Faites d’une tenue, d’une semaine ou d’un mois une planche.
+- Essayages et chat passent aux crédits : 50 gratuits par jour, soit 5 essayages.
+```
+
+**Nouveautés** (Play, ≤500) — 2.3.0:
+
+```
+Un nouveau look, et un styliste avec qui discuter.
+
+- Une barre plus simple : Tendances, Styliste, Dressing, Réglages.
+- Votre styliste choisit des tenues dans votre dressing, et chaque conversation est gardée.
+- La météo sur votre calendrier et vos tenues, et votre styliste s’y adapte.
+- Ajoutez ou liez chaque pièce depuis une tenue.
+- Faites d’une tenue, d’une semaine ou d’un mois une planche.
+- Essayages et chat passent aux crédits : 50 gratuits par jour, soit 5 essayages.
+```

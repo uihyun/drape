@@ -150,3 +150,29 @@ Trying on pieces from other people's closets is now faster and smoother. We also
 ```
 Trying on pieces from other people's closets is now faster and smoother. We also fixed a few small bugs.
 ```
+
+**What's New** (≤4000) — 2.3.0:
+
+```
+A new look, and a stylist you can talk to.
+
+- A simpler tab bar: Trends, Stylist, Closet and Settings.
+- Chat with your stylist. They pick looks from your closet, and each day's chat is saved.
+- Weather on your calendar and outfits, and your stylist dresses you for it.
+- Add or link each piece right from an outfit.
+- Turn an outfit, a week or a month into a board.
+- Try-ons and chats now use credits: 50 free a day, the same 5 try-ons as before.
+```
+
+**What's new** (Play, ≤500) — 2.3.0:
+
+```
+A new look, and a stylist you can talk to.
+
+- A simpler tab bar: Trends, Stylist, Closet and Settings.
+- Chat with your stylist. They pick looks from your closet, and each day's chat is saved.
+- Weather on your calendar and outfits, and your stylist dresses you for it.
+- Add or link each piece right from an outfit.
+- Turn an outfit, a week or a month into a board.
+- Try-ons and chats now use credits: 50 free a day, the same 5 try-ons as before.
+```
