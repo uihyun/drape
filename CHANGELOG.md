@@ -11,7 +11,7 @@ Conventions:
 
 ---
 
-## 2.3.0 — glass tab bar, stylist chat, weather, outfit-page linking — version set 9 Oct 2026, not yet built
+## 2.3.0 — glass tab bar, stylist chat, weather, outfit-page linking, credits — submitted to both stores 9 Oct 2026
 
 iOS build 20, Android versionCode 24 (bumped in package.json, build.gradle and
 project.pbxproj on 9 Oct). Everything below has been live on web, and on

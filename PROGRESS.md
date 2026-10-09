@@ -49,14 +49,18 @@ already plays the JEV role. The missing piece is real-time rendering.
 4. **Only then build:** the stylist chat drives the outfit choice (already
    exists); the live view renders it.
 
-## Snapshot — 2026-10-09 (web ahead of the apps; 2.3.0 set, not yet built)
+## Snapshot — 2026-10-09 (2.3.0 submitted to both stores, in review)
 
 Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
 27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24).
 - **Android:** AAB built 9 Oct at
   `resources/app-store/builds/drape-2.3.0-24.aab` (upload-key signed, SHA-1
   4F:27…F5:DE).
-- **iOS:** archive from Xcode pending.
+- **iOS:** archived from Xcode by the owner.
+- **Submitted:** App Store and Play, 9 Oct, with the new App Store header and
+  Play feature graphic (`resources/app-store/store-header-2.3.0/`) and the
+  Coarse/Approximate Location disclosures (App functionality +
+  personalization).
 - **Release notes:** in `listing-*.md` → 2.3.0.
 Everything below is **live on web only** until that build. Details are in
 CHANGELOG.md under 2.3.0.
