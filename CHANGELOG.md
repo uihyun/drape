@@ -11,6 +11,28 @@ Conventions:
 
 ---
 
+## Unreleased — shoes cut out the way a shoe store shows them
+
+**Footwear cutouts no longer come out mirrored.** The crop prompt asked for
+"a matching left + right pair, side by side, same side-profile angle". The
+model read that as two outer side profiles facing opposite ways, giving
+heel-to-heel loafers. The rule now asks for the shoe-store listing view: both
+shoes facing the SAME direction (toes left), three-quarter side angle, the
+second shoe set slightly behind; never mirrored, toe-to-toe, heel-to-heel or
+sole-up. The pair-of-exactly-two rule is unchanged.
+
+The first version of the new rule fixed the angle but **changed the shoe**:
+penny loafers came back as lace-up derbies (a new angle let the model redraw
+the shoe). So it now also says that changing the angle must not change the
+shoe: keep the type and construction, never add laces to a loafer or
+slip-on, keep straps, buckles, toe shape, sole and heel.
+
+Verified on the 8 Oct OOTD's black penny loafers (item
+`dt_1791499791096_x7flhm`): two runs, both same-direction penny loafers,
+consistent with each other and with the source photo (strap, no laces). The
+item keeps the corrected cutout. The 260 existing footwear cutouts are left
+as they are; new crops follow the new rule.
+
 ## Unreleased — link pieces right on the outfit page
 
 - **The item page's Boards row shows the whole board shrunk down**, as the

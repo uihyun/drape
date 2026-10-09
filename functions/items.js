@@ -384,9 +384,18 @@ in the standard catalog product view for its category:
   an invisible body. Top of the garment at the top of the frame, hem
   at the bottom. Symmetric and centered.
 - Footwear (shoes, boots, sandals, heels): ALWAYS render exactly TWO —
-  a matching left + right pair, side by side, same side-profile angle.
-  Never one shoe, never three or more. If the photo shows only a single
-  shoe, still output the matching pair (two). A pair is two, never three.
+  one matching pair, shown the way a shoe store lists it: BOTH shoes
+  facing the SAME direction (toes pointing to the left), seen from a
+  three-quarter side angle, the second shoe set slightly behind and
+  offset from the first so both are visible. NEVER mirrored: no
+  toe-to-toe or heel-to-heel arrangement, no shoes pointing in opposite
+  directions, no soles facing the camera. Changing the ANGLE must not
+  change the SHOE: keep its exact type and construction from the photo —
+  a slip-on/loafer stays a slip-on (never add laces), keep straps,
+  buckles, laces, toe shape, sole thickness and heel exactly as shown.
+  Never one shoe, never three or
+  more. If the photo shows only a single shoe, still output the matching
+  pair (two). A pair is two, never three.
 - Bags: upright, frontal, handles up.
 - Accessories (hats, jewelry, belts, glasses): centered, in the angle
   that shows the design most clearly — for caps and hats, the front.
@@ -408,7 +417,10 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
   the output pants MUST reach the ankle — NEVER shorten them into shorts
   or crops. If sleeves are long, keep them full-length to the wrist —
   NEVER shorten or crop sleeves.
-- Footwear: output EXACTLY TWO shoes forming ONE matching left+right pair.
+- Footwear: output EXACTLY TWO shoes forming ONE matching pair, BOTH
+  pointing the SAME direction (toes left), never mirrored or heel-to-heel.
+  Same shoe TYPE as the photo: never add laces to a loafer or slip-on,
+  never turn a boot into a shoe or a shoe into a boot.
   Never one, never three or more — even if the input shows a single shoe.
 - Reproduce the exact shape, proportions, color, print, and fabric texture
   of the input. Fill ~80% of the frame — do not render the item small.
