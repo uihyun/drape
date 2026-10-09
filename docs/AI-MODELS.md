@@ -94,6 +94,23 @@ Avoid: the whole 2.5 family (old; `gemini-2.5-flash-image` shuts down
 Estimated effect at today's volume: text is already small, so (1) is mostly
 "newer at half price"; (2) halves the largest per-call cost.
 
+## A/B results — 2026-10-09
+
+Run with `functions/test-model-ab.js`, which drives the real production
+functions with writes blocked. Data: 10 items (with production focus), 5
+OOTDs, 4 stylist personas on one closet, and 3 try-ons on one identity photo.
+The report is at `.crop-ab/model-ab/2026-10-09-merged/report.html`
+(gitignored, holds personal photos).
+
+| Job | A (current) | B (candidate) | Avg time A → B | Verdict |
+|---|---|---|---|---|
+| vision (tagging, OOTD analysis, stylist) | `gemini-3.5-flash` | `gemini-3.8-flash` | OOTD 7.2 → 12.5s · chat 22.8 → 32.2s* | **Switch.** Same or better quality (OOTD pieces slightly more complete; four personas stay distinct), −50% / −58% price. Cost: 30–80% slower replies |
+| imageCrop | `gemini-3.1-flash-lite-image` | `gemini-nano-banana-2.1` | 4.5 → 12.5s | **Keep A.** Similar quality at the same price, B is 2.7× slower and dropped the loafers' penny strap |
+| imageTryon | `gemini-3.1-flash-image` | `gemini-nano-banana-2.1` | 9.8 → 18.8s | **Hold.** B's face is slightly closer, but in 1/3 it kept the identity photo's background (café table) and seated pose. 2× slower. Re-test with a background-normalising prompt before switching |
+
+\* Chat times are inflated on both sides: with writes blocked, the style
+profile was rebuilt on every call.
+
 ## How to switch / roll back
 
 /admin → Config → models. Set `vision`, `imageCrop` or `imageTryon` (and
