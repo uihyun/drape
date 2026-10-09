@@ -563,7 +563,6 @@ export const ja = {
   stylistChipDate: 'デートの服',
   stylistChipWeekend: '楽な週末コーデ',
   stylistTyping: '{name}がコーデを考えています…',
-  stylistLatelyLoading: '最近のスタイルを確認中…',
   stylistChatPlaceholder: '{name}にメッセージ',
   stylistChatSend: '送信',
   stylistArchive: '以前の会話',

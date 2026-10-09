@@ -88,7 +88,8 @@ open. Replay any time with `?tour=1`.
   device location (asked once) or a city search. Next App Store submission:
   add Coarse Location to the privacy labels.
 - **Stylist chat** replaces "Style me": one thread per persona per day, 10
-  free messages, and a day card with the weather and a "lately" line.
+  free messages, and a day card with the weather. (The "lately" line was
+  removed on 9 Oct; see CHANGELOG.)
 - **Boards:** "Make a board" on outfits, plus worn-this-week/month boards.
 - **Not yet seen with real data:**
   - the first-run location prompt on a device

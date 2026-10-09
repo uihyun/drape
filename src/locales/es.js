@@ -565,7 +565,6 @@ export const es = {
   stylistChipDate: 'Una cita esta noche',
   stylistChipWeekend: 'Un look cómodo de fin de semana',
   stylistTyping: '{name} está armando looks…',
-  stylistLatelyLoading: 'Revisando tu estilo reciente…',
   stylistChatPlaceholder: 'Escribe a {name}',
   stylistChatSend: 'Enviar',
   stylistArchive: 'Conversaciones anteriores',

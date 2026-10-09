@@ -148,14 +148,9 @@ async function listArchive(uid, persona, { exclude } = {}) {
     .slice(0, 60);
 }
 
-// The "lately" line (how they've been dressing), in the app language.
-async function lately() {
-  const { data } = await httpsCallable(functions, 'stylistLately')({ lang: currentLang() });
-  return data?.lately || '';
-}
 
 export const StylistService = {
   recommend, verdict, rateRec, saveLook, unsaveLook, setLookBoard, subscribeSavedLooks,
-  chat, subscribeThread, listArchive, lately,
+  chat, subscribeThread, listArchive,
 };
 export default StylistService;

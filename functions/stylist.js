@@ -167,21 +167,17 @@ function cleanOutfits(raw, inventory, max) {
 // portrait. Incremental on purpose: prompt = previous summary + deltas, so
 // cost stays flat as history grows. Refreshed lazily from styleRecommend
 // when stale; safe to call concurrently (last write wins, content converges).
-async function ensureStyleProfile(uid, genAI, { force = false, lang = null } = {}) {
+async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   const ref = db().collection('users').doc(uid).collection('private').doc('styleProfile');
   const snap = await ref.get();
   const prev = snap.exists ? snap.data() : null;
   const fresh = prev?.updatedAt?.toMillis && (Date.now() - prev.updatedAt.toMillis() < PROFILE_TTL_MS);
-  // `lately` is shown to the user, so it must be in their language — a
-  // language switch rebuilds it even inside the TTL.
-  const wantLang = lang || prev?.latelyLang || 'en';
-  const langMoved = !!(prev && lang && prev.latelyLang !== lang);
-  if (fresh && !force && !langMoved) return prev;
+  if (fresh && !force) return prev;
 
   // Past the TTL, only pay for a re-summary if the inputs actually moved.
   // The TTL alone regenerated identical text for users who added nothing
   // (owner, 2026-09-16) — a wasted model call on every stylist run.
-  if (prev && !force && !langMoved) {
+  if (prev && !force) {
     // New closet pieces OR new outfits/OOTDs count: "how you've been
     // dressing" is mostly read off what they log, not what they own.
     const [latest, latestLook] = await Promise.all([
@@ -238,8 +234,7 @@ async function ensureStyleProfile(uid, genAI, { force = false, lang = null } = {
   });
   const prompt = [
     'You maintain a compact style profile for a fashion app user. Update it from the data below.',
-    'Return JSON: {"summary": string (max 1500 chars, 3rd person, concrete: silhouettes, colors, moods they gravitate to and avoid; note owned-vs-wishlist gaps), "lately": string, "topStyles": string[] (max 5), "topColors": string[] (max 5), "avoidList": string[] (max 5)}.',
-    `"lately" is shown TO the user at the top of their stylist chat: 2 short sentences in ${langLabel(wantLang)}, second person, warm and specific, about how they have actually been dressing recently (read the RECENT LOOKS/OOTDS — the pieces, colours and moods that keep coming back, and how they dress for the temperature when tempC is there). Name real patterns, never generic praise, never criticise. If there are no recent looks, say what their closet leans toward instead.`,
+    'Return JSON: {"summary": string (max 1500 chars, 3rd person, concrete: silhouettes, colors, moods they gravitate to and avoid; note owned-vs-wishlist gaps), "topStyles": string[] (max 5), "topColors": string[] (max 5), "avoidList": string[] (max 5)}.',
     'Weigh signals: stated preferences (highest), thumbs on try-ons, what they log as daily outfits, then closet composition.',
     prev?.summary ? `PREVIOUS SUMMARY:\n${prev.summary}` : 'PREVIOUS SUMMARY: (none — first build)',
     stated ? `STATED PREFERENCES (authoritative): ${JSON.stringify(stated).slice(0, 1200)}` : '',
@@ -259,8 +254,6 @@ async function ensureStyleProfile(uid, genAI, { force = false, lang = null } = {
   }
   const doc = {
     summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 2000) : (prev?.summary || ''),
-    lately: typeof parsed.lately === 'string' ? parsed.lately.slice(0, 400) : (prev?.lately || ''),
-    latelyLang: wantLang,
     topStyles: Array.isArray(parsed.topStyles) ? parsed.topStyles.slice(0, 5).map(String) : [],
     topColors: Array.isArray(parsed.topColors) ? parsed.topColors.slice(0, 5).map(String) : [],
     avoidList: Array.isArray(parsed.avoidList) ? parsed.avoidList.slice(0, 5).map(String) : [],
@@ -607,7 +600,7 @@ exports.stylistChat = onCall(
     let weather = null;
     try {
       [profile, weather] = await Promise.all([
-        ensureStyleProfile(uid, genAI, { lang }),
+        ensureStyleProfile(uid, genAI),
         place ? fetchDay(place, day).catch(() => null) : null,
       ]);
     } catch (e) {
@@ -710,17 +703,3 @@ exports.stylistChat = onCall(
   },
 );
 
-// The "lately" line at the top of the chat, in the user's language. Free —
-// it's the style profile the chat builds anyway, refreshed only when stale
-// and only when the closet or their logged outfits actually moved.
-exports.stylistLately = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
-  async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
-    const lang = ['en', 'ko', 'ja', 'es', 'fr'].includes(request.data?.lang) ? request.data.lang : 'en';
-    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
-    const p = await ensureStyleProfile(uid, genAI, { lang }).catch(() => null);
-    return { lately: p?.latelyLang === lang ? (p.lately || '') : '' };
-  },
-);

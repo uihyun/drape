@@ -564,7 +564,6 @@ export const fr = {
   stylistChipDate: 'Un dîner en amoureux',
   stylistChipWeekend: 'Une tenue décontractée pour le week-end',
   stylistTyping: '{name} compose des tenues…',
-  stylistLatelyLoading: 'Analyse de votre style récent…',
   stylistChatPlaceholder: 'Écrire à {name}',
   stylistChatSend: 'Envoyer',
   stylistArchive: 'Conversations précédentes',

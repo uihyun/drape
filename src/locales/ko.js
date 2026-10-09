@@ -561,7 +561,6 @@ export const ko = {
   stylistChipDate: '데이트룩',
   stylistChipWeekend: '편한 주말룩',
   stylistTyping: '{name} 님이 코디를 고르는 중…',
-  stylistLatelyLoading: '요즘 스타일 살펴보는 중…',
   stylistChatPlaceholder: '{name} 님에게 메시지',
   stylistChatSend: '보내기',
   stylistArchive: '이전 대화',

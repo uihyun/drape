@@ -15,7 +15,6 @@ import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
 // outfits from the closet, rendered here from item ids (the model never
 // writes card content). Layout borrowed from posture's Darwin coach.
 const CHIPS = ['stylistChipToday', 'stylistChipWork', 'stylistChipDate', 'stylistChipWeekend'];
-const latelyMemo = new Map(); // `${uid}:${lang}` → text, per app session
 
 export function StylistChat({ user, persona, closet, saved, credits, weatherOn = true }) {
   const { t, lang } = useLocale();
@@ -29,7 +28,6 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
   const [err, setErr] = useState('');
   const [rated, setRated] = useState({});             // recId → 'up' | 'down'
   const [archive, setArchive] = useState(null);       // null = closed
-  const [lately, setLately] = useState(() => latelyMemo.get(`${uid}:${lang}`) || '');
   const [wxOpen, setWxOpen] = useState(false);
   const wx = useWeatherPlace(user, { autoLocate: true, enabled: weatherOn });
   const wxDay = useDailyWeatherState(weatherOn ? wx.place : null, today, today);
@@ -45,20 +43,6 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
     return StylistService.subscribeThread(uid, persona.id, viewDay, setMessages);
   }, [uid, persona.id, viewDay]);
 
-  // The "lately" line reads the style profile, which can take a few seconds
-  // to build; a placeholder holds its place so it doesn't appear from nowhere.
-  const [latelyLoading, setLatelyLoading] = useState(false);
-  useEffect(() => {
-    const key = `${uid}:${lang}`;
-    if (latelyMemo.has(key)) { setLately(latelyMemo.get(key)); return undefined; }
-    let alive = true;
-    setLatelyLoading(true);
-    StylistService.lately()
-      .then((l) => { latelyMemo.set(key, l); if (alive) setLately(l); })
-      .catch(() => {})
-      .finally(() => { if (alive) setLatelyLoading(false); });
-    return () => { alive = false; };
-  }, [uid, lang]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -156,13 +140,6 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
             )}
           </div>
           {wxOpen && wx.place === null && <WeatherPlacePicker wx={wx} showWhy onDone={() => setWxOpen(false)} />}
-          {lately ? <p className="schat-lately">{lately}</p> : latelyLoading && (
-            <div className="schat-lately-skel" aria-live="polite">
-              <span className="schat-lately-label">{t('stylistLatelyLoading')}</span>
-              <span className="schat-skel-line" />
-              <span className="schat-skel-line schat-skel-line--short" />
-            </div>
-          )}
         </div>
       ) : (
         <button type="button" className="schat-back" onClick={() => setViewDay(today)}>

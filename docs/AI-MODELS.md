@@ -37,7 +37,7 @@ prompt gained watch / small-item / text-and-logo rules (see CHANGELOG).
 | Item cutout (crop + reshape) | `items.js` `processItem` | `gemini-3.1-flash-lite-image` (`imageCrop`) | 1K | $0.0336 / image | ~$0.034 |
 | OOTD / outfit analysis | `items.js` `analyzeOotd` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.003 |
 | Try-on render | `tryon.js` `virtualTryOn` | `gemini-3.1-flash-image` (`imageTryon`) | 1K | $0.067 / image | ~$0.07 |
-| Stylist chat, recs, verdicts, style profile, "lately" | `stylist.js` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.005 |
+| Stylist chat, recs, verdicts, style profile | `stylist.js` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.005 |
 | Translate-this-post | `translate.js` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.001 |
 | Image moderation (SafeSearch) | `moderation.js` | Cloud Vision `SAFE_SEARCH_DETECTION` | — | 1,000/mo free | ~free |
 | Face blur on outfit refs | `tryon.js` | Cloud Vision `FACE_DETECTION` | — | 1,000/mo free | ~free |

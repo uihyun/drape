@@ -21,18 +21,20 @@ release deepens the 2.x "your stylist" direction rather than starting a new
 one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
 **Coarse Location — App Functionality** to the App Store privacy labels.
 
-### stylist chat: say when the weather and "lately" are on their way
+### stylist chat: the "lately" line is gone; the weather says it's loading
 
-Both used to pop into the day card a beat later with nothing announcing them.
-The "lately" line needs the style profile, which can take a few seconds.
-
-- **Weather:** a spinner chip ("Getting today's weather…", or "Finding your
+- **"Lately" removed** (owner, 9 Oct). This was the "you've been dressing…"
+  sentence under the day's weather. It was something to read rather than act
+  on, and it arrived seconds late (it needs the style profile). The stylist's
+  own greeting and replies already show that it knows you.
+  - `stylistLately` is deleted.
+  - The style-profile prompt no longer writes `lately`.
+  - `ensureStyleProfile` drops its `lang` option, which existed only to
+    rebuild the profile when the language changed.
+- **Weather chip:** a spinner ("Getting today's weather…", or "Finding your
   location…" while the device is asked) shows until the forecast lands.
   `useDailyWeatherState` adds a `loading` flag; `useDailyWeather` keeps its
-  shape for Calendar and OutfitDetail.
-- **Lately line:** a labelled two-line shimmer ("Reading your recent style…")
-  holds its place.
-- Copy is in all five languages.
+  shape for Calendar and OutfitDetail. Copy is in all five languages.
 
 ### credits: one currency, whole-number prices
 
