@@ -156,8 +156,8 @@ black/cream/brown strip.
 found with a local background-removal mask, so a shoulder bag or an
 outstretched arm doesn't pull the crop.
 
-**Text.**
-- No wordmark on the App Store header: Apple sets the icon, which is the
-  wordmark, plus the name and the Get button on it.
-- The Play graphic carries the wordmark on an ink panel, because it can be
-  shown on its own.
+**No wordmark on either asset.** Both stores set the icon, which is the
+wordmark, and the app name right beside the image, so a logo in it says
+"drape" twice. Google also asks to keep text and logos off the edges. The
+Play graphic is the header's middle four (brown, black, cream, cream/pink),
+so the two stores read as one campaign.
