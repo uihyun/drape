@@ -256,6 +256,12 @@ from their closet. The layout follows posture's Darwin coach.
 
 ## Unreleased — glass tab bar
 
+- **Clearer glass, Amex-app style (9 Oct):** fill 62% → 28%, blur 32 → 10px,
+  so what's behind shows as real colour and shape rather than frost.
+  Legibility moved to the labels and icons themselves (a thin white glow), so
+  they stay readable over dark photo areas and colour swatches. Compared at
+  62/40/25% over photos and text before choosing.
+
 **Bottom nav is one glass bar with five labelled slots: Trends · Stylist ·
 (+) · Closet · Settings.** Replaces the three separate Lekondo circles.
 - Glass is CSS (`backdrop-filter: blur(24px) saturate(180%)` over 72% white,
