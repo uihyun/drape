@@ -93,7 +93,15 @@ function subscribeSavedLooks(uid, cb, { max = 12 } = {}) {
   if (!uid) { cb([]); return () => {}; }
   return onSnapshot(
     query(savedLooksRef(uid), orderBy('createdAt', 'desc'), limit(max)),
-    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    // A look saved a moment ago still has a PENDING server timestamp, which
+    // can sort it away from the top until the server answers. Read pending
+    // times as the local estimate and order here too, so a new save lands
+    // first immediately.
+    (snap) => {
+      const ms = (v) => (v?.toMillis ? v.toMillis() : 0);
+      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }));
+      cb(rows.sort((a, b) => ms(b.createdAt) - ms(a.createdAt)));
+    },
     () => cb([]),
   );
 }

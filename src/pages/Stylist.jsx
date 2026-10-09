@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, X, LayoutGrid, Loader2 } from 'lucide-react';
+import { Bookmark, X, LayoutGrid, Loader2, ChevronDown } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { ItemService } from '../services/item-service.js';
@@ -30,6 +30,9 @@ export function Stylist({ user, onSignIn }) {
   const [saved, setSaved] = useState([]);        // looks kept from past recs
   const [shown, setShown] = useState(PAGE);      // "show more" window
   const fits = useFits(user);      // shown once free chat messages are spent
+  // Saved looks start folded (owner, 2026-10-09) — the chat is the page; the
+  // archive opens on demand.
+  const [savedOpen, setSavedOpen] = useState(false);
   const [boardBusy, setBoardBusy] = useState(null);   // saved-look id being turned into a board
   const [boardNote, setBoardNote] = useState(null);   // { id, text } — e.g. still processing
 
@@ -199,8 +202,11 @@ export function Stylist({ user, onSignIn }) {
         }
         return (
         <section className="stylist-saved">
-          <p className="tmag-kicker">{t('stylistSavedTitle')}</p>
-          {mine.slice(0, shown).map((l) => {
+          <button type="button" className="stylist-savedhead" onClick={() => setSavedOpen(!savedOpen)} aria-expanded={savedOpen}>
+            <span className="tmag-kicker">{t('stylistSavedTitle')}</span>
+            <ChevronDown size={16} className="stylist-savedchev" style={{ transform: savedOpen ? 'rotate(180deg)' : 'none' }} />
+          </button>
+          {savedOpen && mine.slice(0, shown).map((l) => {
             const p = STYLIST_PERSONAS.find((x) => x.id === l.persona) || STYLIST_PERSONAS[0];
             const live = (l.itemIds || []).filter((id) => closet?.[id]);
             return (
@@ -262,12 +268,12 @@ export function Stylist({ user, onSignIn }) {
               </article>
             );
           })}
-          {(mine.length > shown || saved.length >= shown + PAGE) && (
+          {savedOpen && (mine.length > shown || saved.length >= shown + PAGE) && (
             <button type="button" className="btn btn-secondary stylist-more" onClick={() => setShown(shown + PAGE)}>
               {t('stylistSavedMore')}
             </button>
           )}
-          {others > 0 && <p className="stylist-guide">{t('stylistSavedOther', { n: others })}</p>}
+          {savedOpen && others > 0 && <p className="stylist-guide">{t('stylistSavedOther', { n: others })}</p>}
         </section>
         );
       })()}

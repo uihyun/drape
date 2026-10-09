@@ -142,6 +142,12 @@ the photo. Now every detected piece on your own outfit has two buttons:
 
 ## Unreleased — stylist chat
 
+- **Saved looks start folded** under each stylist. Tap the header (chevron)
+  to open; "Show more" and the "saved under other stylists" note fold with
+  it. **A new save lands at the top immediately**: a pending server
+  timestamp is read as the local estimate and the list is ordered on the
+  client too, instead of waiting for the server to sort it into place.
+
 **The stylist is now a conversation.** It replaces the one-shot "Style me"
 button in the app. The user says where they're going, the mood, or a piece to
 build around. The stylist answers in its own voice and attaches 0–2 outfits
