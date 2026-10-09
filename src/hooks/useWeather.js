@@ -52,14 +52,21 @@ export function useWeatherPlace(user, { autoLocate = false, enabled = true } = {
 
 // { 'YYYY-MM-DD': {code, meanC, maxC, minC} } for the range; {} until loaded.
 export function useDailyWeather(place, start, end) {
-  const [days, setDays] = useState({});
-  const key = place ? `${place.lat},${place.lon}:${start}:${end}` : null;
+  return useDailyWeatherState(place, start, end).days;
+}
+
+// Same, plus whether the fetch is still out — for screens where the weather
+// arriving a second late would otherwise look like nothing was coming.
+export function useDailyWeatherState(place, start, end) {
+  const [state, setState] = useState({ days: {}, key: null });
+  const key = place && start && end ? `${place.lat},${place.lon}:${start}:${end}` : null;
   useEffect(() => {
-    if (!place || !start || !end) { setDays({}); return undefined; }
+    if (!key) { setState({ days: {}, key: null }); return undefined; }
     let alive = true;
-    WeatherService.getDaily(place, start, end).then((d) => { if (alive) setDays(d); });
+    WeatherService.getDaily(place, start, end).then((d) => { if (alive) setState({ days: d, key }); });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  return days;
+  const loading = !!key && state.key !== key;
+  return { days: loading ? {} : state.days, loading };
 }

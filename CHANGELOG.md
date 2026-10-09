@@ -21,6 +21,19 @@ release deepens the 2.x "your stylist" direction rather than starting a new
 one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
 **Coarse Location — App Functionality** to the App Store privacy labels.
 
+### stylist chat: say when the weather and "lately" are on their way
+
+Both used to pop into the day card a beat later with nothing announcing them.
+The "lately" line needs the style profile, which can take a few seconds.
+
+- **Weather:** a spinner chip ("Getting today's weather…", or "Finding your
+  location…" while the device is asked) shows until the forecast lands.
+  `useDailyWeatherState` adds a `loading` flag; `useDailyWeather` keeps its
+  shape for Calendar and OutfitDetail.
+- **Lately line:** a labelled two-line shimmer ("Reading your recent style…")
+  holds its place.
+- Copy is in all five languages.
+
 ### credits: one currency, whole-number prices
 
 "Fits" are now **credits**: "fit" is also a closet filter, and in Korean it

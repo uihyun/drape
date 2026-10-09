@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Bookmark, ThumbsUp, ThumbsDown, ChevronLeft, ChevronDown } from 'lucide-react';
+import { ArrowUp, Bookmark, ThumbsUp, ThumbsDown, ChevronLeft, ChevronDown, Loader2 } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { StylistService, localDayKey } from '../services/stylist-service.js';
 import { WeatherService } from '../services/weather-service.js';
-import { useWeatherPlace, useDailyWeather } from '../hooks/useWeather.js';
+import { useWeatherPlace, useDailyWeatherState } from '../hooks/useWeather.js';
 import { WeatherBadge } from './WeatherIcon.jsx';
 import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
 
@@ -32,7 +32,11 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
   const [lately, setLately] = useState(() => latelyMemo.get(`${uid}:${lang}`) || '');
   const [wxOpen, setWxOpen] = useState(false);
   const wx = useWeatherPlace(user, { autoLocate: true, enabled: weatherOn });
-  const todayWx = useDailyWeather(wx.place, today, today)[today];
+  const wxDay = useDailyWeatherState(weatherOn ? wx.place : null, today, today);
+  const todayWx = wxDay.days[today];
+  // The place is still being read, the device is being asked, or the forecast
+  // is on its way — say so, or the weather pops in a beat later unannounced.
+  const wxLoading = weatherOn && (wx.place === undefined || wx.locating || wxDay.loading);
   const endRef = useRef(null);
   const isToday = viewDay === today;
 
@@ -41,12 +45,19 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
     return StylistService.subscribeThread(uid, persona.id, viewDay, setMessages);
   }, [uid, persona.id, viewDay]);
 
+  // The "lately" line reads the style profile, which can take a few seconds
+  // to build; a placeholder holds its place so it doesn't appear from nowhere.
+  const [latelyLoading, setLatelyLoading] = useState(false);
   useEffect(() => {
     const key = `${uid}:${lang}`;
-    if (latelyMemo.has(key)) { setLately(latelyMemo.get(key)); return; }
+    if (latelyMemo.has(key)) { setLately(latelyMemo.get(key)); return undefined; }
+    let alive = true;
+    setLatelyLoading(true);
     StylistService.lately()
-      .then((l) => { latelyMemo.set(key, l); setLately(l); })
-      .catch(() => {});
+      .then((l) => { latelyMemo.set(key, l); if (alive) setLately(l); })
+      .catch(() => {})
+      .finally(() => { if (alive) setLatelyLoading(false); });
+    return () => { alive = false; };
   }, [uid, lang]);
 
   useEffect(() => {
@@ -128,6 +139,12 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
         <div className="schat-day">
           <div className="schat-dayhead">
             <span className="schat-daylabel">{t('stylistToday')}</span>
+            {wxLoading && !todayWx && (
+              <span className="schat-daywx is-loading" aria-live="polite">
+                <Loader2 size={13} className="spin" />
+                {t(wx.locating ? 'wxLocating' : 'wxLoading')}
+              </span>
+            )}
             {weatherOn && todayWx && (
               <span className="schat-daywx">
                 <WeatherBadge day={todayWx} unit={unit} size={13} />
@@ -139,7 +156,13 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
             )}
           </div>
           {wxOpen && wx.place === null && <WeatherPlacePicker wx={wx} showWhy onDone={() => setWxOpen(false)} />}
-          {lately && <p className="schat-lately">{lately}</p>}
+          {lately ? <p className="schat-lately">{lately}</p> : latelyLoading && (
+            <div className="schat-lately-skel" aria-live="polite">
+              <span className="schat-lately-label">{t('stylistLatelyLoading')}</span>
+              <span className="schat-skel-line" />
+              <span className="schat-skel-line schat-skel-line--short" />
+            </div>
+          )}
         </div>
       ) : (
         <button type="button" className="schat-back" onClick={() => setViewDay(today)}>
