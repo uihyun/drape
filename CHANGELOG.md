@@ -13,6 +13,19 @@ Conventions:
 
 ## Unreleased — link pieces right on the outfit page
 
+- **Second pass (owner feedback):**
+  - **Shorter buttons:** Add / Link / Change / Use this. The guide is now two
+    explicit lines, each with its button: "[+ Add] cut it out of this photo
+    and add it to your closet" and "[🔗 Link] connect something you already
+    own, from your closet or a board".
+  - **Pieces with a closet suggestion** (a tag-match guess, not a link) offer
+    **Use this** (links the suggestion), Add (the guess may be wrong), and
+    Link (the picker opens with the suggestion preselected).
+  - **The picker has category and colour filters plus Best match / Newest
+    sort**, for both the closet and a board's items. It opens filtered to the
+    piece's category, and it only offers categories and colours that exist in
+    what's being browsed.
+
 Linking used to live behind an unlabeled shirt icon (the "Link what you wore"
 page), and nothing on the outfit said that page could also cut pieces out of
 the photo. Now every detected piece on your own outfit has two buttons:

@@ -7588,7 +7588,27 @@ input:disabled, textarea:disabled, select:disabled {
 .piece-extracting { margin: 0.2rem 0 0.35rem; font-size: 0.76rem; color: var(--accent); }
 
 /* ── Per-piece actions on your own outfit ─────────────────────────── */
-.pieces-guide { margin: -0.25rem 0 0.6rem; font-size: 0.78rem; line-height: 1.45; color: var(--text-secondary); }
+.pieces-guide { list-style: none; margin: -0.25rem 0 0.6rem; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.78rem; line-height: 1.4; color: var(--text-secondary); }
+.pieces-guide li { display: flex; align-items: baseline; gap: 0.45rem; }
+.pieces-guide-key {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.05rem 0.45rem; border: 1px solid var(--border-hover); border-radius: 999px;
+  font-size: 0.72rem; color: var(--text-primary);
+}
+.piece-act.piece-act--primary { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.plink-filters { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; }
+.plink-chips { display: flex; gap: 0.35rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.plink-chips::-webkit-scrollbar { display: none; }
+.plink-chip {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.3rem;
+  border: 1px solid var(--border); border-radius: 999px; background: none;
+  padding: 0.25rem 0.65rem; font: inherit; font-size: 0.76rem; color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+}
+.plink-chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.plink-dot { width: 9px; height: 9px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.12); display: inline-block; }
+.plink-sort { display: flex; gap: 0.75rem; }
+.plink-sortbtn { background: none; border: none; padding: 0; font: inherit; font-size: 0.76rem; color: var(--text-muted); cursor: pointer; }
+.plink-sortbtn.on { color: var(--text-primary); font-weight: 600; }
 .piece-owner-acts { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
 .piece-act {
   display: inline-flex; align-items: center; gap: 0.3rem;

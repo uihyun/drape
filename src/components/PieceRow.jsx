@@ -18,7 +18,8 @@ import { formatPrice } from '../utils/currency.js';
 // }
 // owner = {                       // your own outfit: act on the piece in place
 //   onExtract: () => {},           // cut it out of this photo → closet → linked
-//   onLink:    () => {},           // open the picker to link an item you own
+//   onLink:    (preId) => {},      // open the picker to link an item you own
+//   onUse:     (itemId) => {},     // confirm the closet suggestion as the link
 //   busy?:     boolean,            // extraction request in flight
 // }
 export function PieceRow({ piece, closet, t, sale = null, linkedItems = [], owner = null }) {
@@ -117,16 +118,23 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [], owne
       )}
 
       {owner && (
+        // Three states. Linked → Change. A closet suggestion (a tag-match
+        // GUESS, not a link) → Use this / Add / Link — the guess can be
+        // wrong, so Add stays. Nothing found → Add / Link.
         <div className="piece-owner-acts">
-          {/* One item per piece: once something is linked, + would add a
-              second, so only "change" is offered. */}
+          {!hasLinked && matches.length > 0 && owner.onUse && (
+            <button type="button" className="piece-act piece-act--primary" onClick={() => owner.onUse(matches[0].item.id)} disabled={owner.busy}>
+              <Check size={13} strokeWidth={2.2} />
+              {t('pieceUseThis')}
+            </button>
+          )}
           {!hasLinked && owner.onExtract && (
             <button type="button" className="piece-act" onClick={owner.onExtract} disabled={owner.busy}>
               {owner.busy ? <Loader2 size={13} className="spin" /> : <Plus size={13} strokeWidth={2} />}
               {t('pieceExtract')}
             </button>
           )}
-          <button type="button" className="piece-act" onClick={owner.onLink} disabled={owner.busy}>
+          <button type="button" className="piece-act" onClick={() => owner.onLink(!hasLinked && matches[0] ? matches[0].item.id : null)} disabled={owner.busy}>
             <Link2 size={13} strokeWidth={2} />
             {t(hasLinked ? 'pieceChangeLink' : 'pieceLink')}
           </button>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages, LayoutGrid } from 'lucide-react';
+import { Pencil, Sparkles, Wand2, Loader2, EyeOff, Eye, Trash2, ChevronRight, Heart, Bookmark, Flag, Shirt, Languages, LayoutGrid, Plus, Link2 } from 'lucide-react';
 import { db, analytics, logEvent } from '../firebase.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { BoardService } from '../services/board-service.js';
@@ -584,7 +584,12 @@ export function OutfitDetail({ user, onSignIn }) {
       {piecesShown && (
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
-          {isOwner && !isAnalyzed && <p className="pieces-guide">{t('piecesGuide')}</p>}
+          {isOwner && !isAnalyzed && (
+            <ul className="pieces-guide">
+              <li><span className="pieces-guide-key"><Plus size={12} strokeWidth={2.2} /> {t('pieceExtract')}</span>{t('piecesGuideAdd')}</li>
+              <li><span className="pieces-guide-key"><Link2 size={12} strokeWidth={2.2} /> {t('pieceLink')}</span>{t('piecesGuideLink')}</li>
+            </ul>
+          )}
           {pieceListDisplay.map((piece, i) => (
             <PieceRow
               key={i}
@@ -596,7 +601,8 @@ export function OutfitDetail({ user, onSignIn }) {
               linkedItems={(pieceLinks[i] || []).map(id => itemsById[id]).filter(Boolean)}
               owner={isOwner && !isAnalyzed ? {
                 onExtract: srcPhotoUrl && srcPhotoPath ? () => extractPiece(i, pieceList[i]) : null,
-                onLink: () => setLinkSheet({ idx: i, piece }),
+                onLink: (preId) => setLinkSheet({ idx: i, piece, preId }),
+                onUse: (itemId) => setPieceItem(i, itemId),
                 busy: extractingIdx.has(i),
               } : null}
               // Analyzed look = someone else's pieces → offer "save to
@@ -621,7 +627,7 @@ export function OutfitDetail({ user, onSignIn }) {
         <PieceLinkSheet
           user={user}
           piece={linkSheet.piece}
-          currentId={(pieceLinks[linkSheet.idx] || [])[0] || null}
+          currentId={(pieceLinks[linkSheet.idx] || [])[0] || linkSheet.preId || null}
           onSave={(itemId) => setPieceItem(linkSheet.idx, itemId)}
           onClose={() => setLinkSheet(null)}
         />
