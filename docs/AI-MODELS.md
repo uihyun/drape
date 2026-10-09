@@ -1,7 +1,8 @@
 # AI models — what drape uses, what it costs, what to move to
 
-Checked **2026-10-09**: live `config/models` (no overrides, so the baked
-defaults in `functions/model-config.js` are what runs), every call site, the
+Checked **2026-10-09**: live `config/models` (which then had no overrides;
+it now sets `vision: gemini-3.8-flash`, matching the baked default), every
+call site, the
 Gemini API model list (`v1beta/models`), and the official pricing page
 (ai.google.dev/gemini-api/docs/pricing). Re-check both lists whenever this is
 revisited; Google ships Flash versions every few months.
@@ -75,10 +76,10 @@ Avoid: the whole 2.5 family (old; `gemini-2.5-flash-image` shuts down
 
 ## Recommendations (A/B first, then a config edit)
 
-1. **`vision`: `gemini-3.5-flash` → `gemini-3.8-flash`.** It's newer *and*
+1. **Done 2026-10-09: `vision` `gemini-3.5-flash` → `gemini-3.8-flash`.** It's newer *and*
    cheaper: −50% input / −58% output through 2026, and still cheaper on
    output after the 2027 price change ($7.50 vs $9.00). It covers tagging,
-   OOTD analysis, the stylist and translate. Check before switching:
+   OOTD analysis, the stylist and translate. Checked by the A/B below:
    - tagging JSON still passes `sanitizeTags` on ~20 real items;
    - OOTD analysis pieces/style on ~10 real looks;
    - the four-persona stylist check on one closet.

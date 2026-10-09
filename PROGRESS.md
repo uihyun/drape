@@ -49,12 +49,22 @@ already plays the JEV role. The missing piece is real-time rendering.
 4. **Only then build:** the stylist chat drives the outfit choice (already
    exists); the live view renders it.
 
-## Snapshot — 2026-10-08 (web ahead of the apps; next native build pending)
+## Snapshot — 2026-10-09 (web ahead of the apps; 2.3.0 set, not yet built)
 
 Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
-27 Sep). Everything below is **live on web only** and reaches the apps with the
-next build — bump the version in the three usual places first. Details are in
-CHANGELOG.md under the "Unreleased" headings.
+27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24). The
+version is already bumped in all three places; it just hasn't been built.
+Everything below is **live on web only** until that build. Details are in
+CHANGELOG.md under 2.3.0.
+
+**9 Oct.**
+- Outfit page: per-piece Add, Link, Change and Use this, with a closet/board
+  picker that reuses the closet's Sort & filter.
+- Boards wait for cutouts; saved stylist looks can become boards.
+- Settings: collapsible cards and a weather switch with °C/°F.
+- Crops: shoes as a same-direction pair, plus watch, small-item and
+  text/logo rules.
+- `vision` model is now gemini-3.8-flash (docs/AI-MODELS.md).
 
 **Glass tab bar.** One five-slot bar — Trends · Stylist · (+) · Closet ·
 Settings — with labels, replacing the three floating circles. Stylist and
@@ -77,7 +87,6 @@ open. Replay any time with `?tour=1`.
   free messages, and a day card with the weather and a "lately" line.
 - **Boards:** "Make a board" on outfits, plus worn-this-week/month boards.
 - **Not yet seen with real data:**
-  - the chat UI in a signed-in browser
   - the first-run location prompt on a device
   - the weather snapshot trigger. It fires once a user has a place and an
     outfit is written.

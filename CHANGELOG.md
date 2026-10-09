@@ -11,7 +11,17 @@ Conventions:
 
 ---
 
-## Unreleased — models: vision → gemini-3.8-flash; watch / small-item crops
+## 2.3.0 — glass tab bar, stylist chat, weather, outfit-page linking — version set 9 Oct 2026, not yet built
+
+iOS build 20, Android versionCode 24 (bumped in package.json, build.gradle and
+project.pbxproj on 9 Oct). Everything below has been live on web, and on
+functions for the server halves, since 7–9 Oct. The native build carries the
+client halves to the apps. Owner chose a minor bump over 3.0 because the
+release deepens the 2.x "your stylist" direction rather than starting a new
+one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
+**Coarse Location — App Functionality** to the App Store privacy labels.
+
+### models: vision → gemini-3.8-flash; watch / small-item crops
 
 - **`vision` 3.5-flash → 3.8-flash** (config/models plus code defaults). It
   covers tagging, OOTD analysis, stylist and translate. The A/B on the real
@@ -31,7 +41,7 @@ Conventions:
   - Verified: the watch came out correct and text-free in 4/4 runs, the NY
     cap kept its logo in 4/4, and loafers, sweater and skirt were unchanged.
 
-## Unreleased — shoes cut out the way a shoe store shows them
+### shoes cut out the way a shoe store shows them
 
 **Footwear cutouts no longer come out mirrored.** The crop prompt asked for
 "a matching left + right pair, side by side, same side-profile angle". The
@@ -53,7 +63,7 @@ consistent with each other and with the source photo (strap, no laces). The
 item keeps the corrected cutout. The 260 existing footwear cutouts are left
 as they are; new crops follow the new rule.
 
-## Unreleased — link pieces right on the outfit page
+### link pieces right on the outfit page
 
 - **The item page's Boards row shows the whole board shrunk down**, as the
   board list does, instead of one sticker as a "cover". A backfilled cover
@@ -111,7 +121,7 @@ the photo. Now every detected piece on your own outfit has two buttons:
 - Also fixed: the "Cutting this piece out…" line had been inserted into the
   wishlist popup too.
 
-## Unreleased — boards wait for cutouts; stylist looks → boards
+### boards wait for cutouts; stylist looks → boards
 
 - **"Make a board" waits for extraction.** Pieces just cut out of an outfit
   photo stay `processing` for about 80s; a board made then pinned the whole
@@ -127,7 +137,7 @@ the photo. Now every detected piece on your own outfit has two buttons:
 - **Saved stylist looks → board:** "Make a board" / "Open board" on each saved
   look. Same grid; `savedLooks.boardId` makes the second tap open it.
 
-## Unreleased — settings: weather switch, °C/°F, collapsible cards
+### settings: weather switch, °C/°F, collapsible cards
 
 - **Denser Settings:**
   - Title 1.6 → 1.35rem.
@@ -164,7 +174,7 @@ the photo. Now every detected piece on your own outfit has two buttons:
   two-line explanation became "Photo backgrounds". The weather rows are
   "Weather", "Temperature" and "Weather city", with no explanation paragraph.
 
-## Unreleased — boards from what you wore
+### boards from what you wore
 
 - **"Make a board" on an outfit** (owner, grid icon in the action row). It
   takes the outfit's closet pieces (its `itemIds` plus anything linked under a
@@ -182,7 +192,7 @@ the photo. Now every detected piece on your own outfit has two buttons:
   ~4:5 cutouts) for 1–4 columns. Verified for 1–12 pieces: inside the canvas,
   no overlaps; appending keeps moved stickers in place.
 
-## Unreleased — stylist chat
+### stylist chat
 
 - **Saved looks start folded** under each stylist. Tap the header (chevron)
   to open; "Show more" and the "saved under other stylists" note fold with
@@ -226,7 +236,7 @@ from their closet. The layout follows posture's Darwin coach.
   earlier context.
 - **`styleRecommend`** stays deployed for older app builds.
 
-## Unreleased — weather
+### weather
 
 **Weather on the calendar and on dated outfits; the stylist will use it.**
 - **Source:** Open-Meteo (free, no key). The forecast API covers about the
@@ -274,7 +284,7 @@ from their closet. The layout follows posture's Darwin coach.
   They said "archelier" but were never in the Xcode project, so they never
   shipped.
 
-## Unreleased — glass tab bar
+### glass tab bar
 
 - **Clearer glass, Amex-app style (9 Oct):** fill 62% → 28%, blur 32 → 10px,
   so what's behind shows as real colour and shape rather than frost.
@@ -342,7 +352,7 @@ from their closet. The layout follows posture's Darwin coach.
   Stylist-slot, closet-tabs and Settings steps — the bar's labels already say
   those. Their copy keys stay in the locales.
 
-## Unreleased — personal color
+### personal color
 
 **Personal color as a stated preference.** The stylist page's "My style" panel
 gains a single-select row: Spring / Summer / Autumn / Winter (ko 봄 웜 · 여름 쿨 ·
