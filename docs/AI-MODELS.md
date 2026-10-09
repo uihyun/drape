@@ -25,14 +25,19 @@ revisited; Google ships Flash versions every few months.
 
 ## What runs today
 
+**2026-10-09: `vision` switched 3.5-flash → 3.8-flash** (config/models + code
+default), after the A/B below. Image models unchanged. Same day, the crop
+prompt gained watch / small-item / text-and-logo rules (see CHANGELOG).
+
+
 | Job | Where | Model (config key) | Size | Price (standard) | Per call (approx.) |
 |---|---|---|---|---|---|
-| Item tagging (closed taxonomy) | `items.js` `processItem` | `gemini-3.5-flash` (`vision`) | — | $1.50 in / $9.00 out per 1M | < $0.002 |
+| Item tagging (closed taxonomy) | `items.js` `processItem` | `gemini-3.8-flash` (`vision`) | — | $0.75 in / $3.75 out per 1M (2026) | < $0.001 |
 | Item cutout (crop + reshape) | `items.js` `processItem` | `gemini-3.1-flash-lite-image` (`imageCrop`) | 1K | $0.0336 / image | ~$0.034 |
-| OOTD / outfit analysis | `items.js` `analyzeOotd` | `gemini-3.5-flash` (`vision`) | — | as above | < $0.003 |
+| OOTD / outfit analysis | `items.js` `analyzeOotd` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.003 |
 | Try-on render | `tryon.js` `virtualTryOn` | `gemini-3.1-flash-image` (`imageTryon`) | 1K | $0.067 / image | ~$0.07 |
-| Stylist chat, recs, verdicts, style profile, "lately" | `stylist.js` | `gemini-3.5-flash` (`vision`) | — | as above | < $0.005 |
-| Translate-this-post | `translate.js` | `gemini-3.5-flash` (`vision`) | — | as above | < $0.001 |
+| Stylist chat, recs, verdicts, style profile, "lately" | `stylist.js` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.005 |
+| Translate-this-post | `translate.js` | `gemini-3.8-flash` (`vision`) | — | as above | < $0.001 |
 | Image moderation (SafeSearch) | `moderation.js` | Cloud Vision `SAFE_SEARCH_DETECTION` | — | 1,000/mo free | ~free |
 | Face blur on outfit refs | `tryon.js` | Cloud Vision `FACE_DETECTION` | — | 1,000/mo free | ~free |
 | Background removal (identity refs, OOTD cutouts, alpha) | `items.js`, `tryon.js` | `@imgly/background-removal-node` (local) | — | $0 | $0 |
@@ -49,7 +54,7 @@ Text / vision (per 1M tokens, standard tier):
 |---|---|---|---|
 | `gemini-3.8-flash` | **$0.75** → $1.50 from 2027-01-01 | **$3.75** → $7.50 from 2027-01-01 | Newest, "most intelligent Flash" |
 | `gemini-3.7-flash` / `gemini-3.6-flash` | same as 3.8 | same as 3.8 | Older than 3.8 at the same price, so no reason to pick them |
-| `gemini-3.5-flash` (**ours**) | $1.50 | $9.00 | "Earlier Flash"; now the *expensive* one |
+| `gemini-3.5-flash` (ours until 2026-10-09) | $1.50 | $9.00 | "Earlier Flash"; now the *expensive* one |
 | `gemini-3.5-flash-lite` | $0.30 | $2.50 | Newest Lite; translation / simple data |
 | `gemini-3.1-flash-lite` | $0.25 | $1.50 | Older Lite |
 

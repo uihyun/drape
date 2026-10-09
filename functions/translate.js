@@ -16,7 +16,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const { getModels } = require('./model-config.js');
-const VISION = 'gemini-3.5-flash';   // default; overridable via config/models
+const VISION = 'gemini-3.8-flash';   // default; overridable via config/models
 const LANG_NAMES = { en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French' };
 
 // Which Firestore collection each surface translates, and the free-text shape

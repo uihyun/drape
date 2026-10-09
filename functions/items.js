@@ -36,7 +36,7 @@ const geminiApiKey = defineSecret('GEMINI_API_KEY');
 // model-config.js) — these names remain as the documented defaults.
 const { getModels } = require('./model-config.js');
 const IMAGE_CROP  = 'gemini-3.1-flash-lite-image';
-const VISION      = 'gemini-3.5-flash';   // tagging / analysis / OOTD (GA); moderation moved to Cloud Vision SafeSearch
+const VISION      = 'gemini-3.8-flash';   // tagging / analysis / OOTD (GA); moderation moved to Cloud Vision SafeSearch
 
 // Generated free-text (item names, analysis title/notes/palette names) is
 // emitted in the creator's app language so the closet/analysis feel native in
@@ -399,6 +399,19 @@ in the standard catalog product view for its category:
 - Bags: upright, frontal, handles up.
 - Accessories (hats, jewelry, belts, glasses): centered, in the angle
   that shows the design most clearly — for caps and hats, the front.
+- Watches: the DIAL faces the camera, front-on and fully visible. The
+  band attaches at the 12 and 6 o'clock sides and falls or curves away
+  from the case — it NEVER passes over or behind the dial, and never
+  show the caseback. A classic catalog watch shot.
+- Small items (watches, rings, earrings, necklaces, bracelets,
+  sunglasses): enlarge them to fill ~75% of the frame like every other
+  item — never render them tiny in a big empty canvas.
+- Text and logos: reproduce only what is actually ON the item and
+  legible in the photo — keep a logo you can see (a cap's emblem, a
+  printed tee). Never copy words from the background (signs, banners,
+  backdrops) onto it, and never invent a brand name. If an item is too
+  small in the photo to read its markings (a watch dial on a wrist),
+  leave that surface plain — no text at all.
 
 You MAY rotate, flatten, and re-orient the item to achieve this view.
 You may NOT change length, silhouette, proportions, color, fabric

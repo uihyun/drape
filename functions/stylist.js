@@ -1,6 +1,6 @@
 // === Stylist ===========================================================
 // SPEC-1.6 §B/§D: per-user style profile (compressed taste summary) + the
-// persona-fronted outfit recommender. Text-only gemini-3.5-flash — the third
+// persona-fronted outfit recommender. Text-only gemini-3.8-flash — the third
 // sanctioned Gemini call site (items.js = images/tagging, tryon.js = try-on;
 // CLAUDE.md updated 2026-09-08). No image generation here, ever.
 //
@@ -16,7 +16,7 @@ const { reserveFit, refundFit } = require('./fits.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const { getModels } = require('./model-config.js');
-const MODEL = 'gemini-3.5-flash';   // default; overridable via config/models
+const MODEL = 'gemini-3.8-flash';   // default; overridable via config/models
 
 // Free-per-day allowances, and how many uses ONE fit buys once they're spent.
 // A fit is worth far more than either call — it's an image generation, these

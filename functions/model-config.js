@@ -15,7 +15,7 @@
 const admin = require('firebase-admin');
 
 const DEFAULTS = {
-  vision: 'gemini-3.5-flash',                 // tagging / OOTD analysis / stylist / translate
+  vision: 'gemini-3.8-flash',                 // tagging / OOTD analysis / stylist / translate (3.5 → 3.8 on 2026-10-09: same quality, half price; docs/AI-MODELS.md)
   imageCrop: 'gemini-3.1-flash-lite-image',   // item cutout
   imageCropSize: '1K',
   imageTryon: 'gemini-3.1-flash-image',       // the try-on render

@@ -11,6 +11,26 @@ Conventions:
 
 ---
 
+## Unreleased — models: vision → gemini-3.8-flash; watch / small-item crops
+
+- **`vision` 3.5-flash → 3.8-flash** (config/models plus code defaults). It
+  covers tagging, OOTD analysis, stylist and translate. The A/B on the real
+  functions (`functions/test-model-ab.js`, writes blocked) showed the same or
+  slightly better quality at −50% input / −58% output, but 30–80% slower
+  replies. Image models are unchanged: Nano Banana 2.1 was 2.7× slower for
+  crops at the same price, and for try-on it leaked the identity photo's
+  background in 1 of 3 runs. Details in docs/AI-MODELS.md.
+- **Crop prompt:**
+  - **Watches:** dial front-on, band attached at 12/6 and never crossing the
+    dial, no caseback. Before, Lite drew a watch from behind with the
+    bracelet running through the dial.
+  - **Small items** (watches, jewellery, sunglasses) fill ~75% of the frame.
+  - **Text/logos:** only what's on the item and legible. Never copy
+    background words (a "SHEBOYGAN" event backdrop ended up on the dial
+    twice), never invent a brand, and leave an unreadable dial plain.
+  - Verified: the watch came out correct and text-free in 4/4 runs, the NY
+    cap kept its logo in 4/4, and loafers, sweater and skirt were unchanged.
+
 ## Unreleased — shoes cut out the way a shoe store shows them
 
 **Footwear cutouts no longer come out mirrored.** The crop prompt asked for
