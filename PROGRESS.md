@@ -52,8 +52,12 @@ already plays the JEV role. The missing piece is real-time rendering.
 ## Snapshot — 2026-10-09 (web ahead of the apps; 2.3.0 set, not yet built)
 
 Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
-27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24). The
-version is already bumped in all three places; it just hasn't been built.
+27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24).
+- **Android:** AAB built 9 Oct at
+  `resources/app-store/builds/drape-2.3.0-24.aab` (upload-key signed, SHA-1
+  4F:27…F5:DE).
+- **iOS:** archive from Xcode pending.
+- **Release notes:** in `listing-*.md` → 2.3.0.
 Everything below is **live on web only** until that build. Details are in
 CHANGELOG.md under 2.3.0.
 
