@@ -1,5 +1,7 @@
 # Cost notes — Gemini image generation
 
+> Current model inventory, prices and the switch plan live in **docs/AI-MODELS.md** (checked 2026-10-09). This file is the history of how the image bill was brought down.
+
 Running record of what drives the Google Cloud / Gemini bill and the decisions we've made about it. The dominant variable cost is **Gemini image generation**; everything else (Firestore, Storage, Functions invocations, Flash text/vision) is small at our scale.
 
 ---
@@ -104,7 +106,7 @@ task needs the fashion taxonomy / free-text reasoning; otherwise a dedicated API
 - **DONE — outfit-ref face detection → Cloud Vision `FACE_DETECTION`** (2026-07-01).
   Flash returned unreliable bounding boxes (silent `{x:null}` on clear faces → face
   leak). Cloud Vision is a real detector. ~free (1000/mo), only on outfit-ref.
-- **CANDIDATE — image moderation → Cloud Vision `SAFE_SEARCH_DETECTION`.**
+- **DONE — image moderation → Cloud Vision `SAFE_SEARCH_DETECTION`** (now in `moderation.js`; the note below is the original rationale).
   `functions/moderation.js` `runSfwCheck` currently asks `gemini-3.5-flash`
   SAFE/UNSAFE on a listing's cover image. SafeSearch is purpose-built NSFW scoring
   (adult/violence/racy/…), cheaper + more reliable, same free tier, runs only on
