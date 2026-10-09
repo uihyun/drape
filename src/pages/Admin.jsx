@@ -386,8 +386,10 @@ function Overview() {
         );
       })()}
 
-      {data.tryon?.entry?.length > 0 && (() => {
-        const rows = data.tryon.entry;
+      {data.tryon?.entry?.some((r) => r.from !== 'unknown') && (() => {
+        // Try-ons from before entryFrom shipped (21 Sep 2026) have no path, so
+        // they say nothing about doors and would only swamp the shares.
+        const rows = data.tryon.entry.filter((r) => r.from !== 'unknown');
         const total = rows.reduce((n, r) => n + r.total, 0);
         // Human names for the `from` tags stamped in tryon.js. An unmapped
         // tag renders raw rather than disappearing.
@@ -404,7 +406,6 @@ function Overview() {
           history: 'try-on tab header',
           history_empty: 'try-on tab (empty state)',
           direct: 'direct / back',
-          unknown: 'before tracking shipped',
         };
         const max = Math.max(1, ...rows.map((r) => r.total));
         return (
@@ -412,7 +413,7 @@ function Overview() {
             <h3 className="adm-h3">
               Try-on entry paths{' '}
               <span className="adm-muted">
-                (real users only — where a try-on was actually started from)
+                (real users only — where a try-on was actually started from; recorded since 21 Sep 2026)
               </span>
             </h3>
             <div className="adm-tablewrap">

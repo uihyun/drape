@@ -21,6 +21,13 @@ release deepens the 2.x "your stylist" direction rather than starting a new
 one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
 **Coarse Location — App Functionality** to the App Store privacy labels.
 
+### admin: try-on entry paths count only tracked try-ons
+
+The table dropped the "before tracking shipped" row: 330 try-ons from before
+`entryFrom` existed (21 Sep 2026). Their door is unknown, and they made up 90%
+of the shares, which hid the real split. Shares are now over tracked try-ons
+only, and the heading says "recorded since 21 Sep 2026". Web only.
+
 ### models: vision → gemini-3.8-flash; watch / small-item crops
 
 - **`vision` 3.5-flash → 3.8-flash** (config/models plus code defaults). It
