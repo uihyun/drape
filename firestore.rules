@@ -25,22 +25,32 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
 
-      // followerCount/followingCount are server-only; the "fit" economy fields
-      // (daily quota, bonus balance, invite attribution + code) are ALSO
-      // server-authoritative — the client reads them for display but must never
-      // write them, or it could mint itself unlimited try-ons.
+      // followerCount/followingCount are server-only; the credit wallet
+      // (functions/credits.js: daily counter, balance, the fit* mirror for 2.2.1,
+      // the retired style* stylist counters, invite attribution + code) is ALSO
+      // server-authoritative — the client reads it for display but must never
+      // write it, or it could mint itself unlimited credits. The style* fields
+      // were missing here until 2026-10-09.
       allow create: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.keys().hasAny(
             ['followerCount', 'followingCount',
-             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount']
+             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount',
+             'creditsV', 'creditDayKey', 'creditDailyUsed', 'creditBalance',
+             'styleRecDayKey', 'styleRecUsed', 'styleRecExtra',
+             'styleVerdictDayKey', 'styleVerdictUsed', 'styleVerdictExtra',
+             'styleChatDayKey', 'styleChatUsed', 'styleChatExtra']
            );
 
       allow update: if request.auth != null
         && request.auth.uid == userId
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['followerCount', 'followingCount',
-             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount']);
+             'fitDayKey', 'fitDailyUsed', 'fitBonus', 'invitedBy', 'inviteCode', 'inviteCount',
+             'creditsV', 'creditDayKey', 'creditDailyUsed', 'creditBalance',
+             'styleRecDayKey', 'styleRecUsed', 'styleRecExtra',
+             'styleVerdictDayKey', 'styleVerdictUsed', 'styleVerdictExtra',
+             'styleChatDayKey', 'styleChatUsed', 'styleChatExtra']);
 
       allow delete: if false;
     }

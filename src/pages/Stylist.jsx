@@ -8,7 +8,7 @@ import { ProfileService } from '../services/profile-service.js';
 import { MyStyleEditor } from '../components/MyStyleEditor.jsx';
 import { StylistChat } from '../components/StylistChat.jsx';
 import { BoardService } from '../services/board-service.js';
-import { useFits } from '../hooks/useFits.js';
+import { useCredits } from '../hooks/useCredits.js';
 import {
   StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona,
 } from '../services/stylist-service.js';
@@ -16,7 +16,7 @@ import {
 // SPEC-1.6 §D — the stylist surface. Personas are explicitly-AI characters
 // (illustrated, never photoreal). Since 2026-10-08 the stylist is a chat
 // (StylistChat): one thread per stylist per day, 0–2 outfits per reply. The
-// try-on CTA is still where fits get spent. Saved looks come in pages.
+// Every message spends one credit and a try-on ten. Saved looks come in pages.
 const PAGE = 3;
 
 export function Stylist({ user, onSignIn }) {
@@ -29,7 +29,7 @@ export function Stylist({ user, onSignIn }) {
   const [styleOpen, setStyleOpen] = useState(false);
   const [saved, setSaved] = useState([]);        // looks kept from past recs
   const [shown, setShown] = useState(PAGE);      // "show more" window
-  const fits = useFits(user);      // shown once free chat messages are spent
+  const credits = useCredits(user);   // the chat shows it once it runs low
   // Saved looks start folded (owner, 2026-10-09) — the chat is the page; the
   // archive opens on demand.
   const [savedOpen, setSavedOpen] = useState(false);
@@ -174,7 +174,7 @@ export function Stylist({ user, onSignIn }) {
         );
       })()}
       {persona && !choosing && personaMeta && (
-        <StylistChat key={persona} user={user} persona={personaMeta} closet={closet} saved={saved} fits={fits} weatherOn={profile?.weatherOn !== false} />
+        <StylistChat key={persona} user={user} persona={personaMeta} closet={closet} saved={saved} credits={credits} weatherOn={profile?.weatherOn !== false} />
       )}
 
       {/* Saved looks — the stylist's picks the user kept. The comment is

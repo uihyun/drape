@@ -4,9 +4,9 @@ import { Camera, LogOut, ChevronRight, ChevronDown, Trash2, AlertTriangle, X, Up
 import { IdentityService } from '../services/identity-service.js';
 import { CameraService } from '../services/camera.js';
 import { shareLink } from '../services/share-service.js';
-import { FitsService } from '../services/fits-service.js';
+import { CreditService } from '../services/credit-service.js';
 import { InviteLink } from '../services/invite-link.js';
-import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
+import { useCredits, DAILY_CREDITS } from '../hooks/useCredits.js';
 import { AlertModal } from '../components/AlertModal.jsx';
 import { ProfileService, HANDLE_RE, BIO_MAX, DISPLAY_NAME_MAX, INSTAGRAM_MAX, LOCATION_MAX } from '../services/profile-service.js';
 import { Avatar } from '../components/Avatar.jsx';
@@ -653,9 +653,9 @@ function IdentitySection({ user, t }) {
 }
 
 function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
-  // Fits: invite-to-earn + redeem-a-code live compactly under Account (the daily
-  // balance itself is shown in the try-on UI, not here, to keep Settings short).
-  const fits = useFits(user);
+  // Credits: the wallet, invite-to-earn and redeem-a-code live compactly under
+  // Account.
+  const fits = useCredits(user);
   // Arrived from an invite link — the code is already in hand, so fill the
   // field instead of making the person read it off a chat bubble.
   const [codeInput, setCodeInput] = useState(() => InviteLink.getPending() || '');
@@ -676,7 +676,7 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   }, [fromLink, scrolled, fits.loaded, fits.redeemed]);
 
   const onInvite = async () => {
-    const msg = FitsService.inviteMessage(fits.inviteCode, t);
+    const msg = CreditService.inviteMessage(fits.inviteCode, t);
     try {
       await shareLink({ title: t('inviteShareTitle'), text: msg });
     } catch (err) { console.warn('invite share failed', err?.message); }
@@ -688,7 +688,7 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
   const onRedeem = async () => {
     setRedeeming(true);
     try {
-      await FitsService.redeemInvite(codeInput);
+      await CreditService.redeemInvite(codeInput);
       setRedeemMsg(t('inviteRedeemed')); setCodeInput('');
       // Redeemed once ever — keeping the stash would re-fill the field on the
       // next visit to Settings and invite a second, doomed attempt.
@@ -733,10 +733,10 @@ function AccountSection({ user, profile, lang, setLang, onSignOut, t }) {
           place the balance shows). */}
       {fits.loaded && (
         <div className="settings-row">
-          <span className="settings-row-label">{t('fitsBalanceLabel')}</span>
+          <span className="settings-row-label">{t('creditsLabel')}</span>
           <span className="settings-row-value">
-            {t('fitsBalanceValue', { left: fits.dailyRemaining, max: FITS_PER_DAY })}
-            {fits.bonus > 0 && ` (+${fits.bonus})`}
+            {t('creditsLeftToday', { left: fits.dailyRemaining, max: DAILY_CREDITS })}
+            {fits.balance > 0 && ` (+${fits.balance})`}
           </span>
         </div>
       )}

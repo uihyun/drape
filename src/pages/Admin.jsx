@@ -445,23 +445,22 @@ function Overview() {
         );
       })()}
 
-      {data.stylist && (() => {
-        const S = data.stylist;
+      {data.credits && (() => {
+        const C = data.credits;
         return (
           <>
             <h3 className="adm-h3">
-              Stylist quota{' '}
-              <span className="adm-muted">(today — these are the numbers that say whether 3/day and 10/day are right)</span>
+              Credits{' '}
+              <span className="adm-muted">(real users — try-on 10, chat message / verdict 1; {C.daily} free a day)</span>
             </h3>
             <div className="adm-tiles">
-              <Tile label="used Style me" value={fmt(S.recUsers)} sub={`${fmt(S.recAtCap)} hit the 3/day cap`} />
-              <Tile label="topped up recs" value={fmt(S.recTopped)} sub={`${fmt(S.recExtraHeld)} held`} />
-              <Tile label="used verdicts" value={fmt(S.verdictUsers)} sub={`${fmt(S.verdictAtCap)} hit the 10/day cap`} />
-              <Tile label="topped up verdicts" value={fmt(S.verdictTopped)} sub={`${fmt(S.verdictExtraHeld)} held`} />
+              <Tile label="spent today" value={fmt(C.spentToday)} sub={`${fmt(C.atDailyLimit)} used all ${C.daily} free`} />
+              <Tile label="holding a balance" value={fmt(C.holding)} sub={`${fmt(C.held)} credits held`} />
+              <Tile label="joined by invite" value={fmt(C.invited)} sub="entered someone's code" />
             </div>
             <p className="adm-note adm-muted">
-              Daily counters reset at the user\'s local midnight, so &quot;used&quot; is today only;
-              top-up balances carry over and are cumulative.
+              &quot;Today&quot; is each user&apos;s own local day. The free allowance resets at their
+              midnight; balances (invites, grants) carry over.
             </p>
           </>
         );

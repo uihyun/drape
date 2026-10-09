@@ -4,7 +4,7 @@
 // Keep all five languages in sync — same sections, same order.
 //
 // Effective date is shown verbatim; bump it whenever the substance changes.
-export const LEGAL_EFFECTIVE = '2026-06-28';
+export const LEGAL_EFFECTIVE = '2026-10-09';
 export const LEGAL_CONTACT = 'hello@uhzlab.com';
 
 export const PRIVACY = {
@@ -84,7 +84,7 @@ export const TERMS = {
     { h: 'Acceptable use', p: `Do not upload content that is illegal, infringing, hateful, sexually explicit, or that depicts other people without their consent. Do not abuse the AI features, attempt to disrupt the service, or scrape data. We may remove content or suspend accounts that violate these rules.` },
     { h: 'AI-generated images', p: `Virtual try-on and analysis results are produced by third-party AI models and may be inaccurate or unrealistic. They are provided "as is" for personal styling use and should not be relied on as a true representation of any product or person.` },
     { h: 'Marketplace', p: `Listings, prices, and transactions are between buyers and sellers. drape is not a party to any sale and is not responsible for the condition, legality, or delivery of listed items. Sellers must have the right to sell what they list.` },
-    { h: 'Credits and purchases', p: `Some features (such as generation credits) may require in-app purchases. Purchases are handled by the App Store or Google Play and are subject to their terms. Credits have no cash value and are non-refundable except where required by law.` },
+    { h: 'Credits and purchases', p: `Some features use credits. You get a free allowance every day, which does not carry over, and can earn more, for example by inviting friends. Credits may also be offered as in-app purchases; those are handled by the App Store or Google Play and are subject to their terms. Credits have no cash value, cannot be transferred or exchanged for money, and are non-refundable except where required by law.` },
     { h: 'Disclaimer & liability', p: `The service is provided "as is" without warranties. To the extent permitted by law, we are not liable for indirect or consequential damages arising from your use of the app.` },
     { h: 'Termination', p: `You may stop using drape and delete your account at any time. We may suspend or terminate access for violations of these Terms.` },
     { h: 'Changes', p: `We may update these Terms; material changes will be reflected by a new effective date. Continued use means you accept the updated Terms.` },
@@ -98,7 +98,7 @@ export const TERMS = {
     { h: '금지 행위', p: `불법·침해·혐오·성적으로 노골적인 콘텐츠, 또는 타인의 동의 없이 타인을 묘사하는 콘텐츠를 업로드하지 마세요. AI 기능을 악용하거나, 서비스를 방해하거나, 데이터를 무단 수집하지 마세요. 규정을 위반하는 콘텐츠는 삭제되거나 계정이 정지될 수 있습니다.` },
     { h: 'AI 생성 이미지', p: `가상 피팅 및 분석 결과는 제3자 AI 모델이 생성하며 부정확하거나 비현실적일 수 있습니다. 개인적 스타일링 용도로 "있는 그대로" 제공되며, 특정 제품이나 인물의 실제 모습으로 신뢰해서는 안 됩니다.` },
     { h: '마켓플레이스', p: `게시글, 가격, 거래는 구매자와 판매자 간의 일입니다. drape는 어떤 거래의 당사자가 아니며 등록 아이템의 상태·적법성·배송에 책임지지 않습니다. 판매자는 등록 아이템을 판매할 권리가 있어야 합니다.` },
-    { h: '크레딧 및 결제', p: `일부 기능(예: 생성 크레딧)은 인앱 구매가 필요할 수 있습니다. 결제는 App Store 또는 Google Play를 통해 처리되며 해당 약관이 적용됩니다. 크레딧은 현금 가치가 없으며 법으로 요구되는 경우를 제외하고 환불되지 않습니다.` },
+    { h: '크레딧 및 결제', p: `일부 기능은 크레딧을 사용합니다. 매일 무료 크레딧이 제공되며(다음 날로 이월되지 않음), 친구 초대 등으로 추가 크레딧을 받을 수 있습니다. 크레딧은 인앱 구매로 제공될 수도 있으며, 결제는 App Store 또는 Google Play를 통해 처리되고 해당 약관이 적용됩니다. 크레딧은 현금 가치가 없고 양도하거나 현금으로 교환할 수 없으며, 법으로 요구되는 경우를 제외하고 환불되지 않습니다.` },
     { h: '면책 및 책임 제한', p: `서비스는 어떠한 보증 없이 "있는 그대로" 제공됩니다. 법이 허용하는 범위 내에서, 당사는 앱 사용으로 인한 간접적·결과적 손해에 책임지지 않습니다.` },
     { h: '해지', p: `이용자는 언제든 drape 사용을 중단하고 계정을 삭제할 수 있습니다. 당사는 본 약관 위반 시 접근을 정지·종료할 수 있습니다.` },
     { h: '변경', p: `본 약관은 변경될 수 있으며, 중요한 변경은 새로운 시행일로 표시됩니다. 변경 후 계속 사용하면 개정된 약관에 동의하는 것으로 간주됩니다.` },
@@ -112,7 +112,7 @@ export const TERMS = {
     { h: '禁止事項', p: `違法・権利侵害・差別的・性的に露骨なコンテンツ、または本人の同意なく他者を描写するコンテンツをアップロードしないでください。AI 機能の悪用、サービスの妨害、データの無断収集を行わないでください。規約に違反するコンテンツは削除され、アカウントが停止される場合があります。` },
     { h: 'AI 生成画像', p: `バーチャル試着および分析結果は第三者の AI モデルによって生成され、不正確または非現実的な場合があります。個人的なスタイリング用途として「現状のまま」提供され、特定の製品や人物の実際の姿として信頼すべきではありません。` },
     { h: 'マーケットプレイス', p: `出品、価格、取引は購入者と販売者の間のものです。drape はいかなる取引の当事者でもなく、出品アイテムの状態・適法性・配送について責任を負いません。販売者は出品アイテムを販売する権利を有している必要があります。` },
-    { h: 'クレジットと購入', p: `一部の機能（生成クレジットなど）はアプリ内購入が必要な場合があります。購入は App Store または Google Play を通じて処理され、それぞれの規約が適用されます。クレジットには現金価値がなく、法律で義務付けられる場合を除き返金されません。` },
+    { h: 'クレジットと購入', p: `一部の機能はクレジットを使用します。毎日無料のクレジットが付与され（翌日には繰り越されません）、友達の招待などで追加のクレジットを獲得できます。クレジットはアプリ内購入として提供される場合もあり、購入は App Store または Google Play を通じて処理され、それぞれの規約が適用されます。クレジットには現金価値がなく、譲渡や換金はできず、法律で義務付けられる場合を除き返金されません。` },
     { h: '免責と責任の制限', p: `サービスはいかなる保証もなく「現状のまま」提供されます。法律が許す範囲において、当社はアプリの利用に起因する間接的・結果的損害について責任を負いません。` },
     { h: '解約', p: `ユーザーはいつでも drape の利用を停止し、アカウントを削除できます。当社は本規約違反の場合、アクセスを停止・終了することがあります。` },
     { h: '変更', p: `本規約は変更される場合があり、重要な変更は新しい発効日で示されます。変更後も利用を続けた場合、改訂後の規約に同意したものとみなされます。` },
@@ -126,7 +126,7 @@ export const TERMS = {
     { h: 'Uso aceptable', p: `No subas contenido ilegal, que infrinja derechos, que incite al odio, sexualmente explícito, ni que muestre a otras personas sin su consentimiento. No abuses de las funciones de IA, no intentes interrumpir el servicio ni extraer datos de forma automatizada. Podemos eliminar contenido o suspender cuentas que incumplan estas reglas.` },
     { h: 'Imágenes generadas por IA', p: `Los resultados de prueba virtual y de análisis los producen modelos de IA de terceros y pueden ser imprecisos o poco realistas. Se ofrecen «tal cual» para uso personal de estilismo y no deben tomarse como una representación fiel de ningún producto ni persona.` },
     { h: 'Mercado', p: `Las publicaciones, los precios y las transacciones son entre compradores y vendedores. drape no es parte de ninguna venta y no se responsabiliza del estado, la legalidad ni la entrega de las prendas publicadas. Quien vende debe tener derecho a vender lo que publica.` },
-    { h: 'Créditos y compras', p: `Algunas funciones (como los créditos de generación) pueden requerir compras dentro de la app. Las compras las gestionan la App Store o Google Play y están sujetas a sus términos. Los créditos no tienen valor en efectivo y no son reembolsables, salvo cuando la ley lo exija.` },
+    { h: 'Créditos y compras', p: `Algunas funciones usan créditos. Recibes una cantidad gratis cada día, que no se acumula, y puedes ganar más, por ejemplo invitando a amistades. Los créditos también pueden ofrecerse como compras dentro de la app; esas compras las gestionan la App Store o Google Play y están sujetas a sus términos. Los créditos no tienen valor en efectivo, no se pueden transferir ni cambiar por dinero y no son reembolsables, salvo cuando la ley lo exija.` },
     { h: 'Exención y responsabilidad', p: `El servicio se ofrece «tal cual», sin garantías. En la medida en que lo permita la ley, no somos responsables de daños indirectos o derivados del uso de la app.` },
     { h: 'Terminación', p: `Puedes dejar de usar drape y eliminar tu cuenta en cualquier momento. Podemos suspender o terminar el acceso por incumplir estos Términos.` },
     { h: 'Cambios', p: `Podemos actualizar estos Términos; los cambios importantes se reflejarán con una nueva fecha de vigencia. Seguir usando la app significa que aceptas los Términos actualizados.` },
@@ -140,7 +140,7 @@ export const TERMS = {
     { h: 'Usage acceptable', p: `N’envoyez pas de contenu illégal, contrefaisant, haineux, sexuellement explicite, ni représentant d’autres personnes sans leur consentement. N’abusez pas des fonctions d’IA, ne perturbez pas le service et n’extrayez pas les données de façon automatisée. Nous pouvons retirer du contenu ou suspendre les comptes qui enfreignent ces règles.` },
     { h: 'Images générées par IA', p: `Les résultats d’essayage virtuel et d’analyse sont produits par des modèles d’IA tiers et peuvent être inexacts ou peu réalistes. Ils sont fournis « en l’état » pour un usage personnel de style et ne doivent pas être considérés comme une représentation fidèle d’un produit ou d’une personne.` },
     { h: 'Marché', p: `Les annonces, les prix et les transactions relèvent des acheteurs et des vendeurs. drape n’est partie à aucune vente et n’est pas responsable de l’état, de la légalité ou de la livraison des pièces mises en vente. Le vendeur doit avoir le droit de vendre ce qu’il publie.` },
-    { h: 'Crédits et achats', p: `Certaines fonctionnalités (comme les crédits de génération) peuvent nécessiter des achats intégrés. Les achats sont gérés par l’App Store ou Google Play et soumis à leurs conditions. Les crédits n’ont aucune valeur monétaire et ne sont pas remboursables, sauf lorsque la loi l’exige.` },
+    { h: 'Crédits et achats', p: `Certaines fonctionnalités utilisent des crédits. Vous recevez chaque jour une dotation gratuite, non reportable, et pouvez en obtenir davantage, par exemple en invitant des amis. Les crédits peuvent aussi être proposés en achats intégrés ; ces achats sont gérés par l’App Store ou Google Play et soumis à leurs conditions. Les crédits n’ont aucune valeur monétaire, ne peuvent être ni cédés ni échangés contre de l’argent, et ne sont pas remboursables, sauf lorsque la loi l’exige.` },
     { h: 'Exclusion et responsabilité', p: `Le service est fourni « en l’état », sans garantie. Dans la limite permise par la loi, nous ne sommes pas responsables des dommages indirects ou consécutifs résultant de votre utilisation de l’application.` },
     { h: 'Résiliation', p: `Vous pouvez cesser d’utiliser drape et supprimer votre compte à tout moment. Nous pouvons suspendre ou résilier l’accès en cas de manquement aux présentes Conditions.` },
     { h: 'Modifications', p: `Nous pouvons mettre à jour les présentes Conditions ; les changements importants seront signalés par une nouvelle date d’entrée en vigueur. Continuer à utiliser l’application vaut acceptation des Conditions mises à jour.` },

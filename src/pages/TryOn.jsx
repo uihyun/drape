@@ -12,10 +12,10 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
+import { useCredits, DAILY_CREDITS, PRICE } from '../hooks/useCredits.js';
 import { analytics, logEvent } from '../firebase.js';
 import { shareLink } from '../services/share-service.js';
-import { FitsService } from '../services/fits-service.js';
+import { CreditService } from '../services/credit-service.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -54,32 +54,33 @@ function FitsRing({ remaining, max, size = 22, stroke = 3 }) {
 export function TryOn({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
-  const fits = useFits(user);
+  const credits = useCredits(user);
   const [outOfFits, setOutOfFits] = useState(false);
-  // Hidden-demand signal: reaching the builder with nothing left to spend.
+  // Hidden-demand signal: reaching the builder without enough for a try-on.
   // The server has never rejected a call (out_of_fits: 0 all-time), so this
-  // is the only way to see people silently hitting the daily cap.
+  // is the only way to see people silently hitting the daily cap. (The event
+  // keeps its old name so the analytics series stays continuous.)
+  const cantAfford = credits.loaded && credits.total < PRICE.tryon;
   useEffect(() => {
-    if (fits.loaded && fits.dailyRemaining === 0 && fits.bonus === 0) {
-      logEvent(analytics, 'out_of_fits', { source: 'enter' });
-    }
-  }, [fits.loaded, fits.dailyRemaining, fits.bonus]);
+    if (cantAfford) logEvent(analytics, 'out_of_fits', { source: 'enter' });
+  }, [cantAfford]);
   // Invite directly from here (opens the share sheet with the user's code) — the
   // whole point of the nudge is to invite, not to hunt through Settings.
   const doInvite = async () => {
-    const msg = FitsService.inviteMessage(fits.inviteCode, t);
+    const msg = CreditService.inviteMessage(credits.inviteCode, t);
     try {
       await shareLink({ title: t('inviteShareTitle'), text: msg });
     } catch (err) { console.warn('invite share failed', err?.message); }
   };
-  // The fits pill (tiny "invite for more" + ring + N/5), tappable → invite share.
-  const fitsChip = (extra = '') => fits.loaded && (
+  // The credits pill (tiny "invite for more" + ring + today's N/50 + balance),
+  // tappable → invite share.
+  const fitsChip = (extra = '') => credits.loaded && (
     <button type="button" className={`tryon-fits-meter ${extra}`} onClick={doInvite}>
       <span className="tryon-fits-invite">{t('inviteForMore')}</span>
-      <FitsRing remaining={fits.dailyRemaining} max={FITS_PER_DAY} size={17} stroke={2.5} />
+      <FitsRing remaining={credits.dailyRemaining} max={DAILY_CREDITS} size={17} stroke={2.5} />
       <span className="tryon-fits-count">
-        {fits.dailyRemaining}/{FITS_PER_DAY}
-        {fits.bonus > 0 && <span className="tryon-fits-bonus">+{fits.bonus}</span>}
+        {credits.dailyRemaining}/{DAILY_CREDITS}
+        {credits.balance > 0 && <span className="tryon-fits-bonus">+{credits.balance}</span>}
       </span>
     </button>
   );
@@ -241,9 +242,10 @@ export function TryOn({ user, onSignIn }) {
 
   const submit = async () => {
     if (!outfitRefId && selected.size === 0) return;
-    // Fits gate — pre-check for instant feedback; the server enforces the real
-    // limit (this can be stale across devices, so the catch below also handles it).
-    if (fits.loaded && fits.total <= 0) { setOutOfFits(true); return; }
+    // Credits gate — pre-check for instant feedback; the server enforces the
+    // real limit (this can be stale across devices, so the catch below also
+    // handles it).
+    if (cantAfford) { setOutOfFits(true); return; }
     if (inFlight.current) return;
     inFlight.current = true;
     setSubmitting(true);
@@ -505,6 +507,7 @@ export function TryOn({ user, onSignIn }) {
                 : selected.size === 1 ? t('startTryOnItem')
                   : t('startTryOnItems', { n: selected.size }))}
           </button>
+          <span className="tryon-cta-cost">{t('creditCost', { n: PRICE.tryon })}</span>
         </div>
       </div>
     </div>

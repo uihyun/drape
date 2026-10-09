@@ -166,9 +166,9 @@ export function OutfitDetail({ user, onSignIn }) {
       const v = await StylistService.verdict({ outfitId: outfit.id, persona: personaId });
       rememberVerdict(key, v);
       setVerdict(v);
-      setQuota({ charged: v.charged, remaining: v.remaining, extra: v.extra });
-      // `charged` and `fit` are the two numbers that decide whether the free
-      // allowance is set right — without them the caps stay guesses forever.
+      setQuota({ left: v.creditsLeft ?? null });
+      // `remaining` (credits left) and `fit` are what say whether the daily
+      // allowance is set right — without them it stays a guess forever.
       logEvent(analytics, 'verdict_ask', {
         persona: personaId,
         charged: v.charged || 'unknown',
@@ -732,16 +732,9 @@ export function OutfitDetail({ user, onSignIn }) {
             </button>
           )}
           {verdictErr && <p className="outfit-verdict-err">{verdictErr}</p>}
-          {!verdictErr && quota && (
-            // Two moments worth a line, and no others: the free ones just ran
-            // out (so the next tap costs something), or one was just spent.
-            quota.charged === 'free' && quota.remaining === 0 ? (
-              <p className="outfit-verdict-note">{t('verdictPaidNote')}</p>
-            ) : quota.charged === 'daily' || quota.charged === 'bonus' ? (
-              <p className="outfit-verdict-note">
-                {t('verdictLeft').replace('{n}', quota.extra ?? 0)}
-              </p>
-            ) : null
+          {/* A verdict costs one credit; worth a line only once credits run low. */}
+          {!verdictErr && quota?.left != null && quota.left <= 10 && (
+            <p className="outfit-verdict-note">{t('creditsLowVerdict', { n: quota.left })}</p>
           )}
         </section>
       )}

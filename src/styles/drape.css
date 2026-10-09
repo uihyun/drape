@@ -3135,6 +3135,12 @@ input[type="search"]::-webkit-search-decoration {
   display: flex; flex-direction: column; gap: 0.5rem;
   width: 100%; max-width: 480px;
 }
+/* The price under the button: try-on is the one action that costs ten, so it
+   says so where you commit, not only on the meter. */
+.tryon-cta-cost {
+  align-self: center; margin-top: -0.2rem;
+  font-size: 0.72rem; color: var(--text-muted);
+}
 /* Fits gauge above the button: one compact, centered, TAPPABLE pill — a tiny
    "invite for more" nudge + the round energy ring + "N/5". Tapping opens the
    invite share. */

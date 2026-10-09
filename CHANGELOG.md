@@ -21,6 +21,48 @@ release deepens the 2.x "your stylist" direction rather than starting a new
 one. Store notes are written at submission (`listing-*.md` → 2.3.0). Add
 **Coarse Location — App Functionality** to the App Store privacy labels.
 
+### credits: one currency, whole-number prices
+
+"Fits" are now **credits**: "fit" is also a closet filter, and in Korean it
+means silhouette. The stylist's "one fit buys 3 or 10 more" blocks are gone.
+
+- **Prices (10x scale):**
+  - try-on and regenerate: 10
+  - chat message, verdict, legacy rec: 1
+- **Allowance and rewards:**
+  - 50 free a day, the same 5 try-ons as before.
+  - Invite reward: +100 for both sides.
+  - The free allowance resets at local midnight; the balance carries over.
+    A charge spends free credits first and can split across the two.
+- **Server:**
+  - `functions/credits.js` replaces `fits.js`: `reserveCredits`,
+    `refundCredits` (exact reversal) and `grantCredits`.
+  - `tryon.js` and `stylist.js` charge through it. Generations also record
+    `creditsCharged`.
+- **Conversion:** on first touch, value for value. `fitBonus` x10 (1,000 fits
+  → 10,000 credits) and unused stylist top-ups +1 each. No notice needed;
+  nobody loses anything.
+- **2.2.1 apps:** keep working. The `fit*` fields are still written as a
+  try-on mirror for their N/5 meter. Stylist responses return
+  `charged: 'credits'`, which their quota lines ignore, and the error token is
+  still `out_of_fits`.
+- **App:**
+  - `useCredits` replaces `useFits`, `useStyleRecs` and `useStyleChatQuota`.
+  - Meter shows N/50 +balance.
+  - "10 credits" sits under the try-on button and next to regenerate.
+  - Chat and verdict mention credits only when 10 or fewer are left.
+- **Copy:** credits wording in all five languages; 12 dead fits keys removed.
+- **Terms:** the credits section now describes the daily allowance, invites,
+  and possible future in-app purchases. Effective date 2026-10-09; static
+  pages regenerated.
+- **Admin:**
+  - The "Stylist quota" tiles were always 0, because they read fields that
+    were never collected. They are replaced by Credits: spent today, used
+    all 50, holding a balance, joined by invite.
+  - Each user's "today" is their own local day.
+- **Rules:** the credit fields, plus the `style*` stylist counters, which a
+  client could previously write, are now server-only.
+
 ### fits / stylist counters: "today" is the server's today
 
 - **Bug:** the remaining-count displays used the device's timezone. The

@@ -12,7 +12,7 @@ import { Comments } from '../components/Comments.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
-import { useFits, FITS_PER_DAY } from '../hooks/useFits.js';
+import { useCredits, DAILY_CREDITS, PRICE } from '../hooks/useCredits.js';
 
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
@@ -35,13 +35,13 @@ export function GenerationDetail({ user }) {
   const [gen, setGen] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
   const regenInFlight = useRef(false);   // same-frame double tap — see TryOn.submit
-  // Regenerate spends a fit like any try-on — show the balance where the
-  // spending happens (the builder's meter isn't visible from here).
-  const fits = useFits(user);
-  const fitsLeftLine = fits.loaded && (
+  // Regenerate costs the same as any try-on — show the price and the wallet
+  // where the spending happens (the builder's meter isn't visible from here).
+  const credits = useCredits(user);
+  const fitsLeftLine = credits.loaded && (
     <p className="muted" style={{ textAlign: 'center', fontSize: '0.8rem', marginTop: 6 }}>
-      {t('fitsLeftToday', { left: fits.dailyRemaining, max: FITS_PER_DAY })}
-      {fits.bonus > 0 && ` (+${fits.bonus})`}
+      {t('creditCost', { n: PRICE.tryon })} · {t('creditsLeftToday', { left: credits.dailyRemaining, max: DAILY_CREDITS })}
+      {credits.balance > 0 && ` (+${credits.balance})`}
     </p>
   );
   const [items, setItems] = useState([]);

@@ -6,7 +6,6 @@ import { useLocale } from '../hooks/useLocale.jsx';
 import { StylistService, localDayKey } from '../services/stylist-service.js';
 import { WeatherService } from '../services/weather-service.js';
 import { useWeatherPlace, useDailyWeather } from '../hooks/useWeather.js';
-import { useStyleChatQuota } from '../hooks/useFits.js';
 import { WeatherBadge } from './WeatherIcon.jsx';
 import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
 
@@ -18,7 +17,7 @@ import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
 const CHIPS = ['stylistChipToday', 'stylistChipWork', 'stylistChipDate', 'stylistChipWeekend'];
 const latelyMemo = new Map(); // `${uid}:${lang}` → text, per app session
 
-export function StylistChat({ user, persona, closet, saved, fits, weatherOn = true }) {
+export function StylistChat({ user, persona, closet, saved, credits, weatherOn = true }) {
   const { t, lang } = useLocale();
   const navigate = useNavigate();
   const uid = user.uid;
@@ -32,7 +31,6 @@ export function StylistChat({ user, persona, closet, saved, fits, weatherOn = tr
   const [archive, setArchive] = useState(null);       // null = closed
   const [lately, setLately] = useState(() => latelyMemo.get(`${uid}:${lang}`) || '');
   const [wxOpen, setWxOpen] = useState(false);
-  const quota = useStyleChatQuota(user);
   const wx = useWeatherPlace(user, { autoLocate: true, enabled: weatherOn });
   const todayWx = useDailyWeather(wx.place, today, today)[today];
   const endRef = useRef(null);
@@ -120,7 +118,9 @@ export function StylistChat({ user, persona, closet, saved, fits, weatherOn = tr
   const askBefore = (i) => (list[i - 1]?.role === 'user' ? list[i - 1].text : '');
   const unit = WeatherService.tempUnit(wx.place);
   const pastWx = !isToday ? (messages || []).find((m) => m.weather)?.weather : null;
-  const outOfFree = quota.loaded && quota.remaining === 0 && quota.extra === 0;
+  // One credit a message. Said only when it starts to matter — a running
+  // price tag on every turn would make people ration the conversation.
+  const lowCredits = credits.loaded && credits.total <= 10;
 
   return (
     <section className="schat">
@@ -239,11 +239,9 @@ export function StylistChat({ user, persona, closet, saved, fits, weatherOn = tr
               ))}
             </div>
           )}
-          {quota.loaded && (quota.remaining <= 3 || outOfFree) && (
+          {lowCredits && (
             <p className="schat-quota">
-              {quota.remaining > 0
-                ? t('stylistChatLeft', { left: quota.remaining })
-                : t('stylistChatPaid', { fits: fits.total })}
+              {credits.total > 0 ? t('creditsLowChat', { n: credits.total }) : t('stylistNoFits')}
             </p>
           )}
           <form className="schat-input" onSubmit={(e) => { e.preventDefault(); send(); }}>

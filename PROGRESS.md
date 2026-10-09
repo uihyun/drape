@@ -65,6 +65,10 @@ CHANGELOG.md under 2.3.0.
 - Crops: shoes as a same-direction pair, plus watch, small-item and
   text/logo rules.
 - `vision` model is now gemini-3.8-flash (docs/AI-MODELS.md).
+- **Credits replace fits.** One wallet with 50 free a day; a try-on costs 10
+  and a chat message or verdict costs 1. Invites give +100 each. Balances were
+  converted x10 on first touch, and 2.2.1 apps keep a mirrored N/5 meter.
+  Verified on @aake: charge and refund for both a try-on and a chat message.
 
 **Glass tab bar.** One five-slot bar — Trends · Stylist · (+) · Closet ·
 Settings — with labels, replacing the three floating circles. Stylist and

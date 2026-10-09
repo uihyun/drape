@@ -21,6 +21,7 @@ const ADMIN_EMAILS = ['uihyunkei@gmail.com'];
 
 // Pure aggregation helpers live in a firebase-free module so they're unit-
 // testable (tests/admin-helpers.test.js).
+const { walletOf, dayKey: creditDayKey, DAILY_CREDITS } = require('./credits.js');
 const { DEV, usageDepth, SEED_EMAIL, ACTIONS, classify, dayKey, emptyTrends, bump, buildTrends, summarizeBuckets, weekKey, personaSunset } = require('./admin-helpers.js');
 
 function assertAdmin(request) {
@@ -88,10 +89,19 @@ async function collectAll(days = ALL_DAYS) {
       location: x.location || '',   // city id — client maps to country/name
       createdAt: dayKey(x.createdAt) || dayKey(id[d.id]?.created),
       lastActiveAt: dayKey(x.lastActiveAt),
+      timezone: x.timezone || '',
     };
   });
+  const wallets = {};   // uid → credit wallet fields, for creditUsage()
   (await db.collection('users').get()).forEach((d) => {
-    if (d.data().src && prof[d.id]) prof[d.id].src = d.data().src;
+    const x = d.data();
+    if (x.src && prof[d.id]) prof[d.id].src = x.src;
+    wallets[d.id] = {
+      creditsV: x.creditsV, creditDayKey: x.creditDayKey, creditDailyUsed: x.creditDailyUsed,
+      creditBalance: x.creditBalance, fitDayKey: x.fitDayKey, fitDailyUsed: x.fitDailyUsed,
+      fitBonus: x.fitBonus, styleRecExtra: x.styleRecExtra, styleVerdictExtra: x.styleVerdictExtra,
+      styleChatExtra: x.styleChatExtra, invitedBy: x.invitedBy || null,
+    };
   });
 
   const bucketOf = (uid) =>
@@ -275,7 +285,7 @@ async function collectAll(days = ALL_DAYS) {
   const buckets = { real: [], seed: [], dev: [] };
   allUids.forEach((uid) => buckets[bucketOf(uid)].push(uid));
 
-  return { id, prof, u, activeDays, buckets, trends, tryon, marketplace, linking, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
+  return { id, prof, u, wallets, activeDays, buckets, trends, tryon, marketplace, linking, topCount, itemMeta, outfitWeekly, windowDays: days, windowFrom: cutDay };
 }
 
 // Recently-active real users (lastActiveAt within `days`).
@@ -291,33 +301,30 @@ function activeWithin(prof, buckets, days) {
 // numbers (totals / activation / summary / tryon / marketplace) come from
 // the latest adminStats snapshot instead of a full-corpus read — the window
 // only has to pay for what it charts (trends + persona sunset).
-// Quota counters live on users/{uid} and are written by reserveStylistUse, so
-// this is the only place that can say whether 10/day and 3/day are the right
-// caps: how many people hit them, and how many paid a fit to go past.
-function stylistUsage(u, buckets) {
-  const real = new Set(buckets.real);
-  const out = {
-    recUsers: 0, recAtCap: 0, recTopped: 0, recExtraHeld: 0,
-    verdictUsers: 0, verdictAtCap: 0, verdictTopped: 0, verdictExtraHeld: 0,
-  };
-  for (const [uid, rec] of Object.entries(u)) {
-    if (!real.has(uid)) continue;
-    const used = rec.styleRecUsed || 0;
-    const vUsed = rec.styleVerdictUsed || 0;
-    const extra = rec.styleRecExtra || 0;
-    const vExtra = rec.styleVerdictExtra || 0;
-    if (used > 0) { out.recUsers++; if (used >= 3) out.recAtCap++; }
-    if (extra > 0) { out.recTopped++; out.recExtraHeld += extra; }
-    if (vUsed > 0) { out.verdictUsers++; if (vUsed >= 10) out.verdictAtCap++; }
-    if (vExtra > 0) { out.verdictTopped++; out.verdictExtraHeld += vExtra; }
+// The credit wallet across real users (functions/credits.js). "Today" is each
+// user's own local day, the same key the server charges against, so "hit the
+// daily limit" means what it says. This is the number that says whether
+// DAILY_CREDITS is right: if nobody ever reaches it, the allowance isn't what
+// drives invites (or, later, purchases).
+function creditUsage(wallets, prof, buckets) {
+  const out = { spentToday: 0, atDailyLimit: 0, holding: 0, held: 0, invited: 0, daily: DAILY_CREDITS };
+  for (const uid of buckets.real) {
+    const w = wallets[uid];
+    if (!w) continue;
+    const today = creditDayKey(prof[uid]?.timezone);
+    const { dailyUsed, balance } = walletOf(w, today);
+    if (dailyUsed > 0) out.spentToday++;
+    if (dailyUsed >= DAILY_CREDITS) out.atDailyLimit++;
+    if (balance > 0) { out.holding++; out.held += balance; }
+    if (w.invitedBy) out.invited++;
   }
   return out;
 }
 
 async function computeOverview(days = ALL_DAYS) {
   const data = await collectAll(days);
-  const { prof, buckets, trends, tryon, marketplace, linking, u } = data;
-  const stylist = stylistUsage(u, buckets);
+  const { prof, buckets, trends, tryon, marketplace, linking, wallets } = data;
+  const credits = creditUsage(wallets, prof, buckets);
 
   if (days < ALL_DAYS) {
     const snap = await admin.firestore().collection('adminStats')
@@ -345,7 +352,7 @@ async function computeOverview(days = ALL_DAYS) {
         // tuned right now, and a day-old copy would be read as today's.
         marketplace,
         linking,
-        stylist,
+        credits,
         trends: buildTrends({
           signups: trends.signups,
           items: trends.items,
@@ -403,7 +410,7 @@ async function computeOverview(days = ALL_DAYS) {
     },
     marketplace,
     linking,
-    stylist,
+    credits,
     trends: buildTrends({
       signups: trends.signups,
       items: trends.items,

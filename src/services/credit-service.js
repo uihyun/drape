@@ -1,10 +1,10 @@
-// Try-on "fits" — client calls. Balance is read live via useFits() straight
+// Credits — client calls. The wallet is read live via useCredits() straight
 // from users/{uid}; this service holds the write actions (invite redemption).
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase.js';
 import { brandOrigin } from './platform-service.js';
 
-export const FitsService = {
+export const CreditService = {
   // The invite message, built in ONE place. Settings and the out-of-fits nudge
   // both send it, and the two copies had already drifted apart by the time the
   // link gained a code — the same per-call-site duplication that welded a
@@ -26,7 +26,7 @@ export const FitsService = {
     return data?.code || '';
   },
 
-  // Redeem an inviter's code (once ever). Credits the INVITER +10 fits.
+  // Redeem an inviter's code (once ever). Both sides get INVITE_REWARD credits.
   // Resolves { ok, reward }; rejects with a Firebase callable error whose
   // `message` is a stable token ('already_redeemed' | 'invalid_code' |
   // 'self_referral' | 'no_code') the caller maps to a localized string.

@@ -15,7 +15,7 @@ Root-caused with data + code + pricing:
 - Only **two** operations generate images, both on `gemini-3-pro-image` (Nano Banana Pro):
   1. **Item-registration crop** (`functions/items.js` `processItem`) — reshapes + crops each uploaded photo into a clean catalog cutout. **595 images in June.**
   2. **Try-on** (`functions/tryon.js` `virtualTryOn`) — the identity-preserving render. **107 images in June.**
-- Everything else is cheap/free: tagging, OOTD/generation analysis, moderation, translation, outfit-ref face-blur all use **`gemini-3.5-flash`** (text/vision, not image output); background removal for identity refs + OOTD photos uses **`@imgly/background-removal-node`** (local, $0).
+- Everything else is cheap/free: tagging, OOTD/generation analysis, moderation, translation, outfit-ref face-blur all use **`gemini-3.8-flash`** (text/vision, not image output); background removal for identity refs + OOTD photos uses **`@imgly/background-removal-node`** (local, $0).
 - **Root cause of the spike:** neither image call passed an output-resolution config, so the model defaulted to **4K** ($0.24/image). 702 images × $0.24 ≈ $168 ≈ the observed SKU. So we were paying the top resolution tier for phone-sized thumbnails.
 
 ### Item volume was REAL users, not seed/test
@@ -92,7 +92,7 @@ Implementation:
 
 ## Deferred levers (revisit as adoption / cost grows)
 
-- **Try-on daily quota + credits + invite rewards.** Cap free try-ons (~5/day), sell/earn credits (e.g. +20 per invite). NOTE: credits/IAP were deliberately **removed** (commit `7f91e98`); reintroduction is greenfield — server-only `credits` field + per-day quota (current `checkRateLimit` is per-minute only) + invite attribution + IAP (RevenueCat/StoreKit/Play Billing + store re-review; app currently declares "no IAP"). **User deferred this ("나중").**
+- **DONE (2026-10-09) — credits.** One wallet in `functions/credits.js`: 50 free/day, try-on 10, chat message / verdict 1, invite +100 each side, carried-over balance. No IAP yet (the app still declares none); when it comes, purchases land in `creditBalance`.
 - **Batch tier for the item crop.** Crop is already background — Flash-Lite batch (−50% again, ~$0.017/img) would halve item cost once more if a 1–15 min "pretty crop appears late" processing window is acceptable.
 - **Skip Pro when the source is already clean.** Retailer/wishlist photos are often already front-on catalog shots; a cheap Flash classify → @imgly cutout for those, Pro reshape only for worn/messy photos.
 

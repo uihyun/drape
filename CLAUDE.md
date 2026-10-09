@@ -27,19 +27,25 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   2026-10-09).** The inventory, prices and switch plan are in
   `docs/AI-MODELS.md`; A/B before any switch, and keep that doc current.
 - **AI model ids are server config, not constants.** `functions/model-config.js` reads `config/models` (5-min cache, strict id/size validation, falls back to baked defaults on anything malformed) and every Gemini call site resolves through `getModels()`. Switching or rolling back a model is an /admin → Config edit — never a functions deploy. Keep new call sites on `getModels()`; the constants in items/tryon/stylist are documentation of the defaults only.
-- **Stylist economics: free daily allowance, then ONE fit buys a block — one
-  wallet.** `reserveStylistUse` in `functions/stylist.js` serves both callables:
-  recommendations 3/day (+3 per fit), verdicts 10/day (+10 per fit). Verdicts get
-  the larger allowance because a recommendation is a deliberate trip to the
-  stylist page while a verdict happens mid-browse, and browsing is what we want
-  more of. 1:1 was charging an image-generation price (a fit) for a Flash text
-  call. **Top-ups carry over and daily allowances don't** — mirroring
-  `fitBonus` vs `fitDailyUsed`; a balance someone paid for must not expire, or
-  topping up near midnight is a trap. Free is always spent before a top-up, and
-  `refundStylistUse` is symmetric with what was granted (refunding a purchase
-  also claws back the unused block).
-  The stylist chat (2026-10-08) is a third use on the same wallet:
-  `CHAT_QUOTA`, 10 messages/day free, then +10 per fit. One message = one use.
+- **Credits are the one currency (owner, 2026-10-09).** `functions/credits.js`
+  owns the wallet. Users see "credits / 크레딧", never "fits", because "fit"
+  is also a closet filter and means silhouette in Korean.
+  - Prices are whole numbers on a 10x scale: a try-on (or regenerate) costs
+    10, and a chat message, verdict or legacy rec costs 1. That roughly
+    follows cost (an image is ~$0.07, a Flash text call ~$0.005).
+  - 50 free a day, reset at local midnight (`profiles.timezone`, synced from
+    the device). Invites give +100 to both sides.
+  - **The free allowance doesn't carry over; the balance always does**
+    (`creditDailyUsed` vs `creditBalance`). Free is spent first, and a charge
+    can split across the two. Something earned or paid for must never expire.
+  - `refundCredits` gives back exactly the charge. The daily part only on the
+    same day.
+  - Legacy fits docs convert on first touch, value for value (`fitBonus` x10,
+    `style*Extra` +1). The `fit*` fields stay written as a mirror because
+    2.2.1 apps draw their N/5 meter from them; drop the mirror once 2.2.1 is
+    gone.
+  - The out-of-credits error token stays `out_of_fits`, because every app
+    build matches on it. `src/hooks/useCredits.js` mirrors `walletOf`.
   Never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
 - **Five locales: en / ko / ja / es / fr.** Spanish is ONE neutral Spanish for
   every market (`tú`, never `vosotros`; vocabulary a reader in Madrid, Mexico

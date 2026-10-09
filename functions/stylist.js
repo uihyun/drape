@@ -4,33 +4,20 @@
 // sanctioned Gemini call site (items.js = images/tagging, tryon.js = try-on;
 // CLAUDE.md updated 2026-09-08). No image generation here, ever.
 //
-// Economics: recommendations are FREE, capped REC_DAILY/day (fitDayKey
-// pattern on the users doc). They exist to manufacture try-on demand — the
-// fit charge happens when the user tries a rec on, in tryon.js as always.
+// Economics: every call here is priced in credits (functions/credits.js) —
+// one credit per chat message, verdict or recommendation, out of the same
+// wallet a try-on spends ten from.
 
 const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { reserveFit, refundFit } = require('./fits.js');
+const { reserveCredits, refundCredits, PRICE } = require('./credits.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const { getModels } = require('./model-config.js');
 const MODEL = 'gemini-3.8-flash';   // default; overridable via config/models
 
-// Free-per-day allowances, and how many uses ONE fit buys once they're spent.
-// A fit is worth far more than either call — it's an image generation, these
-// are Flash text — so 1:1 was charging an image price for a sentence. Topping
-// up in blocks narrows that without inventing a second currency.
-//
-// Verdicts get the bigger allowance on purpose: a recommendation is something
-// you go to the stylist page to do, while a verdict happens mid-browse on
-// someone else's outfit, and browsing is the behaviour we want more of. With
-// the client cache, one use = one NEW outfit.
-const REC_DAILY = 3;
-const REC_TOPUP = 3;
-const VERDICT_DAILY = 10;
-const VERDICT_TOPUP = 10;
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
 const MAX_ITEMS = 150;          // inventory digest cap fed to the model
 
@@ -284,72 +271,18 @@ async function ensureStyleProfile(uid, genAI, { force = false, lang = null } = {
   return doc;
 }
 
-// ── Recommendation quota: 3 free/day, then one FIT per rec ─────────────
-// One wallet, not two: past the free allowance a rec spends the same fit a
-// try-on would (throws 'out_of_fits' when both are dry — same signal the
-// client already knows). Free-slot write and fit charge share a transaction.
-// Free daily allowance → carried-over top-up balance → spend one fit to buy a
-// block of more. The top-up does NOT reset daily: it was paid for, and the one
-// currency in the app that costs something (fitBonus) carries over, so a second
-// rule here would be a trap — top up at 23:59 and watch it vanish.
-async function reserveStylistUse(uid, { dayKey: dayField, usedKey, extraKey, daily, topup }) {
-  const userRef = db().collection('users').doc(uid);
-  const profRef = db().collection('profiles').doc(uid);
-  return db().runTransaction(async (txn) => {
-    const [userSnap, profSnap] = await Promise.all([txn.get(userRef), txn.get(profRef)]);
-    const u = userSnap.exists ? userSnap.data() : {};
-    const tz = (profSnap.exists && profSnap.data().timezone) || 'America/New_York';
-    const today = dayKey(tz);
-    const used = u[dayField] === today ? (u[usedKey] || 0) : 0;
-    const extra = u[extraKey] || 0;
-
-    // Free first — never spend something they bought while a free use is left.
-    if (used < daily) {
-      txn.set(userRef, { [dayField]: today, [usedKey]: used + 1 }, { merge: true });
-      return { charged: 'free', freeRemaining: daily - used - 1, extra };
-    }
-    if (extra > 0) {
-      txn.set(userRef, { [extraKey]: extra - 1 }, { merge: true });
-      return { charged: 'topup', freeRemaining: 0, extra: extra - 1 };
-    }
-    // reserveFit does its own reads — fine here because this branch hasn't
-    // written yet (Firestore txns forbid reads after writes).
-    const fitType = await reserveFit(txn, uid); // 'daily' | 'bonus' | throws out_of_fits
-    txn.set(userRef, { [extraKey]: topup - 1 }, { merge: true });
-    return { charged: fitType, freeRemaining: 0, extra: topup - 1, bought: topup };
-  });
+// One credit per stylist call. A thin wrapper so every call site charges and
+// refunds the same way; the wallet rules live in credits.js.
+function reserveStylistUse(uid, cost) {
+  return db().runTransaction((txn) => reserveCredits(txn, uid, cost));
 }
+const refundStylistUse = refundCredits;
 
-// Undo a reservation when the model call failed. Symmetric with what was
-// granted: a purchase gave `topup` uses for one fit, so refunding it takes the
-// unused remainder back out as well — otherwise one API error leaves the user
-// paid-up but the balance already spent.
-async function refundStylistUse(uid, res, { extraKey, topup }) {
-  if (!res) return;
-  try {
-    if (res.charged === 'topup') {
-      await db().collection('users').doc(uid)
-        .set({ [extraKey]: admin.firestore.FieldValue.increment(1) }, { merge: true });
-      return;
-    }
-    if (res.charged === 'daily' || res.charged === 'bonus') {
-      await db().collection('users').doc(uid)
-        .set({ [extraKey]: admin.firestore.FieldValue.increment(-(topup - 1)) }, { merge: true });
-      await refundFit(uid, res.charged);
-    }
-    // 'free' costs nothing to leave counted — one wasted free use on an error
-    // is not worth a second write and a race with the daily reset.
-  } catch (e) { console.warn('refundStylistUse failed:', uid, e.message); }
+// What older app builds read off a response. `charged: 'credits'` matches none
+// of their branches, so they show no quota line instead of a wrong one.
+function quotaReply(res) {
+  return { remaining: res.left, charged: 'credits', extra: 0, bought: 0, creditsLeft: res.left };
 }
-
-const REC_QUOTA = {
-  dayKey: 'styleRecDayKey', usedKey: 'styleRecUsed', extraKey: 'styleRecExtra',
-  daily: REC_DAILY, topup: REC_TOPUP,
-};
-const VERDICT_QUOTA = {
-  dayKey: 'styleVerdictDayKey', usedKey: 'styleVerdictUsed', extraKey: 'styleVerdictExtra',
-  daily: VERDICT_DAILY, topup: VERDICT_TOPUP,
-};
 
 
 // ── The recommender (SPEC-1.6 §D) ───────────────────────────────────────
@@ -393,13 +326,13 @@ exports.styleVerdict = onCall(
     const cached = await cacheRef.get();
     if (cached.exists) return { ...cached.data(), cached: true };
 
-    const res = await reserveStylistUse(uid, VERDICT_QUOTA);
+    const res = await reserveStylistUse(uid, PRICE.verdict);
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
       profile = await ensureStyleProfile(uid, genAI);
     } catch (e) {
-      await refundStylistUse(uid, res, VERDICT_QUOTA);
+      await refundStylistUse(uid, res);
       throw e;
     }
     const profSnap = await db().collection('profiles').doc(uid).get();
@@ -447,7 +380,7 @@ exports.styleVerdict = onCall(
       const res = await model.generateContent(prompt);
       parsed = JSON.parse(res.response.text());
     } catch (e) {
-      await refundStylistUse(uid, res, VERDICT_QUOTA);
+      await refundStylistUse(uid, res);
       console.error('styleVerdict failed:', e?.message);
       throw new HttpsError('internal', 'VERDICT_FAILED');
     }
@@ -461,7 +394,7 @@ exports.styleVerdict = onCall(
     await cacheRef.set(out);
     return {
       ...out, createdAt: null, cached: false,
-      remaining: res.freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+      ...quotaReply(res),
     };
   },
 );
@@ -521,14 +454,13 @@ exports.styleRecommend = onCall(
       throw new HttpsError('failed-precondition', 'closet_too_small');
     }
 
-    const res = await reserveStylistUse(uid, REC_QUOTA);
-    const { freeRemaining } = res;
+    const res = await reserveStylistUse(uid, PRICE.rec);
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
       profile = await ensureStyleProfile(uid, genAI);
     } catch (e) {
-      await refundStylistUse(uid, res, REC_QUOTA);
+      await refundStylistUse(uid, res);
       throw e;
     }
 
@@ -578,7 +510,7 @@ exports.styleRecommend = onCall(
       const res = await model.generateContent(prompt);
       parsed = JSON.parse(res.response.text());
     } catch (e) {
-      await refundStylistUse(uid, res, REC_QUOTA); // produced nothing → give it back
+      await refundStylistUse(uid, res); // produced nothing → give it back
       throw new HttpsError('internal', 'STYLIST_FAILED', e?.message);
     }
 
@@ -586,7 +518,7 @@ exports.styleRecommend = onCall(
     // hallucinated item id must die here, not render as a broken card.
     const outfits = cleanOutfits(parsed.outfits, inventory, 3);
     if (!outfits.length) {
-      await refundStylistUse(uid, res, REC_QUOTA);
+      await refundStylistUse(uid, res);
       throw new HttpsError('internal', 'STYLIST_EMPTY');
     }
 
@@ -596,13 +528,13 @@ exports.styleRecommend = onCall(
       ask: ask || null,
       lang,
       outfits,
-      charged: res.charged,
+      charged: res.cost,
       profileRev: profile?.rev || 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return {
       recId: recRef.id, persona: personaKey, outfits,
-      remaining: freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+      ...quotaReply(res),
     };
   },
 );
@@ -622,16 +554,8 @@ exports.styleRecommend = onCall(
 //  - Outfits are ids the client renders from its own closet, validated by
 //    cleanOutfits. Any message with outfits also writes a stylistRecs doc,
 //    so 👍/👎, "already proposed", and the admin charts keep working.
-//  - Quota: CHAT_QUOTA on the same wallet — 10 messages a day free, then one
-//    try-on buys 10 more (the verdict economics: a chat turn is a Flash text
-//    call, not an image).
+//  - One credit per message (PRICE.chat), refunded if no reply comes back.
 // styleRecommend stays deployed: older app builds still call it.
-const CHAT_DAILY = 10;
-const CHAT_TOPUP = 10;
-const CHAT_QUOTA = {
-  dayKey: 'styleChatDayKey', usedKey: 'styleChatUsed', extraKey: 'styleChatExtra',
-  daily: CHAT_DAILY, topup: CHAT_TOPUP,
-};
 const CHAT_HISTORY = 10;          // turns of today's thread fed back in
 const CHAT_MAX_TEXT = 400;
 const CHAT_REPLY_MAX_WORDS = 70;
@@ -677,7 +601,7 @@ exports.stylistChat = onCall(
     const owned = inventory.filter((i) => i.kind === 'owned').length;
     const history = historySnap.docs.map((d) => d.data()).reverse();
 
-    const res = await reserveStylistUse(uid, CHAT_QUOTA);
+    const res = await reserveStylistUse(uid, PRICE.chat);
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile = null;
     let weather = null;
@@ -687,7 +611,7 @@ exports.stylistChat = onCall(
         place ? fetchDay(place, day).catch(() => null) : null,
       ]);
     } catch (e) {
-      await refundStylistUse(uid, res, CHAT_QUOTA);
+      await refundStylistUse(uid, res);
       throw e;
     }
 
@@ -735,13 +659,13 @@ exports.stylistChat = onCall(
       const r = await model.generateContent(prompt);
       parsed = JSON.parse(r.response.text());
     } catch (e) {
-      await refundStylistUse(uid, res, CHAT_QUOTA);
+      await refundStylistUse(uid, res);
       console.error('stylistChat failed:', e?.message);
       throw new HttpsError('internal', 'STYLIST_ERROR');
     }
     const reply = String(parsed?.reply || '').trim().slice(0, 900);
     if (!reply) {
-      await refundStylistUse(uid, res, CHAT_QUOTA);
+      await refundStylistUse(uid, res);
       throw new HttpsError('internal', 'STYLIST_EMPTY');
     }
     const outfits = owned >= 3
@@ -755,7 +679,7 @@ exports.stylistChat = onCall(
       recId = recRef.id;
       await recRef.set({
         userId: uid, persona: personaKey, ask: text.slice(0, 200), lang, outfits,
-        charged: res.charged, profileRev: profile?.rev || 0, source: 'chat',
+        charged: res.cost, profileRev: profile?.rev || 0, source: 'chat',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
@@ -781,7 +705,7 @@ exports.stylistChat = onCall(
     return {
       dayKey: day,
       messages: [{ id: userRef.id, ...userMsg }, { id: replyRef.id, ...stylistMsg }],
-      remaining: res.freeRemaining, charged: res.charged, extra: res.extra, bought: res.bought || 0,
+      ...quotaReply(res),
     };
   },
 );
