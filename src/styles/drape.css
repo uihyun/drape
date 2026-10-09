@@ -7595,20 +7595,8 @@ input:disabled, textarea:disabled, select:disabled {
   padding: 0.05rem 0.45rem; border: 1px solid var(--border-hover); border-radius: 999px;
   font-size: 0.72rem; color: var(--text-primary);
 }
-.piece-act.piece-act--primary { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.plink-filters { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; }
-.plink-chips { display: flex; gap: 0.35rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-.plink-chips::-webkit-scrollbar { display: none; }
-.plink-chip {
-  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.3rem;
-  border: 1px solid var(--border); border-radius: 999px; background: none;
-  padding: 0.25rem 0.65rem; font: inherit; font-size: 0.76rem; color: var(--text-secondary); cursor: pointer; white-space: nowrap;
-}
-.plink-chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.plink-dot { width: 9px; height: 9px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.12); display: inline-block; }
-.plink-sort { display: flex; gap: 0.75rem; }
-.plink-sortbtn { background: none; border: none; padding: 0; font: inherit; font-size: 0.76rem; color: var(--text-muted); cursor: pointer; }
-.plink-sortbtn.on { color: var(--text-primary); font-weight: 600; }
+/* A solid button, not a tinted chip — the tint read as "already chosen". */
+.piece-act.piece-act--primary { border-color: var(--accent); background: var(--accent); color: #fff; }
 .piece-owner-acts { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
 .piece-act {
   display: inline-flex; align-items: center; gap: 0.3rem;
@@ -7620,7 +7608,8 @@ input:disabled, textarea:disabled, select:disabled {
 }
 .piece-act:disabled { opacity: 0.55; }
 .plink-sheet { max-height: 82vh; display: flex; flex-direction: column; }
-.plink-tabs { display: flex; gap: 0.4rem; margin: 0.25rem 0 0.75rem; }
+.plink-top { display: flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0.75rem; }
+.plink-tabs { display: flex; gap: 0.4rem; }
 .plink-tab {
   border: 1px solid var(--border); border-radius: 999px; background: none;
   padding: 0.35rem 0.8rem; font: inherit; font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;

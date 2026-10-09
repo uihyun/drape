@@ -20,6 +20,8 @@ import { cityCountry } from '../data/cities.js';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { BoardThumbnail } from '../components/BoardThumbnail.jsx';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { useContentTranslation } from '../hooks/useContentTranslation.js';
 import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
@@ -690,8 +692,10 @@ export function ItemDetail({ user, onSignIn }) {
               <div className="item-used-in-row">
                 {usedIn.outfits.map(o => (
                   <Link key={o.id} to={`/o/${o.id}`} className="item-used-in-card">
-                    {o.coverUrl
-                      ? <img src={o.coverUrl} alt="" loading="lazy" />
+                    {/* An OOTD may have no coverUrl (only its photo) — the
+                        same photo rule as every other outfit card. */}
+                    {outfitCardPhoto(o)
+                      ? <img src={outfitCardPhoto(o)} alt="" loading="lazy" />
                       : <div className="item-card-skeleton" />}
                   </Link>
                 ))}
@@ -706,7 +710,7 @@ export function ItemDetail({ user, onSignIn }) {
                   <Link key={b.id} to={`/boards/${b.id}`} className="item-used-in-card">
                     {b.coverUrl
                       ? <img src={b.coverUrl} alt="" loading="lazy" />
-                      : <div className="item-card-skeleton" />}
+                      : <BoardThumbnail board={b} />}
                   </Link>
                 ))}
               </div>

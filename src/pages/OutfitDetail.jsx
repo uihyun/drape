@@ -299,7 +299,10 @@ export function OutfitDetail({ user, onSignIn }) {
       ...(outfit.itemIds || []).filter((id) => !prev.includes(id) || stillLinked.has(id)),
       itemId,
     ])];
-    await OutfitService.updateOutfit(outfit.id, { itemIds, pieceLinks: nextLinks });
+    // Same cover rule as the link page: everything that lists this outfit by
+    // its cover (item page, share page, moderation) needs one.
+    const cover = outfit.coverUrl || outfit.photoCutUrl || outfit.photoUrl || null;
+    await OutfitService.updateOutfit(outfit.id, { itemIds, pieceLinks: nextLinks, ...(cover && !outfit.coverUrl ? { coverUrl: cover } : {}) });
     // A dated look is a day they wore it — stamp the wear, as the link page does.
     if (outfit.date) {
       await ItemService.recordWear({ itemIds: [itemId], date: outfit.date, ootdId: outfit.id, outfitId: outfit.id }).catch(() => {});
@@ -334,6 +337,7 @@ export function OutfitDetail({ user, onSignIn }) {
       const { id } = await BoardService.createBoard({
         name: outfit.caption || dateLabel || '',
         stickers: BoardService.gridStickers(boardIds),
+        coverUrl: BoardService.coverFor(boardIds.map((x) => itemsById[x])),
         sourceOutfitId: outfit.id,
       });
       await OutfitService.updateOutfit(outfit.id, { boardId: id });

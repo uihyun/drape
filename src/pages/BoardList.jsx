@@ -77,10 +77,15 @@ export function BoardList({ user, onSignIn, embedded = false }) {
       if (existing) {
         const have = new Set((existing.stickers || []).map((x) => x.itemId));
         const add = ids.filter((id) => !have.has(id));
-        if (add.length) await BoardService.updateBoard(existing.id, { stickers: BoardService.addToGrid(existing.stickers || [], add) });
+        if (add.length || !existing.coverUrl) {
+          await BoardService.updateBoard(existing.id, {
+            stickers: BoardService.addToGrid(existing.stickers || [], add),
+            ...(existing.coverUrl ? {} : { coverUrl: BoardService.coverFor(ids.map((x) => itemsById[x])) }),
+          });
+        }
         navigate(`/boards/${existing.id}`);
       } else {
-        const { id } = await BoardService.createBoard({ name, stickers: BoardService.gridStickers(ids), rangeKey: key });
+        const { id } = await BoardService.createBoard({ name, stickers: BoardService.gridStickers(ids), coverUrl: BoardService.coverFor(ids.map((x) => itemsById[x])), rangeKey: key });
         navigate(`/boards/${id}`);
       }
     } catch (e) {

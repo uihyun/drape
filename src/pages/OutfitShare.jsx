@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { Comments } from '../components/Comments.jsx';
+import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 
 // Public read-only outfit page — for sharing outside the app.
@@ -48,9 +49,10 @@ export function OutfitShare({ user, onSignIn }) {
         </p>
       )}
 
-      {outfit.coverUrl && (
+      {/* OOTDs often carry only their photo, no coverUrl. */}
+      {outfitCardPhoto(outfit) && (
         <div className="outfit-cover-large">
-          <img src={outfit.coverUrl} alt="" />
+          <img src={outfitCardPhoto(outfit)} alt="" />
         </div>
       )}
 

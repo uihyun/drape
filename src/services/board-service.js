@@ -66,6 +66,13 @@ function gridCells(n) {
   return cells;
 }
 
+// The cover every list surface shows for a board (item page, admin,
+// moderation reads it too) — the first piece's cutout, like the editor's save.
+export function coverFor(items) {
+  const first = (items || []).find((i) => i && (i.croppedUrl || i.originalUrl));
+  return first ? (first.croppedUrl || first.originalUrl) : null;
+}
+
 export function gridStickers(itemIds) {
   return gridCells(itemIds.length).map((cell, i) => ({
     itemId: itemIds[i], x: cell.x, y: cell.y, scale: Number(cell.scale.toFixed(3)), rotation: 0, z: i + 1,
@@ -290,6 +297,7 @@ export const BoardService = {
   findRangeBoard,
   gridStickers,
   addToGrid,
+  coverFor,
 };
 
 export default BoardService;

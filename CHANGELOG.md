@@ -13,6 +13,26 @@ Conventions:
 
 ## Unreleased — link pieces right on the outfit page
 
+- **Third pass:**
+  - **Covers were missing on everything the new flows made.** Boards from an
+    outfit, a saved look, or a week/month, and outfits linked per piece, were
+    all created without `coverUrl`. The item page's Outfits/Boards rows, the
+    share page, and the moderation trigger all read `coverUrl`, so they showed
+    blank tiles, and moderation skipped those boards. Every creation path now
+    sets a cover: the first piece's cutout for boards, and the photo or
+    cutout for outfits (the link page's rule). The item page and share page
+    also fall back to `outfitCardPhoto` / `BoardThumbnail` when a cover is
+    absent. Backfilled 2 boards and 1 outfit; a re-check found none left.
+  - **"Use this" is a solid green button.** The tinted chip read as
+    "already chosen". Until it's tapped nothing is linked; the suggestion is
+    only a suggestion.
+  - **The picker's Sort & filter is the profile closet's own sheet**, behind
+    one icon with a count badge, and uses the same sort options (moved to
+    `utils/itemSort.js`, shared with Closet). "Best match" is added for this
+    piece. `LookFilterSheet` gained an optional `available` prop, so it only
+    shows the styles, categories, subcategories, colours, seasons and fits
+    present in what's being browsed; other screens are unchanged.
+
 - **Second pass (owner feedback):**
   - **Shorter buttons:** Add / Link / Change / Use this. The guide is now two
     explicit lines, each with its button: "[+ Add] cut it out of this photo

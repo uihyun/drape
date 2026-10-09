@@ -142,7 +142,13 @@ export function LookFilterSheet({
   // something it doesn't have — five of six did exactly that.
   // sortOptions: [{ value, labelKey }].
   sortValue, onSortChange, sortOptions = [],
+  // Optional: { [dimKey]: Set } of the values that actually exist in what's
+  // being browsed. When given, only those chips render and empty dimensions
+  // disappear — a picker over 12 items shouldn't offer 20 colours it can't
+  // match. Omitted = the full vocabulary (every existing screen).
+  available = null,
 }) {
+  const shown = (key, values) => (available ? values.filter((v) => available[key]?.has(v)) : values);
   const { t } = useLocale();
   const { sheetStyle, handleProps } = useSheetDrag(onClose);
   return (
@@ -172,12 +178,12 @@ export function LookFilterSheet({
               </div>
             </div>
           )}
-          {FILTER_DIMS.map(dim => (
+          {FILTER_DIMS.filter(dim => shown(dim.key, dim.values).length > 0).map(dim => (
             <div key={dim.key}>
               <div className="detail-filter-dim">
                 <span className="detail-filter-dim-label">{t(dim.labelKey)}</span>
                 <div className="detail-filter-chips">
-                  {dim.values.map(v => {
+                  {shown(dim.key, dim.values).map(v => {
                     const on = (filters[dim.key] || []).includes(v);
                     return (
                       <button
@@ -195,7 +201,7 @@ export function LookFilterSheet({
               {/* Drill-down: selecting a top category reveals its subcategories
                   right below, so you can narrow to e.g. accessory → hat. */}
               {dim.key === 'category' && (filters.category || []).map(cat => {
-                const subs = SUBCATEGORIES[cat] || [];
+                const subs = shown('subcategory', SUBCATEGORIES[cat] || []);
                 if (!subs.length) return null;
                 return (
                   <div key={`sub-${cat}`} className="detail-filter-dim detail-filter-sub">

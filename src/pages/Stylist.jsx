@@ -91,7 +91,7 @@ export function Stylist({ user, onSignIn }) {
     if (ids.some((id) => closet[id].status !== 'ready')) { setBoardNote({ id: l.id, text: t('boardWaitExtract') }); return; }
     setBoardBusy(l.id);
     try {
-      const { id } = await BoardService.createBoard({ name: l.title || '', stickers: BoardService.gridStickers(ids) });
+      const { id } = await BoardService.createBoard({ name: l.title || '', stickers: BoardService.gridStickers(ids), coverUrl: BoardService.coverFor(ids.map((x) => closet[x])) });
       await StylistService.setLookBoard(user.uid, l.id, id);
       logEvent(analytics, 'stylist_look_board', { persona: l.persona });
       navigate(`/boards/${id}`);
