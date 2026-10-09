@@ -159,5 +159,5 @@ outstretched arm doesn't pull the crop.
 **No wordmark on either asset.** Both stores set the icon, which is the
 wordmark, and the app name right beside the image, so a logo in it says
 "drape" twice. Google also asks to keep text and logos off the edges. The
-Play graphic is the header's middle four (brown, black, cream, cream/pink),
-so the two stores read as one campaign.
+Play graphic is four of the header's six (leather jacket, black dress, cream
+knit, cream cardigan; owner's pick), so the two stores read as one campaign.
