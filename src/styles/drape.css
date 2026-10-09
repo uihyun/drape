@@ -7586,3 +7586,49 @@ input:disabled, textarea:disabled, select:disabled {
    doesn't read as the finished item, and say what's happening. */
 .analyze-match-card.is-proc img { filter: blur(3px) saturate(0.6); transform: scale(1.08); }
 .piece-extracting { margin: 0.2rem 0 0.35rem; font-size: 0.76rem; color: var(--accent); }
+
+/* ── Per-piece actions on your own outfit ─────────────────────────── */
+.pieces-guide { margin: -0.25rem 0 0.6rem; font-size: 0.78rem; line-height: 1.45; color: var(--text-secondary); }
+.piece-owner-acts { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
+.piece-act {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border-hover); border-radius: 999px;
+  background: var(--surface);
+  font: inherit; font-size: 0.78rem; color: var(--text-primary);
+  cursor: pointer;
+}
+.piece-act:disabled { opacity: 0.55; }
+.plink-sheet { max-height: 82vh; display: flex; flex-direction: column; }
+.plink-tabs { display: flex; gap: 0.4rem; margin: 0.25rem 0 0.75rem; }
+.plink-tab {
+  border: 1px solid var(--border); border-radius: 999px; background: none;
+  padding: 0.35rem 0.8rem; font: inherit; font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;
+}
+.plink-tab.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.plink-body { overflow-y: auto; min-height: 9rem; flex: 1; }
+.plink-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; }
+.plink-item {
+  position: relative; aspect-ratio: 4 / 5; padding: 0;
+  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  background: var(--surface-elevated); cursor: pointer;
+}
+.plink-item img { width: 100%; height: 100%; object-fit: contain; }
+.plink-item.on { border: 2px solid var(--accent); }
+.plink-check {
+  position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 999px;
+  background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center;
+}
+.plink-empty { font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 2rem 0; }
+.plink-boards { list-style: none; margin: 0; padding: 0; }
+.plink-boards button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  padding: 0.7rem 0.2rem; background: none; border: none; border-bottom: 1px solid var(--border);
+  font: inherit; font-size: 0.9rem; color: var(--text-primary); text-align: left; cursor: pointer;
+}
+.plink-boardcount { font-size: 0.78rem; color: var(--text-muted); }
+.plink-back {
+  display: inline-flex; align-items: center; gap: 0.2rem; margin-bottom: 0.6rem;
+  background: none; border: none; padding: 0; font: inherit; font-size: 0.85rem; color: var(--accent); cursor: pointer;
+}
+.plink-save { margin-top: 0.75rem; width: 100%; }

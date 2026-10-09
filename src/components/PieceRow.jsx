@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shirt, ExternalLink, Plus, Check, X } from 'lucide-react';
+import { Shirt, ExternalLink, Plus, Check, X, Link2, Loader2 } from 'lucide-react';
 import { matchCloset } from '../utils/itemMatch.js';
 import { formatPrice } from '../utils/currency.js';
 
@@ -16,7 +16,12 @@ import { formatPrice } from '../utils/currency.js';
 //   savedLabel: string,           // button label after save
 //   findSimilar?: boolean,        // show the Find similar link (default true)
 // }
-export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
+// owner = {                       // your own outfit: act on the piece in place
+//   onExtract: () => {},           // cut it out of this photo → closet → linked
+//   onLink:    () => {},           // open the picker to link an item you own
+//   busy?:     boolean,            // extraction request in flight
+// }
+export function PieceRow({ piece, closet, t, sale = null, linkedItems = [], owner = null }) {
   const matches = matchCloset(piece, closet);
   const hasLinked = Array.isArray(linkedItems) && linkedItems.length > 0;
   // A piece just cut out of the photo is 'processing' for a minute or so and
@@ -111,6 +116,23 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
         <span className="piece-match-empty">{t('noClosetMatch')}</span>
       )}
 
+      {owner && (
+        <div className="piece-owner-acts">
+          {/* One item per piece: once something is linked, + would add a
+              second, so only "change" is offered. */}
+          {!hasLinked && owner.onExtract && (
+            <button type="button" className="piece-act" onClick={owner.onExtract} disabled={owner.busy}>
+              {owner.busy ? <Loader2 size={13} className="spin" /> : <Plus size={13} strokeWidth={2} />}
+              {t('pieceExtract')}
+            </button>
+          )}
+          <button type="button" className="piece-act" onClick={owner.onLink} disabled={owner.busy}>
+            <Link2 size={13} strokeWidth={2} />
+            {t(hasLinked ? 'pieceChangeLink' : 'pieceLink')}
+          </button>
+        </div>
+      )}
+
       {open && sale && (
         <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <div className="modal piece-wishlist-modal" onClick={e => e.stopPropagation()}>
@@ -122,7 +144,6 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [] }) {
               <span className="piece-match-cat">{t(`taxonomy.categories.${piece.category}`)}</span>
             )}
             {piece.description && <p className="piece-match-desc">{piece.description}</p>}
-      {extracting && <p className="piece-extracting">{t('pieceExtracting')}</p>}
             <div className="piece-wishlist-actions">
               {sale.findSimilar !== false && (
                 <a href={searchUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">

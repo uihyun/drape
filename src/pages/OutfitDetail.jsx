@@ -13,6 +13,7 @@ import { Comments } from '../components/Comments.jsx';
 import { outfitCardPhoto } from '../utils/outfitPhoto.js';
 import { ShareButton } from '../components/ShareButton.jsx';
 import { PieceRow } from '../components/PieceRow.jsx';
+import { PieceLinkSheet } from '../components/PieceLinkSheet.jsx';
 import { Avatar } from '../components/Avatar.jsx';
 import { SwipeHint } from '../components/SwipeHint.jsx';
 import { OnboardHint } from '../components/OnboardHint.jsx';
@@ -124,6 +125,8 @@ export function OutfitDetail({ user, onSignIn }) {
 
   const [boardBusy, setBoardBusy] = useState(false);
   const [boardMsg, setBoardMsg] = useState('');
+  const [linkSheet, setLinkSheet] = useState(null);          // { idx, piece } for the per-piece picker
+  const [extractingIdx, setExtractingIdx] = useState(() => new Set());
 
   // That day's weather next to the date. The server snapshots it onto dated
   // outfits (what visitors see — the owner's place is private); the owner's
@@ -282,6 +285,40 @@ export function OutfitDetail({ user, onSignIn }) {
   // sourceOutfitId), so the second tap opens the board instead of making
   // another one.
   const boardIds = [...new Set([...(outfit.itemIds || []), ...linkedIdSet])].filter((id) => typeof id === 'string');
+  // Per-piece actions on your own look (2026-10-09), right on this page:
+  //  + : cut the piece out of this photo into the closet and link it;
+  //  Link: pick ONE item you already own (closet or a board) for it.
+  // One item per piece — linking replaces whatever was there.
+  const srcPhotoUrl = outfit.photoUrl || outfit.sourcePhotoUrl || outfit.coverUrl;
+  const srcPhotoPath = outfit.photoPath || outfit.sourcePhotoPath || outfit.coverPath;
+  const setPieceItem = async (idx, itemId) => {
+    const prev = pieceLinks[idx] || [];
+    const nextLinks = { ...pieceLinks, [idx]: [itemId] };
+    const stillLinked = new Set(Object.values(nextLinks).flat());
+    const itemIds = [...new Set([
+      ...(outfit.itemIds || []).filter((id) => !prev.includes(id) || stillLinked.has(id)),
+      itemId,
+    ])];
+    await OutfitService.updateOutfit(outfit.id, { itemIds, pieceLinks: nextLinks });
+    // A dated look is a day they wore it — stamp the wear, as the link page does.
+    if (outfit.date) {
+      await ItemService.recordWear({ itemIds: [itemId], date: outfit.date, ootdId: outfit.id, outfitId: outfit.id }).catch(() => {});
+    }
+    logEvent(analytics, 'piece_linked', { from: 'outfit_detail' });
+  };
+  const extractPiece = async (idx, piece) => {
+    setExtractingIdx((prev) => new Set(prev).add(idx));
+    try {
+      const { id } = await ItemService.createFromExistingPhoto({ photoUrl: srcPhotoUrl, photoPath: srcPhotoPath, detected: piece, owned: true });
+      await setPieceItem(idx, id);
+      logEvent(analytics, 'piece_extracted', { from: 'outfit_detail' });
+    } catch (e) {
+      console.warn('extract piece failed', e?.message);
+    } finally {
+      setExtractingIdx((prev) => { const n = new Set(prev); n.delete(idx); return n; });
+    }
+  };
+
   // Pieces just cut out of the photo are 'processing' for a minute or so; a
   // board made then would pin the whole photo. Wait for every one.
   const boardPending = boardIds.some((id) => itemsById[id] && itemsById[id].status !== 'ready');
@@ -493,7 +530,9 @@ export function OutfitDetail({ user, onSignIn }) {
           never asks — so the strip above, the try-on and the selling all had
           nothing to render. Ask here, where the owner is already looking at the
           outfit, and say what linking is FOR rather than naming the feature. */}
-      {isOwner && !isAnalyzed && items.length === 0 && (
+      {/* Looks with detected pieces link per piece below; this block is for
+          the ones without (made by hand from closet items). */}
+      {isOwner && !isAnalyzed && items.length === 0 && pieceList.length === 0 && (
         <section className="outfit-items outfit-link-prompt">
           <header><h2>{t('linkItemsPrompt')}</h2></header>
           <p className="outfit-link-prompt-body">{t('linkItemsPromptBody')}</p>
@@ -545,6 +584,7 @@ export function OutfitDetail({ user, onSignIn }) {
       {piecesShown && (
         <section className="outfit-pieces">
           <header><h2>{t('piecesInLook')}</h2></header>
+          {isOwner && !isAnalyzed && <p className="pieces-guide">{t('piecesGuide')}</p>}
           {pieceListDisplay.map((piece, i) => (
             <PieceRow
               key={i}
@@ -554,6 +594,11 @@ export function OutfitDetail({ user, onSignIn }) {
               // #3 — the closet items you linked under this piece (shown in
               // place of the tag-match suggestions once they exist).
               linkedItems={(pieceLinks[i] || []).map(id => itemsById[id]).filter(Boolean)}
+              owner={isOwner && !isAnalyzed ? {
+                onExtract: srcPhotoUrl && srcPhotoPath ? () => extractPiece(i, pieceList[i]) : null,
+                onLink: () => setLinkSheet({ idx: i, piece }),
+                busy: extractingIdx.has(i),
+              } : null}
               // Analyzed look = someone else's pieces → offer "save to
               // wishlist" (cropped from this look's photo) like the analyze
               // result screen does. Your own OOTD's pieces are already yours.
@@ -570,6 +615,16 @@ export function OutfitDetail({ user, onSignIn }) {
             />
           ))}
         </section>
+      )}
+
+      {linkSheet && (
+        <PieceLinkSheet
+          user={user}
+          piece={linkSheet.piece}
+          currentId={(pieceLinks[linkSheet.idx] || [])[0] || null}
+          onSave={(itemId) => setPieceItem(linkSheet.idx, itemId)}
+          onClose={() => setLinkSheet(null)}
+        />
       )}
 
       {/* Leftovers: linked items whose category matched no detected piece. */}

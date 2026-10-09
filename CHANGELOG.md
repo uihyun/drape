@@ -11,6 +11,25 @@ Conventions:
 
 ---
 
+## Unreleased — link pieces right on the outfit page
+
+Linking used to live behind an unlabeled shirt icon (the "Link what you wore"
+page), and nothing on the outfit said that page could also cut pieces out of
+the photo. Now every detected piece on your own outfit has two buttons:
+- **+ Add from photo**: cuts the piece out of this photo into the closet and
+  links it, with no save step. The row shows "Cutting this piece out…" until
+  it's ready.
+- **Link** / **Change**: a sheet for picking ONE item you already own, from
+  the closet (same subcategory/category first) or from a board's items. Saving
+  links it to that piece, replacing whatever was there.
+- A one-line guide under "Pieces in this look" says what each button does.
+- Dated looks stamp the wear on the linked item, as the link page did.
+- The big "Link what you wore" block is hidden on looks that have detected
+  pieces. It stays for hand-made outfits, and the shirt-icon page stays for
+  bulk linking.
+- Also fixed: the "Cutting this piece out…" line had been inserted into the
+  wishlist popup too.
+
 ## Unreleased — boards wait for cutouts; stylist looks → boards
 
 - **"Make a board" waits for extraction.** Pieces just cut out of an outfit
