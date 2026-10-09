@@ -7608,7 +7608,8 @@ input:disabled, textarea:disabled, select:disabled {
 }
 .piece-act:disabled { opacity: 0.55; }
 .plink-sheet { max-height: 82vh; display: flex; flex-direction: column; }
-.plink-top { display: flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0.75rem; }
+/* Tabs left, Sort & filter on the right — same place as on the closet. */
+.plink-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.25rem 0 0.75rem; }
 .plink-tabs { display: flex; gap: 0.4rem; }
 .plink-tab {
   border: 1px solid var(--border); border-radius: 999px; background: none;

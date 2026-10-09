@@ -112,6 +112,15 @@ export function PieceLinkSheet({ user, piece, currentId = null, onSave, onClose 
         </button>
         <h3 className="create-sheet-title">{t('pieceLinkTitle', { piece: piece.name || t(`taxonomy.categories.${piece.category}`) })}</h3>
         <div className="plink-top">
+        <nav className="plink-tabs" role="tablist">
+          {['closet', 'boards'].map((k) => (
+            <button key={k} type="button" role="tab" aria-selected={tab === k}
+              className={`plink-tab${tab === k ? ' on' : ''}`}
+              onClick={() => { setTab(k); setBoard(null); setFilters(startFilters()); }}>
+              {t(k === 'closet' ? 'linkFromCloset' : 'linkFromBoard')}
+            </button>
+          ))}
+        </nav>
           {(tab === 'closet' || board) && (
             <button
               type="button"
@@ -123,15 +132,6 @@ export function PieceLinkSheet({ user, piece, currentId = null, onSave, onClose 
               {filterCount > 0 && <span className="closet-filter-badge">{filterCount}</span>}
             </button>
           )}
-        <nav className="plink-tabs" role="tablist">
-          {['closet', 'boards'].map((k) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k}
-              className={`plink-tab${tab === k ? ' on' : ''}`}
-              onClick={() => { setTab(k); setBoard(null); setFilters(startFilters()); }}>
-              {t(k === 'closet' ? 'linkFromCloset' : 'linkFromBoard')}
-            </button>
-          ))}
-        </nav>
         </div>
         <div className="plink-body">
           {tab === 'closet' && (closet === null ? <div className="spinner" /> : grid(closetShown))}
