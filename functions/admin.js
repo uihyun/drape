@@ -723,9 +723,10 @@ exports.adminSetConfig = onCall(opts, async (request) => {
       if (!MODEL_SIZES.includes(m[key])) throw new HttpsError('invalid-argument', `bad size: ${key}`);
       clean[key] = m[key];
     }
-    if (m.chatThinking !== undefined && m.chatThinking !== '') {
-      if (!MODEL_THINKING.includes(m.chatThinking)) throw new HttpsError('invalid-argument', 'bad chatThinking');
-      clean.chatThinking = m.chatThinking;
+    for (const key of ['chatThinking', 'visionThinking']) {
+      if (m[key] === undefined || m[key] === '') continue;
+      if (!MODEL_THINKING.includes(m[key])) throw new HttpsError('invalid-argument', `bad ${key}`);
+      clean[key] = m[key];
     }
     await admin.firestore().collection('config').doc('models').set(clean);
     return { ok: true, models: clean };

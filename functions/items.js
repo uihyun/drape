@@ -317,8 +317,12 @@ async function uploadAlphaPng(bucket, path, pngBuf) {
  *   request.data: { itemId }
  *   response:     { ok: true, tags, croppedUrl }
  */
+// cpu: 4 because the time is in background removal, not the model. Prod
+// phase timings (2026-10-12) on 1 vCPU: Gemini crop 3–6s, tag 2–6s (parallel),
+// imgly segmentation 15–21s, of a 22–28s total. ONNX uses every core, so more
+// vCPUs finish sooner for roughly the same vCPU-seconds billed.
 exports.processItem = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 120, memory: '2GiB' },
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 120, memory: '4GiB', cpu: 4 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');
@@ -341,6 +345,9 @@ exports.processItem = onCall(
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const aiImg = new GoogleGenAI({ apiKey: geminiApiKey.value() });
     const MODELS = await getModels();   // server-tunable ids (config/models)
+    // Phase timings, logged once at the end. Prod median was 45s against ~5s
+    // locally, so this says where the time goes before anyone tunes it.
+    const T = { start: Date.now() };
 
     // ── Crop ───────────────────────────────────────────────────────────
     // gemini-3.1-flash-lite-image @1K. The prompt carries explicit hard
@@ -453,6 +460,7 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
     }).then(response => {
       const u = response?.usageMetadata;
       if (u) console.info('crop image tokens:', u.candidatesTokenCount, 'total:', u.totalTokenCount);
+      T.cropGen = Date.now() - T.start;
       return { response };
     }).catch(err => ({ __error: err }));
 
@@ -468,12 +476,12 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
     if (!focus) {
       const visionModel = genai.getGenerativeModel({
         model: MODELS.vision,
-        generationConfig: { responseMimeType: 'application/json' },
+        generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: MODELS.visionThinking } },
       });
       tagPromise = visionModel.generateContent([
         { inlineData: { data: originalB64, mimeType: mime } },
         { text: tagPrompt(lang) },
-      ]).catch(err => ({ __error: err }));
+      ]).then((r) => { T.tag = Date.now() - T.start; return r; }).catch(err => ({ __error: err }));
     }
 
     const [cropRes, tagRes] = await Promise.all([cropPromise, tagPromise]);
@@ -494,7 +502,9 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
         try {
           const geminiPng = Buffer.from(img.data, 'base64');
           const mime = img.mimeType || 'image/png';
+          const s0 = Date.now();
           let final = await segmentForeground(geminiPng, mime);
+          T.segment = Date.now() - s0;
           const ratio = await maskOpacityRatio(final);
           if (ratio < 0.02 || ratio > 0.98) {
             console.warn('processItem segmentation ratio out of range, falling back to chromaKey:', ratio.toFixed(3));
@@ -503,7 +513,9 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
             );
           }
           croppedPath = `items/${uid}/${itemId}/cropped-${Date.now()}.png`;
+          const u0 = Date.now();
           croppedUrl = await uploadAlphaPng(bucket, croppedPath, final);
+          T.upload = Date.now() - u0;
         } catch (err) {
           console.warn('processItem alpha pipeline failed:', err?.message);
         }
@@ -550,6 +562,7 @@ CRITICAL — HARD CONSTRAINTS (do not violate):
     }
     await docRef.update(patch);
 
+    console.info('processItem timing', { ...T, start: undefined, total: Date.now() - T.start, focus: !!focus });
     return { ok: true, tags, croppedUrl };
   }
 );
@@ -754,7 +767,7 @@ exports.analyzeOotd = onCall(
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genAI.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).visionThinking } },
     });
 
     try {
@@ -838,7 +851,7 @@ exports.analyzeGeneration = onCall(
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genAI.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).visionThinking } },
     });
 
     try {
@@ -880,8 +893,9 @@ exports.analyzeGeneration = onCall(
 // pixels exactly — just masks out the background. Held items remain
 // in the cutout (segmentation models can't reason about "person
 // minus what they're carrying") — accepted trade for fidelity.
+// cpu: 4 — background removal is CPU-bound (see processItem).
 exports.processIdentityRef = onCall(
-  { cors: true, timeoutSeconds: 90, memory: '2GiB' },
+  { cors: true, timeoutSeconds: 90, memory: '4GiB', cpu: 4 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -928,8 +942,9 @@ exports.processIdentityRef = onCall(
 // photoCutUrl / photoCutPath. The Calendar grid uses photoCutUrl when
 // available so the figure stands out clean on the day cell instead of
 // dragging the room/wall into the calendar.
+// cpu: 4 — background removal is CPU-bound (see processItem).
 exports.processOotdPhoto = onCall(
-  { cors: true, timeoutSeconds: 90, memory: '2GiB' },
+  { cors: true, timeoutSeconds: 90, memory: '4GiB', cpu: 4 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
@@ -1020,7 +1035,10 @@ exports.detectItems = onCall(
     }
 
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
-    const model = genAI.getGenerativeModel({ model: (await getModels()).vision });
+    const model = genAI.getGenerativeModel({
+      model: (await getModels()).vision,
+      generationConfig: { thinkingConfig: { thinkingLevel: (await getModels()).visionThinking } },
+    });
 
     try {
       const res = await model.generateContent([

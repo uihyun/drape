@@ -18,6 +18,30 @@ iOS build 21, Android versionCode 25. AAB at
 Store notes: `listing-*.md` → 2.3.1. Server halves are live on functions;
 the client halves are live on web.
 
+### Faster everywhere: low thinking on every text call, 4 vCPUs for background removal
+
+- **Thinking 'low' everywhere** (owner, 2026-10-12: speed first). A second
+  key, `config/models.visionThinking` (default 'low', in /admin), covers
+  tagging, OOTD and try-on analysis, item detection, translate and the
+  style-profile summary. A/B on real data, writes blocked:
+  - **Tagging:** same categories on single-item photos, ~2× faster. The only
+    big diff came from the test itself: a whole-outfit photo with no focus.
+  - **OOTD analysis:** the same pieces (7/5/5) in 5.6s vs 11.5s.
+- **Item processing was CPU-bound.** New phase timings in `processItem` on
+  1 vCPU: crop 3–6s and tag 2–6s (in parallel), imgly segmentation 15–21s,
+  22–28s in total.
+  - 4 vCPUs / 4 GiB: segmentation takes 5.5–8.8s, the total 10–14.5s.
+  - The same change went to the other segmentation users: `virtualTryOn`
+    (re-segments every variant), `processOotdPhoto` and
+    `processIdentityRef`.
+  - vCPU-seconds billed stay about the same, since the job finishes ~3×
+    sooner.
+- **No foreground banners.** `capacitor.config.json` FirebaseMessaging
+  `presentationOptions: ["badge"]`: while the app is open, a push only
+  updates the badge and the bell list. The full banner is for when you're
+  outside the app. iOS only (Android never shows foreground FCM
+  notifications). Needs an app build.
+
 ### Stylist: replies in ~6s (from 12–33s), and a push when you've left
 
 - **Measured first.** Cloud Run logs for the last week put real chat replies

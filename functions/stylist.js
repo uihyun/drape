@@ -294,7 +294,7 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
 
   const model = genAI.getGenerativeModel({
     model: (await getModels()).vision,
-    generationConfig: { responseMimeType: 'application/json' },
+    generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).visionThinking } },
   });
   const prompt = [
     'You maintain a compact style profile for a fashion app user. Update it from the data below.',

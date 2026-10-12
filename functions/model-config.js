@@ -26,6 +26,11 @@ const DEFAULTS = {
   // bill as output. 'minimal' isn't accepted by 3.8 (API error), so it's not
   // offered.
   chatThinking: 'low',
+  // Same knob for every other text/vision call: tagging, OOTD and try-on
+  // analysis, item detection, translate, the style-profile summary. They
+  // classify and describe, they don't need to reason (owner, 2026-10-12:
+  // lower it everywhere, speed first).
+  visionThinking: 'low',
 };
 
 const MODEL_RE = /^[a-z0-9][a-z0-9.\-]{2,63}$/;   // gemini-3.1-flash-image, etc.
@@ -46,7 +51,9 @@ function sane(raw) {
   for (const key of ['imageCropSize', 'imageTryonSize']) {
     if (SIZES.includes(raw[key])) out[key] = raw[key];
   }
-  if (THINKING.includes(raw.chatThinking)) out.chatThinking = raw.chatThinking;
+  for (const key of ['chatThinking', 'visionThinking']) {
+    if (THINKING.includes(raw[key])) out[key] = raw[key];
+  }
   return out;
 }
 

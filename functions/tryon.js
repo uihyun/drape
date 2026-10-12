@@ -443,8 +443,11 @@ const ENTRY_PATHS = new Set([
   'history', 'history_empty', 'stylist',
 ]);
 
+// cpu: 4 — every variant is re-segmented to trim the figure, and background
+// removal is CPU-bound: 15–21s a pass on 1 vCPU vs 5–9s on 4 (processItem,
+// measured 2026-10-12).
 exports.virtualTryOn = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 180, memory: '2GiB' },
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 180, memory: '4GiB', cpu: 4 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'sign in required');

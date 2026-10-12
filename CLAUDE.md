@@ -82,6 +82,13 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   only inbox + bell). A 5th slot for notifications/DMs was rejected on data —
   nearly nobody receives either yet; revisit when that changes. The Tour walks
   the bar; bump `TOUR_KEY` only when where things live changes, never for copy.
+- **Background removal is CPU-bound: 4 vCPUs.** `processItem`,
+  `virtualTryOn`, `processOotdPhoto` and `processIdentityRef` run imgly on
+  `cpu: 4` (15–21s → 5–9s a pass). Don't drop them back to the 1-vCPU
+  default. Model calls are I/O-bound, so they gain nothing from CPU;
+  `stylistChat` stays at the default with `minInstances: 1` for cold
+  starts instead. Every text/vision call runs at
+  `config/models.visionThinking` / `chatThinking` (default 'low').
 - **The stylist must answer fast: nothing slow on the request path.**
   - Chat, verdict and recs run at `thinkingLevel: config/models.chatThinking`
     (default 'low'). At 3.8-flash's default 'medium' a reply took 12–33s; at

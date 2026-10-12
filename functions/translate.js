@@ -87,7 +87,7 @@ exports.translateContent = onCall(
     const genai = new GoogleGenerativeAI(geminiApiKey.value());
     const model = genai.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).visionThinking } },
     });
     const prompt = `Translate the string VALUES in this JSON to ${LANG_NAMES[target]}.
 Rules: keep the JSON structure, keys, and every array's length and order identical;

@@ -928,6 +928,7 @@ function ModelsCard() {
     // Reasoning depth for stylist chat / verdicts / recs: low ≈ 4s a reply,
     // medium ≈ 12s (bench 2026-10-12).
     ['chatThinking', 'stylist thinking', ['low', 'medium', 'high']],
+    ['visionThinking', 'tagging/analysis thinking', ['low', 'medium', 'high']],
   ];
   return (
     <>

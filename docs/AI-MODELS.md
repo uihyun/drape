@@ -129,9 +129,11 @@ billed as output. On the stylist chat prompt:
 | 3.8-flash default (medium) | 12.4s | ~1,500 |
 | **3.8-flash low** | **3.7s** | 0 |
 
-Interactive stylist calls use `config/models.chatThinking` (default 'low',
-editable in /admin → AI models). Background calls (tagging, profile
-summary) keep the model default.
+Interactive stylist calls use `config/models.chatThinking`, and every other
+text/vision call (tagging, OOTD and try-on analysis, detection, translate,
+profile summary) uses `config/models.visionThinking`. Both default to 'low'
+and are editable in /admin → AI models. A/B: same tags and pieces at about
+half the time.
 
 ## How to switch / roll back
 
