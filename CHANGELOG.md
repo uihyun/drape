@@ -56,6 +56,11 @@ the client halves are live on web.
   - Verified live on @aake: switching tabs mid-reply produced the row, and
     tapping it opened Sol's chat with the reply. Staying on screen produced
     none.
+- **Warm instance.** `stylistChat` runs with `minInstances: 1` (~$10/month,
+  owner OK). In the week before, 20+ of ~30 chats paid a 2–5s cold start on
+  top of the reply. Other functions were checked and left on demand: try-on
+  is async, and the launch-time calls (initializeUser, updateProfile) don't
+  block the UI.
 - **Also fixed:** push copy had no es/fr, so those users got English. All
   rows now cover five languages.
 

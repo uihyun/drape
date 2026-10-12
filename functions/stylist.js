@@ -619,8 +619,12 @@ const CHAT_MAX_TEXT = 400;
 const CHAT_REPLY_MAX_WORDS = 70;
 const { getPlace, fetchDay, weatherLine } = require('./weather.js');
 
+// One instance kept warm (owner, 2026-10-12). At today's traffic chats arrive
+// hours apart, so most of them (20+ of ~30 in a week) paid a 2–5s cold start
+// on top of a ~6s reply. Idle cost is about $10/month. Drop this once
+// traffic keeps an instance warm on its own.
 exports.stylistChat = onCall(
-  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB' },
+  { secrets: [geminiApiKey], cors: true, timeoutSeconds: 60, memory: '512MiB', minInstances: 1 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
