@@ -2,6 +2,42 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+## Next candidates — big closets (written 2026-10-12)
+
+Closet sizes among real users (2026-10-12): 62 have 1–9 pieces, 12 have
+10–29, 11 have 30–59, 9 have 60–99, 2 have 100–199 and **one has 1,462**.
+Twelve were hit by the old 60-item picker cap.
+
+1. **Grid thumbnails (do first).** Every grid shows the full cutout: a
+   900×1200 PNG, 340–650 KB, about 4 MB once decoded.
+   - Scrolling a 1,462-piece closet would pull roughly 700 MB and hold
+     hundreds of decoded images; WKWebView evicts or crashes long before that.
+   - Plan: `processItem` writes a ~300px WebP `thumbUrl` (~20 KB) next to
+     `croppedUrl`, and a one-off script backfills existing items.
+   - Grids, pickers and strips use `thumbUrl || croppedUrl`; item detail and
+     try-on keep the full cutout.
+   - The client half needs an app build.
+2. **`content-visibility: auto` on grid cards.** Near-free: the browser
+   skips layout and paint for off-screen cards. Check it doesn't fight
+   `useFlipGrid`.
+3. **Virtualised lists (only if 1–2 aren't enough).** Keep the data, which is
+   tiny (~2 KB per item), and drop off-screen cards' DOM and images,
+   re-mounting them from the HTTP cache on scroll-back. No extra API reads.
+   - Hard parts: the closet pinch-resize FLIP and masonry boards.
+
+**Profile tabs (GA, 30 days to 2026-10-12)**, as engagement sec / views:
+
+| tab | engagement sec | views |
+|---|---|---|
+| closet | 37,034 | 1,598 |
+| tryon | 3,595 | 571 |
+| calendar | 954 | 301 |
+| outfits | 1,030 | 299 |
+| boards | 660 | 232 |
+
+The Closet tab landing on the closet is right; outfits and calendar are about
+1/30th of its time.
+
 ## Plan — "see it on me, live" (written 2026-10-08, not started)
 
 Prompted by a JEV demo from a same-named competitor (Stareon's "Drape: Outfit

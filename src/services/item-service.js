@@ -122,7 +122,9 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
 // 128-piece closet silently stopped at the newest 60 everywhere except the
 // Closet grid, which pages on its own (user report, 2026-10-10). Only callers
 // that genuinely page — the Closet grid, the launch warm-up — pass a pageSize.
-export const CLOSET_ALL = 2000;
+// The largest real closet is 1,462 pieces (2026-10-12), so the ceiling sits
+// well above it.
+export const CLOSET_ALL = 5000;
 
 /** Subscribe to the current user's closet, newest first. */
 function subscribeMyCloset(uid, onChange, { pageSize = CLOSET_ALL } = {}) {
