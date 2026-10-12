@@ -27,7 +27,10 @@ that hides data without a "load more".
   the same problem at 6000 chars.
   - Now `closetDigest()` sends one compact line per item
     (`id | name | cat/sub | colors | styles | seasons | kind`, about half the
-    size) and is never cut. `MAX_ITEMS` is 150 → 400.
+    size) and is never cut.
+  - The whole closet goes in. Past `FULL_CLOSET_MAX` (600, about 15k
+    tokens) it is trimmed to current-season pieces (hemisphere from the
+    weather place, untagged pieces kept), then newest-first.
   - Verified on @aake with writes blocked: all four personas returned valid
     item ids.
 - **The stylist suggested archived pieces.** `loadInventory` didn't skip
@@ -43,14 +46,14 @@ that hides data without a "load more".
 - **Item page "in these boards"** scanned only the 40 most recently updated
   boards, so an older board holding the piece never showed. The scan now
   covers 500.
-- **Left as is, noted:**
-  - Public profile grids cap at 200 outfits / 150 boards, with no paging.
-  - The Following feed reads at most 30 followed accounts (Firestore `in`
-    limit), and its marketplace row at most 30 listings.
-  - Notifications show the latest 50.
-  
-  All are newest-first, so none hides recent content; each needs real paging
-  when someone gets near the cap.
+- **Public profiles** stopped at 200 outfits and 150 boards, which also capped
+  the profile's outfit count and its calendar. Both lists now page through to
+  the end; the first page paints and the rest streams in via `onPage`.
+- **Notifications** stopped at the latest 50. The list now grows by 50 on
+  scroll (Closet pattern).
+- **Left as is (owner):** the Following feed still reads at most 30 followed
+  accounts (Firestore `in` limit), and its marketplace row at most 30
+  listings.
 
 ### Pickers showed only the newest 60 closet items
 

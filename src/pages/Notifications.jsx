@@ -4,6 +4,7 @@ import { ShieldAlert } from 'lucide-react';
 import { Avatar } from '../components/Avatar.jsx';
 import { NotificationService } from '../services/notification-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 
 // Relative "3h / 2d" — good enough for an activity list; no i18n lib needed.
 function timeAgo(ts) {
@@ -28,14 +29,22 @@ function linkFor(n) {
 export function Notifications({ user, onSignIn }) {
   const { t } = useLocale();
   const [items, setItems] = useState(null);
+  // The live window grows by 50 as you scroll (the Closet pattern), so the
+  // whole history is reachable rather than stopping at the latest 50.
+  const [notifLimit, setNotifLimit] = useState(50);
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setItems([]); return; }
-    const unsub = NotificationService.subscribe(setItems);
-    // Opening the bell clears the dot.
-    NotificationService.markAllRead();
-    return unsub;
+    return NotificationService.subscribe(setItems, { pageSize: notifLimit });
+  }, [user?.uid, notifLimit]);
+  // Opening the bell clears the dot.
+  useEffect(() => {
+    if (user && !user.isAnonymous) NotificationService.markAllRead();
   }, [user?.uid]);
+  const notifHasMore = !!items && items.length >= notifLimit;
+  const sentinelRef = useInfiniteScroll({
+    hasMore: notifHasMore, loading: false, onLoadMore: () => setNotifLimit((n) => n + 50),
+  });
 
   if (!user || user.isAnonymous) {
     return (
@@ -97,6 +106,7 @@ export function Notifications({ user, onSignIn }) {
           })}
         </ul>
       )}
+      {notifHasMore && <div ref={sentinelRef} className="feed-sentinel" />}
     </div>
   );
 }

@@ -19,7 +19,12 @@ const { getModels } = require('./model-config.js');
 const MODEL = 'gemini-3.8-flash';   // default; overridable via config/models
 
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
-const MAX_ITEMS = 400;          // inventory cap fed to the model (newest first)
+// The whole closet goes to the model. Only past FULL_CLOSET_MAX does it get
+// trimmed: first to pieces for the current season (plus untagged ones), then
+// newest-first. A line is ~100 chars, so 600 lines is ~15k tokens, about
+// $0.01 a call on Flash (owner, 2026-10-12: send everything; filter only when
+// it's genuinely too much).
+const FULL_CLOSET_MAX = 600;
 
 // Personal color is STATED by the user (usually from a paid consultation) —
 // never read off a photo, where lighting moves undertone more than the gap
@@ -118,7 +123,7 @@ function db() { return admin.firestore(); }
 // It used to be JSON.stringify(inventory).slice(0, 8000). At ~210 chars an
 // item, that is ~38 items, so a 128-piece closet was mostly invisible to the
 // stylist. The cut also landed mid-item. Lines are about half the size and
-// are never cut; MAX_ITEMS is the only cap (owner bug sweep, 2026-10-12).
+// are never cut (owner bug sweep, 2026-10-12); see FULL_CLOSET_MAX.
 function closetDigest(inventory, { withIds = true } = {}) {
   const head = withIds
     ? 'Format: id | name | category/subcategory | colors | styles | seasons | owned|wishlist'
@@ -135,12 +140,20 @@ function closetDigest(inventory, { withIds = true } = {}) {
   return [head, ...lines].join('\n');
 }
 
+// Garment season for today: month in UTC, flipped for the southern
+// hemisphere when we know where the user is (their weather place).
+function seasonNow(lat) {
+  const m = new Date().getUTCMonth(); // 0 = Jan
+  const north = m <= 1 || m === 11 ? 'winter' : m <= 4 ? 'spring' : m <= 7 ? 'summer' : 'fall';
+  if (!(typeof lat === 'number' && lat < 0)) return north;
+  return { winter: 'summer', summer: 'winter', spring: 'fall', fall: 'spring' }[north];
+}
+
 // Compact one-line-per-item inventory the model can reference by id.
 async function loadInventory(uid) {
   const snap = await db().collection('items')
     .where('userId', '==', uid)
     .orderBy('createdAt', 'desc')
-    .limit(MAX_ITEMS)
     .get();
   const items = [];
   snap.forEach((d) => {
@@ -160,7 +173,11 @@ async function loadInventory(uid) {
       kind: x.kind === 'wishlist' ? 'wishlist' : 'owned',
     });
   });
-  return items;
+  if (items.length <= FULL_CLOSET_MAX) return items;
+  const place = await getPlace(db(), uid).catch(() => null);
+  const season = seasonNow(place?.lat);
+  const inSeason = items.filter((i) => !i.seasons.length || i.seasons.includes(season));
+  return inSeason.slice(0, FULL_CLOSET_MAX);
 }
 
 // Model output → outfits we can render: only ids from THIS closet (a

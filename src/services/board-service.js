@@ -187,15 +187,25 @@ async function listBookmarkedBoards({ uid, pageSize = 30, cursor = null } = {}) 
 
 /** This user's public boards — used by PublicProfile's Boards tab.
  *  Same shape as listPublicBoards but scoped to a single userId. */
-async function listPublicBoardsByUser({ uid, pageSize = 30 } = {}) {
-  const snap = await getDocs(query(
-    collection(db, BOARDS),
-    where('userId', '==', uid),
-    where('isPublic', '==', true),
-    orderBy('updatedAt', 'desc'),
-    limit(pageSize),
-  ));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+async function listPublicBoardsByUser({ uid, pageSize = 100, onPage = null } = {}) {
+  // Every public board, paged (it stopped at 150 before; same bug class as
+  // the closet's limit(60)).
+  const out = [];
+  let cursor = null;
+  for (;;) {
+    const snap = await getDocs(query(
+      collection(db, BOARDS),
+      where('userId', '==', uid),
+      where('isPublic', '==', true),
+      orderBy('updatedAt', 'desc'),
+      ...(cursor ? [startAfter(cursor)] : []),
+      limit(pageSize),
+    ));
+    out.push(...snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    if (onPage) onPage([...out]);
+    if (snap.docs.length < pageSize) return out;
+    cursor = snap.docs[snap.docs.length - 1];
+  }
 }
 
 /** Public board feed — every board with isPublic=true, newest first.

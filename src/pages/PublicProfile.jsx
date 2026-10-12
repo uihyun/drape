@@ -82,7 +82,7 @@ export function PublicProfile({ user, onSignIn }) {
     const key = `drape:pubOutfitCount:${profile.uid}`;
     const cached = localStorage.getItem(key);
     if (cached != null) setOutfitCount(Number(cached)); // instant, revalidated below
-    OutfitService.listPublicByUser({ uid: profile.uid, pageSize: 200 })
+    OutfitService.listPublicByUser({ uid: profile.uid, onPage: setOotds })
       .then((list) => {
         setOotds(list);
         setOutfitCount(list.length); // same value → no re-render (no flicker)
@@ -96,7 +96,7 @@ export function PublicProfile({ user, onSignIn }) {
 
   useEffect(() => {
     if (!profile?.uid) { setBoards(null); return; }
-    BoardService.listPublicBoardsByUser({ uid: profile.uid, pageSize: 150 })
+    BoardService.listPublicBoardsByUser({ uid: profile.uid, onPage: setBoards })
       .then(setBoards)
       .catch((err) => {
         console.warn('public boards failed:', err?.code, err?.message);

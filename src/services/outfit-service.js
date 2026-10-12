@@ -423,16 +423,28 @@ async function listMyOotds({ uid, pageSize = 60, cursor = null } = {}) {
   };
 }
 
-/** Public dated outfits by a user (PublicProfile). */
-async function listPublicByUser({ uid, pageSize = 200 } = {}) {
-  const snap = await getDocs(query(
-    collection(db, OUTFITS),
-    where('userId', '==', uid),
-    where('isPublic', '==', true),
-    orderBy('date', 'desc'),
-    limit(pageSize),
-  ));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+/** ALL public dated outfits by a user (PublicProfile), newest first. Pages
+ *  through in chunks and reports each one via `onPage(soFar)`, so the grid
+ *  paints after the first page while the rest streams in. It used to stop at
+ *  200, which also capped the profile's outfit count and calendar (bug sweep,
+ *  2026-10-12). */
+async function listPublicByUser({ uid, pageSize = 100, onPage = null } = {}) {
+  const out = [];
+  let cursor = null;
+  for (;;) {
+    const snap = await getDocs(query(
+      collection(db, OUTFITS),
+      where('userId', '==', uid),
+      where('isPublic', '==', true),
+      orderBy('date', 'desc'),
+      ...(cursor ? [startAfter(cursor)] : []),
+      limit(pageSize),
+    ));
+    out.push(...snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    if (onPage) onPage([...out]);
+    if (snap.docs.length < pageSize) return out;
+    cursor = snap.docs[snap.docs.length - 1];
+  }
 }
 
 /** Month of dated outfits, bucketed by date with the calendar rep first. */
