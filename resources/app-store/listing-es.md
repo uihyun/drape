@@ -193,7 +193,7 @@ Un nuevo diseño y una estilista con quien conversar.
 ```
 Pensada para armarios grandes.
 
-- Elige entre todo tu armario en tableros, outfits y pruebas, no solo las 60 prendas más recientes.
+- Elige entre todo tu armario en tableros, outfits y pruebas.
 - Tu estilista ve todo lo que tienes.
 - Un armario más rápido que usa menos datos, y arreglos en perfiles, notificaciones y chats largos.
 ```
@@ -203,7 +203,7 @@ Pensada para armarios grandes.
 ```
 Pensada para armarios grandes.
 
-- Elige entre todo tu armario en tableros, outfits y pruebas, no solo las 60 prendas más recientes.
+- Elige entre todo tu armario en tableros, outfits y pruebas.
 - Tu estilista ve todo lo que tienes.
 - Un armario más rápido que usa menos datos, y arreglos en perfiles, notificaciones y chats largos.
 ```

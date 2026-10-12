@@ -182,7 +182,7 @@ A new look, and a stylist you can talk to.
 ```
 Made for big closets.
 
-- Pick from your whole closet in boards, outfits and try-on, not just the newest 60.
+- Pick from your whole closet in boards, outfits and try-on.
 - Your stylist sees everything you own.
 - A faster closet that uses less data, plus fixes for profiles, notifications and long chats.
 ```
@@ -192,7 +192,7 @@ Made for big closets.
 ```
 Made for big closets.
 
-- Pick from your whole closet in boards, outfits and try-on, not just the newest 60.
+- Pick from your whole closet in boards, outfits and try-on.
 - Your stylist sees everything you own.
 - A faster closet that uses less data, plus fixes for profiles, notifications and long chats.
 ```
