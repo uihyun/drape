@@ -248,7 +248,7 @@ async function deleteItem(itemId) {
   // outfit points at that OUTFIT's photo (ootds/{uid}/…, analyzed/{uid}/…) —
   // the same uid, so a uid check alone deleted the outfit's photo.
   const ownDir = `items/${it.userId}/${itemId}/`;
-  for (const path of [it.originalPath, it.croppedPath]) {
+  for (const path of [it.originalPath, it.croppedPath, it.thumbPath]) {
     if (!path || !path.startsWith(ownDir)) continue;
     deleteObject(ref(storage, path)).catch(() => { /* already gone / ignore */ });
   }

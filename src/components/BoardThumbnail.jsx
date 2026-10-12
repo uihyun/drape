@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { boardBgStyle, boardRatioPad } from '../data/boardBackgrounds.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Shared across all thumbnail instances + their re-mounts. Back-navigation
 // re-mounts every card, and without this each one re-fetched its sticker
@@ -86,7 +87,7 @@ export function BoardThumbnail({ board, itemsById, className = '' }) {
           ? <div className="board-card-cover-empty">◇</div>
           : sorted.map((s, i) => {
             const item = lookup[s.itemId];
-            const cover = item?.croppedUrl || item?.originalUrl;
+            const cover = itemThumb(item);
             if (!cover) return null;
             return (
               <div

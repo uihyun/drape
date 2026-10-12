@@ -43,7 +43,7 @@ async function deleteItemAndStorage(itemDoc, bucket) {
     // Only this user's own files. A piece borrowed from someone else's item
     // points at THEIR cutout (items/{ownerUid}/...) — deleting it here would
     // blank the owner's item. Paths are `<folder>/<uid>/...`.
-    const paths = [data.originalPath, data.croppedPath]
+    const paths = [data.originalPath, data.croppedPath, data.thumbPath]
         .filter(p => p && p.split('/')[1] === data.userId);
     await Promise.allSettled(paths.map(p =>
         bucket.file(p).delete().catch(() => {})

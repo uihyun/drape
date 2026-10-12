@@ -18,6 +18,7 @@ import { maybeAskForReview } from '../services/rate-service.js';
 import { closetWarm } from '../services/uiCache.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Closet grid. Live subscription so a 'processing' item that finishes flips
 // from skeleton to a finished card without a re-fetch.
@@ -417,7 +418,7 @@ function ItemCard({ item, t, elapsed = null, ids, index, flipId = null }) {
   const [retrying, setRetrying] = useState(false);
   const processing = item.status === 'processing' || item.status === 'uploading' || retrying;
   const failed = item.status === 'failed' && !retrying;
-  const cover = item.croppedUrl || item.originalUrl;
+  const cover = itemThumb(item);
   // Re-run the crop/tag pipeline on a stuck/failed item without leaving the
   // closet. The card is a Link, so stop the tap from navigating.
   const retry = async (e) => {

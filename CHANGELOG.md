@@ -16,6 +16,32 @@ Conventions:
 iOS build 21, Android versionCode 25. Server halves are live on functions;
 the client halves are live on web.
 
+### Grid thumbnails + off-screen skipping (big closets)
+
+Real closets reach 1,462 pieces. Every grid drew the full cutout, a 340–650 KB
+PNG that is about 4 MB decoded, so scrolling that closet would pull ~700 MB.
+
+- **Thumbnails:** `functions/thumbs.js` `onItemThumb` makes a 480px-wide WebP
+  with alpha (~25–40 KB, about 7% of the PNG) whenever an item's
+  `croppedPath` is new or changed. It writes `thumbUrl` / `thumbPath` /
+  `thumbFor` (`thumbFor` stops its own write from re-firing).
+  - The thumb always lives in the item's own folder, even for a borrowed
+    piece, so deleting the item deletes it. It's in both client
+    `deleteItem` and account deletion.
+  - `scripts/backfill-thumbs.cjs` (idempotent) filled the 3,504 existing
+    items.
+- **Where thumbs are used:** grids, pickers and strips use
+  `itemThumb(it)` = `thumbUrl || croppedUrl || originalUrl`. That covers the
+  closet, the try-on, builder and board pickers, the piece-link sheet,
+  OutfitLink, piece rows, board miniatures, the stylist and try-on strips,
+  and marketplace cards. Item detail, outfit heroes and the board canvas keep
+  the full cutout.
+- **Off-screen skipping:** `content-visibility: auto` is on the
+  aspect-ratio image boxes (`.item-card-image`, `.plink-item`, listing,
+  try-on and board covers). Off-screen ones skip layout, paint and decode
+  without changing size; checked with 300 boxes, all the same height on and
+  off screen.
+
 ### Bug sweep: the same silent-cap class everywhere (2026-10-12)
 
 The closet report led to an audit of every `limit()`, page size and string cut

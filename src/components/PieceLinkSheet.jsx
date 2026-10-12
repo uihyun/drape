@@ -7,6 +7,7 @@ import { scoreMatch } from '../utils/itemMatch.js';
 import { CATEGORIES } from '../services/taxonomy.js';
 import { LookFilterSheet, emptyLookFilters, countLookFilters, itemMatchesFilters } from './LookFilterSheet.jsx';
 import { SORT_OPTIONS, sortItems } from '../utils/itemSort.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Link ONE item you already own to one detected piece of an outfit
 // (owner, 2026-10-09) — from the closet, or from a board's items. Opened by a
@@ -96,7 +97,7 @@ export function PieceLinkSheet({ user, piece, currentId = null, onSave, onClose 
               onClick={() => setPicked(picked === i.id ? null : i.id)}
               aria-pressed={picked === i.id}
             >
-              <img src={i.croppedUrl || i.originalUrl} alt={i.name || ''} loading="lazy" />
+              <img src={itemThumb(i)} alt={i.name || ''} loading="lazy" />
               {picked === i.id && <span className="plink-check"><Check size={14} strokeWidth={2.6} /></span>}
             </button>
           ))}

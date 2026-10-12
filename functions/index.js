@@ -165,6 +165,8 @@ exports.onOutfitWeather = weatherFns.onOutfitWeather;
 exports.weatherSearch = weatherFns.weatherSearch;
 exports.weatherLocate = weatherFns.weatherLocate;
 
+exports.onItemThumb = require('./thumbs.js').onItemThumb;
+
 // ── Stylist (SPEC-1.6: style profile + persona recommendations) ─────────
 const stylistFns = require('./stylist.js');
 exports.styleRecommend = stylistFns.styleRecommend;

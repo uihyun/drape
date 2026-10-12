@@ -4,6 +4,7 @@ import { Check, Plus } from 'lucide-react';
 import { ItemService } from '../services/item-service.js';
 import { OutfitService } from '../services/outfit-service.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Pick items from the closet, name the outfit, save. Empty closet now
 // gets a real CTA so first-time users know what to do.
@@ -94,8 +95,8 @@ export function OutfitBuilder({ user, onSignIn }) {
                   onClick={() => toggle(it.id)}
                 >
                   <div className="item-card-image">
-                    {it.croppedUrl || it.originalUrl
-                      ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                    {itemThumb(it)
+                      ? <img src={itemThumb(it)} alt="" loading="lazy" />
                       : <div className="item-card-skeleton" />}
                     {isSel && (
                       <span className="item-card-check">

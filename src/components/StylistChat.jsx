@@ -8,6 +8,7 @@ import { WeatherService } from '../services/weather-service.js';
 import { useWeatherPlace, useDailyWeatherState } from '../hooks/useWeather.js';
 import { WeatherBadge } from './WeatherIcon.jsx';
 import { WeatherPlacePicker } from './WeatherPlacePicker.jsx';
+import { itemThumb } from '../utils/itemImage.js';
 
 // The stylist as a conversation (owner, 2026-10-08) — replaces the one-shot
 // "Style me" button. One thread per stylist per day; earlier days are a
@@ -92,7 +93,7 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
     logEvent(analytics, 'stylist_tryon', { persona: persona.id, source: 'chat' });
     navigate(`/tryon?items=${itemIds.filter((id) => closet?.[id]).join(',')}&from=stylist`);
   };
-  const thumbOf = (id) => closet?.[id]?.croppedUrl || closet?.[id]?.originalUrl || null;
+  const thumbOf = (id) => itemThumb(closet?.[id]);
 
   const openArchive = async () => {
     if (archive) { setArchive(null); return; }

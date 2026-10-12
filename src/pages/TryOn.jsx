@@ -16,6 +16,7 @@ import { useCredits, DAILY_CREDITS, PRICE } from '../hooks/useCredits.js';
 import { analytics, logEvent } from '../firebase.js';
 import { shareLink } from '../services/share-service.js';
 import { CreditService } from '../services/credit-service.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Server rejects > 6 garments; cap on the client so the user gets a clear
 // message instead of a failed request after pressing Start.
@@ -431,8 +432,8 @@ export function TryOn({ user, onSignIn }) {
                     onClick={() => toggleItem(it.id)}
                   >
                     <div className="item-card-image">
-                      {it.croppedUrl || it.originalUrl
-                        ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                      {itemThumb(it)
+                        ? <img src={itemThumb(it)} alt="" loading="lazy" />
                         : <div className="item-card-skeleton" />}
                       {proc && (
                         <span className="item-card-loading" aria-label={t('processing')}>

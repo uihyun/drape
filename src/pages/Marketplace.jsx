@@ -5,6 +5,7 @@ import { buildSwipeState } from '../services/swipeNav.js';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import { formatPrice } from '../utils/currency.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { itemThumb } from '../utils/itemImage.js';
 
 const GRADES = ['', 'S', 'A', 'B', 'C'];
 
@@ -94,7 +95,7 @@ export function Marketplace() {
 }
 
 export function ListingCard({ item, t, ids, index }) {
-  const cover = item.croppedUrl || item.originalUrl;
+  const cover = itemThumb(item);
   return (
     <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className="listing-card">
       <div className="listing-card-image">

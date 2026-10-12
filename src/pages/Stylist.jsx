@@ -12,6 +12,7 @@ import { useCredits } from '../hooks/useCredits.js';
 import {
   StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona,
 } from '../services/stylist-service.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // SPEC-1.6 §D — the stylist surface. Personas are explicitly-AI characters
 // (illustrated, never photoreal). Since 2026-10-08 the stylist is a chat
@@ -80,7 +81,7 @@ export function Stylist({ user, onSignIn }) {
     navigate(`/tryon?items=${itemIds.filter((id) => closet?.[id]).join(',')}&from=stylist`);
   };
 
-  const thumbOf = (id) => closet?.[id]?.croppedUrl || closet?.[id]?.originalUrl || null;
+  const thumbOf = (id) => itemThumb(closet?.[id]);
 
   // A saved stylist look → a board (2026-10-08): its closet pieces on the same
   // clean grid as an outfit's board. Linked both ways via savedLook.boardId,

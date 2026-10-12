@@ -13,6 +13,7 @@ import {
   LookFilterSheet, emptyLookFilters, countLookFilters, TIME_SORT, byTime,
 } from '../components/LookFilterSheet.jsx';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Closet-sized page for attaching the actual worn pieces to an outfit/OOTD.
 // Three ways in:
@@ -343,7 +344,7 @@ export function OutfitLink({ user, onSignIn }) {
                     <div className="analyze-match-row">
                       {matches.map(({ item }) => {
                         const on = selected.has(item.id);
-                        const cover = item.croppedUrl || item.originalUrl;
+                        const cover = itemThumb(item);
                         return (
                           <button
                             key={item.id}
@@ -419,8 +420,8 @@ export function OutfitLink({ user, onSignIn }) {
                 onClick={() => toggle(it)}
               >
                 <div className="item-card-image">
-                  {it.croppedUrl || it.originalUrl
-                    ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                  {itemThumb(it)
+                    ? <img src={itemThumb(it)} alt="" loading="lazy" />
                     : <div className="item-card-skeleton" />}
                   {on && <span className="item-card-check"><Check size={14} strokeWidth={2.4} /></span>}
                 </div>

@@ -28,6 +28,7 @@ import { TranslateToggle } from '../components/TranslateToggle.jsx';
 import { publicOrigin } from '../services/platform-service.js';
 import { formatPrice } from '../utils/currency.js';
 import { StylistService, STYLIST_PERSONAS, getChosenPersona, setChosenPersona } from '../services/stylist-service.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Lekondo's outfit detail reads like a magazine page: hero photo, byline,
 // editorial title, then the palette / style / notes blocks. Each
@@ -566,8 +567,8 @@ export function OutfitDetail({ user, onSignIn }) {
                   for_sale: !!(it.forSale && it.priceAsking > 0),
                 })}
               >
-                {it.croppedUrl || it.originalUrl
-                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                {itemThumb(it)
+                  ? <img src={itemThumb(it)} alt="" loading="lazy" />
                   : <div className="item-card-skeleton" />}
                 {isProcessing(it) && (
                   <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>
@@ -644,8 +645,8 @@ export function OutfitDetail({ user, onSignIn }) {
           <div className="outfit-items-strip">
             {flatItems.map(it => (
               <Link key={it.id} to={`/i/${it.id}`} className="outfit-item-thumb">
-                {it.croppedUrl || it.originalUrl
-                  ? <img src={it.croppedUrl || it.originalUrl} alt="" loading="lazy" />
+                {itemThumb(it)
+                  ? <img src={itemThumb(it)} alt="" loading="lazy" />
                   : <div className="item-card-skeleton" />}
                 {isProcessing(it) && (
                   <span className="item-card-badge"><span className="dot-pulse" /> {t('processing')}</span>

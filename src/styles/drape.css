@@ -1899,6 +1899,15 @@ body.is-native {
   overflow: hidden;
   border-radius: 6px;
 }
+/* Off-screen image boxes skip layout, paint and image decode until scrolled
+   near. Only boxes whose size comes from aspect-ratio + width get this, so
+   the skipped box keeps its exact size and nothing jumps (verified: 300 boxes
+   all report the same height on and off screen). The FLIP pinch animates
+   the parent .item-card, not this box. Older WebKit ignores it harmlessly.
+   Big-closet work, 2026-10-12. */
+.item-card-image, .plink-item, .listing-card-image, .tryon-history-cover, .board-card-cover {
+  content-visibility: auto;
+}
 .item-card-image img {
   /* Lekondo cutouts: clothing on white, contained (never cropped). */
   width: 100%; height: 100%; object-fit: contain;

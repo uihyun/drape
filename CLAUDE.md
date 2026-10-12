@@ -114,6 +114,17 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   before `scale` and isn't scaled. Same rule for any element that slides and
   scales independently. Also clear the press position only on a real route
   change, never on a timer after pointer-up.
+- **Grids show thumbnails, detail views show the cutout.** `itemThumb(it)`
+  (`utils/itemImage.js`) is for anything small: grids, pickers and strips.
+  The full `croppedUrl` (up to 650 KB, ~4 MB decoded) is for item detail,
+  outfit heroes and the board canvas. `onItemThumb` keeps `thumbUrl` in step
+  with `croppedPath`. A new list or picker of items must use `itemThumb`:
+  closets reach 1,400+ pieces.
+- **No silent caps on a user's own data.** A picker or list of someone's
+  items, boards, outfits or notifications either loads all of it or pages on
+  scroll. Never a bare `limit(N)` that just stops, and never a
+  character-sliced prompt. Both shipped (closet pickers stopped at 60, the
+  stylist saw ~38 pieces) and only a user's report caught them.
 - **`npm run check` is the runtime-crash gate, not a linter.** It carries the
   named-import audit, a service-object member audit (`XService.fn` must exist
   on the exported object — Settings crashed on that once), locale parity

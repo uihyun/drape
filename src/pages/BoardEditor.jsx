@@ -6,6 +6,7 @@ import { ItemService } from '../services/item-service.js';
 import { BOARD_BACKGROUNDS, boardBgStyle, DEFAULT_BOARD_BG, BOARD_RATIOS, boardRatioCss, DEFAULT_BOARD_RATIO } from '../data/boardBackgrounds.js';
 import { useSheetDrag } from '../hooks/useSheetDrag.js';
 import { useLocale } from '../hooks/useLocale.jsx';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Diary-style sticker board. Pick items from the closet, drop them on
 // the canvas, drag/scale/rotate, save. Long-press a sticker for the
@@ -269,7 +270,7 @@ export function BoardEditor({ user, onSignIn }) {
           <div className="board-items-grid">
             {boardItems.map(it => {
               const sel = tryonSelected.has(it.id);
-              const cover = it.croppedUrl || it.originalUrl;
+              const cover = itemThumb(it);
               return (
                 <button
                   key={it.id}
@@ -610,7 +611,7 @@ function ItemPickerSheet({ items, onPick, onClose, t }) {
           <div className="board-picker-grid">
             {items.map(it => {
               const sel = picked.has(it.id);
-              const cover = it.croppedUrl || it.originalUrl;
+              const cover = itemThumb(it);
               return (
                 <button
                   key={it.id}

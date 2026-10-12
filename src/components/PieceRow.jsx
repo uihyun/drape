@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shirt, ExternalLink, Plus, Check, X, Link2, Loader2 } from 'lucide-react';
 import { matchCloset } from '../utils/itemMatch.js';
 import { formatPrice } from '../utils/currency.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // One detected garment + its tag-matched closet items ("from your closet").
 // Shared by the analyze result and the saved-look detail so the two read as
@@ -79,7 +80,7 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [], owne
         <div className="analyze-match-strip">
           <div className="analyze-match-row">
             {linkedItems.map(item => {
-              const cover = item.croppedUrl || item.originalUrl;
+              const cover = itemThumb(item);
               const proc = item.status === 'processing' || item.status === 'uploading';
               return (
                 <Link key={item.id} to={`/i/${item.id}`} className={`analyze-match-card is-linked${proc ? ' is-proc' : ''}`} title={item.name || ''}>
@@ -102,7 +103,7 @@ export function PieceRow({ piece, closet, t, sale = null, linkedItems = [], owne
           <span className="analyze-match-label">{t('fromYourCloset')}</span>
           <div className="analyze-match-row">
             {matches.map(({ item }) => {
-              const cover = item.croppedUrl || item.originalUrl;
+              const cover = itemThumb(item);
               return (
                 <Link key={item.id} to={`/i/${item.id}`} className="analyze-match-card" title={item.name || ''}>
                   {cover

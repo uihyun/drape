@@ -13,6 +13,7 @@ import { SwipeHint } from '../components/SwipeHint.jsx';
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate.js';
 import { useLocale } from '../hooks/useLocale.jsx';
 import { useCredits, DAILY_CREDITS, PRICE } from '../hooks/useCredits.js';
+import { itemThumb } from '../utils/itemImage.js';
 
 // Pick readable ink for a palette swatch background.
 function contrastInk(hex) {
@@ -318,7 +319,7 @@ export function GenerationDetail({ user }) {
               <h3 className="gen-items-head">{t('itemsUsed')}</h3>
               <div className="gen-items-row">
                 {items.map(it => {
-                  const cover = it.croppedUrl || it.originalUrl;
+                  const cover = itemThumb(it);
                   return (
                     <Link key={it.id} to={`/i/${it.id}`} className="gen-item-card">
                       <div className="gen-item-thumb">
