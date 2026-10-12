@@ -41,21 +41,46 @@ indexes name + subtitle + keywords together, so a repeat is spent budget.
 outfit,planen,mode,kleidung,garderobe,style,styling,anprobieren,lookbook,trends,ootd,capsule,fashion
 ```
 
-**Description** (≤4000):
+**Description** (≤4000, currently 2215) — same text on App Store and Google Play (full). Updated for 2.3 on 2026-10-12.
 
 ```
-Dein ganzer Kleiderschrank, immer dabei.
+Dein ganzer Kleiderschrank, endlich an einem Ort.
 
-Fotografiere jedes Teil, und drape baut daraus einen aufgeräumten digitalen Kleiderschrank: Hintergrund freigestellt, Kategorie, Farbe und Saison automatisch getaggt. Mit zwei, drei Ganzkörperfotos von dir probierst du per KI an, was du willst – bevor du es kaufst und bevor du es anziehst. Ein Look an jemand anderem gefällt dir? Stell ihn komplett an dir nach.
+Lade zwei oder drei Fotos von dir hoch und sieh jedes Teil an deinem eigenen Körper, bevor du es trägst oder kaufst. Fotografiere, was du schon hast — drape stellt jedes Teil frei, versieht es mit Tags und sortiert es ein.
 
-• Digitaler Kleiderschrank – fotografiere deine Kleidung; wir stellen das Teil frei und taggen Kategorie, Farbe und Saison.
-• Virtuelle Anprobe – ein einzelnes Teil oder ein ganzer Look, an deinem eigenen Körper. Die KI behält dein Gesicht und deine Pose bei.
-• KI-Stylist – wähl deinen persönlichen Stylisten und bekomm Looks nur aus Kleidung, die du schon hast.
-• OOTD-Kalender – halte fest, was du jeden Tag getragen hast, und bau dir deine Stilhistorie auf.
-• Looks und Boards – kombiniere Teile zu Outfits und sammle deine Inspiration auf Boards.
-• Trends – jeden Montag eine neue Ausgabe: die Styles, Farben und Marken der Woche.
+PROBIER ES AN DIR AN
+• Jedes Teil, auf deinem eigenen Foto. Es ist dein echtes Gesicht und dein echter Körper — so siehst du, ob es dir wirklich steht.
+• Probier einen ganzen Look an, den du bei jemand anderem gesehen hast, oder kombiniere Teile aus deinem Kleiderschrank.
 
-Dein Kleiderschrank, deine Umkleide, dein Stiltagebuch. Alles in drape.
+DEIN DIGITALER KLEIDERSCHRANK
+• Ein Foto pro Teil. Wir entfernen den Hintergrund und taggen Kategorie, Farbe, Saison und Stil für dich.
+• Keine Zeit? Lade ein Foto von einem ganzen Outfit hoch, und wir finden jedes Teil darin.
+• Suche nach Tag, Marke oder Farbe. Zieh das Raster mit zwei Fingern zusammen, um mehr auf einmal zu sehen — oder weniger und größer.
+
+DEIN EIGENER KI-STYLIST
+• Chatte mit deinem Stylist darüber, wohin du gehst — die Antwort sind Outfits nur aus Kleidung, die du schon hast.
+• Vier Stylists, vier Sichtweisen. Wähl den, der zu dir passt.
+• Dein Stylist checkt das Wetter von heute und zieht dich passend dazu an.
+• Sag, welche Styles du liebst und welche Farben du meiden willst. Was du sagst, zählt mehr als das, was er vermutet.
+• Mitten in der Antwort weggegangen? Wir sagen dir Bescheid, sobald die Antwort da ist.
+
+OOTD-KALENDER
+• Ein Foto hält den Tag fest. Der Kalender füllt sich von selbst, mit dem Wetter jedes Tages.
+• Sieh, wozu du wirklich greifst und welche Teile du vergessen hast.
+
+BOARDS
+• Mach aus einem Outfit, einer Woche oder einem Monat voller Looks ein Moodboard.
+
+TRENDS
+• Jeden Montag eine neue Ausgabe — die Styles, Farben und Marken, die sich diese Woche bewegen, aus dem, was Mitglieder wirklich tragen.
+
+STÖBERE IN ANDEREN KLEIDERSCHRÄNKEN
+• Öffne einen Look in Trends, um zu sehen, wem er gehört, und geh dann den ganzen öffentlichen Kleiderschrank dieser Person durch.
+• Probier die Teile an dir an und speichere die, die dir gefallen.
+
+KOSTENLOS STARTEN
+• Jeden Tag 50 Credits gratis — genug für 5 Anproben. Eine Nachricht an deinen Stylist kostet nur 1.
+• Lade jemanden ein, und ihr bekommt beide 100 mehr.
 ```
 
 ## Google Play Console

@@ -41,21 +41,46 @@ it with the name, covering both "provador virtual" and "guarda-roupa virtual";
 roupas,moda,estilo,closet,armário,virtual,cápsula,lookbook,tendências,outfit,brechó,vestir,ootd
 ```
 
-**Description** (≤4000):
+**Description** (≤4000, currently 2044) — same text on App Store and Google Play (full). Updated for 2.3 on 2026-10-12.
 
 ```
-Seu guarda-roupa inteiro, no bolso.
+Todo o seu guarda-roupa, finalmente em um só lugar.
 
-Fotografe cada peça e o drape monta um guarda-roupa digital limpo: recorta o fundo e marca categoria, cor e estação sozinho. Com duas ou três fotos suas de corpo inteiro, você prova o que quiser com IA, antes de comprar e antes de vestir. Gostou de um look que viu em outra pessoa? Recrie o look inteiro em você.
+Adicione duas ou três fotos suas e veja qualquer peça no seu próprio corpo antes de usar ou comprar. Fotografe o que você já tem — o drape recorta cada peça, coloca as tags e organiza tudo para você.
 
-• Guarda-roupa digital — fotografe suas roupas; a gente recorta a peça e marca categoria, cor e estação.
-• Prova virtual — qualquer peça, ou um look completo, no seu próprio corpo. A IA preserva seu rosto e sua pose.
-• Estilista com IA — escolha um estilista pessoal e receba looks montados só com as roupas que você já tem.
-• Calendário do look do dia — registre o que você usou em cada dia e construa seu histórico de estilo.
-• Looks e painéis — combine peças em looks e monte seus painéis de inspiração.
-• Tendências — uma edição nova toda segunda-feira: os estilos, as cores e as marcas da semana.
+PROVE EM VOCÊ
+• Qualquer peça, na sua própria foto. É o seu rosto e o seu corpo de verdade, então dá para saber se fica mesmo bem em você.
+• Prove um look inteiro que você viu em outra pessoa, ou combine peças do seu guarda-roupa.
 
-Seu guarda-roupa, seu provador e seu diário de estilo. Tudo no drape.
+SEU GUARDA-ROUPA DIGITAL
+• Uma foto por peça. Removemos o fundo e marcamos categoria, cor, estação e estilo para você.
+• Com pressa? Envie a foto de um look completo e encontramos cada peça nele.
+• Busque por tag, marca ou cor. Faça o movimento de pinça na grade para ver mais peças na tela, ou menos e maiores.
+
+SEU PRÓPRIO ESTILISTA DE IA
+• Converse com o seu estilista sobre aonde você vai — ele responde com looks montados só com roupas que você já tem.
+• Quatro estilistas, quatro pontos de vista. Escolha o que tem mais a ver com você.
+• Ele confere o clima de hoje e escolhe o look de acordo.
+• Conte os estilos que você ama e as cores que quer evitar. O que você diz vale mais do que o que ele imagina.
+• Saiu no meio da resposta? Avisamos você quando ele responder.
+
+CALENDÁRIO DE OOTD
+• Uma foto registra o dia. O calendário se preenche sozinho, com o clima de cada dia.
+• Veja o que você realmente usa e quais peças ficaram esquecidas.
+
+PAINÉIS
+• Transforme um look, uma semana ou um mês de looks em um moodboard.
+
+TENDÊNCIAS
+• Uma nova edição toda segunda-feira — os estilos, cores e marcas em alta nesta semana, tirados do que os membros estão usando de verdade.
+
+EXPLORE OUTROS GUARDA-ROUPAS
+• Abra qualquer look em Tendências para ver de quem é e depois percorra todo o guarda-roupa público dessa pessoa.
+• Prove as peças dela em você e salve as que você curtir.
+
+GRÁTIS PARA COMEÇAR
+• 50 créditos grátis todo dia — o suficiente para 5 provas virtuais. Uma mensagem para o seu estilista usa só 1.
+• Convide alguém e vocês dois ganham mais 100.
 ```
 
 ## Google Play Console

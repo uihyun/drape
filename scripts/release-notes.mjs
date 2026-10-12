@@ -26,7 +26,7 @@ const LOCALES = [
   ['pt', 'Português', 'pt-BR'],
   ['de', 'Deutsch', 'de-DE'],
 ];
-const LIMIT = { appstore: 4000, play: 500 };
+const LIMIT = { appstore: 4000, play: 500, description: 4000 };
 
 // A version's notes are a bold header ending in "— <version>:" followed by a
 // fenced block. The Play block says "Play" in its header; the other is App Store.
@@ -36,6 +36,10 @@ function notesFor(md) {
   for (const m of md.matchAll(re)) {
     out[/Play/.test(m[0].split('\n')[0]) ? 'play' : 'appstore'] = m[1];
   }
+  // The store description (same text on both stores) rides along, so one
+  // page holds everything a submission pastes.
+  const d = md.match(/^\*\*(?:Description|설명|説明)\*\*[^\n]*\n+```\n([\s\S]*?)\n```/m);
+  if (d) out.description = d[1];
   return out;
 }
 
@@ -55,6 +59,7 @@ const sections = LOCALES.map(([code, name, stores]) => {
       <pre>${esc(text)}</pre></div>`;
   };
   return `<section><h2>${name} <small>${code} · ${stores}</small></h2>
+    ${block('description', 'Description — App Store + Google Play (full)')}
     ${block('appstore', 'App Store — What\u2019s New')}
     ${block('play', 'Google Play — What\u2019s new')}</section>`;
 }).join('\n');

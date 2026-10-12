@@ -38,21 +38,46 @@ the result unreadable:
 wardrobe,fashion,style,lookbook,clothes,dressing room,fit check,capsule,virtual fitting
 ```
 
-**Description** (≤4000):
+**Description** (≤4000, currently 1838) — same text on App Store and Google Play (full description). Synced to the live App Store copy and updated for 2.3 on 2026-10-12; Play still showed the older 962-character text until this is pasted there.
 
 ```
 drape is where your wardrobe lives.
 
-Snap each piece you own and drape builds a clean digital closet — auto-cut and auto-tagged. Add a few full-body photos and try anything on with AI: see clothes on your real body and face before you wear or buy them. Love a look you saw on someone else? Recreate the whole thing, right on you.
+Add two or three photos of yourself and see any piece on your own body before you wear it or buy it. Photograph what you already own — drape cuts each piece out, tags it, and files it away.
 
-• Digital closet — photograph your clothes; we cut out the garment and tag category, color, and season automatically.
-• Virtual try-on — see any item, or a full outfit, on your own body. Identity-preserving AI keeps your face and pose.
-• AI stylist — pick a personal stylist and get outfit ideas built only from the clothes you already own.
-• OOTD calendar — log what you wore each day and build your style history.
-• Outfits & boards — combine pieces into looks and mood boards.
-• Trends — a new issue every Monday: the styles, colors, and brands moving this week.
+TRY IT ON YOURSELF
+• Any piece, on your own photo. It's your real face and body, so you can tell whether it actually suits you.
+• Try on a whole look you saw on someone else, or mix pieces from your closet.
 
-Your closet, your fitting room, your style diary — all in drape.
+YOUR DIGITAL CLOSET
+• One photo per piece. We remove the background and tag category, colour, season and style for you.
+• In a hurry? Upload a photo of a full outfit and we find every piece in it.
+• Search by tag, brand or colour. Pinch the grid to fit more on screen, or fewer and larger.
+
+YOUR OWN AI STYLIST
+• Chat with your stylist about where you're going — they answer with outfits built only from clothes you already own.
+• Four stylists, four points of view. Pick the one that sounds like you.
+• They check today's weather and dress you for it.
+• Tell them the styles you love and the colours to avoid. What you say outranks what they guess.
+• Step away mid-answer and we'll let you know when they reply.
+
+OOTD CALENDAR
+• One photo logs the day. The calendar fills itself in, with each day's weather.
+• See what you actually reach for, and which pieces you've forgotten.
+
+BOARDS
+• Turn an outfit, a week or a month of looks into a moodboard.
+
+TRENDS
+• A new issue every Monday — the styles, colours and brands moving this week, drawn from what members are really wearing.
+
+BROWSE OTHER CLOSETS
+• Open any look from Trends to see whose it is, then go through their whole public closet.
+• Try their pieces on yourself and keep the ones you like.
+
+FREE TO START
+• 50 free credits every day — enough for 5 try-ons. A message to your stylist uses just 1.
+• Invite a friend and you each get 100 more.
 ```
 
 **What's New** (≤4000) — 2.1.1:

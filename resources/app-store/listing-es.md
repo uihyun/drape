@@ -44,21 +44,46 @@ spent budget:
 ropa,moda,estilo,probador,armario,guardarropa,cápsula,lookbook,tendencias,vender
 ```
 
-**Description** (≤4000):
+**Description** (≤4000, currently 1851) — same text on App Store and Google Play (full). Updated for 2.3 on 2026-10-12 from the live App Store copy.
 
 ```
-Tu armario entero, en el bolsillo.
+Toda tu ropa, por fin en un mismo sitio.
 
-Fotografía cada prenda y drape monta un armario digital limpio: recorta el fondo y etiqueta categoría, color y temporada solo. Con dos o tres fotos tuyas de cuerpo entero puedes probarte lo que quieras con IA, antes de comprarlo y antes de ponértelo. ¿Te gustó un look que viste en otra persona? Recréalo entero sobre ti.
+Sube dos o tres fotos tuyas y pruébate cualquier prenda en tu propio cuerpo antes de ponértela o comprarla. Fotografía lo que ya tienes: drape recorta cada prenda, la etiqueta y la ordena por ti.
 
-• Armario digital — fotografía tu ropa; recortamos la prenda y etiquetamos categoría, color y temporada.
-• Prueba virtual — cualquier prenda, o un look completo, sobre tu propio cuerpo. La IA conserva tu cara y tu pose.
-• Estilista con IA — elige un estilista personal y recibe looks armados solo con la ropa que ya tienes.
-• Calendario OOTD — registra lo que llevaste cada día y construye tu historial de estilo.
-• Looks y tableros — combina prendas en conjuntos y arma tus tableros de inspiración.
-• Tendencias — una edición nueva cada lunes: los estilos, colores y marcas de la semana.
+PRUÉBATELO ANTES
+• Cualquier prenda, sobre tu propia foto. Es tu cara y tu cuerpo, así que se nota enseguida si te queda bien.
+• Pruébate un look entero que viste en otra persona, o combina prendas de tu armario.
 
-Tu armario, tu probador y tu diario de estilo. Todo en drape.
+TU ARMARIO, EN DIGITAL
+• Una foto por prenda y listo. La categoría, el color, la temporada y el estilo se ponen solos.
+• ¿Con prisa? Sube la foto de un look entero y encontramos cada prenda.
+• Busca por etiqueta, marca o color. Pellizca la cuadrícula para ver más de golpe, o menos y más grande.
+
+TU ESTILISTA CON IA
+• Cuéntale a tu estilista por chat adónde vas: te responde con looks hechos solo con la ropa que ya tienes.
+• Cuatro estilistas, cuatro miradas. Elige quien más vaya contigo.
+• Tiene en cuenta el clima de hoy para vestirte.
+• Dile qué estilos te gustan y qué colores evitar. Lo que tú digas manda sobre lo que suponga.
+• ¿Te vas a mitad de la respuesta? Te avisamos cuando conteste.
+
+UNA FOTO AL DÍA
+• Con una foto queda registrado el día y el calendario se llena solo, con el clima de cada día.
+• Verás qué te pones de verdad y qué llevas meses sin tocar.
+
+TABLEROS
+• Convierte un look, una semana o un mes de looks en un moodboard.
+
+TENDENCIAS
+• Un número nuevo cada lunes: los estilos, colores y marcas que suben esta semana, sacados de lo que la gente lleva puesto.
+
+CURIOSEA OTROS ARMARIOS
+• Abre un look en Tendencias, mira de quién es y recorre su armario entero.
+• Pruébate sus prendas y guarda las que te gusten.
+
+EMPIEZA GRATIS
+• 50 créditos gratis cada día: alcanzan para 5 pruebas. Un mensaje a tu estilista gasta solo 1.
+• Invita a alguien y los dos consiguen 100 más.
 ```
 
 **What's New** (≤4000) — 2.1.1:
