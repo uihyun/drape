@@ -1811,6 +1811,12 @@ body.is-native {
 .closet-grid[data-cols="4"] .item-card-name { font-size: 0.68rem; }
 .closet-grid[data-cols="5"] { gap: 0.7rem 0.4rem; }
 .closet-grid[data-cols="5"] .item-card-name { display: none; }
+/* No label at all at 5-up (owner, 2026-10-12): at ~62px a cell, left-aligned
+   category words ran together across cells ("ACCESSORY SHIRT"). The silhouette
+   says what it is, and the category chips above filter by it. Usage view's
+   "worn 3w ago" is the one line that stays. */
+.closet-grid[data-cols="5"] .item-card-cat { display: none; }
+.closet-grid[data-cols="5"] .item-card-meta:not(:has(.item-card-elapsed)) { display: none; }
 
 /* Usage / Brands views render a stack of grouped 3-col grids. Heading
    sits flush-left above each section with a count chip on the right. */
