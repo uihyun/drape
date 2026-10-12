@@ -168,7 +168,7 @@ Un nouveau look, et un styliste avec qui discuter.
 Pensée pour les grands dressings.
 
 - Choisissez dans tout votre dressing pour les planches, tenues et essayages.
-- Votre styliste voit tout ce que vous possédez.
+- Votre styliste voit tout ce que vous possédez, répond plus vite et vous prévient dès que sa réponse arrive.
 - Un dressing plus rapide et moins gourmand en données, et des corrections pour les profils, notifications et longues conversations.
 ```
 
@@ -178,6 +178,6 @@ Pensée pour les grands dressings.
 Pensée pour les grands dressings.
 
 - Choisissez dans tout votre dressing pour les planches, tenues et essayages.
-- Votre styliste voit tout ce que vous possédez.
+- Votre styliste voit tout ce que vous possédez, répond plus vite et vous prévient dès que sa réponse arrive.
 - Un dressing plus rapide et moins gourmand en données, et des corrections pour les profils, notifications et longues conversations.
 ```
