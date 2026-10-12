@@ -153,7 +153,9 @@ export function ItemDetail({ user, onSignIn }) {
           collection(db, 'boards'),
           where('userId', '==', uid),
           orderBy('updatedAt', 'desc'),
-          limit(40),
+          // Boards don't index their item ids, so "in these boards" scans
+          // them client-side. 40 hid any older board holding this piece.
+          limit(500),
         )).catch(() => null),
       ]);
       if (cancelled) return;

@@ -7,7 +7,7 @@
 
 import {
   collection, doc, getDoc, setDoc, addDoc,
-  query, where, orderBy, limit, onSnapshot, serverTimestamp,
+  query, where, orderBy, limit, limitToLast, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../firebase.js';
@@ -109,7 +109,7 @@ export const MessageService = {
       collection(db, THREADS),
       where('participants', 'array-contains', user.uid),
       orderBy('updatedAt', 'desc'),
-      limit(50),
+      limit(200),
     );
     return onSnapshot(
       q,
@@ -124,12 +124,15 @@ export const MessageService = {
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
   },
 
-  // Live message stream for a thread (oldest → newest).
+  // Live message stream for a thread (oldest → newest), the LATEST 200.
+  // This was orderBy asc + limit(200), i.e. the FIRST 200: past 200 messages
+  // a conversation froze and new messages never showed (bug sweep,
+  // 2026-10-12). limitToLast keeps the order and the newest end.
   subscribeMessages(threadId, cb) {
     const q = query(
       collection(db, THREADS, threadId, 'messages'),
       orderBy('createdAt', 'asc'),
-      limit(200),
+      limitToLast(200),
     );
     return onSnapshot(
       q,

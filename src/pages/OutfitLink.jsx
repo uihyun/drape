@@ -67,7 +67,7 @@ export function OutfitLink({ user, onSignIn }) {
 
   useEffect(() => {
     if (!user || user.isAnonymous) { setBoards([]); return; }
-    BoardService.listMyBoards({ pageSize: 30 }).then(b => setBoards(b || [])).catch(() => setBoards([]));
+    BoardService.listMyBoards().then(b => setBoards(b || [])).catch(() => setBoards([]));
   }, [user?.uid]);
 
   const closetById = useMemo(

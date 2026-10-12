@@ -19,7 +19,7 @@ const { getModels } = require('./model-config.js');
 const MODEL = 'gemini-3.8-flash';   // default; overridable via config/models
 
 const PROFILE_TTL_MS = 12 * 60 * 60 * 1000; // refresh profile at most 2x/day
-const MAX_ITEMS = 150;          // inventory digest cap fed to the model
+const MAX_ITEMS = 400;          // inventory cap fed to the model (newest first)
 
 // Personal color is STATED by the user (usually from a paid consultation) —
 // never read off a photo, where lighting moves undertone more than the gap
@@ -113,6 +113,28 @@ function langLabel(lang) { return LANG_NAMES[lang] || 'English'; }
 
 function db() { return admin.firestore(); }
 
+// The closet as the model reads it: one compact line per item.
+//   id | name | category/subcategory | colors | styles | seasons | kind
+// It used to be JSON.stringify(inventory).slice(0, 8000). At ~210 chars an
+// item, that is ~38 items, so a 128-piece closet was mostly invisible to the
+// stylist. The cut also landed mid-item. Lines are about half the size and
+// are never cut; MAX_ITEMS is the only cap (owner bug sweep, 2026-10-12).
+function closetDigest(inventory, { withIds = true } = {}) {
+  const head = withIds
+    ? 'Format: id | name | category/subcategory | colors | styles | seasons | owned|wishlist'
+    : 'Format: name | category/subcategory | colors | styles | seasons | owned|wishlist';
+  const lines = inventory.map((i) => [
+    ...(withIds ? [i.id] : []),
+    i.name || '-',
+    [i.category, i.subcategory].filter(Boolean).join('/') || '-',
+    i.colors.join(',') || '-',
+    i.styles.join(',') || '-',
+    i.seasons.join(',') || '-',
+    i.kind,
+  ].join(' | '));
+  return [head, ...lines].join('\n');
+}
+
 // Compact one-line-per-item inventory the model can reference by id.
 async function loadInventory(uid) {
   const snap = await db().collection('items')
@@ -123,6 +145,9 @@ async function loadInventory(uid) {
   const items = [];
   snap.forEach((d) => {
     const x = d.data();
+    // Archived pieces are out of rotation, and the client's closet map drops
+    // them, so a look built on one rendered with a hole (bug sweep, 2026-10-12).
+    if (x.isArchived) return;
     const t = x.tags || {};
     items.push({
       id: d.id,
@@ -238,7 +263,7 @@ async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
     'Weigh signals: stated preferences (highest), thumbs on try-ons, what they log as daily outfits, then closet composition.',
     prev?.summary ? `PREVIOUS SUMMARY:\n${prev.summary}` : 'PREVIOUS SUMMARY: (none — first build)',
     stated ? `STATED PREFERENCES (authoritative): ${JSON.stringify(stated).slice(0, 1200)}` : '',
-    `CLOSET (${inventory.length} items): ${JSON.stringify(inventory.map(({ id, ...rest }) => rest)).slice(0, 6000)}`,
+    `CLOSET (${inventory.length} items):\n${closetDigest(inventory, { withIds: false })}`,
     `RECENT TRY-ONS: ${JSON.stringify(tryons).slice(0, 2000)}`,
     `RECENT LOOKS/OOTDS: ${JSON.stringify(looks).slice(0, 2000)}`,
   ].filter(Boolean).join('\n\n');
@@ -495,7 +520,7 @@ exports.styleRecommend = onCall(
         : '',
       profile?.avoidList?.length ? `AVOID: ${profile.avoidList.join(', ')}` : '',
       ask ? `USER REQUEST: ${ask}` : 'USER REQUEST: (none — style for a normal day this season)',
-      `CLOSET: ${JSON.stringify(inventory).slice(0, 8000)}`,
+      `CLOSET (${inventory.length} items — use only these ids):\n${closetDigest(inventory)}`,
     ].filter(Boolean).join('\n\n');
 
     let parsed;
@@ -641,7 +666,7 @@ exports.stylistChat = onCall(
       personalColorLine(stated),
       loved.length ? `THEY RATED THESE COMBINATIONS 👍 (lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
       disliked.length ? `THEY RATED THESE 👎 (do NOT repeat them or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
-      `CLOSET (id + tags): ${JSON.stringify(inventory).slice(0, 8000)}`,
+      `CLOSET (${inventory.length} items — use only these ids):\n${closetDigest(inventory)}`,
       transcript ? `EARLIER TODAY IN THIS CONVERSATION (don't re-propose the same outfit unless asked):\n${transcript}` : 'This is the first message today.',
       `User: ${text}`,
       `STAY IN CHARACTER: you are ${persona.name}. Within their stated preferences, both the outfits and the words must be recognisably yours.`,

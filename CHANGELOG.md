@@ -11,7 +11,46 @@ Conventions:
 
 ---
 
-## Unreleased — after 2.3.0 (web live; next native build)
+## 2.3.1 — every piece reachable: full-closet pickers, a stylist that sees the whole closet — version set 12 Oct 2026, not yet built
+
+iOS build 21, Android versionCode 25. Server halves are live on functions;
+the client halves are live on web.
+
+### Bug sweep: the same silent-cap class everywhere (2026-10-12)
+
+The closet report led to an audit of every `limit()`, page size and string cut
+that hides data without a "load more".
+
+- **The stylist saw only ~38 pieces.** Chat, recs and verdicts sent the closet
+  as `JSON.stringify(inventory).slice(0, 8000)`. At ~210 chars an item that is
+  about 38 items, and the cut landed mid-item. The style-profile prompt had
+  the same problem at 6000 chars.
+  - Now `closetDigest()` sends one compact line per item
+    (`id | name | cat/sub | colors | styles | seasons | kind`, about half the
+    size) and is never cut. `MAX_ITEMS` is 150 → 400.
+  - Verified on @aake with writes blocked: all four personas returned valid
+    item ids.
+- **The stylist suggested archived pieces.** `loadInventory` didn't skip
+  `isArchived`, and the client's closet map drops them, so the look rendered
+  with a hole.
+- **DM threads froze after 200 messages.** `subscribeMessages` used
+  `orderBy asc + limit(200)`, which returns the FIRST 200, so new messages
+  never appeared. It now uses `limitToLast(200)`. The inbox thread list goes
+  50 → 200.
+- **Board pickers** ("link from a board" on the outfit page and on
+  OutfitLink) stopped at the 30–40 most recent boards. `listMyBoards` now
+  defaults to all (`BOARDS_ALL` = 500).
+- **Item page "in these boards"** scanned only the 40 most recently updated
+  boards, so an older board holding the piece never showed. The scan now
+  covers 500.
+- **Left as is, noted:**
+  - Public profile grids cap at 200 outfits / 150 boards, with no paging.
+  - The Following feed reads at most 30 followed accounts (Firestore `in`
+    limit), and its marketplace row at most 30 listings.
+  - Notifications show the latest 50.
+  
+  All are newest-first, so none hides recent content; each needs real paging
+  when someone gets near the cap.
 
 ### Pickers showed only the newest 60 closet items
 

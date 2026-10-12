@@ -125,7 +125,11 @@ async function deleteBoard(boardId) {
   await deleteDoc(doc(db, BOARDS, boardId));
 }
 
-async function listMyBoards({ pageSize = 30 } = {}) {
+// Pickers (link from a board, piece linking) need every board, not the 30
+// most recent: same silent-cap bug as the closet's limit(60) (2026-10-12).
+export const BOARDS_ALL = 500;
+
+async function listMyBoards({ pageSize = BOARDS_ALL } = {}) {
   const user = auth.currentUser;
   if (!user) return [];
   const snap = await getDocs(query(

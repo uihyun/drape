@@ -42,7 +42,7 @@ export function PieceLinkSheet({ user, piece, currentId = null, onSave, onClose 
 
   useEffect(() => {
     if (tab !== 'boards' || boards) return;
-    BoardService.listMyBoards({ pageSize: 40 }).then((b) => setBoards(b || [])).catch(() => setBoards([]));
+    BoardService.listMyBoards().then((b) => setBoards(b || [])).catch(() => setBoards([]));
   }, [tab, boards]);
 
   const byId = useMemo(() => Object.fromEntries((closet || []).map((i) => [i.id, i])), [closet]);
