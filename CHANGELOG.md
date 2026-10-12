@@ -15,7 +15,9 @@ Conventions:
 
 iOS build 21, Android versionCode 25. AAB at
 `resources/app-store/builds/drape-2.3.1-25.aab` (upload key, SHA-1 4F:27…F5:DE).
-Store notes: `listing-*.md` → 2.3.1. Server halves are live on functions;
+Store notes: `listing-*.md` → 2.3.1.
+Rebuilt 12 Oct (afternoon) to carry the stylist presence and reply notification,
+no foreground banners, and the 5-column closet. iOS is re-archived by the owner. Server halves are live on functions;
 the client halves are live on web.
 
 ### Faster everywhere: low thinking on every text call, 4 vCPUs for background removal
