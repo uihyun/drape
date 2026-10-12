@@ -18,6 +18,12 @@ iOS build 21, Android versionCode 25. AAB at
 Store notes: `listing-*.md` → 2.3.1. Server halves are live on functions;
 the client halves are live on web.
 
+### Closet: no labels at 5 columns
+
+At ~62px a cell, left-aligned category words read as one phrase across cells
+("ACCESSORY SHIRT"). At 5-up the grid shows silhouettes only; the category
+chips above still filter. Owner checked it on web before the rebuild.
+
 ### Grid thumbnails + off-screen skipping (big closets)
 
 Real closets reach 1,462 pieces. Every grid drew the full cutout, a 340–650 KB
