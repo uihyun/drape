@@ -117,6 +117,22 @@ The report is at `.crop-ab/model-ab/2026-10-09-merged/report.html`
 \* Chat times are inflated on both sides: with writes blocked, the style
 profile was rebuilt on every call.
 
+## Thinking level (2026-10-12)
+
+Gemini 3.x Flash reasons before answering by default. 3.8-flash defaults to
+'medium' and accepts low / medium / high (not 'minimal'). Thought tokens are
+billed as output. On the stylist chat prompt:
+
+| model / setting | avg reply | thought tokens |
+|---|---|---|
+| 3.5-flash default | 10.6s | ~1,900 |
+| 3.8-flash default (medium) | 12.4s | ~1,500 |
+| **3.8-flash low** | **3.7s** | 0 |
+
+Interactive stylist calls use `config/models.chatThinking` (default 'low',
+editable in /admin → AI models). Background calls (tagging, profile
+summary) keep the model default.
+
 ## How to switch / roll back
 
 /admin → Config → models. Set `vision`, `imageCrop` or `imageTryon` (and

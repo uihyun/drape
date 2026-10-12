@@ -87,6 +87,7 @@ export const es = {
   notifLikedLook: 'le gustó tu look',
   notifLikedBoard: 'le gustó tu tablero',
   notifModeration: 'Tu look fue ocultado — su imagen se marcó como inapropiada.',
+  notifStylistReplied: 'te respondió',
   followers: 'Seguidores',
   following: 'Siguiendo',
   followersEmpty: 'Todavía no tienes seguidores.',

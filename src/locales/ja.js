@@ -83,6 +83,7 @@ export const ja = {
   notifLikedLook: 'さんがあなたのルックにいいねしました',
   notifLikedBoard: 'さんがあなたのボードにいいねしました',
   notifModeration: '画像が不適切と判断され、ルックの公開が取り消されました。',
+  notifStylistReplied: '返信しました',
   followers: 'フォロワー',
   following: 'フォロー中',
   followersEmpty: 'まだフォロワーがいません。',

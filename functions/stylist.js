@@ -10,9 +10,12 @@
 
 const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { defineSecret } = require('firebase-functions/params');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { reserveCredits, refundCredits, PRICE } = require('./credits.js');
+const { notifyStylistReply } = require('./notifications.js');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const { getModels } = require('./model-config.js');
@@ -209,6 +212,25 @@ function cleanOutfits(raw, inventory, max) {
 // portrait. Incremental on purpose: prompt = previous summary + deltas, so
 // cost stays flat as history grows. Refreshed lazily from styleRecommend
 // when stale; safe to call concurrently (last write wins, content converges).
+// The interactive paths (chat, verdict, recs) never wait on a rebuild
+// (owner, 2026-10-12): a rebuild is a second model call. Before this, the first
+// message after any closet change took ~8–10s longer. They read whatever
+// profile exists and, if it's stale, queue a rebuild for the background
+// worker. Only a user with no profile at all gets one built inline, once.
+const profileQueue = (uid) => db().collection('profileQueue').doc(uid);
+function queueProfile(uid, reason) {
+  return profileQueue(uid).set({ at: admin.firestore.FieldValue.serverTimestamp(), reason }, { merge: true })
+    .catch((e) => console.warn('queueProfile failed', uid, e?.message));
+}
+async function styleProfileFast(uid, genAI) {
+  const snap = await db().collection('users').doc(uid).collection('private').doc('styleProfile').get();
+  if (!snap.exists) return ensureStyleProfile(uid, genAI);
+  const prev = snap.data();
+  const stale = !prev.updatedAt?.toMillis || Date.now() - prev.updatedAt.toMillis() >= PROFILE_TTL_MS;
+  if (stale) queueProfile(uid, 'stale');
+  return prev;
+}
+
 async function ensureStyleProfile(uid, genAI, { force = false } = {}) {
   const ref = db().collection('users').doc(uid).collection('private').doc('styleProfile');
   const snap = await ref.get();
@@ -365,7 +387,7 @@ exports.styleVerdict = onCall(
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
-      profile = await ensureStyleProfile(uid, genAI);
+      profile = await styleProfileFast(uid, genAI);
     } catch (e) {
       await refundStylistUse(uid, res);
       throw e;
@@ -388,7 +410,7 @@ exports.styleVerdict = onCall(
     const langName = langLabel(lang);
     const model = genAI.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).chatThinking } },
     });
     const prompt = [
       `You are ${persona.name}, a personal fashion stylist inside the drape app.`,
@@ -493,7 +515,7 @@ exports.styleRecommend = onCall(
     const genAI = new GoogleGenerativeAI(geminiApiKey.value());
     let profile;
     try {
-      profile = await ensureStyleProfile(uid, genAI);
+      profile = await styleProfileFast(uid, genAI);
     } catch (e) {
       await refundStylistUse(uid, res);
       throw e;
@@ -501,7 +523,7 @@ exports.styleRecommend = onCall(
 
     const model = genAI.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).chatThinking } },
     });
     const langName = langLabel(lang);
     const prompt = [
@@ -530,6 +552,7 @@ exports.styleRecommend = onCall(
       // prompt and the taste blocks below it are far more specific. Without
       // this, four stylists converge on the same safe outfit.
       `STAY IN CHARACTER: you are ${persona.name}. Within the user's stated preferences, both the outfits and the writing must be recognisably YOURS — another stylist given this same closet should reach a visibly different answer and describe it in a different voice. Apply your signature, honour your refusals, and keep every "why" under 18 words.`,
+      `LANGUAGE: every title and every why is in ${langName}. Your persona's example titles are English only to show the style; carry the style over, never the English words.`,
       loved.length ? `THEY RATED THESE COMBINATIONS 👍 (item ids — lean into what these share): ${JSON.stringify(loved.slice(0, 6))}` : '',
       disliked.length ? `THEY RATED THESE 👎 (do NOT repeat these combinations or their defining traits): ${JSON.stringify(disliked.slice(0, 6))}` : '',
       alreadyProposed.length
@@ -642,7 +665,7 @@ exports.stylistChat = onCall(
     let weather = null;
     try {
       [profile, weather] = await Promise.all([
-        ensureStyleProfile(uid, genAI),
+        styleProfileFast(uid, genAI),
         place ? fetchDay(place, day).catch(() => null) : null,
       ]);
     } catch (e) {
@@ -659,7 +682,7 @@ exports.stylistChat = onCall(
 
     const model = genAI.getGenerativeModel({
       model: (await getModels()).vision,
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingLevel: (await getModels()).chatThinking } },
     });
     const prompt = [
       `You are ${persona.name}, a personal fashion stylist inside the drape app, chatting with the user.`,
@@ -687,6 +710,9 @@ exports.stylistChat = onCall(
       transcript ? `EARLIER TODAY IN THIS CONVERSATION (don't re-propose the same outfit unless asked):\n${transcript}` : 'This is the first message today.',
       `User: ${text}`,
       `STAY IN CHARACTER: you are ${persona.name}. Within their stated preferences, both the outfits and the words must be recognisably yours.`,
+      // Last line on purpose. At thinkingLevel 'low' the persona's English
+      // example titles leaked through as-is in a Korean chat (2026-10-12).
+      `LANGUAGE: every string you output (reply, every title, every why) is in ${langName}. Your persona's example titles are English only to show the style; carry the style over, never the English words.`,
     ].filter(Boolean).join('\n\n');
 
     let parsed;
@@ -736,6 +762,12 @@ exports.stylistChat = onCall(
       ...(history.length ? {} : { firstMessage: text.slice(0, 140), startedAt: admin.firestore.FieldValue.serverTimestamp() }),
     }, { merge: true });
     await batch.commit();
+    // Tell them if they've wandered off while it was writing (no-op when the
+    // chat is on screen). Awaited: work after the response is not guaranteed.
+    await notifyStylistReply(uid, {
+      persona: personaKey, personaName: persona.name, personaImg: `/stylists/${personaKey}.webp`,
+      thread: `${personaKey}_${day}`, reply,
+    });
 
     return {
       dayKey: day,
@@ -745,3 +777,36 @@ exports.stylistChat = onCall(
   },
 );
 
+
+// ── Background profile worker ──────────────────────────────────────────
+// New pieces and new outfits queue their owner. Every 15 minutes the queue is
+// drained: ensureStyleProfile still skips the model call when nothing
+// actually moved, so a queued-but-unchanged user costs one read.
+exports.onItemQueueProfile = onDocumentCreated('items/{itemId}', (event) => {
+  const uid = event.data?.data()?.userId;
+  return uid ? queueProfile(uid, 'item') : null;
+});
+exports.onOutfitQueueProfile = onDocumentCreated('outfits/{outfitId}', (event) => {
+  const uid = event.data?.data()?.userId;
+  return uid ? queueProfile(uid, 'outfit') : null;
+});
+exports.drainProfileQueue = onSchedule(
+  { schedule: 'every 15 minutes', secrets: [geminiApiKey], timeoutSeconds: 540, memory: '512MiB' },
+  async () => {
+    const snap = await db().collection('profileQueue').orderBy('at').limit(60).get();
+    if (snap.empty) return;
+    const genAI = new GoogleGenerativeAI(geminiApiKey.value());
+    let built = 0;
+    for (const d of snap.docs) {
+      const queuedAt = d.data().at;
+      try { await ensureStyleProfile(d.id, genAI); built++; }
+      catch (e) { console.warn('profile rebuild failed', d.id, e?.message); }
+      // Only clear the entry if nothing re-queued it while we worked.
+      await db().runTransaction(async (txn) => {
+        const cur = await txn.get(d.ref);
+        if (cur.exists && cur.data().at?.isEqual?.(queuedAt)) txn.delete(d.ref);
+      }).catch(() => {});
+    }
+    console.log('drainProfileQueue', { queued: snap.size, built });
+  },
+);

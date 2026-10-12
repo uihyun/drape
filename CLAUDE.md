@@ -82,6 +82,15 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   only inbox + bell). A 5th slot for notifications/DMs was rejected on data —
   nearly nobody receives either yet; revisit when that changes. The Tour walks
   the bar; bump `TOUR_KEY` only when where things live changes, never for copy.
+- **The stylist must answer fast: nothing slow on the request path.**
+  - Chat, verdict and recs run at `thinkingLevel: config/models.chatThinking`
+    (default 'low'). At 3.8-flash's default 'medium' a reply took 12–33s; at
+    'low' it takes ~6s.
+  - They read the style profile with `styleProfileFast`; rebuilds happen in
+    `drainProfileQueue`. Never await a profile rebuild, or any other model
+    call, before the reply.
+  - A reply to someone not on the thread (`users.stylistViewing` older than
+    45s) sends a bell row and a push.
 - **The stylist is a chat; threads are server-written.**
   `users/{uid}/stylistChats/{persona}_{YYYY-MM-DD}/messages`: one thread per
   persona per local day; past days are the read-only archive. Rules allow

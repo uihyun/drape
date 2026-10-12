@@ -86,6 +86,7 @@ export const fr = {
   notifLikedLook: 'a aimé votre look',
   notifLikedBoard: 'a aimé votre planche',
   notifModeration: 'Votre look a été masqué — son image a été signalée comme inappropriée.',
+  notifStylistReplied: 'vous a répondu',
   followers: 'Abonnés',
   following: 'Abonnements',
   followersEmpty: 'Aucun abonné pour l’instant.',

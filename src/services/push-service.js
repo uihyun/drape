@@ -35,6 +35,7 @@ function routeForNotification(data = {}) {
   if (data.outfitId) return `/o/${data.outfitId}`;
   if (data.type === 'follow' && data.handle) return `/u/${data.handle}`;
   if (data.type === 'reminder') return '/feed';
+  if (data.type === 'stylist' && data.persona) return `/stylist?persona=${encodeURIComponent(data.persona)}`;
   return null;
 }
 

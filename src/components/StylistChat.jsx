@@ -45,6 +45,27 @@ export function StylistChat({ user, persona, closet, saved, credits, weatherOn =
   }, [uid, persona.id, viewDay]);
 
 
+  // Presence for the reply notification: while today's thread is on screen
+  // (and the app is in front), tell the server so it doesn't push a reply the
+  // user is watching arrive. Refreshed every 30s (the server trusts it for
+  // 45s); cleared on leave, on backgrounding and on page unload.
+  useEffect(() => {
+    if (!isToday) return undefined;
+    const thread = `${persona.id}_${today}`;
+    const ping = () => StylistService.setViewing(uid, document.visibilityState === 'visible' ? thread : null);
+    ping();
+    const leave = () => StylistService.setViewing(uid, null);
+    const timer = setInterval(ping, 30 * 1000);
+    document.addEventListener('visibilitychange', ping);
+    window.addEventListener('pagehide', leave);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', ping);
+      window.removeEventListener('pagehide', leave);
+      StylistService.setViewing(uid, null);
+    };
+  }, [uid, persona.id, today, isToday]);
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages?.length, pending]);

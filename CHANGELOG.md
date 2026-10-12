@@ -18,6 +18,47 @@ iOS build 21, Android versionCode 25. AAB at
 Store notes: `listing-*.md` → 2.3.1. Server halves are live on functions;
 the client halves are live on web.
 
+### Stylist: replies in ~6s (from 12–33s), and a push when you've left
+
+- **Measured first.** Cloud Run logs for the last week put real chat replies
+  at 12–20s, up to 33s.
+- **Thinking level.** 3.8-flash reasons at 'medium' by default (~1.5k thought
+  tokens, billed as output). On the chat prompt, medium averaged 12.4s and
+  'low' averaged 3.7s with 0 thought tokens. 'minimal' is rejected by 3.8;
+  3.5-flash also thinks by default (~1.9k tokens).
+  - Chat, verdict and recs now pass
+    `thinkingConfig.thinkingLevel = config/models.chatThinking`, default
+    'low', switchable in /admin → AI models. The style-profile summary keeps
+    the default.
+  - Four-persona check at low (writes blocked, 1,521-item closet): voices
+    stay distinct.
+  - One regression, fixed: an English persona example title leaked into a
+    Korean chat. A closing LANGUAGE line now covers chat and recs.
+- **Style profile off the request path.** The first message after any closet
+  change waited on a second model call to rebuild the profile.
+  - Chat, verdict and recs now read the existing profile
+    (`styleProfileFast`) and queue a rebuild when it's stale. Only a user
+    with no profile builds inline, once.
+  - New items and outfits queue their owner (`onItemQueueProfile` /
+    `onOutfitQueueProfile`), and `drainProfileQueue` rebuilds every 15
+    minutes. `ensureStyleProfile` still skips users whose inputs didn't
+    move.
+- **Result.** With the rig (writes blocked, 1,521 items) chat went from
+  26–35s to 4.6–5.8s. Live: one real chat took **6.0s** on the server.
+- **Reply notification.**
+  - While today's thread is on screen, the chat keeps
+    `users/{uid}.stylistViewing = { thread, at }` fresh (every 30s; cleared
+    on leave, backgrounding and pagehide).
+  - When a reply is saved and that isn't fresh (<45s) for its thread,
+    `notifyStylistReply` writes a bell row ("Sol replied to you" + preview)
+    and a native push (title = stylist, body = start of the reply).
+  - Both open `/stylist?persona=<id>` on that stylist.
+  - Verified live on @aake: switching tabs mid-reply produced the row, and
+    tapping it opened Sol's chat with the reply. Staying on screen produced
+    none.
+- **Also fixed:** push copy had no es/fr, so those users got English. All
+  rows now cover five languages.
+
 ### Closet: no labels at 5 columns
 
 At ~62px a cell, left-aligned category words read as one phrase across cells

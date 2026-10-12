@@ -23,6 +23,7 @@ function linkFor(n) {
   if (n.type === 'follow') return n.actorHandle ? `/u/${n.actorHandle}` : null;
   if (n.targetType === 'board') return `/boards/${n.targetId}`;
   if (n.targetType === 'outfit') return `/o/${n.targetId}`;
+  if (n.type === 'stylist') return `/stylist?persona=${encodeURIComponent(n.targetId || '')}`;
   return null;
 }
 
@@ -64,6 +65,7 @@ export function Notifications({ user, onSignIn }) {
     if (n.type === 'tryon') return t('notifTriedOn');
     if (n.type === 'like') return t(board ? 'notifLikedBoard' : 'notifLikedLook');
     if (n.type === 'moderation') return t('notifModeration');
+    if (n.type === 'stylist') return t('notifStylistReplied');
     return t(board ? 'notifCommentedBoard' : 'notifCommentedLook');
   };
   const nameLabel = (n) => (

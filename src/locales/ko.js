@@ -81,6 +81,7 @@ export const ko = {
   notifLikedLook: '님이 내 룩을 좋아해요',
   notifLikedBoard: '님이 내 보드를 좋아해요',
   notifModeration: '이미지가 부적합으로 판단되어 룩 공개가 해제됐어요.',
+  notifStylistReplied: '답장을 보냈어요',
   followers: '팔로워',
   following: '팔로잉',
   followersEmpty: '아직 팔로워가 없어요.',

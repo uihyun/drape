@@ -148,9 +148,19 @@ async function listArchive(uid, persona, { exclude } = {}) {
     .slice(0, 60);
 }
 
+// "I'm looking at this thread right now", so the server doesn't push a reply
+// the user is already watching arrive (functions/notifications.js
+// notifyStylistReply; trusted for 45s, refreshed every 30s by the chat).
+// null clears it. Best-effort: a failed write only means an extra push.
+function setViewing(uid, thread) {
+  if (!uid) return Promise.resolve();
+  return updateDoc(doc(db, 'users', uid), {
+    stylistViewing: thread ? { thread, at: serverTimestamp() } : deleteField(),
+  }).catch(() => {});
+}
 
 export const StylistService = {
   recommend, verdict, rateRec, saveLook, unsaveLook, setLookBoard, subscribeSavedLooks,
-  chat, subscribeThread, listArchive,
+  chat, subscribeThread, listArchive, setViewing,
 };
 export default StylistService;

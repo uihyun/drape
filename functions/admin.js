@@ -704,7 +704,7 @@ exports.adminSetConfig = onCall(opts, async (request) => {
   // AI model ids (config/models) — separate doc, same never-break contract:
   // anything invalid is rejected here so a typo can't reach production.
   if (request.data?.models !== undefined) {
-    const { MODEL_RE, MODEL_SIZES, MODEL_DEFAULTS } = require('./model-config.js');
+    const { MODEL_RE, MODEL_SIZES, MODEL_DEFAULTS, MODEL_THINKING } = require('./model-config.js');
     const m = request.data.models;
     if (m === null) {
       await admin.firestore().collection('config').doc('models').delete();
@@ -722,6 +722,10 @@ exports.adminSetConfig = onCall(opts, async (request) => {
       if (m[key] === undefined || m[key] === '') continue;
       if (!MODEL_SIZES.includes(m[key])) throw new HttpsError('invalid-argument', `bad size: ${key}`);
       clean[key] = m[key];
+    }
+    if (m.chatThinking !== undefined && m.chatThinking !== '') {
+      if (!MODEL_THINKING.includes(m.chatThinking)) throw new HttpsError('invalid-argument', 'bad chatThinking');
+      clean.chatThinking = m.chatThinking;
     }
     await admin.firestore().collection('config').doc('models').set(clean);
     return { ok: true, models: clean };

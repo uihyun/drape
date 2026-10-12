@@ -20,10 +20,17 @@ const DEFAULTS = {
   imageCropSize: '1K',
   imageTryon: 'gemini-3.1-flash-image',       // the try-on render
   imageTryonSize: '1K',
+  // Reasoning depth for the stylist's interactive calls (chat, verdict, recs).
+  // 3.8-flash defaults to 'medium', ~1.5k thought tokens: 12.4s a reply in
+  // the 2026-10-12 bench vs 3.7s at 'low' (0 thought tokens). Thought tokens
+  // bill as output. 'minimal' isn't accepted by 3.8 (API error), so it's not
+  // offered.
+  chatThinking: 'low',
 };
 
 const MODEL_RE = /^[a-z0-9][a-z0-9.\-]{2,63}$/;   // gemini-3.1-flash-image, etc.
 const SIZES = ['1K', '2K', '4K'];
+const THINKING = ['low', 'medium', 'high'];
 const TTL_MS = 5 * 60 * 1000;
 
 let cache = { at: 0, value: { ...DEFAULTS } };
@@ -39,6 +46,7 @@ function sane(raw) {
   for (const key of ['imageCropSize', 'imageTryonSize']) {
     if (SIZES.includes(raw[key])) out[key] = raw[key];
   }
+  if (THINKING.includes(raw.chatThinking)) out.chatThinking = raw.chatThinking;
   return out;
 }
 
@@ -69,4 +77,4 @@ async function getModels() {
   return cache.at === 0 ? inflight : cache.value;
 }
 
-module.exports = { getModels, MODEL_DEFAULTS: DEFAULTS, MODEL_RE, MODEL_SIZES: SIZES };
+module.exports = { getModels, MODEL_DEFAULTS: DEFAULTS, MODEL_RE, MODEL_SIZES: SIZES, MODEL_THINKING: THINKING };

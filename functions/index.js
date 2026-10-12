@@ -174,6 +174,10 @@ exports.styleRecommend = stylistFns.styleRecommend;
 exports.styleVerdict = stylistFns.styleVerdict;
 // Per-persona, per-day chat that replaced the one-shot recommender in the app.
 exports.stylistChat = stylistFns.stylistChat;
+// Style profiles rebuild in the background, off the chat path.
+exports.onItemQueueProfile = stylistFns.onItemQueueProfile;
+exports.onOutfitQueueProfile = stylistFns.onOutfitQueueProfile;
+exports.drainProfileQueue = stylistFns.drainProfileQueue;
 
 // ── Share-import (SPEC-1.6 §A: shared URL → og:image → analyze flow) ────
 const importFns = require('./import.js');

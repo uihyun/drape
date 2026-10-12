@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bookmark, X, LayoutGrid, Loader2, ChevronDown } from 'lucide-react';
 import { analytics, logEvent } from '../firebase.js';
 import { useLocale } from '../hooks/useLocale.jsx';
@@ -23,7 +23,17 @@ const PAGE = 3;
 export function Stylist({ user, onSignIn }) {
   const { t } = useLocale();
   const navigate = useNavigate();
-  const [persona, setPersona] = useState(getChosenPersona());
+  // A reply notification opens /stylist?persona=<id> on that stylist's chat.
+  const [search, setSearch] = useSearchParams();
+  const fromLink = search.get('persona');
+  const [persona, setPersona] = useState(() => (
+    STYLIST_PERSONAS.some((p) => p.id === fromLink) ? fromLink : getChosenPersona()
+  ));
+  useEffect(() => {
+    if (!fromLink) return;
+    if (STYLIST_PERSONAS.some((p) => p.id === fromLink)) { setChosenPersona(fromLink); setPersona(fromLink); }
+    setSearch({}, { replace: true });
+  }, [fromLink]);   // eslint-disable-line react-hooks/exhaustive-deps
   const [choosing, setChoosing] = useState(false);
   const [closet, setCloset] = useState(null); // id → item (thumbnails)
   const [profile, setProfile] = useState(null);

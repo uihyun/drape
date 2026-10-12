@@ -922,7 +922,13 @@ function ModelsCard() {
     ['imageCrop', 'item cutout'],
     ['imageTryon', 'try-on render'],
   ];
-  const SIZES = [['imageCropSize', 'cutout size'], ['imageTryonSize', 'try-on size']];
+  const SIZES = [
+    ['imageCropSize', 'cutout size', ['1K', '2K', '4K']],
+    ['imageTryonSize', 'try-on size', ['1K', '2K', '4K']],
+    // Reasoning depth for stylist chat / verdicts / recs: low ≈ 4s a reply,
+    // medium ≈ 12s (bench 2026-10-12).
+    ['chatThinking', 'stylist thinking', ['low', 'medium', 'high']],
+  ];
   return (
     <>
       <h3 className="adm-h3"><span className="adm-hinted" tabIndex={0} data-hint="The live model ids. Editable here and picked up within five minutes without a functions deploy; blank falls back to the built-in default.">AI models</span> <span className="adm-muted">(live in ≤5 min, no deploy — blank = built-in default)</span></h3>
@@ -940,10 +946,10 @@ function ModelsCard() {
             />
           </div>
         ))}
-        {SIZES.map(([k, label]) => (
+        {SIZES.map(([k, label, opts]) => (
           <div className="adm-cfgrow" key={k}>
             <span className="adm-cfglang" style={{ width: 'auto', minWidth: 210 }}>{label}</span>
-            {['1K', '2K', '4K'].map((sz) => (
+            {opts.map((sz) => (
               <button
                 key={sz}
                 className={`adm-btn${(vals[k] || defs[k]) === sz ? ' on' : ''}`}

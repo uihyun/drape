@@ -81,6 +81,7 @@ export const en = {
   notifLikedLook: 'liked your look',
   notifLikedBoard: 'liked your board',
   notifModeration: 'Your look was hidden — its image was flagged as inappropriate.',
+  notifStylistReplied: 'replied to you',
   followers: 'Followers',
   following: 'Following',
   followersEmpty: 'No followers yet.',
