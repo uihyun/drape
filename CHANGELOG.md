@@ -36,6 +36,11 @@ PNG that is about 4 MB decoded, so scrolling that closet would pull ~700 MB.
   OutfitLink, piece rows, board miniatures, the stylist and try-on strips,
   and marketplace cards. Item detail, outfit heroes and the board canvas keep
   the full cutout.
+- **Exceptions that keep the full cutout:**
+  - The closet at 1–2 columns: a card there is up to ~1,170 device px, and
+    the 480px thumb went soft.
+  - Marketplace cards: 2 columns is ~600 px, and the listing photo is what
+    sells.
 - **Off-screen skipping:** `content-visibility: auto` is on the
   aspect-ratio image boxes (`.item-card-image`, `.plink-item`, listing,
   try-on and board covers). Off-screen ones skip layout, paint and decode

@@ -95,7 +95,9 @@ export function Marketplace() {
 }
 
 export function ListingCard({ item, t, ids, index }) {
-  const cover = itemThumb(item);
+  // Two columns on a phone is ~600 device px a card, past the 480px thumb,
+  // and a listing photo is what sells, so it keeps the full cutout.
+  const cover = item.croppedUrl || item.originalUrl || itemThumb(item);
   return (
     <Link to={`/i/${item.id}`} state={buildSwipeState(ids, index, 'item')} className="listing-card">
       <div className="listing-card-image">

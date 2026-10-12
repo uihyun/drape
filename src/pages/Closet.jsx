@@ -327,7 +327,7 @@ export function Closet({ user, authReady, onSignIn, embedded = false }) {
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
           {filtered.map((item, i) => (
-            <ItemCard key={item.id} flipId={item.id} item={item} ids={filteredIds} index={i} t={t} />
+            <ItemCard key={item.id} flipId={item.id} item={item} ids={filteredIds} index={i} t={t} large={cols <= 2} />
           ))}
         </div>
       )}
@@ -404,6 +404,7 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
                 t={t}
                 ids={g.items.map(it => it.id)}
                 index={idx}
+                large={cols <= 2}
                 elapsed={showElapsed ? elapsedLabel(item.lastWornAt, t) : null}
               />
             ))}
@@ -414,11 +415,14 @@ function GroupedList({ groups, cols, t, showElapsed = false }) {
   );
 }
 
-function ItemCard({ item, t, elapsed = null, ids, index, flipId = null }) {
+function ItemCard({ item, t, elapsed = null, ids, index, flipId = null, large = false }) {
   const [retrying, setRetrying] = useState(false);
   const processing = item.status === 'processing' || item.status === 'uploading' || retrying;
   const failed = item.status === 'failed' && !retrying;
-  const cover = itemThumb(item);
+  // At 1–2 columns a card is ~190–390 CSS px wide, i.e. up to ~1,170 device
+  // px on a 3× phone, too big for the 480px thumb, which would look soft.
+  // Those sizes show few cards at a time, so the full cutout costs little.
+  const cover = large ? (item.croppedUrl || item.originalUrl || itemThumb(item)) : itemThumb(item);
   // Re-run the crop/tag pipeline on a stuck/failed item without leaving the
   // closet. The card is a Link, so stop the tap from navigating.
   const retry = async (e) => {
