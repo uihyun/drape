@@ -187,3 +187,27 @@ Un nuevo diseño y una estilista con quien conversar.
 - Convierte un outfit, una semana o un mes en un tablero.
 - Las pruebas y el chat ahora usan créditos: 50 gratis al día, las mismas 5 pruebas de siempre.
 ```
+
+**What's New** (≤4000) — 2.3.1:
+
+```
+Pensada para armarios grandes.
+
+- Al crear tableros y outfits o al probarte prendas, ya puedes elegir cualquier prenda, no solo las 60 más recientes.
+- Tu estilista ahora tiene en cuenta todo tu armario.
+- El armario carga más rápido y usa menos datos.
+- Los perfiles muestran todos tus looks y tableros, y las notificaciones siguen cargando al desplazarte.
+- Corregimos las conversaciones largas que dejaban de actualizarse.
+```
+
+**Novedades** (Play, ≤500) — 2.3.1:
+
+```
+Pensada para armarios grandes.
+
+- Al crear tableros y outfits o al probarte prendas, ya puedes elegir cualquier prenda, no solo las 60 más recientes.
+- Tu estilista ahora tiene en cuenta todo tu armario.
+- El armario carga más rápido y usa menos datos.
+- Los perfiles muestran todos tus looks y tableros, y las notificaciones siguen cargando al desplazarte.
+- Corregimos las conversaciones largas que dejaban de actualizarse.
+```

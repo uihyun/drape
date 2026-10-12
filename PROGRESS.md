@@ -2,6 +2,12 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
+**2.3.1 (12 Oct).** AAB at `resources/app-store/builds/drape-2.3.1-25.aab`
+(versionCode 25; iOS build 21 still needs archiving in Xcode). It carries the
+full-closet pickers, grid thumbnails, public-profile and notification paging,
+and the DM fix to the apps. The stylist, thumbnail trigger and backfill are
+already live on the server.
+
 ## Next candidates — big closets (written 2026-10-12)
 
 Closet sizes among real users (2026-10-12): 62 have 1–9 pieces, 12 have
@@ -85,7 +91,7 @@ already plays the JEV role. The missing piece is real-time rendering.
 4. **Only then build:** the stylist chat drives the outfit choice (already
    exists); the live view renders it.
 
-## Snapshot — 2026-10-09 (2.3.0 submitted to both stores, in review)
+## Snapshot — 2026-10-12 (2.3.0 live; 2.3.1 built, iOS archive + submission pending)
 
 Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
 27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24).

@@ -11,9 +11,11 @@ Conventions:
 
 ---
 
-## 2.3.1 — every piece reachable: full-closet pickers, a stylist that sees the whole closet — version set 12 Oct 2026, not yet built
+## 2.3.1 — every piece reachable: full-closet pickers, a stylist that sees the whole closet — built 12 Oct 2026
 
-iOS build 21, Android versionCode 25. Server halves are live on functions;
+iOS build 21, Android versionCode 25. AAB at
+`resources/app-store/builds/drape-2.3.1-25.aab` (upload key, SHA-1 4F:27…F5:DE).
+Store notes: `listing-*.md` → 2.3.1. Server halves are live on functions;
 the client halves are live on web.
 
 ### Grid thumbnails + off-screen skipping (big closets)

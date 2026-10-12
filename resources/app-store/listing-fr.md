@@ -161,3 +161,27 @@ Un nouveau look, et un styliste avec qui discuter.
 - Faites d’une tenue, d’une semaine ou d’un mois une planche.
 - Essayages et chat passent aux crédits : 50 gratuits par jour, soit 5 essayages.
 ```
+
+**What's New** (≤4000) — 2.3.1:
+
+```
+Pensée pour les grands dressings.
+
+- Pour créer des planches et des tenues ou essayer, toutes vos pièces sont là, pas seulement les 60 plus récentes.
+- Votre styliste tient compte de tout votre dressing.
+- Le dressing se charge plus vite et consomme moins de données.
+- Les profils affichent toutes vos tenues et planches, et les notifications se chargent au défilement.
+- Les longues conversations se mettent de nouveau à jour.
+```
+
+**Nouveautés** (Play, ≤500) — 2.3.1:
+
+```
+Pensée pour les grands dressings.
+
+- Pour créer des planches et des tenues ou essayer, toutes vos pièces sont là, pas seulement les 60 plus récentes.
+- Votre styliste tient compte de tout votre dressing.
+- Le dressing se charge plus vite et consomme moins de données.
+- Les profils affichent toutes vos tenues et planches, et les notifications se chargent au défilement.
+- Les longues conversations se mettent de nouveau à jour.
+```
