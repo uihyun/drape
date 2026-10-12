@@ -117,8 +117,15 @@ async function createItem({ blob, mime = 'image/jpeg', shopUrl = '' }) {
   return { id: itemId };
 }
 
-/** Subscribe to the current user's closet in modified-time DESC. */
-function subscribeMyCloset(uid, onChange, { pageSize = 60 } = {}) {
+// Every picker (board "Add items", outfit builder, try-on, piece linking,
+// stylist thumbnails) needs the WHOLE closet. The default used to be 60, so a
+// 128-piece closet silently stopped at the newest 60 everywhere except the
+// Closet grid, which pages on its own (user report, 2026-10-10). Only callers
+// that genuinely page — the Closet grid, the launch warm-up — pass a pageSize.
+export const CLOSET_ALL = 2000;
+
+/** Subscribe to the current user's closet, newest first. */
+function subscribeMyCloset(uid, onChange, { pageSize = CLOSET_ALL } = {}) {
   const q = query(
     collection(db, ITEMS),
     where('userId', '==', uid),

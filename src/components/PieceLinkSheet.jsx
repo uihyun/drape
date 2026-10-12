@@ -38,7 +38,7 @@ export function PieceLinkSheet({ user, piece, currentId = null, onSave, onClose 
 
   useEffect(() => ItemService.subscribeMyCloset(user.uid, (list) => (
     setCloset(list.filter((i) => i.status === 'ready' && !i.isArchived))
-  ), { pageSize: 500 }), [user.uid]);
+  )), [user.uid]);
 
   useEffect(() => {
     if (tab !== 'boards' || boards) return;

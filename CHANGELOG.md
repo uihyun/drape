@@ -11,6 +11,31 @@ Conventions:
 
 ---
 
+## Unreleased — after 2.3.0 (web live; next native build)
+
+### Pickers showed only the newest 60 closet items
+
+User report (2026-10-10, iOS 2.2.1): 128 items in the closet, but a board's
+"Add items" sheet stopped at about 60.
+
+- **Cause:** `ItemService.subscribeMyCloset` defaulted to `limit(60)`. Only
+  the Closet grid pages past that (infinite scroll). Every other caller took
+  the default, so the cap applied to:
+  - board Add items and the board list
+  - outfit builder
+  - try-on picker
+  - outfit linking
+  - piece-link picker (explicitly 500)
+  - analyze matches
+  - outfit-detail matches
+  - stylist and try-on-history thumbnails
+  
+  In a large closet, older pieces were unpickable and their thumbnails went
+  blank.
+- **Fix:** the default is now the whole closet (`CLOSET_ALL` = 2000). Only
+  the Closet grid (60 at a time) and the launch warm-up (60) pass a page size.
+  Picker images were already lazy-loaded.
+
 ## 2.3.0 — glass tab bar, stylist chat, weather, outfit-page linking, credits — submitted to both stores 9 Oct 2026
 
 iOS build 20, Android versionCode 24 (bumped in package.json, build.gradle and

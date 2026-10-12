@@ -74,7 +74,7 @@ export async function warmUp(user) {
         .then(map => { if (map) calendarWarm.set(`${uid}|${mb.key}`, map); }),
     );
     tasks.push(
-      firstSnapshot(cb => ItemService.subscribeMyCloset(uid, cb))
+      firstSnapshot(cb => ItemService.subscribeMyCloset(uid, cb, { pageSize: 60 }))
         .then(items => { if (items) closetWarm.set(uid, items); }),
     );
   }
