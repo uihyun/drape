@@ -8,6 +8,23 @@ full-closet pickers, grid thumbnails, public-profile and notification paging,
 and the DM fix to the apps. The stylist, thumbnail trigger and backfill are
 already live on the server.
 
+**Big-closet test account.** @aake (owner's dev test account) holds about
+1,500 copies of seed items, tagged `testFill: true`, made by
+`scripts/fill-test-closet.cjs`. The owner wants them kept for future load
+tests. `--clean` removes only those copies; they point at seed files, so no
+files are deleted.
+
+Load test, 12 Oct: closet with 1,521 items.
+- **Closet grid:** scrolled to the end, 1,517 cards, all thumbnails, 33 MB
+  JS heap, 9.3k DOM nodes, no errors.
+- **Density:** labels hidden at 5 columns; full cutouts at 1–2 columns.
+- **Pickers:** board "Add items", outfit builder and try-on show all 1,521.
+  OutfitLink and the piece-link sheet open pre-filtered by category, by
+  design.
+- **17 main screens:** no console errors and no broken images.
+- **Stylist chat:** 1,521 items is past FULL_CLOSET_MAX, so the season trim
+  runs. All 4 personas × 2 runs returned valid outfits, writes blocked.
+
 ## Next candidates — big closets (written 2026-10-12)
 
 Closet sizes among real users (2026-10-12): 62 have 1–9 pieces, 12 have
