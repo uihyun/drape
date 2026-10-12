@@ -167,11 +167,9 @@ Un nouveau look, et un styliste avec qui discuter.
 ```
 Pensée pour les grands dressings.
 
-- Pour créer des planches et des tenues ou essayer, toutes vos pièces sont là, pas seulement les 60 plus récentes.
-- Votre styliste tient compte de tout votre dressing.
-- Le dressing se charge plus vite et consomme moins de données.
-- Les profils affichent toutes vos tenues et planches, et les notifications se chargent au défilement.
-- Les longues conversations se mettent de nouveau à jour.
+- Choisissez dans tout votre dressing pour les planches, tenues et essayages, pas seulement les 60 pièces les plus récentes.
+- Votre styliste voit tout ce que vous possédez.
+- Un dressing plus rapide et moins gourmand en données, et des corrections pour les profils, notifications et longues conversations.
 ```
 
 **Nouveautés** (Play, ≤500) — 2.3.1:
@@ -179,9 +177,7 @@ Pensée pour les grands dressings.
 ```
 Pensée pour les grands dressings.
 
-- Pour créer des planches et des tenues ou essayer, toutes vos pièces sont là, pas seulement les 60 plus récentes.
-- Votre styliste tient compte de tout votre dressing.
-- Le dressing se charge plus vite et consomme moins de données.
-- Les profils affichent toutes vos tenues et planches, et les notifications se chargent au défilement.
-- Les longues conversations se mettent de nouveau à jour.
+- Choisissez dans tout votre dressing pour les planches, tenues et essayages, pas seulement les 60 pièces les plus récentes.
+- Votre styliste voit tout ce que vous possédez.
+- Un dressing plus rapide et moins gourmand en données, et des corrections pour les profils, notifications et longues conversations.
 ```

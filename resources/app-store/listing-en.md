@@ -180,23 +180,19 @@ A new look, and a stylist you can talk to.
 **What's New** (≤4000) — 2.3.1:
 
 ```
-Built for big closets.
+Made for big closets.
 
-- Every piece is now there when you make boards and outfits or try things on, not just your newest 60.
-- Your stylist now considers your whole closet.
-- Your closet loads faster and uses less data.
-- Profiles show all of your looks and boards, and notifications keep loading as you scroll.
-- Fixed long message threads that stopped updating.
+- Pick from your whole closet in boards, outfits and try-on, not just the newest 60.
+- Your stylist sees everything you own.
+- A faster closet that uses less data, plus fixes for profiles, notifications and long chats.
 ```
 
 **What's new** (Play, ≤500) — 2.3.1:
 
 ```
-Built for big closets.
+Made for big closets.
 
-- Every piece is now there when you make boards and outfits or try things on, not just your newest 60.
-- Your stylist now considers your whole closet.
-- Your closet loads faster and uses less data.
-- Profiles show all of your looks and boards, and notifications keep loading as you scroll.
-- Fixed long message threads that stopped updating.
+- Pick from your whole closet in boards, outfits and try-on, not just the newest 60.
+- Your stylist sees everything you own.
+- A faster closet that uses less data, plus fixes for profiles, notifications and long chats.
 ```

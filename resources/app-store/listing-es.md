@@ -193,11 +193,9 @@ Un nuevo diseño y una estilista con quien conversar.
 ```
 Pensada para armarios grandes.
 
-- Al crear tableros y outfits o al probarte prendas, ya puedes elegir cualquier prenda, no solo las 60 más recientes.
-- Tu estilista ahora tiene en cuenta todo tu armario.
-- El armario carga más rápido y usa menos datos.
-- Los perfiles muestran todos tus looks y tableros, y las notificaciones siguen cargando al desplazarte.
-- Corregimos las conversaciones largas que dejaban de actualizarse.
+- Elige entre todo tu armario en tableros, outfits y pruebas, no solo las 60 prendas más recientes.
+- Tu estilista ve todo lo que tienes.
+- Un armario más rápido que usa menos datos, y arreglos en perfiles, notificaciones y chats largos.
 ```
 
 **Novedades** (Play, ≤500) — 2.3.1:
@@ -205,9 +203,7 @@ Pensada para armarios grandes.
 ```
 Pensada para armarios grandes.
 
-- Al crear tableros y outfits o al probarte prendas, ya puedes elegir cualquier prenda, no solo las 60 más recientes.
-- Tu estilista ahora tiene en cuenta todo tu armario.
-- El armario carga más rápido y usa menos datos.
-- Los perfiles muestran todos tus looks y tableros, y las notificaciones siguen cargando al desplazarte.
-- Corregimos las conversaciones largas que dejaban de actualizarse.
+- Elige entre todo tu armario en tableros, outfits y pruebas, no solo las 60 prendas más recientes.
+- Tu estilista ve todo lo que tienes.
+- Un armario más rápido que usa menos datos, y arreglos en perfiles, notificaciones y chats largos.
 ```
