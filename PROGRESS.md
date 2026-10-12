@@ -2,11 +2,38 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-**2.3.1 (12 Oct).** AAB at `resources/app-store/builds/drape-2.3.1-25.aab`
-(versionCode 25; iOS build 21 still needs archiving in Xcode). It carries the
-full-closet pickers, grid thumbnails, public-profile and notification paging,
-and the DM fix to the apps. The stylist, thumbnail trigger and backfill are
-already live on the server.
+## Snapshot — 2026-10-12 (2.3.0 live on both stores; 2.3.1 built, submission pending)
+
+**2.3.1** (iOS build 21, Android versionCode 25).
+- **Android:** AAB rebuilt on the afternoon of 12 Oct at
+  `resources/app-store/builds/drape-2.3.1-25.aab` (upload key, SHA-1
+  4F:27…F5:DE).
+- **iOS:** the owner re-archives in Xcode.
+- **Notes:** in `listing-*.md` → 2.3.1, three lines in five languages.
+- **What reaches the apps with it:**
+  - full-closet pickers (the 60-cap bug a user reported)
+  - grid thumbnails and `content-visibility`
+  - no labels at 5 closet columns
+  - public-profile and notification paging, and the DM 200-message fix
+  - the stylist "viewing" presence, reply notifications and their deep link
+  - no foreground push banners on iOS
+
+**Server-side (12 Oct, already live for every app version).**
+- **Speed:**
+  - Gemini thinking set to 'low' on every text call (`config/models`
+    `chatThinking` / `visionThinking`).
+  - Style-profile rebuilds moved to `drainProfileQueue`.
+  - `stylistChat` keeps one warm instance (~$10/month).
+  - The four background-removal functions run on 4 vCPUs.
+- **Results:**
+  - Stylist chat: 12–33s → ~6s.
+  - Item processing: 22–28s → 10–14.5s.
+  - OOTD analysis: 11.5s → 5.6s.
+- **Also live:**
+  - The stylist sees the whole closet; it trims by season only past 600.
+  - Thumbnails were backfilled for all 3,504 items.
+  - Reply notifications on the server.
+- Details: CHANGELOG 2.3.1, docs/AI-MODELS.md ("Thinking level").
 
 **Big-closet test account.** @aake (owner's dev test account) holds about
 1,500 copies of seed items, tagged `testFill: true`, made by
@@ -108,10 +135,10 @@ already plays the JEV role. The missing piece is real-time rendering.
 4. **Only then build:** the stylist chat drives the outfit choice (already
    exists); the live view renders it.
 
-## Snapshot — 2026-10-12 (2.3.0 live; 2.3.1 built, iOS archive + submission pending)
+## Snapshot — 2026-10-09 (2.3.0 built and submitted; now live)
 
-Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
-27 Sep). The next one is **2.3.0** (iOS build 20, Android versionCode 24).
+**2.3.0** (iOS build 20, Android versionCode 24) followed 2.2.1 (iOS 19 /
+Android 23, built 27 Sep).
 - **Android:** AAB built 9 Oct at
   `resources/app-store/builds/drape-2.3.0-24.aab` (upload-key signed, SHA-1
   4F:27…F5:DE).
@@ -121,8 +148,8 @@ Last native build is **2.2.1** (iOS build 19, Android versionCode 23, built
   Coarse/Approximate Location disclosures (App functionality +
   personalization).
 - **Release notes:** in `listing-*.md` → 2.3.0.
-Everything below is **live on web only** until that build. Details are in
-CHANGELOG.md under 2.3.0.
+Everything below shipped to the apps in 2.3.0. Details are in CHANGELOG.md
+under 2.3.0.
 
 **9 Oct.**
 - Outfit page: per-piece Add, Link, Change and Use this, with a closet/board
