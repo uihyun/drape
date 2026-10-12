@@ -1,0 +1,5 @@
+/* Permission prompts, localized (2026-10-12). Info.plist holds the English fallback. */
+"NSPhotoLibraryAddUsageDescription" = "drape saves your try-on results and outfit images to your Photos when you tap Save.";
+"NSLocationWhenInUseUsageDescription" = "drape uses your approximate location to show your local weather, and your stylist takes it into account when picking outfits.";
+"NSCameraUsageDescription" = "drape uses the camera to photograph your clothes and outfits for your closet and virtual try-on.";
+"NSPhotoLibraryUsageDescription" = "drape lets you pick existing photos of your clothes and outfits to add to your closet.";

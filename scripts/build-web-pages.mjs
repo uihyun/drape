@@ -9,14 +9,14 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const PUB = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
-const LANGS = ['en', 'ko', 'ja', 'es', 'fr'];
-const LBL = { en: 'EN', ko: 'KO', ja: 'JA', es: 'ES', fr: 'FR' };
+const LANGS = ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de'];
+const LBL = { en: 'EN', ko: 'KO', ja: 'JA', es: 'ES', fr: 'FR', pt: 'PT', de: 'DE' };
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const T = {
-  support: { en: 'Support', ko: '고객지원', ja: 'サポート', es: 'Soporte', fr: 'Assistance' },
-  privacy: { en: 'Privacy Policy', ko: '개인정보 처리방침', ja: 'プライバシーポリシー', es: 'Política de privacidad', fr: 'Politique de confidentialité' },
-  terms: { en: 'Terms of Service', ko: '이용약관', ja: '利用規約', es: 'Términos del servicio', fr: 'Conditions d’utilisation' },
-  eff: { en: 'Effective', ko: '시행일', ja: '施行日', es: 'Vigente desde', fr: 'En vigueur depuis' },
+  support: { en: 'Support', ko: '고객지원', ja: 'サポート', es: 'Soporte', fr: 'Assistance', pt: 'Suporte', de: 'Support' },
+  privacy: { en: 'Privacy Policy', ko: '개인정보 처리방침', ja: 'プライバシーポリシー', es: 'Política de privacidad', fr: 'Politique de confidentialité', pt: 'Política de Privacidade', de: 'Datenschutzerklärung' },
+  terms: { en: 'Terms of Service', ko: '이용약관', ja: '利用規約', es: 'Términos del servicio', fr: 'Conditions d’utilisation', pt: 'Termos de Uso', de: 'Nutzungsbedingungen' },
+  eff: { en: 'Effective', ko: '시행일', ja: '施行日', es: 'Vigente desde', fr: 'En vigueur depuis', pt: 'Em vigor desde', de: 'Gültig ab' },
 };
 const SUPPORT_BODY = {
   en: `<p class="lead">Need a hand?</p><p>We're happy to help. Email us at <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> and we'll get back to you as soon as we can.</p><p style="margin-top:14px">For how we handle your data, see the <a href="/privacy.html">Privacy Policy</a> and <a href="/terms.html">Terms of Service</a>.</p>`,
@@ -24,6 +24,8 @@ const SUPPORT_BODY = {
   ja: `<p class="lead">お困りですか？</p><p>喜んでサポートします。<a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> までご連絡ください。できる限り早くお返事します。</p><p style="margin-top:14px">データの取り扱いについては<a href="/privacy.html">プライバシーポリシー</a>と<a href="/terms.html">利用規約</a>をご覧ください。</p>`,
   es: `<p class="lead">¿Necesitas ayuda?</p><p>Con gusto te apoyamos. Escríbenos a <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> y te respondemos lo antes posible.</p><p style="margin-top:14px">Para saber cómo manejamos tus datos, consulta la <a href="/privacy.html">Política de privacidad</a> y los <a href="/terms.html">Términos del servicio</a>.</p>`,
   fr: `<p class="lead">Besoin d’aide ?</p><p>Nous sommes là pour ça. Écrivez-nous à <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> et nous répondrons dès que possible.</p><p style="margin-top:14px">Pour savoir comment nous traitons vos données, consultez la <a href="/privacy.html">Politique de confidentialité</a> et les <a href="/terms.html">Conditions d’utilisation</a>.</p>`,
+  pt: `<p class="lead">Precisa de ajuda?</p><p>A gente ajuda com prazer. Escreva para <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a> e respondemos o mais rápido possível.</p><p style="margin-top:14px">Para saber como tratamos seus dados, consulte a <a href="/privacy.html">Política de Privacidade</a> e os <a href="/terms.html">Termos de Uso</a>.</p>`,
+  de: `<p class="lead">Brauchst du Hilfe?</p><p>Wir helfen dir gern. Schreib uns an <a href="mailto:${LEGAL_CONTACT}">${LEGAL_CONTACT}</a>, und wir melden uns so schnell wie möglich.</p><p style="margin-top:14px">Wie wir mit deinen Daten umgehen, erfährst du in der <a href="/privacy.html">Datenschutzerklärung</a> und den <a href="/terms.html">Nutzungsbedingungen</a>.</p>`,
 };
 
 const sectionsHtml = (arr) => arr.map((s) => `${s.h ? `<h2>${esc(s.h)}</h2>` : ''}<p>${esc(s.p)}</p>`).join('\n');

@@ -1,0 +1,5 @@
+/* Permission prompts, localized (2026-10-12). Info.plist holds the English fallback. */
+"NSPhotoLibraryAddUsageDescription" = "drape speichert deine Anproben und Outfit-Bilder in Fotos, wenn du auf Speichern tippst.";
+"NSLocationWhenInUseUsageDescription" = "drape nutzt deinen ungefähren Standort, um dir das lokale Wetter zu zeigen – dein Stylist berücksichtigt es bei der Outfit-Auswahl.";
+"NSCameraUsageDescription" = "drape nutzt die Kamera, um deine Kleidung und Outfits für deinen Kleiderschrank und die virtuelle Anprobe zu fotografieren.";
+"NSPhotoLibraryUsageDescription" = "Mit drape kannst du Fotos deiner Kleidung und Outfits auswählen und zu deinem Kleiderschrank hinzufügen.";

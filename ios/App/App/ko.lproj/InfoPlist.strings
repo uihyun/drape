@@ -1,0 +1,5 @@
+/* Permission prompts, localized (2026-10-12). Info.plist holds the English fallback. */
+"NSPhotoLibraryAddUsageDescription" = "저장을 누르면 트라이온 결과와 코디 이미지를 사진 앱에 저장해요.";
+"NSLocationWhenInUseUsageDescription" = "현재 위치의 날씨를 보여주고 스타일리스트가 코디를 고를 때 참고하도록 대략적인 위치를 사용해요.";
+"NSCameraUsageDescription" = "옷장과 가상 트라이온에 쓸 옷과 코디 사진을 찍기 위해 카메라를 사용해요.";
+"NSPhotoLibraryUsageDescription" = "옷장에 추가할 옷과 코디 사진을 사진 앱에서 고를 수 있어요.";

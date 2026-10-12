@@ -142,6 +142,24 @@ const LINES = {
     '09-stylist': 'un styliste dans votre dressing',
     '10-board': 'votre style en planche',
   },
+  pt: {
+    '03-trends':   'o que está em alta',
+    '04-calendar': 'registre cada look',
+    '05-analyze':  'compre pela foto',
+    '07-tryon':    'veja em você, primeiro',
+    '08-closet':   'seu guarda-roupa, digital',
+    '09-stylist':  'um estilista só seu',
+    '10-board':    'seu estilo em painéis',
+  },
+  de: {
+    '03-trends':   'was alle gerade tragen',
+    '04-calendar': 'jedes outfit festhalten',
+    '05-analyze':  'shoppen per foto',
+    '07-tryon':    'erst an dir sehen',
+    '08-closet':   'dein schrank, digital',
+    '09-stylist':  'dein stylist im schrank',
+    '10-board':    'dein stil als moodboard',
+  },
 };
 
 // Hero copy is positioning, not features — the seven product slides already
@@ -169,6 +187,16 @@ const HERO_LINES = {
     '01-hero-closet': 'votre dressing, dans votre poche',
     '02-hero-own':    'portez ce que vous avez déjà',
     '06-hero-tryon':  'voyez-le sur vous avant d\u2019acheter',
+  },
+  pt: {
+    '01-hero-closet': 'seu guarda-roupa, no bolso',
+    '02-hero-own':    'vista o que você já tem',
+    '06-hero-tryon':  'prove antes de comprar',
+  },
+  de: {
+    '01-hero-closet': 'dein schrank, immer dabei',
+    '02-hero-own':    'trag, was du schon hast',
+    '06-hero-tryon':  'anprobieren vor dem kauf',
   },
 };
 

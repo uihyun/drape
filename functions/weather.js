@@ -251,7 +251,7 @@ async function reverseLabel(lat, lon, lang) {
 }
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const LANGS = ['en', 'ko', 'ja', 'es', 'fr'];
+const LANGS = ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de'];
 
 const weatherSearch = onCall({ cors: true, timeoutSeconds: 20 }, async (request) => {
   if (!request.auth?.uid) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');

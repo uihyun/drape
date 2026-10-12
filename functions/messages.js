@@ -27,7 +27,7 @@ const db = admin.firestore();
 
 // Localized placeholder for an image-only DM (text messages carry the sender's
 // own words, so only the photo case needs translation).
-const DM_PHOTO = { en: 'Photo', ko: '사진', ja: '写真' };
+const DM_PHOTO = { en: 'Photo', ko: '사진', ja: '写真', es: 'Foto', fr: 'Photo', pt: 'Foto', de: 'Foto' };
 
 // Auto-cleanup: drop marketplace threads (their messages + DM images) that
 // have been inactive for 30+ days. Runs daily so the inbox stays tidy and

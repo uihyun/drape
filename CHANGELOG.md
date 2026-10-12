@@ -20,6 +20,52 @@ Rebuilt 12 Oct (afternoon) to carry the stylist presence and reply notification,
 no foreground banners, and the 5-column closet. iOS is re-archived by the owner. Server halves are live on functions;
 the client halves are live on web.
 
+### Two more languages: Brazilian Portuguese and German (7 locales)
+
+**Why.** Adding Spanish lifted Spain from ~2 to ~50 new installs a week, all
+Google Play organic (GA, 12 Oct). There were signups from Brazil and
+Germany/Switzerland, but almost none of them added an item.
+
+**App.**
+- `src/locales/pt.js` and `de.js`, 839 keys each; parity and placeholders
+  are checked.
+- Tone:
+  - pt-BR uses `você`, with generic-masculine "o seu estilista", because the
+    personas are mixed.
+  - de uses `du` and short bar labels (Trends / Stylist / Schrank /
+    Optionen).
+- Registered in `useLocale`, Landing/Welcome flags, `remote-copy`, cities
+  (seven BR + three DE cities added; local names such as München, Wien,
+  Zürich, Lisboa), Trends BCP47, Admin config languages and `check.mjs`.
+
+**Server.** pt/de added to:
+- language lists: stylist (chat, verdict, recs), items (tagging names, OOTD
+  and try-on analysis, detection), translate, weather search, profile
+  language, admin config;
+- push copy, the 14 reminder pushes and the DM photo label.
+
+These copy maps had also been missing es/fr: reminders were en/ko/ja only and
+the DM label en/ko/ja, so Spanish and French users got English. Both are
+fixed.
+
+**iOS.**
+- `CFBundleLocalizations` gains pt-BR and de.
+- New `InfoPlist.strings` in seven languages for the camera, photos and
+  location prompts. Every non-English user used to see them in English. They
+  are registered as a variant group in the Xcode project, and knownRegions
+  is extended.
+- Simulator build succeeds, with all seven `.lproj` folders in the bundle.
+
+**Legal and web.** Privacy policy and terms in pt/de; support, privacy and
+terms pages regenerated; `index.html` hreflang and og:locale updated.
+
+**Store.**
+- `listing-pt.md` / `listing-de.md`: App Store and Play fields, keywords
+  researched for BR/DE, and 2.3.1 notes.
+- Poster decks `posters-2.1.0-pt` / `-de`: headlines localized over the
+  existing captures.
+- `npm run notes` now covers all seven languages.
+
 ### Faster everywhere: low thinking on every text call, 4 vCPUs for background removal
 
 - **Thinking 'low' everywhere** (owner, 2026-10-12: speed first). A second

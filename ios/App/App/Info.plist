@@ -15,6 +15,8 @@
       <string>ja</string>
       <string>es</string>
       <string>fr</string>
+      <string>pt-BR</string>
+      <string>de</string>
     </array>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>

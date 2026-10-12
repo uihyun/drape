@@ -23,6 +23,8 @@ const LOCALES = [
   ['ja', '日本語', 'ja'],
   ['es', 'Español', 'es-ES · es-MX'],
   ['fr', 'Français', 'fr-FR'],
+  ['pt', 'Português', 'pt-BR'],
+  ['de', 'Deutsch', 'de-DE'],
 ];
 const LIMIT = { appstore: 4000, play: 500 };
 

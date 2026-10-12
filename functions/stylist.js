@@ -116,6 +116,7 @@ function dayKey(tz) {
 // so a new caller can't reintroduce that.
 const LANG_NAMES = {
   en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French',
+  pt: 'Brazilian Portuguese', de: 'German',
 };
 function langLabel(lang) { return LANG_NAMES[lang] || 'English'; }
 
@@ -467,7 +468,7 @@ exports.styleRecommend = onCall(
     const personaKey = PERSONAS[request.data?.persona] ? request.data.persona : 'noa';
     const persona = PERSONAS[personaKey];
     const ask = typeof request.data?.ask === 'string' ? request.data.ask.slice(0, 200) : '';
-    const lang = ['en', 'ko', 'ja', 'es', 'fr'].includes(request.data?.lang) ? request.data.lang : 'en';
+    const lang = ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de'].includes(request.data?.lang) ? request.data.lang : 'en';
 
     // Stated prefs are read FRESH each call (not just via the profile
     // summary, which refreshes at most 2×/day) — an edit in Settings must
@@ -635,7 +636,7 @@ exports.stylistChat = onCall(
     const persona = PERSONAS[personaKey];
     const text = typeof request.data?.text === 'string' ? request.data.text.trim().slice(0, CHAT_MAX_TEXT) : '';
     if (!text) throw new HttpsError('invalid-argument', 'EMPTY');
-    const lang = ['en', 'ko', 'ja', 'es', 'fr'].includes(request.data?.lang) ? request.data.lang : 'en';
+    const lang = ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de'].includes(request.data?.lang) ? request.data.lang : 'en';
 
     const profRef = db().collection('profiles').doc(uid);
     const profDoc = await profRef.get();

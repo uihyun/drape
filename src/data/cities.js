@@ -136,12 +136,12 @@ export const CITIES = [
   { id: 'stockholm-se',      country: 'SE', names: { en: 'Stockholm',      ko: '스톡홀름',    ja: 'ストックホルム' } },
   { id: 'oslo-no',           country: 'NO', names: { en: 'Oslo',           ko: '오슬로',      ja: 'オスロ' } },
   { id: 'helsinki-fi',       country: 'FI', names: { en: 'Helsinki',       ko: '헬싱키',      ja: 'ヘルシンキ' } },
-  { id: 'vienna-at',         country: 'AT', names: { en: 'Vienna',         ko: '빈',          ja: 'ウィーン' } },
-  { id: 'zurich-ch',         country: 'CH', names: { en: 'Zurich',         ko: '취리히',      ja: 'チューリッヒ' } },
-  { id: 'lisbon-pt',         country: 'PT', names: { en: 'Lisbon',         ko: '리스본',      ja: 'リスボン' } },
+  { id: 'vienna-at',         country: 'AT', names: { en: 'Vienna',         ko: '빈',          ja: 'ウィーン', de: 'Wien', pt: 'Viena' } },
+  { id: 'zurich-ch',         country: 'CH', names: { en: 'Zurich',         ko: '취리히',      ja: 'チューリッヒ', de: 'Zürich', pt: 'Zurique' } },
+  { id: 'lisbon-pt',         country: 'PT', names: { en: 'Lisbon',         ko: '리스본',      ja: 'リスボン', pt: 'Lisboa', de: 'Lissabon' } },
   { id: 'dublin-ie',         country: 'IE', names: { en: 'Dublin',         ko: '더블린',      ja: 'ダブリン' } },
   { id: 'prague-cz',         country: 'CZ', names: { en: 'Prague',         ko: '프라하',      ja: 'プラハ' } },
-  { id: 'munich-de',         country: 'DE', names: { en: 'Munich',         ko: '뮌헨',        ja: 'ミュンヘン' } },
+  { id: 'munich-de',         country: 'DE', names: { en: 'Munich',         ko: '뮌헨',        ja: 'ミュンヘン', de: 'München', pt: 'Munique' } },
   { id: 'florence-it',       country: 'IT', names: { en: 'Florence',       ko: '피렌체',      ja: 'フィレンツェ' } },
   { id: 'reykjavik-is',      country: 'IS', names: { en: 'Reykjavik',      ko: '레이캬비크',  ja: 'レイキャビク' } },
   { id: 'hamburg-de',        country: 'DE', names: { en: 'Hamburg',        ko: '함부르크',    ja: 'ハンブルク' } },
@@ -157,7 +157,7 @@ export const CITIES = [
   { id: 'venice-it',         country: 'IT', names: { en: 'Venice',         ko: '베네치아',    ja: 'ヴェネツィア' } },
   { id: 'lyon-fr',           country: 'FR', names: { en: 'Lyon',           ko: '리옹',        ja: 'リヨン' } },
   { id: 'marseille-fr',      country: 'FR', names: { en: 'Marseille',      ko: '마르세유',    ja: 'マルセイユ' } },
-  { id: 'geneva-ch',         country: 'CH', names: { en: 'Geneva',         ko: '제네바',      ja: 'ジュネーブ' } },
+  { id: 'geneva-ch',         country: 'CH', names: { en: 'Geneva',         ko: '제네바',      ja: 'ジュネーブ', de: 'Genf', pt: 'Genebra' } },
   { id: 'porto-pt',          country: 'PT', names: { en: 'Porto',          ko: '포르투',      ja: 'ポルト' } },
   { id: 'kyiv-ua',           country: 'UA', names: { en: 'Kyiv',           ko: '키이우',      ja: 'キーウ' } },
   { id: 'bucharest-ro',      country: 'RO', names: { en: 'Bucharest',      ko: '부쿠레슈티',  ja: 'ブカレスト' } },
@@ -220,6 +220,16 @@ export const CITIES = [
   { id: 'caracas-ve',        country: 'VE', names: { en: 'Caracas',        ko: '카라카스',    ja: 'カラカス' } },
   { id: 'lapaz-bo',          country: 'BO', names: { en: 'La Paz',         ko: '라파스',      ja: 'ラパス' } },
   { id: 'manaus-br',         country: 'BR', names: { en: 'Manaus',         ko: '마나우스',    ja: 'マナウス' } },
+  { id: 'brasilia-br',       country: 'BR', names: { en: 'Brasília',       ko: '브라질리아',   ja: 'ブラジリア' } },
+  { id: 'belohorizonte-br',  country: 'BR', names: { en: 'Belo Horizonte', ko: '벨루오리존치', ja: 'ベロオリゾンテ' } },
+  { id: 'portoalegre-br',    country: 'BR', names: { en: 'Porto Alegre',   ko: '포르투알레그리', ja: 'ポルトアレグレ' } },
+  { id: 'curitiba-br',       country: 'BR', names: { en: 'Curitiba',       ko: '쿠리치바',     ja: 'クリチバ' } },
+  { id: 'salvador-br',       country: 'BR', names: { en: 'Salvador',       ko: '사우바도르',   ja: 'サルヴァドール' } },
+  { id: 'recife-br',         country: 'BR', names: { en: 'Recife',         ko: '헤시피',       ja: 'レシフェ' } },
+  { id: 'fortaleza-br',      country: 'BR', names: { en: 'Fortaleza',      ko: '포르탈레자',   ja: 'フォルタレザ' } },
+  { id: 'cologne-de',        country: 'DE', names: { en: 'Cologne',        ko: '쾰른',         ja: 'ケルン', de: 'Köln', pt: 'Colônia' } },
+  { id: 'dusseldorf-de',     country: 'DE', names: { en: 'Düsseldorf',     ko: '뒤셀도르프',   ja: 'デュッセルドルフ' } },
+  { id: 'stuttgart-de',      country: 'DE', names: { en: 'Stuttgart',      ko: '슈투트가르트', ja: 'シュトゥットガルト' } },
 ];
 
 const BY_ID = new Map(CITIES.map(c => [c.id, c]));
@@ -253,7 +263,7 @@ export function searchCities(query, { limit = 10 } = {}) {
   const scored = [];
   for (const c of CITIES) {
     let best = Infinity;
-    for (const lang of ['en', 'ko', 'ja', 'es', 'fr']) {
+    for (const lang of ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de']) {
       const n = c.names[lang]?.toLowerCase();
       if (!n) continue;
       const idx = n.indexOf(q);

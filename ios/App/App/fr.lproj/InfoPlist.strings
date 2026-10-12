@@ -1,0 +1,5 @@
+/* Permission prompts, localized (2026-10-12). Info.plist holds the English fallback. */
+"NSPhotoLibraryAddUsageDescription" = "drape enregistre vos essayages et les images de vos tenues dans Photos lorsque vous touchez Enregistrer.";
+"NSLocationWhenInUseUsageDescription" = "drape utilise votre position approximative pour afficher la météo locale, dont votre styliste tient compte pour choisir vos tenues.";
+"NSCameraUsageDescription" = "drape utilise l’appareil photo pour photographier vos vêtements et vos tenues pour votre dressing et l’essayage virtuel.";
+"NSPhotoLibraryUsageDescription" = "drape vous permet de choisir des photos de vos vêtements et tenues à ajouter à votre dressing.";

@@ -23,22 +23,24 @@ const db = admin.firestore();
 // notice never says "look" and vice-versa.
 // es / fr were missing until 2026-10-12 (they fell back to English).
 const PUSH_COPY = {
-  follow:         { en: 'started following you',   ko: '나를 팔로우했어요',       ja: 'あなたをフォローしました', es: 'empezó a seguirte', fr: 'a commencé à vous suivre' },
-  tryon:          { en: 'tried on your look',      ko: '내 룩을 입어봤어요',       ja: 'あなたのルックを試着しました', es: 'se probó tu look', fr: 'a essayé votre tenue' },
-  comment_outfit: { en: 'commented on your look',  ko: '내 룩에 댓글을 남겼어요',   ja: 'あなたのルックにコメントしました', es: 'comentó tu look', fr: 'a commenté votre tenue' },
-  comment_board:  { en: 'commented on your board', ko: '내 보드에 댓글을 남겼어요', ja: 'あなたのボードにコメントしました', es: 'comentó tu tablero', fr: 'a commenté votre planche' },
-  like_outfit:    { en: 'liked your look',         ko: '내 룩을 좋아해요',         ja: 'あなたのルックにいいねしました', es: 'le gustó tu look', fr: 'a aimé votre tenue' },
-  like_board:     { en: 'liked your board',        ko: '내 보드를 좋아해요',       ja: 'あなたのボードにいいねしました', es: 'le gustó tu tablero', fr: 'a aimé votre planche' },
-  stylist:        { en: 'replied to you',          ko: '답장을 보냈어요',          ja: '返信しました', es: 'te respondió', fr: 'vous a répondu' },
+  follow:         { en: 'started following you',   ko: '나를 팔로우했어요',       ja: 'あなたをフォローしました', es: 'empezó a seguirte', fr: 'a commencé à vous suivre', pt: 'começou a seguir você', de: 'folgt dir jetzt' },
+  tryon:          { en: 'tried on your look',      ko: '내 룩을 입어봤어요',       ja: 'あなたのルックを試着しました', es: 'se probó tu look', fr: 'a essayé votre tenue', pt: 'provou seu look', de: 'hat deinen Look anprobiert' },
+  comment_outfit: { en: 'commented on your look',  ko: '내 룩에 댓글을 남겼어요',   ja: 'あなたのルックにコメントしました', es: 'comentó tu look', fr: 'a commenté votre tenue', pt: 'comentou no seu look', de: 'hat deinen Look kommentiert' },
+  comment_board:  { en: 'commented on your board', ko: '내 보드에 댓글을 남겼어요', ja: 'あなたのボードにコメントしました', es: 'comentó tu tablero', fr: 'a commenté votre planche', pt: 'comentou no seu painel', de: 'hat dein Board kommentiert' },
+  like_outfit:    { en: 'liked your look',         ko: '내 룩을 좋아해요',         ja: 'あなたのルックにいいねしました', es: 'le gustó tu look', fr: 'a aimé votre tenue', pt: 'curtiu seu look', de: 'mag deinen Look' },
+  like_board:     { en: 'liked your board',        ko: '내 보드를 좋아해요',       ja: 'あなたのボードにいいねしました', es: 'le gustó tu tablero', fr: 'a aimé votre planche', pt: 'curtiu seu painel', de: 'mag dein Board' },
+  stylist:        { en: 'replied to you',          ko: '답장을 보냈어요',          ja: '返信しました', es: 'te respondió', fr: 'vous a répondu', pt: 'te respondeu', de: 'hat dir geantwortet' },
   moderation: {
     en: 'Your look was hidden — its image was flagged as inappropriate.',
     ko: '이미지가 부적합으로 판단되어 룩 공개가 해제됐어요.',
     ja: '画像が不適切と判断され、ルックの公開が取り消されました。',
     es: 'Ocultamos tu look: su imagen se marcó como inapropiada.',
     fr: 'Votre tenue a été masquée : son image a été signalée comme inappropriée.',
+    pt: 'Seu look foi ocultado: a imagem foi marcada como inadequada.',
+    de: 'Dein Look wurde ausgeblendet: Das Bild wurde als unangemessen markiert.',
   },
 };
-const LANGS = new Set(['en', 'ko', 'ja', 'es', 'fr']);
+const LANGS = new Set(['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de']);
 
 async function recipientLang(uid) {
   try {

@@ -139,7 +139,7 @@ export function Welcome() {
   );
 }
 
-const LANG_FLAG = { en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵' };
+const LANG_FLAG = { en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵', es: '🇪🇸', fr: '🇫🇷', pt: '🇧🇷', de: '🇩🇪' };
 
 // Google G — multicolor, simplified path.
 function GoogleGlyph() {

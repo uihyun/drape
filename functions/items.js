@@ -43,7 +43,7 @@ const VISION      = 'gemini-3.8-flash';   // tagging / analysis / OOTD (GA); mod
 // the KR/JP markets. ENUM fields stay English always — they're the single
 // source of truth for search/filter (see CLAUDE.md), and so does `description`
 // (it feeds a Google Shopping query where English garment terms search better).
-const LANG_NAMES = { en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French' };
+const LANG_NAMES = { en: 'English', ko: 'Korean', ja: 'Japanese', es: 'Spanish', fr: 'French', pt: 'Brazilian Portuguese', de: 'German' };
 function safeLang(lang) {
   return LANG_NAMES[lang] ? lang : 'en';
 }

@@ -1,0 +1,5 @@
+/* Permission prompts, localized (2026-10-12). Info.plist holds the English fallback. */
+"NSPhotoLibraryAddUsageDescription" = "保存をタップすると、試着結果やコーデ画像を写真に保存します。";
+"NSLocationWhenInUseUsageDescription" = "おおよその位置情報を使って現在地の天気を表示し、スタイリストのコーデ提案にも反映します。";
+"NSCameraUsageDescription" = "クローゼットやバーチャル試着のために、服やコーデを撮影するのにカメラを使用します。";
+"NSPhotoLibraryUsageDescription" = "クローゼットに追加する服やコーデの写真を、写真から選べます。";

@@ -47,10 +47,16 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   - The out-of-credits error token stays `out_of_fits`, because every app
     build matches on it. `src/hooks/useCredits.js` mirrors `walletOf`.
   Never add a second refillable currency. Recs are text-only flash; stated prefs (`profiles.stylePrefs`) are read fresh on every call and outrank inferred taste. Personas are illustrated, explicitly-AI characters — never photoreal, never posing as users.
-- **Five locales: en / ko / ja / es / fr.** Spanish is ONE neutral Spanish for
-  every market (`tú`, never `vosotros`; vocabulary a reader in Madrid, Mexico
-  City or Buenos Aires all recognises) — not a national variant, and not split
-  into es-ES/es-419. French is France French, vouvoiement throughout. Adding a
+- **Seven locales: en / ko / ja / es / fr / pt / de** (pt + de added
+  2026-10-12, after Spanish took Spain on Play from ~2 to ~50 new installs a
+  week).
+  - Spanish is ONE neutral Spanish for every market (`tú`, never
+    `vosotros`; vocabulary a reader in Madrid, Mexico City or Buenos Aires
+    all recognises), not split into es-ES/es-419.
+  - French is France French, vouvoiement throughout.
+  - Portuguese is Brazilian Portuguese (`você`).
+  - German uses informal `du`, as German fashion apps (Zalando, H&M) do, and
+    keeps bottom-bar labels short. Adding a
   language is not just a locale file: `useLocale` (LOCALES + LANG_LABELS),
   `Landing` (LANG_FLAG), `remote-copy`, `cities`, `Trends` (BCP47), `Admin`
   (CFG_LANGS), `functions/{admin,notifications,stylist,profile,items,translate}.js`,
@@ -60,7 +66,9 @@ Short, durable rules of engagement for drape. If you're picking up a session, re
   `build-app-store-screenshots-b.cjs`. Miss `translate.js` and the
   translate-this-post toggle silently falls back to English for that language;
   miss `CFBundleLocalizations` and the App Store lists the app as English-only.
-  `npm run check` enforces key parity across all five.
+  `npm run check` enforces key parity across all seven. Server-side copy maps
+  (`notifications.js` PUSH_COPY, `reminders-copy.js`, `messages.js` DM_PHOTO)
+  must carry every language too, or those users get English.
 - **Home screen follows the closet, unless the user said otherwise.**
   `getHomeRoute(uid)` in `services/homePref.js`: an explicit pref wins; with
   none, an empty closet lands on `/trends` and a stocked one on `/profile`

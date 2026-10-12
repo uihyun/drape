@@ -176,7 +176,7 @@ export function Landing() {
   );
 }
 
-const LANG_FLAG = { en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵', es: '🇪🇸', fr: '🇫🇷' };
+const LANG_FLAG = { en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵', es: '🇪🇸', fr: '🇫🇷', pt: '🇧🇷', de: '🇩🇪' };
 
 function AppleGlyph() {
   return (

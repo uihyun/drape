@@ -121,7 +121,7 @@ function checkServiceMembers() {
 
 // ── 2. Locale parity ───────────────────────────────────────────────────
 function checkLocaleParity() {
-  const langs = ['en', 'ko', 'ja', 'es', 'fr'];
+  const langs = ['en', 'ko', 'ja', 'es', 'fr', 'pt', 'de'];
   const keysByLang = {};
   for (const l of langs) {
     const src = readFileSync(`${ROOT}/src/locales/${l}.js`, 'utf8');
@@ -130,14 +130,14 @@ function checkLocaleParity() {
   }
   const base = keysByLang.en;
   const problems = [];
-  for (const l of ['ko', 'ja', 'es', 'fr']) {
+  for (const l of ['ko', 'ja', 'es', 'fr', 'pt', 'de']) {
     const missing = [...base].filter(k => !keysByLang[l].has(k));
     const extra = [...keysByLang[l]].filter(k => !base.has(k));
     if (missing.length) problems.push(`${l} missing: ${missing.slice(0, 8).join(',')}${missing.length > 8 ? '…' : ''}`);
     if (extra.length) problems.push(`${l} extra: ${extra.slice(0, 8).join(',')}${extra.length > 8 ? '…' : ''}`);
   }
   if (problems.length) record('locale parity', 'FAIL', problems.join(' | '));
-  else record('locale parity', 'PASS', `${base.size} keys × en/ko/ja/es/fr`);
+  else record('locale parity', 'PASS', `${base.size} keys × en/ko/ja/es/fr/pt/de`);
 }
 
 // ── 3. Native identity consistency ─────────────────────────────────────
