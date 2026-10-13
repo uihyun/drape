@@ -2,7 +2,7 @@
 
 Running notes on what's been built, what's been deferred, and what would break right now if you tried to ship. Updated chronologically. The dated log starts below; the snapshot here is the quick "where are we now".
 
-## Snapshot — 2026-10-12 (2.3.0 live on both stores; 2.3.1 built, submission pending)
+## Snapshot — 2026-10-12 (2.3.0 live; 2.3.1 submitted to both stores, with pt + de)
 
 **2.3.1** (iOS build 21, Android versionCode 25).
 - **Android:** AAB rebuilt on the afternoon of 12 Oct at
@@ -17,6 +17,17 @@ Running notes on what's been built, what's been deferred, and what would break r
   - public-profile and notification paging, and the DM 200-message fix
   - the stylist "viewing" presence, reply notifications and their deep link
   - no foreground push banners on iOS
+
+**Language launch to measure (pt-BR + de, submitted 12 Oct).** Baseline from
+GA, app users over 90 days: Brazil 6, Portugal 9, Germany 12, Switzerland 5.
+Signups so far: BR 5 and DE/CH 6, and almost none of them added an item.
+- Spain is the comparison. ~2 new installs a week before Spanish; ~50 a week
+  from about three weeks after it shipped, all Play organic.
+- Check about 3 weeks after release: weekly new app users for BR/PT/DE/AT/CH,
+  activation (first item added), and whether Play pt-BR/de-DE listings bring
+  organic installs.
+- Also verify the Play "Spanish (Latin America)" listing exists. LatAm stayed
+  at 0 despite Spanish.
 
 **Server-side (12 Oct, already live for every app version).**
 - **Speed:**
