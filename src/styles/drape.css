@@ -6489,15 +6489,23 @@ input[type="search"]::-webkit-search-decoration {
      a white canyon between. The cap is the phone cap (460px) over its 88%
      height, plus room for the stagger. */
   max-height: 540px;
-  width: 100%;
-  max-width: 440px;
+  /* Width follows the height-sized phones (below: 88% tall at 1:2.05, so
+     0.43 of the box height wide) times the same 1.72 the landing uses, so the
+     pair overlaps by the same share on every screen instead of spreading to
+     the edges of a fixed 440px box. 0.738 = 1.72 × 0.88 / 2.05. */
+  width: auto;
+  aspect-ratio: 0.738;
+  max-width: 100%;
   margin: 0 auto;
 }
 .welcome-showcase .lp-phone {
   /* Size by height (width derives from the 1:2.05 aspect) so the mockups fit
      top-to-bottom everywhere; the small gap below 100% keeps the front/back
      stagger. Lighter shadow so there's no heavy grey pool below the phones. */
-  height: min(88%, 460px);
+  /* …and never wider than the screen allows for the pair: the box is
+     1.72 phones wide, so a phone may be at most (screen − gutters) / 1.72
+     wide, i.e. × 2.05 / 1.72 ≈ 1.19 of that in height. */
+  height: min(88%, 460px, calc((100vw - 2rem) * 1.19));
   width: auto;
   box-shadow: 0 16px 36px -20px rgba(20, 23, 26, 0.32);
 }

@@ -11,6 +11,21 @@ Conventions:
 
 ---
 
+## Unreleased — after 2.3.1
+
+### Landing + welcome: the phone pair overlaps the same on every screen
+
+The two phones were pinned to the edges of a box that followed the viewport.
+They overlapped 49px at 360px, only 3px (looking split apart) at the common
+412–460px Android widths, and 30px on desktop (owner report, 2026-10-13).
+- `phone-showcase.css` now sizes the box from the phone width
+  (`--pw`; box = 1.72 × phone, height = 2.4 × phone). The desktop row uses the
+  same basis.
+- The in-app welcome screen sizes its phones by height and now caps them by
+  screen width, with the box set to the matching aspect ratio.
+- Measured 360 → 1280px: ~35% overlap everywhere, never overflowing. Web is
+  live; the welcome screen reaches the apps with the next build.
+
 ## 2.3.1 — every piece reachable: full-closet pickers, a stylist that sees the whole closet — submitted to both stores 12 Oct 2026
 
 iOS build 21, Android versionCode 25. AAB at

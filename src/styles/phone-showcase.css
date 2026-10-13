@@ -3,17 +3,23 @@
    landing. */
 
 .lp-visual {
+  /* Everything is sized off the phone width, so the pair overlaps by the same
+     share of a phone on every screen. It used to pin the phones to the box's
+     edges while the box tracked the viewport: they overlapped 49px at 360px,
+     3px (barely touching) at the common 412–460px Android widths, and 30px on
+     desktop (owner report, 2026-10-13). */
+  --pw: clamp(168px, 41vw, 222px);
   position: relative;
-  width: 100%;
-  max-width: 460px;
-  /* Must stay TALLER than a phone (width × 2.05) or the angled phones spill
-     out of the box and overlap whatever sits below (the feature pills).
-     Kept just barely taller so the block stays compact. */
-  height: clamp(400px, 102vw, 540px);
+  width: calc(var(--pw) * 1.72);   /* overlap = 0.28 × phone width */
+  max-width: 100%;
+  margin-inline: auto;
+  /* Taller than one phone (× 2.05) so the angled pair never spills onto the
+     pills below; the extra is the back/front vertical stagger. */
+  height: calc(var(--pw) * 2.4);
 }
 .lp-phone {
   position: absolute;
-  width: clamp(168px, 41vw, 222px);
+  width: var(--pw);
   aspect-ratio: 1 / 2.05;
   background: #14171a;
   border-radius: 34px;
@@ -34,8 +40,8 @@
   object-fit: cover;
   object-position: top center;
 }
-.lp-phone--back { left: 2%; top: 0; transform: rotate(-4deg); z-index: 1; }
-.lp-phone--front { right: 2%; bottom: 0; transform: rotate(3deg); z-index: 2; }
+.lp-phone--back { left: 0; top: 0; transform: rotate(-4deg); z-index: 1; }
+.lp-phone--front { right: 0; bottom: 0; transform: rotate(3deg); z-index: 2; }
 
 /* calendar phone */
 .lp-cal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }

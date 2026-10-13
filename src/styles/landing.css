@@ -207,7 +207,9 @@
     gap: clamp(2rem, 6vw, 5rem);
     padding-top: clamp(2rem, 6vw, 5rem);
   }
-  .lp-visual { flex: 0 0 460px; height: 560px; }
+  /* Same phone-relative box as mobile (phone-showcase.css), just pinned in
+     the row; a fixed 460px box let the pair drift apart. */
+  .lp-visual { flex: 0 0 calc(var(--pw) * 1.72); height: calc(var(--pw) * 2.4); }
   .lp-copy { flex: 1; max-width: 520px; }
 }
 
